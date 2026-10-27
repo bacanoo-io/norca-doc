@@ -1,0 +1,71 @@
+---
+title: "Command: acl"
+linkTitle: "acl"
+description: "The acl command is used to interact with ACL policies and tokens."
+upstream:
+  path: "website/content/docs/commands/acl/index.mdx"
+---
+
+The `acl` command is used to interact with ACL policies and tokens. Learn more
+about Norca's ACL system on the [ACL concepts](/docs/concepts/acl) page.
+
+## Usage
+
+Usage: `norca acl <subcommand> [options]`
+
+Run `norca acl <subcommand> -h` for help on that subcommand. The following
+subcommands are available:
+
+- [`acl bootstrap`][bootstrap] - Bootstrap the initial ACL token
+- [`acl auth-method create`][authmethodcreate] - Create a new ACL auth method
+- [`acl auth-method delete`][authmethoddelete] - Delete an existing ACL auth method
+- [`acl auth-method info`][authmethodinfo] - Fetch information on an existing ACL auth method
+- [`acl auth-method list`][authmethodlist] - List available ACL auth methods
+- [`acl auth-method update`][authmethodupdate] - Update existing ACL auth method
+- [`acl binding-rule create`][bindingrulecreate] - Create a new ACL binding rule
+- [`acl binding-rule delete`][bindingruledelete] - Delete an existing ACL binding rule
+- [`acl binding-rule info`][bindingruleinfo] - Fetch information on an existing ACL binding rule
+- [`acl binding-rule list`][bindingrulelist] - List available ACL binding rules
+- [`acl binding-rule update`][bindingruleupdate] - Update existing ACL binding rule
+- [`acl policy apply`][policyapply] - Create or update ACL policies
+- [`acl policy delete`][policydelete] - Delete an existing ACL policies
+- [`acl policy info`][policyinfo] - Fetch information on an existing ACL policy
+- [`acl policy list`][policylist] - List available ACL policies
+- [`acl role create`][rolecreate] - Create a new ACL role
+- [`acl role delete`][roledelete] - Delete an existing ACL role
+- [`acl role info`][roleinfo] - Get info on an existing ACL role
+- [`acl role list`][rolelist] - List available ACL roles
+- [`acl role update`][roleupdate] - Update existing ACL role
+- [`acl token create`][tokencreate] - Create new ACL token
+- [`acl token delete`][tokendelete] - Delete an existing ACL token
+- [`acl token info`][tokeninfo] - Get info on an existing ACL token
+- [`acl token list`][tokenlist] - List available ACL tokens
+- [`acl token self`][tokenself] - Get info on self ACL token
+- [`acl token update`][tokenupdate] - Update existing ACL token
+
+[bootstrap]: /docs/commands/acl/bootstrap/
+[authmethodcreate]: /docs/commands/acl/auth-method/create/
+[authmethoddelete]: /docs/commands/acl/auth-method/delete/
+[authmethodinfo]: /docs/commands/acl/auth-method/info/
+[authmethodlist]: /docs/commands/acl/auth-method/list/
+[authmethodupdate]: /docs/commands/acl/auth-method/update/
+[bindingrulecreate]: /docs/commands/acl/binding-rule/create/
+[bindingruledelete]: /docs/commands/acl/binding-rule/delete/
+[bindingruleinfo]: /docs/commands/acl/binding-rule/info/
+[bindingrulelist]: /docs/commands/acl/binding-rule/list/
+[bindingruleupdate]: /docs/commands/acl/binding-rule/update/
+[policyapply]: /docs/commands/acl/policy/apply/
+[policydelete]: /docs/commands/acl/policy/delete/
+[policyinfo]: /docs/commands/acl/policy/info/
+[policylist]: /docs/commands/acl/policy/list/
+[tokencreate]: /docs/commands/acl/token/create/
+[tokenupdate]: /docs/commands/acl/token/update/
+[tokendelete]: /docs/commands/acl/token/delete/
+[tokeninfo]: /docs/commands/acl/token/info/
+[tokenlist]: /docs/commands/acl/token/list/
+[tokenself]: /docs/commands/acl/token/self/
+[rolecreate]: /docs/commands/acl/role/create/
+[roleupdate]: /docs/commands/acl/role/update/
+[roledelete]: /docs/commands/acl/role/delete/
+[roleinfo]: /docs/commands/acl/role/info/
+[rolelist]: /docs/commands/acl/role/list/

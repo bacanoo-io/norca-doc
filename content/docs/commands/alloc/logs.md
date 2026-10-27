@@ -1,0 +1,168 @@
+---
+title: "Command: alloc logs"
+linkTitle: "alloc logs"
+description: "Stream the logs of a task."
+upstream:
+  path: "website/content/docs/commands/alloc/logs.mdx"
+---
+
+**Alias: `norca logs`**
+
+The `alloc logs` command displays the log of a given task.
+
+## Usage
+
+```plaintext
+norca alloc logs [options] <allocation> <task>
+```
+
+This command streams the logs of the given task in the allocation. If the
+allocation is only running a single task, the task name can be omitted.
+Optionally, the `-job` option may be used in which case a random allocation from
+the given job will be chosen.
+
+Task name may also be specified using the `-task`  option rather than a command
+argument. If task name is given with both an argument and the `-task` option,
+preference is given to the `-task` option.
+
+When ACLs are enabled, this command requires a token with the `read-logs`,
+`read-job`, and `list-jobs` capabilities for the allocation's namespace.
+
+## General Options
+
+- `-address=<addr>`: The address of the Norca server. Overrides the `NORCA_ADDR`
+  environment variable if set. Defaults to `http://127.0.0.1:4646`.
+
+- `-region=<region>`: The region of the Norca server to forward commands to.
+  Overrides the `NORCA_REGION` environment variable if set. Defaults to the
+  Agent's local region.
+
+- `-namespace=<namespace>`: The target namespace for queries and actions bound
+  to a namespace. Overrides the `NORCA_NAMESPACE` environment variable if set.
+  If set to `'*'`, subcommands which support this functionality query all
+  namespaces authorized to user. Defaults to the "default" namespace.
+
+- `-no-color`: Disables colored command output. Alternatively,
+  `NORCA_CLI_NO_COLOR` may be set. This option takes precedence over
+  `-force-color`.
+
+- `-force-color`: Forces colored command output. This can be used in cases where
+  the usual terminal detection fails. Alternatively, `NORCA_CLI_FORCE_COLOR`
+  may be set. This option has no effect if `-no-color` is also used.
+
+- `-ca-cert=<path>`: Path to a PEM encoded CA cert file to use to verify the
+  Norca server SSL certificate. Overrides the `NORCA_CACERT` environment
+  variable if set.
+
+- `-ca-path=<path>`: Path to a directory of PEM encoded CA cert files to verify
+  the Norca server SSL certificate. If both `-ca-cert` and `-ca-path` are
+  specified, `-ca-cert` is used. Overrides the `NORCA_CAPATH` environment
+  variable if set.
+
+- `-client-cert=<path>`: Path to a PEM encoded client certificate for TLS
+  authentication to the Norca server. Must also specify `-client-key`. Overrides
+  the `NORCA_CLIENT_CERT` environment variable if set.
+
+- `-client-key=<path>`: Path to an unencrypted PEM encoded private key matching
+  the client certificate from `-client-cert`. Overrides the `NORCA_CLIENT_KEY`
+  environment variable if set.
+
+- `-tls-server-name=<value>`: The server name to use as the SNI host when connecting
+  via TLS. Overrides the `NORCA_TLS_SERVER_NAME` environment variable if set.
+
+- `-tls-skip-verify`: Do not verify TLS certificate. This is highly not
+  recommended. Verification will also be skipped if `NORCA_SKIP_VERIFY` is set.
+
+- `-token`: The SecretID of an ACL token to use to authenticate API requests with.
+  Overrides the `NORCA_TOKEN` environment variable if set.
+
+Each `NORCA_*` environment variable above is also accepted with its Nomad
+name, for example `NOMAD_ADDR` for `NORCA_ADDR`. The `NORCA_*` variable takes
+precedence when both are set.
+
+## Logs Options
+
+- `-stdout`: Display stdout logs. This is used as the default value in all
+  commands except when using the `-f` flag where both stdout and stderr are
+  used as default.
+
+- `-stderr`: Display stderr logs.
+
+- `-verbose`: Display verbose output.
+
+- `-job`: Use a random allocation from the specified job or job ID prefix,
+  preferring a running allocation.
+
+- `-task`: Specify the task to view the logs.
+
+- `-f`: Causes the output to not stop when the end of the logs are reached, but
+  rather to wait for additional output. When supplied with no other flags except
+  optionally `-job` and `-task`, both stdout and stderr logs will be followed.
+
+- `-tail`: Show the logs contents with offsets relative to the end of the logs.
+  If no offset is given, -n is defaulted to 10.
+
+- `-n`: Sets the tail location in best-efforted number of lines relative to the
+  end of the logs.
+
+- `-c`: Sets the tail location in number of bytes relative to the end of the
+  logs.
+
+Note that the `-no-color` option applies to Norca's own output. If the task's
+logs include terminal escape sequences for color codes, Norca will not remove
+them.
+
+## Examples
+
+```shell
+$ norca alloc logs eb17e557 redis
+foobar
+baz
+bam
+
+$ norca alloc logs -stderr eb17e557 redis
+[ERR]: foo
+[ERR]: bar
+
+$ norca alloc logs -job example
+[ERR]: foo
+[ERR]: bar
+
+$ norca alloc logs -tail -n 2 eb17e557 redis
+foobar
+baz
+
+$ norca alloc logs -tail -f -n 3 eb17e557 redis
+foobar
+baz
+bam
+<blocking>
+```
+
+Specifying task name with the `-task` option:
+
+```shell
+$ norca alloc logs -task redis eb17e557
+```
+
+If task name is specified using both options, the command argument is ignored.
+The following will output the logs from the "redis" task only, not the "api" task:
+
+```shell
+$ norca alloc logs -task redis eb17e557 api
+```
+
+## Using Job ID instead of Allocation ID
+
+Setting the `-job` flag causes a random allocation of the specified job to be
+selected. Norca will prefer to select a running allocation ID for the job, but
+if no running allocations for the job are found, Norca will use a dead
+allocation.
+
+```plaintext
+norca alloc logs -job <job-id> <task>
+```
+
+Choosing a specific allocation is useful for debugging issues with a specific
+instance of a service. For other operations using the `-job` flag may be more
+convenient than looking up an allocation ID to use.

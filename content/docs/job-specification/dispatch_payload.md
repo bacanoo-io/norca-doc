@@ -1,0 +1,47 @@
+---
+title: "dispatch_payload Block"
+linkTitle: "dispatch_payload"
+description: "The \"dispatch_payload\" block allows a task to access dispatch payloads."
+upstream:
+  path: "website/content/docs/job-specification/dispatch_payload.mdx"
+---
+
+**Placement:** `job -> group -> task -> dispatch_payload`
+
+The `dispatch_payload` block is used in conjunction with a [`parameterized`][parameterized] job
+that expects a payload. When the job is dispatched with a payload, the payload
+will be made available to any task that has a `dispatch_payload` block. The
+payload will be written to the configured file before the task is started. This
+allows the task to use the payload as input or configuration.
+
+```hcl
+job "docs" {
+  group "example" {
+    task "server" {
+      dispatch_payload {
+        file = "config.json"
+      }
+    }
+  }
+}
+```
+
+## `dispatch_payload` Parameters
+
+- `file` `(string: "")` - Specifies the file name to write the content of
+  dispatch payload to. The file is written relative to the [task's local
+  directory][localdir].
+
+## `dispatch_payload` Example
+
+This example shows a `dispatch_payload` block in a parameterized job that writes
+the payload to a `config.json` file.
+
+```hcl
+dispatch_payload {
+  file = "config.json"
+}
+```
+
+[localdir]: /docs/runtime/environment#local 'Task Local Directory'
+[parameterized]: /docs/job-specification/parameterized/ 'Norca parameterized Job Specification'

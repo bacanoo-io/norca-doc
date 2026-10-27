@@ -1,0 +1,310 @@
+---
+title: "Command: job plan"
+linkTitle: "job plan"
+description: "The job plan command is used to dry-run a job update to determine its effects."
+upstream:
+  path: "website/content/docs/commands/job/plan.mdx"
+---
+
+**Alias: `norca plan`**
+
+The `job plan` command can be used to invoke the scheduler in a dry-run mode
+with new jobs or when updating existing jobs to determine what would happen if
+the job is submitted. Job files must conform to the [job specification] format.
+
+## Usage
+
+```plaintext
+norca job plan [options] <path>
+```
+
+The `job plan` command requires a single argument, specifying the path to a file
+containing an HCL [job specification]. This file will be read and the resulting
+parsed job will be validated. If the supplied path is "-", the job file is read
+from STDIN. Otherwise it is read from the file at the supplied path or
+downloaded and read from URL specified. Norca downloads the job file using
+[`go-getter`] and supports `go-getter` syntax.
+
+Plan invokes a dry-run of the scheduler to determine the effects of submitting
+either a new or updated version of a job. The plan will not result in any
+changes to the cluster but gives insight into whether the job could be run
+successfully and how it would affect existing allocations.
+
+A job modify index is returned with the plan. This value can be used when
+submitting the job using [`norca job run -check-index`], which will check that
+the job was not modified between the plan and run command before invoking the
+scheduler. This ensures the job has not been modified since the plan.
+
+A structured diff between the local and remote job is displayed to
+give insight into what the scheduler will attempt to do and why.
+
+If the job has specified the region, the `-region` flag and `NORCA_REGION`
+environment variable are overridden and the job's region is used.
+
+Plan will return one of the following exit codes:
+
+- 0: No allocations created or destroyed.
+- 1: Allocations created or destroyed.
+- 255: Error determining plan results.
+
+The plan command will set the `vault_token` of the job based on the following
+precedence, going from highest to lowest: the `-vault-token` flag, the
+`$VAULT_TOKEN` environment variable and finally the value in the job file.
+
+When ACLs are enabled, this command requires a token with the `submit-job`
+capability for the job's namespace.
+
+## General Options
+
+- `-address=<addr>`: The address of the Norca server. Overrides the `NORCA_ADDR`
+  environment variable if set. Defaults to `http://127.0.0.1:4646`.
+
+- `-region=<region>`: The region of the Norca server to forward commands to.
+  Overrides the `NORCA_REGION` environment variable if set. Defaults to the
+  Agent's local region.
+
+- `-namespace=<namespace>`: The target namespace for queries and actions bound
+  to a namespace. Overrides the `NORCA_NAMESPACE` environment variable if set.
+  If set to `'*'`, subcommands which support this functionality query all
+  namespaces authorized to user. Defaults to the "default" namespace.
+
+- `-no-color`: Disables colored command output. Alternatively,
+  `NORCA_CLI_NO_COLOR` may be set. This option takes precedence over
+  `-force-color`.
+
+- `-force-color`: Forces colored command output. This can be used in cases where
+  the usual terminal detection fails. Alternatively, `NORCA_CLI_FORCE_COLOR`
+  may be set. This option has no effect if `-no-color` is also used.
+
+- `-ca-cert=<path>`: Path to a PEM encoded CA cert file to use to verify the
+  Norca server SSL certificate. Overrides the `NORCA_CACERT` environment
+  variable if set.
+
+- `-ca-path=<path>`: Path to a directory of PEM encoded CA cert files to verify
+  the Norca server SSL certificate. If both `-ca-cert` and `-ca-path` are
+  specified, `-ca-cert` is used. Overrides the `NORCA_CAPATH` environment
+  variable if set.
+
+- `-client-cert=<path>`: Path to a PEM encoded client certificate for TLS
+  authentication to the Norca server. Must also specify `-client-key`. Overrides
+  the `NORCA_CLIENT_CERT` environment variable if set.
+
+- `-client-key=<path>`: Path to an unencrypted PEM encoded private key matching
+  the client certificate from `-client-cert`. Overrides the `NORCA_CLIENT_KEY`
+  environment variable if set.
+
+- `-tls-server-name=<value>`: The server name to use as the SNI host when connecting
+  via TLS. Overrides the `NORCA_TLS_SERVER_NAME` environment variable if set.
+
+- `-tls-skip-verify`: Do not verify TLS certificate. This is highly not
+  recommended. Verification will also be skipped if `NORCA_SKIP_VERIFY` is set.
+
+- `-token`: The SecretID of an ACL token to use to authenticate API requests with.
+  Overrides the `NORCA_TOKEN` environment variable if set.
+
+Each `NORCA_*` environment variable above is also accepted with its Nomad
+name, for example `NOMAD_ADDR` for `NORCA_ADDR`. The `NORCA_*` variable takes
+precedence when both are set.
+
+## Plan Options
+
+- `-diff`: Determines whether the diff between the remote job and planned job is
+  shown. Defaults to true.
+
+- `-policy-override`: Has no effect: overriding admission policies is not
+  supported. The flag is still accepted for compatibility and prints a warning.
+
+- `-json`: Parses the job file as JSON. If the outer object has a Job field,
+  such as from "norca job inspect" or "norca run -output", the value of the
+  field is used as the job.
+
+- `-hcl1`: If set, HCL1 parser is used for parsing the job spec. Takes
+  precedence over `-hcl2-strict`.
+
+- `-hcl2-strict`: Whether an error should be produced from the HCL2 parser where
+  a variable has been supplied which is not defined within the root variables.
+  Defaults to true, but ignored if `-hcl1` is defined.
+
+- `-vault-token`: Used to validate if the user submitting the job has
+  permission to run the job according to its Vault policies. A Vault token must
+  be supplied if the [`vault` block `allow_unauthenticated`] is disabled in
+  the Norca server configuration. If the `-vault-token` flag is set, the passed
+  Vault token is added to the jobspec before sending to the Norca servers. This
+  allows passing the Vault token without storing it in the job file. This
+  overrides the token found in the `$VAULT_TOKEN` environment variable and the
+  [`vault_token`] field in the job file. This token is cleared from the job
+  after planning and cannot be used within the job executing environment. Use
+  the `vault` block when templating in a job with a Vault token.
+
+- `-vault-namespace`: If set, the passed Vault namespace is stored in the job
+  before sending to the Norca servers.
+
+- `-var=<key=value>`: Variable for template, can be used multiple times.
+
+- `-var-file=<path>`: Path to HCL2 file containing user variables.
+
+- `-verbose`: Increase diff verbosity.
+
+## Examples
+
+Plan a new job that has not been previously submitted:
+
+```shell
+$ norca job plan example.nomad.hcl
++ Job: "example"
++ Task Group: "cache" (1 create)
+  + Task: "redis" (forces create)
+
+Scheduler dry-run:
+- All tasks successfully allocated.
+
+Job Modify Index: 0
+To submit the job with version verification run:
+
+norca job run -check-index 0 example.nomad.hcl
+
+When running the job with the check-index flag, the job will only be run if the
+job modify index given matches the server-side version. If the index has
+changed, another user has modified the job and the plan's results are
+potentially invalid.
+```
+
+Increase the count of an existing without sufficient cluster capacity:
+
+```shell
+$ norca job plan example.nomad.hcl
++/- Job: "example"
++/- Task Group: "cache" (7 create, 1 in-place update)
+  +/- Count: "1" => "8" (forces create)
+      Task: "redis"
+
+Scheduler dry-run:
+- WARNING: Failed to place all allocations.
+  Task Group "cache" (failed to place 3 allocations):
+    * Resources exhausted on 1 nodes
+    * Dimension "cpu" exhausted on 1 nodes
+
+Job Modify Index: 15
+To submit the job with version verification run:
+
+norca job run -check-index 15 example.nomad.hcl
+
+When running the job with the check-index flag, the job will only be run if the
+job modify index given matches the server-side version. If the index has
+changed, another user has modified the job and the plan's results are
+potentially invalid.
+```
+
+Update an existing job such that it would cause a rolling update:
+
+```shell
+$ norca job plan example.nomad.hcl
++/- Job: "example"
++/- Task Group: "cache" (3 create/destroy update)
+  +/- Task: "redis" (forces create/destroy update)
+    +/- Config {
+      +/- image:           "redis:2.8" => "redis:7"
+          port_map[0][db]: "6379"
+    }
+
+Scheduler dry-run:
+- All tasks successfully allocated.
+- Rolling update, next evaluation will be in 10s.
+
+Job Modify Index: 7
+To submit the job with version verification run:
+
+norca job run -check-index 7 example.nomad.hcl
+
+When running the job with the check-index flag, the job will only be run if the
+job modify index given matches the server-side version. If the index has
+changed, another user has modified the job and the plan's results are
+potentially invalid.
+```
+
+Add a task to the task group using verbose mode:
+
+```shell
+$ norca job plan -verbose example.nomad.hcl
++/- Job: "example"
++/- Task Group: "cache" (3 create/destroy update)
+  + Task: "my-website" (forces create/destroy update)
+    + Driver:      "docker"
+    + KillTimeout: "5000000000"
+    + Config {
+      + image:            "node:6.2"
+      + port_map[0][web]: "80"
+    }
+    + Resources {
+      + CPU:      "500"
+      + DiskMB:   "300"
+      + MemoryMB: "256"
+      + Network {
+        + MBits: "10"
+        + Dynamic Port {
+          + Label: "web"
+        }
+      }
+    }
+    + LogConfig {
+      + MaxFileSizeMB: "10"
+      + MaxFiles:      "10"
+    }
+    + Service {
+      + Name:      "website"
+      + PortLabel: "web"
+      + Check {
+          Command:  ""
+        + Interval: "10000000000"
+        + Name:     "alive"
+          Path:     ""
+          Protocol: ""
+        + Timeout:  "2000000000"
+        + Type:     "tcp"
+      }
+    }
+    Task: "redis"
+
+Scheduler dry-run:
+- All tasks successfully allocated.
+- Rolling update, next evaluation will be in 10s.
+
+Job Modify Index: 7
+To submit the job with version verification run:
+
+norca job run -check-index 7 example.nomad.hcl
+
+When running the job with the check-index flag, the job will only be run if the
+job modify index given matches the server-side version. If the index has
+changed, another user has modified the job and the plan's results are
+potentially invalid.
+```
+
+When using the `norca job plan` command in automated environments, such as
+in CI/CD pipelines, it is useful to output the plan result for manual
+validation and also store the check index on disk so it can be used later to
+guarantee that a job deployment will match the expected changes described in
+the plan result.
+
+This can be done by parsing the command output and redirecting the index to a
+file. For example, in Linux environments the [`tee`] command can be used for
+this purpose:
+
+```console
+$ norca job plan -no-color example.nomad.hcl | tee /dev/stderr | grep 'Job Modify Index:' | awk -F': ' '{ print $2 }' > check-index || true
+```
+
+The [`-no-color`](#no-color) flag prevents style characters from impacting
+parsing. Colored output may be helpful when analyzing the plan result, so the
+[`-force-color`](#force-color) flag can be used. This will affect how parsing
+is done to avoid hidden control characters. Adding `|| true` at the end
+prevents undesired failures since `norca job plan` returns a non-zero exit code
+if a change is detected.
+
+[job specification]: /docs/job-specification/
+[hcl job specification]: /docs/job-specification/
+[`go-getter`]: https://github.com/hashicorp/go-getter
+[`norca job run -check-index`]: /docs/commands/job/run#check-index
+[`tee`]: https://man7.org/linux/man-pages/man1/tee.1.html
+[`vault` block `allow_unauthenticated`]: /docs/configuration/vault#allow_unauthenticated
+[`vault_token`]: /docs/job-specification/job#vault_token

@@ -1,0 +1,90 @@
+# SPDX-FileCopyrightText: 2026 Norca contributors
+# SPDX-License-Identifier: MPL-2.0
+
+# The address of local builds. The Build workflow deploys to GitHub Pages and
+# passes the Pages address with --baseURL instead.
+baseURL: https://bacanoo-io.github.io/norca-doc/
+locale: en-US
+title: Norca
+
+enableRobotsTXT: true
+enableGitInfo: false
+refLinksErrorLevel: ERROR
+refLinksNotFoundURL: "#"
+
+module:
+  hugoVersion:
+    extended: true
+    min: "0.146.0"
+  imports:
+    - path: github.com/imfing/hextra
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+    parser:
+      attribute:
+        block: true
+  highlight:
+    noClasses: false
+  tableOfContents:
+    startLevel: 2
+    endLevel: 4
+
+outputs:
+  home: [html]
+  page: [html]
+  section: [html, rss]
+
+menu:
+  main:
+    - name: Documentation
+      pageRef: /docs
+      weight: 1
+    - name: Features
+      pageRef: /docs/features
+      weight: 2
+    - name: Examples
+      pageRef: /docs/getting-started/examples
+      weight: 3
+    - name: Search
+      weight: 4
+      params:
+        type: search
+    - name: GitHub
+      weight: 5
+      url: https://github.com/bacanoo-io/norca
+      params:
+        icon: github
+
+params:
+  description: Documentation of Norca, an open source workload scheduler and orchestrator based on the MPL 2.0 source code of Nomad v1.6.5.
+  navbar:
+    displayTitle: true
+    displayLogo: false
+    width: wide
+  page:
+    width: wide
+  footer:
+    enable: true
+    displayCopyright: true
+    displayPoweredBy: false
+    width: normal
+  editURL:
+    enable: true
+    base: https://github.com/bacanoo-io/norca-doc/edit/main/content
+  theme:
+    default: system
+    displayToggle: true
+  search:
+    enable: true
+    type: flexsearch
+    flexsearch:
+      index: content
+  highlight:
+    copy:
+      enable: true
+      display: hover
+  toc:
+    displayTags: false

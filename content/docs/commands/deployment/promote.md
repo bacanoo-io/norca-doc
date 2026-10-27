@@ -1,0 +1,273 @@
+---
+title: "Command: deployment promote"
+linkTitle: "deployment promote"
+description: "The deployment promote command is used to promote canaries in a deployment."
+upstream:
+  path: "website/content/docs/commands/deployment/promote.mdx"
+---
+
+The `deployment promote` command is used to promote task groups in a deployment.
+Promotion should occur when the deployment has placed canaries for a task group
+and those canaries have been deemed healthy. When a task group is promoted, the
+rolling upgrade of the remaining allocations is unblocked. If the canaries are
+found to be unhealthy, the deployment may either be failed using the "norca
+deployment fail" command, the job can be failed forward by submitting a new
+version or failed backwards by reverting to an older version using the
+[`job revert`] command.
+
+## Usage
+
+```plaintext
+norca deployment promote [options] <deployment id>
+```
+
+The `deployment promote` command requires a single argument, a deployment ID or
+prefix. When run without specifying any groups to promote, the promote command
+promotes all task groups. The group flag can be specified multiple times to
+select particular groups to promote.
+
+When ACLs are enabled, this command requires a token with the `submit-job`
+and `read-job` capabilities for the deployment's namespace.
+
+## General Options
+
+- `-address=<addr>`: The address of the Norca server. Overrides the `NORCA_ADDR`
+  environment variable if set. Defaults to `http://127.0.0.1:4646`.
+
+- `-region=<region>`: The region of the Norca server to forward commands to.
+  Overrides the `NORCA_REGION` environment variable if set. Defaults to the
+  Agent's local region.
+
+- `-namespace=<namespace>`: The target namespace for queries and actions bound
+  to a namespace. Overrides the `NORCA_NAMESPACE` environment variable if set.
+  If set to `'*'`, subcommands which support this functionality query all
+  namespaces authorized to user. Defaults to the "default" namespace.
+
+- `-no-color`: Disables colored command output. Alternatively,
+  `NORCA_CLI_NO_COLOR` may be set. This option takes precedence over
+  `-force-color`.
+
+- `-force-color`: Forces colored command output. This can be used in cases where
+  the usual terminal detection fails. Alternatively, `NORCA_CLI_FORCE_COLOR`
+  may be set. This option has no effect if `-no-color` is also used.
+
+- `-ca-cert=<path>`: Path to a PEM encoded CA cert file to use to verify the
+  Norca server SSL certificate. Overrides the `NORCA_CACERT` environment
+  variable if set.
+
+- `-ca-path=<path>`: Path to a directory of PEM encoded CA cert files to verify
+  the Norca server SSL certificate. If both `-ca-cert` and `-ca-path` are
+  specified, `-ca-cert` is used. Overrides the `NORCA_CAPATH` environment
+  variable if set.
+
+- `-client-cert=<path>`: Path to a PEM encoded client certificate for TLS
+  authentication to the Norca server. Must also specify `-client-key`. Overrides
+  the `NORCA_CLIENT_CERT` environment variable if set.
+
+- `-client-key=<path>`: Path to an unencrypted PEM encoded private key matching
+  the client certificate from `-client-cert`. Overrides the `NORCA_CLIENT_KEY`
+  environment variable if set.
+
+- `-tls-server-name=<value>`: The server name to use as the SNI host when connecting
+  via TLS. Overrides the `NORCA_TLS_SERVER_NAME` environment variable if set.
+
+- `-tls-skip-verify`: Do not verify TLS certificate. This is highly not
+  recommended. Verification will also be skipped if `NORCA_SKIP_VERIFY` is set.
+
+- `-token`: The SecretID of an ACL token to use to authenticate API requests with.
+  Overrides the `NORCA_TOKEN` environment variable if set.
+
+Each `NORCA_*` environment variable above is also accepted with its Nomad
+name, for example `NOMAD_ADDR` for `NORCA_ADDR`. The `NORCA_*` variable takes
+precedence when both are set.
+
+## Promote Options
+
+- `-group`: Group may be specified many times and is used to promote that
+  particular group. If no specific groups are specified, all groups are
+  promoted.
+
+- `-detach`: Return immediately instead of monitoring. A new evaluation ID
+  will be output, which can be used to examine the evaluation using the
+  [eval status] command
+
+- `-verbose`: Show full information.
+
+## Examples
+
+Promote canaries in all groups:
+
+```shell
+# Have two task groups waiting for promotion.
+$ norca status example
+ID            = example
+Name          = example
+Submit Date   = 07/25/17 18:35:05 UTC
+Type          = service
+Priority      = 50
+Datacenters   = dc1
+Status        = running
+Periodic      = false
+Parameterized = false
+
+Summary
+Task Group  Queued  Starting  Running  Failed  Complete  Lost
+cache       0       0         3        0       0         0
+web         0       0         3        0       0         0
+
+Latest Deployment
+ID          = 9fa81f27
+Status      = running
+Description = Deployment is running but requires manual promotion
+
+Deployed
+Task Group  Promoted  Desired  Canaries  Placed  Healthy  Unhealthy
+web         false     2        1         1       0        0
+cache       false     2        1         1       0        0
+
+Allocations
+ID        Node ID   Task Group  Version  Desired  Status   Created At
+091377e5  a8dcce2d  web         1        run      running  07/25/17 18:35:05 UTC
+d2b13584  a8dcce2d  cache       1        run      running  07/25/17 18:35:05 UTC
+4bb185b7  a8dcce2d  web         0        run      running  07/25/17 18:31:34 UTC
+9b6811ee  a8dcce2d  cache       0        run      running  07/25/17 18:31:34 UTC
+e0a2441b  a8dcce2d  cache       0        run      running  07/25/17 18:31:34 UTC
+f2409f7d  a8dcce2d  web         0        run      running  07/25/17 18:31:34 UTC
+
+# Promote all groups within the deployment
+$ norca deployment promote 9fa81f27
+==> Monitoring evaluation "6c6e64ae"
+    Evaluation triggered by job "example"
+    Evaluation within deployment: "9fa81f27"
+    Allocation "8fa21654" created: node "a8dcce2d", group "web"
+    Allocation "9f6727a6" created: node "a8dcce2d", group "cache"
+    Evaluation status changed: "pending" -> "complete"
+==> Evaluation "6c6e64ae" finished with status "complete"
+
+# Inspect the status and see both groups have been promoted.
+$ norca status example
+ID            = example
+Name          = example
+Submit Date   = 07/25/17 18:35:05 UTC
+Type          = service
+Priority      = 50
+Datacenters   = dc1
+Status        = running
+Periodic      = false
+Parameterized = false
+
+Summary
+Task Group  Queued  Starting  Running  Failed  Complete  Lost
+cache       0       0         2        0       2         0
+web         0       0         2        0       2         0
+
+Latest Deployment
+ID          = 9fa81f27
+Status      = successful
+Description = Deployment completed successfully
+
+Deployed
+Task Group  Promoted  Desired  Canaries  Placed  Healthy  Unhealthy
+web         true      2        1         2       2        0
+cache       true      2        1         2       2        0
+
+Allocations
+ID        Node ID   Task Group  Version  Desired  Status    Created At
+8fa21654  a8dcce2d  web         1        run      running   07/25/17 18:35:21 UTC
+9f6727a6  a8dcce2d  cache       1        run      running   07/25/17 18:35:21 UTC
+091377e5  a8dcce2d  web         1        run      running   07/25/17 18:35:05 UTC
+d2b13584  a8dcce2d  cache       1        run      running   07/25/17 18:35:05 UTC
+4bb185b7  a8dcce2d  web         0        stop     complete  07/25/17 18:31:34 UTC
+9b6811ee  a8dcce2d  cache       0        stop     complete  07/25/17 18:31:34 UTC
+e0a2441b  a8dcce2d  cache       0        stop     complete  07/25/17 18:31:34 UTC
+f2409f7d  a8dcce2d  web         0        stop     complete  07/25/17 18:31:34 UTC
+```
+
+Promote canaries in a particular group:
+
+```shell
+# Have two task groups waiting for promotion.
+$ norca status example
+ID            = example
+Name          = example
+Submit Date   = 07/25/17 18:37:14 UTC
+Type          = service
+Priority      = 50
+Datacenters   = dc1
+Status        = running
+Periodic      = false
+Parameterized = false
+
+Summary
+Task Group  Queued  Starting  Running  Failed  Complete  Lost
+cache       0       0         3        0       0         0
+web         0       0         3        0       0         0
+
+Latest Deployment
+ID          = a6b87a6c
+Status      = running
+Description = Deployment is running but requires manual promotion
+
+Deployed
+Task Group  Promoted  Desired  Canaries  Placed  Healthy  Unhealthy
+cache       false     2        1         1       1        0
+web         false     2        1         1       1        0
+
+Allocations
+ID        Node ID   Task Group  Version  Desired  Status   Created At
+3071ab8f  6240eed6  web         1        run      running  07/25/17 18:37:14 UTC
+eeeed13b  6240eed6  cache       1        run      running  07/25/17 18:37:14 UTC
+0ee7800c  6240eed6  cache       0        run      running  07/25/17 18:37:08 UTC
+a714a926  6240eed6  cache       0        run      running  07/25/17 18:37:08 UTC
+cee52788  6240eed6  web         0        run      running  07/25/17 18:37:08 UTC
+ee8f972e  6240eed6  web         0        run      running  07/25/17 18:37:08 UTC
+
+# Promote only the cache canaries
+$ norca deployment promote -group cache a6b87a6c
+==> Monitoring evaluation "37383564"
+    Evaluation triggered by job "example"
+    Evaluation within deployment: "a6b87a6c"
+    Allocation "bbddf5c3" created: node "6240eed6", group "cache"
+    Evaluation status changed: "pending" -> "complete"
+==> Evaluation "37383564" finished with status "complete"
+
+# Inspect the status and see that only the cache canaries are promoted
+$ norca status example
+ID            = example
+Name          = example
+Submit Date   = 07/25/17 18:37:14 UTC
+Type          = service
+Priority      = 50
+Datacenters   = dc1
+Status        = running
+Periodic      = false
+Parameterized = false
+
+Summary
+Task Group  Queued  Starting  Running  Failed  Complete  Lost
+cache       0       0         2        0       2         0
+web         0       0         3        0       0         0
+
+Latest Deployment
+ID          = a6b87a6c
+Status      = running
+Description = Deployment is running but requires manual promotion
+
+Deployed
+Task Group  Promoted  Desired  Canaries  Placed  Healthy  Unhealthy
+web         false     2        1         1       1        0
+cache       true      2        1         2       2        0
+
+Allocations
+ID        Node ID   Task Group  Version  Desired  Status    Created At
+bbddf5c3  6240eed6  cache       1        run      running   07/25/17 18:37:40 UTC
+eeeed13b  6240eed6  cache       1        run      running   07/25/17 18:37:14 UTC
+3071ab8f  6240eed6  web         1        run      running   07/25/17 18:37:14 UTC
+a714a926  6240eed6  cache       0        stop     complete  07/25/17 18:37:08 UTC
+cee52788  6240eed6  web         0        run      running   07/25/17 18:37:08 UTC
+ee8f972e  6240eed6  web         0        run      running   07/25/17 18:37:08 UTC
+0ee7800c  6240eed6  cache       0        stop     complete  07/25/17 18:37:08 UTC
+```
+
+[`job revert`]: /docs/commands/job/revert/
+[eval status]: /docs/commands/eval/status/

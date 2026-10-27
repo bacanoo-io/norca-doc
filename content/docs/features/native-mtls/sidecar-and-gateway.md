@@ -1,0 +1,269 @@
+---
+title: "Sidecar, upstreams and the cross-region gateway"
+linkTitle: "Sidecar and gateway"
+weight: 2
+description: "The Envoy sidecar of native mTLS, upstreams to other services, and the gateway that connects regions."
+---
+
+Norca issues every workload of a task group with an `mtls` service a short-lived SPIFFE certificate
+(`spiffe://<trust-domain>/ns/<namespace>/job/<job>/group/<group>`, plus the DNS names
+`<service>.service.<namespace>[.<region>].nomad` of its mtls services) and decides with `ServiceIntention`
+objects who may connect to whom. Applications can use the certificate themselves (`mode = "app"`, see the
+[`api/mtls` Go library](/docs/features/native-mtls/app-mode)), or let an Envoy sidecar do it
+(`mode = "sidecar"`). This page covers the sidecar mode, upstreams and the gateway between regions. No
+Consul is involved.
+
+Design and implementation notes:
+[Consul independence – plan, item 5](/docs/design/consul-independence-plan#5-native-mtls-and-service-authorization).
+
+## Sidecar mode
+
+```hcl
+job "web" {
+  group "web" {
+    network {
+      mode = "bridge"
+    }
+
+    service {
+      name     = "web"
+      port     = "8080"          # the port the application listens on inside the group network namespace
+      provider = "nomad"
+
+      mtls {
+        mode = "sidecar"
+
+        upstream "api" {
+          service    = "api"     # in the namespace of the job, in this region
+          local_port = 9001      # the application connects to 127.0.0.1:9001
+        }
+
+        upstream "db" {
+          service    = "postgres"
+          namespace  = "data"
+          local_port = 5432
+        }
+
+        upstream "eu-cache" {
+          service    = "redis"
+          region     = "eu"      # through the gateway of region eu
+          local_port = 6379
+        }
+      }
+    }
+
+    task "web" {
+      driver = "docker"
+      config {
+        image = "example/web:1"
+      }
+    }
+  }
+}
+```
+
+When the job is registered, the servers add to the group:
+
+- a prestart sidecar task `mtls-proxy-<service>` (kind `mtls-proxy:<service>`, driver docker, or podman if the
+  group only uses podman) running the official Envoy image, 100 MHz / 128 MB;
+- a dynamic port `mtls-proxy-<service>` for the inbound listener of the sidecar.
+
+The service is registered in the catalog with the address and port of the sidecar, so everybody reaching
+it through the catalog, the [built-in DNS](/docs/features/service-discovery/dns) or the
+[Consul-compatible layer](/docs/features/service-discovery/consul-compatible-api) connects with mTLS. Its
+registrations carry the meta `norca-mtls = "sidecar"` (`"app"` for app mode services, `"gateway"` for
+gateways).
+
+The sidecar:
+
+- **inbound**: terminates mTLS on the injected port, requires a client certificate signed by a CA of the
+  federated trust bundle (verified per SPIFFE trust domain), authorizes the peer with the service intentions
+  of the namespace and forwards the plain TCP stream to `127.0.0.1:<port>` of the application;
+- **upstreams**: listens on `127.0.0.1:<local_port>` in the network namespace of the group and opens an mTLS
+  connection to a healthy instance of the upstream service, with its workload certificate; it verifies that
+  the server certificate carries `<service>.service.<namespace>.<region>.nomad` and is signed by a CA of that
+  region (not by the CA of another region of the federation), and sends that name as SNI.
+
+```mermaid
+flowchart LR
+  subgraph g1["Group web (bridge network)"]
+    app1["web"] -->|"127.0.0.1:9001"| sc1["mtls-proxy-web (Envoy)"]
+  end
+  subgraph g2["Group api (bridge network)"]
+    sc2["mtls-proxy-api (Envoy): mTLS + intentions"] -->|"plain TCP 127.0.0.1:8080"| app2["api"]
+  end
+  sc1 -->|"mTLS, SNI api.service.default.global.nomad"| sc2
+```
+
+The application port should not be mapped to the host: use a port number (`port = "8080"`) or a group port
+label without a host mapping, otherwise the application is also reachable without mTLS. Service checks of
+the native provider still use the application port.
+
+Changing `mtls` blocks of sidecar or gateway services is a destructive update. Intentions, upstream instances,
+certificate renewals and CA rotations are applied to the running Envoy without restarting it.
+
+### Authorization
+
+Intentions are evaluated like the `api/mtls` library: the most specific matching intention decides (exact
+destination, then exact source namespace, then exact source service), deny wins at equal specificity, and
+without a matching intention the connection is denied. The source namespace comes from the SPIFFE ID of the
+peer certificate, the source services from its DNS names. See
+[service intentions](/docs/features/native-mtls/intentions) for the details.
+
+```shell
+norca service intention create web api
+norca service intention create -deny 'batch/*' api
+```
+
+Intentions are regional, as the design sets out: they are stored in the Raft state of one region and, unlike
+ACL policies, tokens, namespaces and quotas, are not replicated from the authoritative region. A write goes to
+the region of the request (`-region`, by default the region of the agent the CLI talks to), and the sidecars
+of a region enforce only the intentions stored in that region. For a connection across regions the
+intentions of the destination region decide: create `probe → api` in the region where `api` runs. The
+source of an intention has no region: it matches the source service in any region whose certificates the
+destination trusts (`federation`). To apply the same rules in every region, create them in each region.
+
+A change applies to new connections within about a second. The intentions are part of the inbound listener,
+so a change to the intentions of the service replaces it: connections that were established before keep
+running on the previous listener version until Envoy has drained it (`--drain-time-s`, 600 s by default), then
+they are closed and the clients reconnect under the new rules. Changes to intentions of other services, new
+certificates and changed upstream instances don't touch the listener. Restart the sidecar task to cut the
+existing connections immediately.
+
+### Envoy image
+
+The image is set by node meta, so air-gapped clusters can use a mirror and pin a digest:
+
+| Node meta | Default |
+| --- | --- |
+| `norca.mtls.envoy_image` | unset: built from the four keys below |
+| `norca.mtls.envoy_registry` | `docker.io` |
+| `norca.mtls.envoy_repository` | `envoyproxy/envoy` |
+| `norca.mtls.envoy_tag` | `v1.40.1` |
+| `norca.mtls.envoy_digest` | unset (`sha256:...` to pin) |
+| `norca.mtls.envoy_log_level` | `info` |
+
+```hcl
+client {
+  meta {
+    "norca.mtls.envoy_registry" = "registry.internal:5000"
+    "norca.mtls.envoy_digest"   = "sha256:..."
+  }
+}
+```
+
+Norca does not distribute Envoy; the client pulls the image like any other task image.
+
+To change the resources, the driver or anything else of the proxy task, define the task in the group yourself
+with `kind = "mtls-proxy:<service>"` (or `"mtls-gateway:<service>"`); the servers then don't inject one. Its
+configuration is in `${NOMAD_SECRETS_DIR}/envoy/bootstrap.json`.
+
+### How the client configures Envoy
+
+The client writes Envoy's configuration as files in `secrets/envoy` of the Envoy task (file-based xDS): a
+static bootstrap whose listeners and clusters come from files, one endpoint file per upstream, and the
+certificate, key and trust bundle as SDS files. It replaces a file atomically and only when its content
+changes, and Envoy reloads it. Once a second, and right after an intention change, the client renders the
+configuration from the intentions of the namespace and the healthy instances of the upstreams, which it
+follows with blocking queries. The first configuration waits up to 10 seconds for the servers; until
+intentions are known, every inbound connection is denied. Envoy keeps its last configuration when the
+client restarts.
+
+## Cross-region gateway
+
+Each region that offers services to other regions runs a gateway: a group with a service in `gateway` mode.
+
+```hcl
+job "mtls-gateway" {
+  type = "system"          # or a service job with a few instances
+
+  group "gateway" {
+    network {
+      mode = "bridge"
+      port "mtls" {
+        static = 8443
+        to     = 8443
+      }
+    }
+
+    service {
+      name     = "mtls-gateway"   # the name upstreams look for by default
+      port     = "mtls"
+      provider = "nomad"
+
+      mtls {
+        mode = "gateway"
+      }
+    }
+  }
+}
+```
+
+The `mtls-gateway` pack of the [Norca pack registry](https://github.com/bacanoo-io/norca-registry/blob/main/packs/mtls-gateway/README.md)
+renders this job with its options (system or service job, port, host network, placement, an Envoy task of its own):
+`norca pack run mtls-gateway --registry=norca --region=<region>`.
+
+Run it in the `default` namespace. The servers inject the Envoy task `mtls-gateway-<service>` (host networking
+is supported as well). The gateway listens on the service port, reads the SNI name of each TLS connection and
+forwards the connection, without terminating it, to a healthy instance of the mtls service
+`<service>.service.<namespace>.<region>.nomad` of its region (registrations with `norca-mtls` = `app` or
+`sidecar`, of every namespace). Connections with any other name are closed. mTLS stays end to end between the
+two sidecars; the intentions of the destination region decide.
+
+```mermaid
+sequenceDiagram
+  participant P as probe sidecar (eu-2)
+  participant G as mtls-gateway (eu-1)
+  participant S as test-api sidecar (eu-1)
+  P->>P: resolve gateway service of eu-1 (region forwarding)
+  P->>G: TLS ClientHello, SNI test-api.service.apps.eu-1.nomad
+  G->>G: read SNI, pick a healthy test-api instance
+  G->>S: forward the TLS stream unterminated
+  P-->>S: mTLS handshake end to end
+  S->>S: check the eu-1 intentions for probe
+  S-->>P: connection allowed or closed
+```
+
+An upstream with `region = "<other region>"` connects to the instances of the gateway service of that region
+(`gateway = "<name>"` selects another gateway service of its `default` namespace). The servers of the two
+regions must be federated, the regions must share the trust domain or trust each other's roots
+(`server { mtls { federation = true } }`), and the nodes must reach the gateway port of the other region
+(for example over the VPN between the clouds).
+
+With ACLs enabled, the client reads the catalog of another region with the token of its `dns` block
+(`client { dns { token = "..." } }`), which must be valid in every region (a global token with `read-job` on
+the namespaces of the gateways); without it, the node identity is used, which other regions don't accept.
+
+The [multi-region example](/docs/getting-started/examples/04-multi-region) runs this setup: a gateway in
+both regions, `test-api` in `eu-1` and a probe in `eu-2` with the upstream below, and the intention created
+in `eu-1`.
+
+```hcl
+upstream "test-api" {
+  service    = "test-api"
+  namespace  = "apps"
+  region     = "eu-1"         # through the gateway of eu-1
+  gateway    = "mtls-gateway" # the default gateway service name
+  local_port = 9001
+}
+```
+
+```shell
+norca service intention create -region eu-1 -namespace apps probe test-api
+```
+
+## Limits
+
+- TCP only: no HTTP routing, retries or L7 intentions.
+- One sidecar per sidecar mode service; all of them share the network namespace of the group, so the
+  `local_port` values of a group must differ.
+- Sidecar and gateway modes are only supported on group services with exactly one network.
+- The gateway forwards to every mtls service of its region; intentions protect the services.
+- Envoy's admin interface is disabled.
+
+## Reference
+
+- Job specification: [`mtls` block](/docs/job-specification/mtls).
+- Agent configuration: [`server { mtls }`](/docs/configuration/mtls), [`client { dns { token } }`](/docs/configuration/dns).
+- CLI: [`norca service intention`](/docs/commands/service/intention).
+- HTTP API: [service intentions](/docs/api/service-intentions), [mTLS](/docs/api/mtls).

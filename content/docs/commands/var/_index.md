@@ -1,0 +1,63 @@
+---
+title: "Command: var"
+linkTitle: "var"
+description: "The \"var\" command groups subcommands for interacting with Norca variables."
+upstream:
+  path: "website/content/docs/commands/var/index.mdx"
+---
+
+The `var` command is used to interact with Norca [variables].
+
+## Usage
+
+Usage: `norca var <subcommand> [options] [args]`
+
+Run `norca var <subcommand> -h` for help on that subcommand. The following
+subcommands are available:
+
+- [`var init`][init] - Create a variable specification file
+- [`var list`][list] - List variables the user has access to
+- [`var get`][get] - Retrieve a variable
+- [`var put`][put] - Insert or update a variable
+- [`var purge`][purge] - Permanently delete a variable
+
+## Examples
+
+Create or update the variable stored at the path "secret/creds", which contains
+an item named `passcode` with the value `my-long-passcode`.
+
+```shell
+$ norca var put -out=table secret/creds passcode=my-long-passcode
+Successfully created variable "secret/creds"!
+
+Namespace   = default
+Path        = secret/creds
+Create Time = 2022-08-23T11:14:37-04:00
+Check Index = 116
+
+Items
+passcode = my-long-passcode
+```
+
+Update a value:
+```shell
+$ norca var get secret/creds | norca var put -in=json -out=table -v - user=dba
+Reading whole JSON variable specification from stdin
+Successfully updated variable "secret/creds"!
+
+Namespace   = default
+Path        = secret/creds
+Create Time = 2022-08-23T11:14:37-04:00
+Check Index = 116
+
+Items
+passcode = my-long-passcode
+user     = dba
+```
+
+[variables]: /docs/concepts/variables/
+[init]: /docs/commands/var/init/
+[get]: /docs/commands/var/get/
+[list]: /docs/commands/var/list/
+[put]: /docs/commands/var/put/
+[purge]: /docs/commands/var/purge/

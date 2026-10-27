@@ -1,0 +1,59 @@
+---
+title: "System HTTP API"
+linkTitle: "System"
+description: "The /system endpoints are used for system maintenance."
+upstream:
+  path: "website/content/api-docs/system.mdx"
+---
+
+The `/system` endpoints are used to for system maintenance and should not be
+necessary for most users.
+
+## Force GC
+
+This endpoint initializes a garbage collection of jobs, evaluations, allocations, and
+nodes. This is an asynchronous operation.
+
+| Method | Path            | Produces           |
+| ------ | --------------- | ------------------ |
+| `PUT`  | `/v1/system/gc` | `application/json` |
+
+The table below shows this endpoint's support for
+[blocking queries](/docs/api#blocking-queries) and
+[required ACLs](/docs/api#acls).
+
+| Blocking Queries | ACL Required |
+| ---------------- | ------------ |
+| `NO`             | `management` |
+
+### Sample Request
+
+```shell
+$ curl \
+    --request PUT \
+    https://localhost:4646/v1/system/gc
+```
+
+## Reconcile Summaries
+
+This endpoint reconciles the summaries of all registered jobs.
+
+| Method | Path                             | Produces           |
+| ------ | -------------------------------- | ------------------ |
+| `PUT`  | `/v1/system/reconcile/summaries` | `application/json` |
+
+The table below shows this endpoint's support for
+[blocking queries](/docs/api#blocking-queries) and
+[required ACLs](/docs/api#acls).
+
+| Blocking Queries | ACL Required |
+| ---------------- | ------------ |
+| `NO`             | `management` |
+
+### Sample Request
+
+```shell
+$ curl \
+    --request PUT \
+    https://localhost:4646/v1/system/reconcile/summaries
+```

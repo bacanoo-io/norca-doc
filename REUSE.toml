@@ -1,0 +1,59 @@
+version = 1
+
+# Own files of the documentation site: MPL 2.0
+[[annotations]]
+path = ["**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Norca contributors"
+SPDX-License-Identifier = "MPL-2.0"
+
+# Pages adapted from the HashiCorp Nomad v1.6.5 documentation (MPL 2.0). Each
+# such page names its source in the `upstream.path` front matter key; see NOTICE.
+[[annotations]]
+path = [
+  "content/docs/api/**",
+  "content/docs/commands/**",
+  "content/docs/concepts/**",
+  "content/docs/configuration/**",
+  "content/docs/devices/**",
+  "content/docs/drivers/**",
+  "content/docs/features/autoscaler/reference/**",
+  "content/docs/getting-started/production/**",
+  "content/docs/getting-started/windows-service.md",
+  "content/docs/glossary.md",
+  "content/docs/integrations/**",
+  "content/docs/job-specification/**",
+  "content/docs/networking/**",
+  "content/docs/operations/**",
+  "content/docs/other-specifications/**",
+  "content/docs/plugins/**",
+  "content/docs/runtime/**",
+  "content/docs/security/upstream-model.md",
+  "content/docs/upgrade/**",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "HashiCorp, Inc."
+SPDX-License-Identifier = "MPL-2.0"
+
+# UI mockup (moved from the Norca repository): own part MPL 2.0, embedded
+# Tabler CSS and Tabler icons MIT
+[[annotations]]
+path = "static/design/mockups/**"
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 Norca contributors", "codecalm.net Paweł Kuna (Tabler)"]
+SPDX-License-Identifier = "MPL-2.0 AND MIT"
+
+# Theme file copied from Hextra v0.13.0 and modified (MIT)
+[[annotations]]
+path = "layouts/_partials/shortcodes/card.html"
+precedence = "override"
+SPDX-FileCopyrightText = ["2023 Xin (Hextra)", "2026 Norca contributors"]
+SPDX-License-Identifier = "MIT"
+
+# Pages adapted from the Nomad Pack v0.4.2 documentation (MPL 2.0); each names
+# its source in the `origin` front matter key.
+[[annotations]]
+path = ["content/docs/features/packages/functions.md", "content/docs/features/packages/pack.md", "content/docs/features/packages/writing-packs.md"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "HashiCorp, Inc."
+SPDX-License-Identifier = "MPL-2.0"

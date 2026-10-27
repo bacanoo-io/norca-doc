@@ -1,0 +1,24 @@
+---
+title: "trim Function"
+linkTitle: "trim"
+description: "The trim function removes the specified characters from the start and end of a given string."
+upstream:
+  path: "website/content/docs/job-specification/hcl2/functions/string/trim.mdx"
+---
+
+`trim` removes the specified characters from the start and end of the given
+string.
+
+## Examples
+
+```shell
+> trim("?!hello?!", "!?")
+hello
+```
+
+## Related Functions
+
+- [`trimprefix`](/docs/job-specification/hcl2/functions/string/trimprefix/) removes a word from the start of a string.
+- [`trimsuffix`](/docs/job-specification/hcl2/functions/string/trimsuffix/) removes a word from the end of a string.
+- [`trimspace`](/docs/job-specification/hcl2/functions/string/trimspace/) removes all types of whitespace from
+  both the start and the end of a string.
