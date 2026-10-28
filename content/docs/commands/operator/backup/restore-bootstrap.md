@@ -7,9 +7,10 @@ weight: 13
 
 The `operator backup restore-bootstrap` command builds a new cluster from a
 backup, for disaster recovery or a migration to another cloud. The backup is
-read from the S3-compatible store and decrypted on the machine running this
-command, with the age identity of the administrators; neither the identity nor
-the S3 credentials are sent to the cluster.
+read from the S3-compatible store, or from a folder on the machine running
+this command, and decrypted there, with the age identity of the
+administrators; neither the identity nor the S3 credentials are sent to the
+cluster.
 
 Start a single new server first, with the region of the backup in its
 configuration and `bootstrap_expect = 1`, and bootstrap its ACLs if they are
@@ -33,6 +34,15 @@ latest backup. The S3 credentials are read from the environment
 (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`, or `MINIO_ACCESS_KEY` and
 `MINIO_SECRET_KEY`), the shared credentials file or the instance profile.
 
+A backup in a directory of this machine, for example copied from a
+[directory destination](/docs/configuration/backup#destination-parameters), is a
+`file://` URL of the same form: the backup folder
+(`file:///srv/copy/norca/eu-1/2026/10/24/20261024T140000Z-1834567/`) or the
+folder that holds `latest.json` (`file:///srv/copy/norca/eu-1/`). On Windows,
+use `file:///C:/backups/norca/eu-1/`. The `Location` that
+[`operator backup inspect`](/docs/commands/operator/backup/inspect) shows for a
+directory destination has this form. The S3 options don't apply to it.
+
 The region of the backup must match the region of the server; the region
 references of the jobs are not rewritten. The cluster must be new: one server
 and no jobs, unless `-force` is given. A backup taken by a newer Norca version
@@ -41,7 +51,7 @@ than the one of the server is refused.
 ## Usage
 
 ```plaintext
-norca operator backup restore-bootstrap [options] -from <s3 url>
+norca operator backup restore-bootstrap [options] -from <url>
 ```
 
 If ACLs are enabled, this command requires a management token of the new cluster (the snapshot restore needs one).
@@ -112,8 +122,8 @@ precedence when both are set.
   key the backup is encrypted for. Use `-` to read it from standard input. The
   identity is sent to the server only for this request and is never stored.
 
-- `-from=<url>`: The `s3://` URL of the backup folder, or of a destination
-  prefix for the latest backup.
+- `-from=<url>`: The `s3://` or `file://` URL of the backup folder, or of a
+  destination prefix for the latest backup.
 
 - `-endpoint=<url>`: The S3-compatible endpoint, for example
   `https://s3.example.com`. Empty means AWS S3.
@@ -145,6 +155,13 @@ $ export AWS_ACCESS_KEY_ID=norca-backup AWS_SECRET_ACCESS_KEY=<secret key>
 $ norca operator backup restore-bootstrap -age-identity ~/backup-identity.txt \
     -endpoint http://10.0.0.10:9000 -s3-region us-east-1 -force-path-style \
     -from s3://norca-backup/norca/eu-aws/
+```
+
+Restore a backup from a copy of a directory destination's folder:
+
+```shell
+$ norca operator backup restore-bootstrap -age-identity ~/backup-identity.txt \
+    -from file:///srv/copy/norca/eu-1/2026/10/24/20261024T140000Z-1834567/
 ```
 
 See the [disaster recovery runbook](/docs/operations/backup-restore#disaster-recovery-build-a-new-cluster)

@@ -1,7 +1,7 @@
 ---
 title: "backup Block"
 linkTitle: "backup"
-description: "The \"backup\" block configures the scheduled, encrypted backups of a region's state and keyring into S3-compatible stores."
+description: "The \"backup\" block configures the scheduled, encrypted backups of a region's state and keyring into S3-compatible stores and directories."
 ---
 
 **Placement:** `server -> backup`
@@ -9,8 +9,9 @@ description: "The \"backup\" block configures the scheduled, encrypted backups o
 The `backup` block configures the scheduled backups that the leader of a
 region takes of the Raft state and the keyring into one or more
 S3-compatible stores (AWS S3, RustFS, MinIO and other stores with the S3
-API). Every object is encrypted with [age](https://github.com/FiloSottile/age)
-public keys before it leaves the server. See
+API) and directories of the servers' filesystem. Every object is encrypted
+with [age](https://github.com/FiloSottile/age) public keys before it is
+written. See
 [Backup and restore](/docs/features/backup-restore) for the concepts and
 [Backup and restore operations](/docs/operations/backup-restore) for a
 runbook.
@@ -103,9 +104,9 @@ agent does when it starts.
   its approval, between `1m` and `168h`.
 
 - `destination` <code>([Destination](#destination-parameters))</code> - An
-  S3-compatible store, labeled with its name. Can be repeated: every backup is
-  uploaded to all destinations in parallel, and one failing destination does
-  not stop the others.
+  S3-compatible store or a directory, labeled with its name. Can be repeated,
+  and both types can be mixed: every backup is written to all destinations in
+  parallel, and one failing destination does not stop the others.
 
 - `encryption` <code>([Encryption](#encryption-parameters))</code> - The
   client-side encryption of the backups. Required as soon as a destination is
@@ -122,19 +123,70 @@ destination "aws" {
   region = "eu-central-1"
   sse    = "aws:kms"
 }
+
+destination "nfs" {
+  type = "directory"
+  path = "/mnt/norca-backup"
+}
 ```
 
-- `type` `(string: "s3")` - The type of the store. `"s3"` is the only
-  type; it covers AWS S3 and S3-compatible stores.
+The parameters of both types:
+
+- `type` `(string: "s3")` - The type of the destination: `"s3"` for AWS S3
+  and S3-compatible stores, `"directory"` for a directory of the servers'
+  filesystem.
+
+- `prefix` `(string: "norca/${region}")` - The prefix of the backups: the
+  object prefix in the bucket, or the subdirectory below `path`. `${region}`
+  is the only interpolation; it keeps the backups of regions that share a
+  store apart. A directory destination rejects a prefix with `..`.
+
+- `encryption` <code>([Encryption](#encryption-parameters))</code> - Overrides
+  the client-side encryption for this destination, for example a disaster
+  recovery copy encrypted for other recipients.
+
+- `prune` `(bool: true)` - Lets the retention, and `norca operator backup
+  delete`, delete backups on this destination. Turn it off where the servers
+  may only write, and expire the objects with lifecycle rules of the store or
+  a cleanup job of the file server.
+
+#### `type = "directory"`
+
+- `path` `(string: <required>)` - The absolute path of the directory. Norca
+  creates it, and the folders below it, if they don't exist. The backups are
+  in `<path>/<prefix>/<yyyy>/<mm>/<dd>/<backup ID>/`, with `latest.json` in
+  `<path>/<prefix>/`: the same layout as in a bucket.
+
+> [!WARNING]
+> Backups are taken by the leader of the region, and the leader changes. A
+> `directory` destination therefore only works if its `path` is **the same
+> storage on every server of the region**: a shared mount (NFS, SMB, a
+> cluster filesystem) mounted at the same path on every server. A region with
+> a single server can use a local directory. With a separate local directory
+> on each server, every new leader writes its own backups and can't read,
+> restore or prune those of the previous leader. Norca detects it: the new
+> leader logs a warning, browsing and restoring such a backup fail with an
+> error that names this requirement, and the retention keeps its record
+> instead of dropping it.
+
+Every file is written crash-safely: into a temporary file in the target
+folder, which is synced to disk and then renamed; the folder is synced after
+the rename where the operating system supports it (not on Windows). A server
+that crashes in the middle of a backup leaves only temporary files
+(`.<name>.norca-tmp-*`), which the leader removes before its first
+scheduled backup, as it aborts the incomplete multipart uploads of a store.
+Files are created with mode `0600` and folders with `0700`; on Windows they
+inherit the access control list of `path`, so restrict that directory to the
+account of the agent. A directory destination has no download URLs, and it
+takes none of the S3 parameters below: `norca config validate` and the agent
+reject them.
+
+#### `type = "s3"`
 
 - `endpoint` `(string: "")` - The address of the store, as `host[:port]` or a
   URL. An `http://` URL disables TLS. Empty means AWS S3.
 
 - `bucket` `(string: <required>)` - The bucket. Norca never creates it.
-
-- `prefix` `(string: "norca/${region}")` - The object prefix of the
-  backups. `${region}` is the only interpolation; it keeps the backups of
-  regions that share a bucket apart.
 
 - `region` `(string: "")` - The region of the bucket. S3-compatible stores
   usually expect the region they are configured with, for example
@@ -173,14 +225,6 @@ destination "aws" {
   encryption.
 
 - `kms_key` `(string: "")` - The KMS key of `sse = "aws:kms"`.
-
-- `encryption` <code>([Encryption](#encryption-parameters))</code> - Overrides
-  the client-side encryption for this destination, for example a disaster
-  recovery copy encrypted for other recipients.
-
-- `prune` `(bool: true)` - Lets the retention, and `norca operator backup
-  delete`, delete backups on this destination. Turn it off where the servers
-  may only write, and expire the objects with lifecycle rules of the store.
 
 ### `encryption` Parameters
 
@@ -248,6 +292,36 @@ server {
       encryption {
         recipients = ["age1...dr"]
       }
+    }
+
+    encryption {
+      recipients = ["age1...ops", "age1...security"]
+    }
+  }
+}
+```
+
+### A shared directory and an off-site store
+
+A file server mounted at the same path on every server, for fast restores,
+and an S3 store in another site for disasters:
+
+```hcl
+server {
+  backup {
+    enabled  = true
+    interval = "1h"
+
+    destination "nfs" {
+      type = "directory"
+      path = "/mnt/norca-backup" # the same NFS export on every server
+    }
+
+    destination "offsite" {
+      endpoint         = "https://s3.other-site.example.com"
+      bucket           = "norca-backup"
+      force_path_style = true
+      credentials_file = "/etc/norca.d/backup-credentials"
     }
 
     encryption {

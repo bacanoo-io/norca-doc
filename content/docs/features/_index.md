@@ -26,7 +26,7 @@ Only features marked *Available* can be used; the others are being built.
 | Operator framework: custom object kinds and objects, controller SDK, lifecycle (finalizers, deletion modes, garbage collection), ecosystem (operator packs, webhooks, schema migrations, limits, `norca operator init`, `norca object-kind lint`) | Available (phases 1–4, with the web UI pages) | [Operator framework](/docs/features/operator-framework) |
 | Event stream → NATS bridge (one job per region) | Available | [NATS bridge](/docs/features/nats-bridge) |
 | Multiregion deployments (staged rollout, `on_failure`, global tokens, `norca deployment run`) | Available | [Multiregion deployments](/docs/features/multiregion) |
-| Backup and restore: scheduled, age-encrypted backups to S3-compatible stores, browsing and selective restore | Available | [Backup and restore](/docs/features/backup-restore) |
+| Backup and restore: scheduled, age-encrypted backups to S3-compatible stores and shared directories, browsing and selective restore | Available | [Backup and restore](/docs/features/backup-restore) |
 | Backup and restore: full region restore with preview and two-person approval, keyring restore, `restore-bootstrap` | Available | [Backup and restore](/docs/features/backup-restore) |
 | Backup and restore: web UI | Available | [Web UI](/docs/features/web-ui) |
 | Service discovery without Consul: health-based catalog, built-in DNS, Consul-compatible read layer | Available (DNS and the compatibility layer are off by default) | [Service discovery](/docs/features/service-discovery) |

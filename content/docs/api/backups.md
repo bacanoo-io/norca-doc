@@ -86,6 +86,10 @@ The sample is shortened: a backup record also carries `LeaderID`, `KeyIDs`
 (the root keys in its keyring) and `Seals`, and every destination
 `RecipientsFingerprint`, `Duration`, `Error` and `Objects` (`state`,
 `keyring`, `secret_store_key`, each with `Key`, `Size` and `SHA256`). The
+`Location` of a backup folder is an `s3://<bucket>/<key>` URL on an S3
+destination and a `file://` URL of the folder on a directory destination, for
+example `file:///var/backups/norca/norca/eu-1/2026/10/24/20261024T140000Z-1834567/`
+(`file:///C:/...` on Windows). The
 schedule also carries `Interval`, `LastSuccess`, `LastSuccessID`,
 `LastAttempt`, `LastError`, `NextDue` and `Overdue` (the last successful
 backup is older than two intervals).
@@ -380,7 +384,13 @@ request.
 ## Download URL of a Backup Object
 
 This endpoint returns a pre-signed URL of an encrypted backup object, valid
-for 15 minutes.
+for 15 minutes. Only S3 destinations sign URLs: for a backup kept only on
+directory destinations, or with a directory destination named in
+`destination`, the endpoint answers `400 Bad Request` with an error that
+names the file on the servers, for example `download URLs are not available
+for directory destinations; the object is
+file:///var/backups/norca/norca/eu-1/2026/10/24/20261024T140000Z-1834567/state.snap.age
+on the servers`.
 
 | Method | Path                                    | Produces           |
 | ------ | --------------------------------------- | ------------------ |
@@ -394,8 +404,8 @@ for 15 minutes.
 
 - `object` `(string: "state")` - `state`, `keyring` or `manifest`.
 
-- `destination` `(string: "")` - The destination; empty picks the first one the
-  backup was verified on.
+- `destination` `(string: "")` - The destination; empty picks the first S3
+  destination the backup was verified on.
 
 The response has the fields `URL` and `ExpiresAt`.
 

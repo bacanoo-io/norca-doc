@@ -5,11 +5,11 @@ description: "The operator backup command lists, browses and restores the schedu
 ---
 
 The `operator backup` command groups the subcommands for the backups that the
-leader of a region takes into S3-compatible stores, as configured in the
-server's [`backup` block](/docs/configuration/backup). Backups are encrypted
-with age; browsing, comparing and restoring them needs an age identity
-(private key) given with `-age-identity`. The identity is sent to the server
-for the request only and is never stored. See
+leader of a region takes into S3-compatible stores and directories, as
+configured in the server's [`backup` block](/docs/configuration/backup).
+Backups are encrypted with age; browsing, comparing and restoring them needs
+an age identity (private key) given with `-age-identity`. The identity is sent
+to the server for the request only and is never stored. See
 [Backup and restore](/docs/features/backup-restore) for the concepts.
 
 ## Usage
