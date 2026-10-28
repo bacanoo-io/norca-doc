@@ -97,6 +97,7 @@ and `uninstall` work on it.
 | `spec.defaultRef` | The tag or branch to fetch (`latest`) |
 | `spec.syncInterval` | Sync periodically, for example `15m` or `24h` (at least `1m`); empty or `0s` syncs on request only |
 | `spec.trustedKeys` | Public keys of the [signatures](/docs/features/packages/supply-chain); with keys, only packs signed by them can be installed |
+| `spec.authSecret` | `{namespace, path}` of a Variable with the credentials of a private git or OCI source ([private registries](#private-registries)) |
 | `status.phase`, `status.message` | `Ready` or `Error`, with the error of the last sync |
 | `status.lastSyncedAt`, `status.lastGoodSyncAt` | The last sync attempt and the last successful one |
 | `status.packs`, `status.packCount` | The packs found, one entry per version |
@@ -105,6 +106,35 @@ A sync replaces the cache only when it succeeded: after a failed sync the regist
 catalog keeps the packs of the last good sync, and they can still be installed. A server that becomes
 leader fetches the registries again before it serves their packs (the status counts the successful
 syncs in `syncGeneration`, and the cache records the generation it was fetched for).
+
+### Private registries
+
+Private git and OCI sources take their credentials from a [Variable](/docs/concepts/variables):
+
+| Source | Items |
+| --- | --- |
+| OCI (`oci://`) | `username` and `password`, or `token` |
+| git, `https://` | `password` or `token`, and optionally `username` (default `git`) |
+| git, ssh (`ssh://`, `user@host:path`) | `ssh_private_key` and `known_hosts` (the host key of the server) |
+
+```shell
+norca var put -namespace=default registries/ghcr username=bot token=ghp_...
+curl -X POST "$NORCA_ADDR/v1/pack-registry" -H "X-Nomad-Token: $NORCA_TOKEN" -d '{
+  "Name": "internal",
+  "Spec": {"type": "oci", "source": "oci://ghcr.io/example/packs", "authSecret": {"path": "registries/ghcr"}}
+}'
+```
+
+- **Saving needs read access to the Variable**, on every save. Writing registries alone is not enough:
+  otherwise someone could point the source of a registry at a host of their choosing and receive the
+  credentials of others. A sync keeps the saved source and needs no access to the Variable.
+- **Credentials go to the host of the source only.** OCI requests to other hosts (a token service on
+  another host, redirects) carry no credentials, so registries whose token service is elsewhere, such
+  as Docker Hub, can't be used with credentials. git gets the credentials only for the source URL and
+  follows no redirects; ssh checks the host key against `known_hosts`. Git sources with credentials must
+  be `https://` or ssh.
+- The credentials never appear in a URL, the clone, the cache or the status of the registry, and the
+  servers never use credentials of their own environment or docker configuration.
 
 Syncs:
 
@@ -190,10 +220,10 @@ namespace "*" {
 
 ## Limits and status
 
-- Available: cluster registries of the types `git`, `oci`, `dir` and `bundle`, periodic and
+- Available: cluster registries of the types `git`, `oci`, `dir` and `bundle`, private git and OCI
+  sources, periodic and
   NATS-triggered syncs, the catalog, the install form, server-side plan and install, and upgrades of
   releases installed from a cluster registry.
-- Private registries are not supported yet: `spec.authSecret` is accepted but not used.
 - Releases installed with the CLI are upgraded with the CLI (**Edit values** on the release page shows
   their values and the command); upgrading them from the form is planned.
 - The form installs into the region of the UI; multi-region installs and the atomic switch are set with

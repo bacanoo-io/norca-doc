@@ -133,8 +133,7 @@ The complete command list is in the [`norca pack` reference](/docs/commands/pack
   `pack.lock`, variable constraints, rules and schemas, signature enforcement in admission policies,
   cluster pack registries with the catalog and install form of the web UI.
 - `norca pack` renders on the client; the servers render only the packs of cluster pack registries.
-- Cluster registries can't use private sources yet; releases installed with the CLI are upgraded with
-  the CLI.
+- Releases installed with the CLI are upgraded with the CLI.
 - `*.netpol.hcl.tpl` (network rules) is reserved and rejected by the release apply for now.
 - Signatures are key-based cosign signatures; transparency log (Rekor) entries and keyless
   (Sigstore identity) signing are not supported.

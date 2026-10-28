@@ -124,6 +124,13 @@ This endpoint creates or updates a registry and syncs it before it returns.
 - `Spec.trustedKeys` `(array: nil)` - Public keys (PEM) that sign the packs; with keys, packs that
   aren't signed by one of them can't be installed.
 
+- `Spec.authSecret` `(object: nil)` - The Variable with the credentials of a private `git` or `oci`
+  source: `namespace` (default `default`) and `path`. Its items are `username` and `password` (or
+  `token`) for OCI and `https://` git sources, `ssh_private_key` and `known_hosts` for git ssh sources.
+  The token of the request needs `read` on that Variable; without it the request fails with `403`, and
+  a missing Variable or items that don't fit the source with `400`
+  ([private registries](/docs/features/packages/catalog#private-registries)).
+
 ### Sample payload
 
 ```json
