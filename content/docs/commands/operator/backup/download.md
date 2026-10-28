@@ -9,6 +9,12 @@ The `operator backup download` command prints a short-lived (15 minutes)
 pre-signed URL of an encrypted backup object. The object stays encrypted;
 decrypt it with the age CLI and the identity of the backup.
 
+Only S3 destinations sign URLs. Without `-destination` the first S3
+destination the backup was verified on is used. A backup kept only on
+[directory destinations](/docs/configuration/backup#destination-parameters) has no
+download URL: the command fails with an error that names the file on the
+servers, which can be copied directly.
+
 ## Usage
 
 ```plaintext
@@ -80,7 +86,7 @@ precedence when both are set.
 ## Download Options
 
 - `-destination=<name>`: The destination to download from. Defaults to the
-  first one the backup was verified on.
+  first S3 destination the backup was verified on.
 
 - `-object=<name>`: The object: `state` (default), `keyring` or `manifest`.
 
@@ -94,4 +100,11 @@ read:
 $ curl -o state.snap.age "$(norca operator backup download <id>)"
 $ age --decrypt -i ~/backup-identity.txt -o state.snap state.snap.age
 $ norca operator snapshot inspect state.snap
+```
+
+A backup on a directory destination only:
+
+```shell
+$ norca operator backup download -destination nfs <id>
+Error creating the download URL: Unexpected response code: 400 (download URLs are not available for directory destinations; the object is file:///mnt/norca-backup/norca/eu-1/2026/10/24/<id>/state.snap.age on the servers)
 ```

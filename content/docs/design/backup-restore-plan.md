@@ -148,6 +148,7 @@ server {
 - `${region}` in the prefix ensures that the backups of different regions do not get mixed, even if they share a store.
 - The configuration takes effect on reload (SIGHUP), without restarting the server.
 - Azure Blob Storage is not S3-compatible, so this section does not cover it directly; it can be handled with an S3-compatible gateway (for example MinIO) or a later `type = "azure"` destination type.
+- A `type = "directory"` destination writes the same layout below a directory of the server (`path`), with crash-safe writes (temporary file, fsync, rename). Because the leader changes, the directory must be the same shared storage on every server of the region (NFS, SMB, a cluster filesystem), or the region has a single server; a backup that a new leader does not find there is reported with this requirement. It has no pre-signed download URLs.
 
 ## Storage format
 

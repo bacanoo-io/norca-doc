@@ -38,7 +38,8 @@ server {
   [`autoscaler` block](/docs/configuration/autoscaler).
 
 - `backup` - (Norca) Configures the scheduled, encrypted backups of the region
-  into S3-compatible stores. See the [`backup` block](/docs/configuration/backup).
+  into S3-compatible stores and directories. See the
+  [`backup` block](/docs/configuration/backup).
 
 - `bootstrap_expect` `(int: required)` - Specifies the number of server nodes to
   wait for before bootstrapping. It is most common to use the odd-numbered

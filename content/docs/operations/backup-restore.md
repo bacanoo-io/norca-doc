@@ -1,7 +1,7 @@
 ---
 title: "Backup and restore operations"
 linkTitle: "Backup and restore"
-description: "Runbook for the scheduled backups: the store, the age keys, the schedule, restore tests and disaster recovery."
+description: "Runbook for the scheduled backups: the store or shared directory, the age keys, the schedule, restore tests and disaster recovery."
 weight: 1
 ---
 
@@ -19,6 +19,11 @@ reference, and every command under
   is fine for a lab, not for disaster recovery. A second
   [`destination`](/docs/configuration/backup#destination-parameters) in
   another cloud gives a copy that survives the loss of a whole cloud.
+- **A store or a directory.** A destination is an S3-compatible store or a
+  directory of the servers. A directory must be the same storage on every
+  server of the region, because the leader writes the backups and the leader
+  changes: see [Use a shared directory](#use-a-shared-directory). A region with
+  a single server can use a local disk.
 - **Who holds the keys.** Backups are encrypted with age public keys; the
   private keys (identities) are needed to browse and restore. Decide who keeps
   them, offline, and how they are reached in a disaster.
@@ -98,6 +103,74 @@ instead; the servers then read their credentials from the environment.
 > The rustfs pack serves plain HTTP. The backups are encrypted before they
 > leave the servers, and S3 requests are signed, but keep the store on a
 > private network or the VPN.
+
+## Use a shared directory
+
+A [`type = "directory"`](/docs/configuration/backup#destination-parameters)
+destination writes the backups into a directory instead of a bucket, in the
+same layout. Use it with storage that every server of the region mounts at the
+same path, typically an NFS export of a file server:
+
+{{% steps %}}
+
+### Mount the share on every server
+
+```shell
+sudo install -d -m 700 /mnt/norca-backup
+echo 'files.example.com:/export/norca-backup /mnt/norca-backup nfs4 defaults,_netdev 0 0' | sudo tee -a /etc/fstab
+sudo mount /mnt/norca-backup
+```
+
+The user of the agent must be able to write it, with the same user ID on
+every server (or a squashed ID on the file server). Make the agent start after
+the mount (`RequiresMountsFor=/mnt/norca-backup` in a systemd drop-in), so a
+server never writes into the empty mount point.
+
+### Add the destination
+
+```hcl {filename="/etc/norca.d/norca.hcl"}
+server {
+  backup {
+    destination "nfs" {
+      type = "directory"
+      path = "/mnt/norca-backup"
+    }
+  }
+}
+```
+
+### Check it from every server
+
+Take a backup, restart the agent of the leader so another server takes over,
+and browse the same backup from the new leader:
+
+```shell
+norca operator backup save -label note=shared-check
+norca operator raft list-peers                        # which server is the leader
+sudo systemctl restart norca                          # on the leader
+norca operator backup contents -age-identity ~/backup-identity.txt -type namespaces <backup ID>
+```
+
+A server that does not see the directory of the previous leader logs
+`backup missing on a directory destination` when it becomes the leader, and
+the `contents` command fails with an error that names the shared storage
+requirement. Fix the mounts; the retention keeps the records of the missing
+backups until then (`norca operator backup delete` drops such a record by
+hand).
+
+{{% /steps %}}
+
+The directory is in the same site as the servers. For disaster recovery, add
+an S3 destination in another site, or copy the folders off the file server,
+for example nightly:
+
+```shell
+rsync -a --exclude '.*.norca-tmp-*' /mnt/norca-backup/norca/ backup-host:/srv/norca-copy/
+```
+
+Only folders with a `manifest.json` are complete backups. There are no
+download URLs for a directory: `norca operator backup download` names the file
+instead, and the files can be copied directly.
 
 ## Create the age keys
 
@@ -332,8 +405,9 @@ it the same way to undo the full restore.
 
 ## Disaster recovery: build a new cluster
 
-When a region is lost, build it again from a backup in its store. This works
-in another cloud too, as long as the store is reachable.
+When a region is lost, build it again from a backup in its store, or from a
+copy of the folder of a directory destination. This works in another cloud
+too, as long as the store or the copy is reachable.
 
 {{% steps %}}
 
@@ -366,8 +440,17 @@ norca operator backup restore-bootstrap -age-identity ~/backup-identity.txt \
   -from s3://norca-backup/norca/eu-1/
 ```
 
-`-from` with the prefix of a destination restores the latest backup; give the
-folder of a backup (`.../2026/10/24/<backup ID>/`) for an older one. The
+From a copy of a directory destination on the administrator's machine, give
+its folder as a `file://` URL; the S3 options and credentials are not needed:
+
+```shell
+norca operator backup restore-bootstrap -age-identity ~/backup-identity.txt \
+  -from file:///srv/norca-copy/eu-1/
+```
+
+`-from` with the prefix of a destination (the folder with `latest.json`)
+restores the latest backup; give the folder of a backup
+(`.../2026/10/24/<backup ID>/`) for an older one. The
 command checks that the cluster is new (one server, no jobs), that the region
 matches and that the backup was not taken by a newer Norca version, downloads
 and verifies everything before it touches the cluster, then restores the
@@ -404,6 +487,9 @@ curl -o state.snap.age "$(norca operator backup download <backup ID>)"
 age --decrypt -i ~/backup-identity.txt -o state.snap state.snap.age
 norca operator snapshot inspect state.snap
 ```
+
+On a directory destination, copy `state.snap.age` from the folder that
+`norca operator backup inspect` shows instead.
 
 [`norca operator snapshot restore`](/docs/commands/operator/snapshot/restore)
 restores such a snapshot without its keys; Variables, workload identities and

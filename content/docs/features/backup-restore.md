@@ -1,7 +1,7 @@
 ---
 title: "Backup and restore"
 linkTitle: "Backup and restore"
-description: "Scheduled, age-encrypted backups of every region to S3-compatible stores, with browsing, selective and full restore, and building a new cluster from a backup."
+description: "Scheduled, age-encrypted backups of every region to S3-compatible stores and shared directories, with browsing, selective and full restore, and building a new cluster from a backup."
 weight: 45
 ---
 
@@ -16,12 +16,14 @@ encrypt Variables and sign workload identities are kept on the disk of every
 server, outside Raft.
 
 Norca backs up every region on a schedule, from its leader, into one or more
-S3-compatible stores: AWS S3, or a store with the S3 API such as RustFS (the
-`rustfs` pack of the [Norca pack registry](/docs/features/packages/registry)).
-A backup holds the Raft snapshot, the keyring and the key of the built-in
-secret store. Every object is encrypted with
-[age](https://github.com/FiloSottile/age) public keys before it leaves the
-server; the private keys stay with the administrators.
+destinations: S3-compatible stores (AWS S3, or a store with the S3 API such as
+RustFS, the `rustfs` pack of the
+[Norca pack registry](/docs/features/packages/registry)), and directories of
+the servers' filesystem, such as a file server mounted on every server. A
+backup holds the Raft snapshot, the keyring and the key of the built-in secret
+store. Every object is encrypted with
+[age](https://github.com/FiloSottile/age) public keys before it is written;
+the private keys stay with the administrators.
 
 Backups can be listed, browsed and compared with the current state, in the CLI
 and the [web UI](/docs/features/web-ui). Restores come in three strengths:
@@ -55,6 +57,7 @@ flowchart LR
   L -- "3: encrypt for the<br/>age recipients" --> ENC["age"]
   ENC -- "4: multipart upload,<br/>verify, manifest" --> S3A[("S3 store<br/>same cloud")]
   ENC -- "4: multipart upload,<br/>verify, manifest" --> S3B[("S3-compatible store<br/>other cloud")]
+  ENC -- "4: write, sync, rename,<br/>verify, manifest" --> DIR[("Shared directory<br/>NFS, SMB")]
   L -- "5: backup record" --> RAFT
 ```
 
@@ -66,11 +69,12 @@ flowchart LR
 3. Each object is streamed through age encryption for the
    [`recipients`](/docs/configuration/backup#encryption-parameters) of the
    destination. The servers only know the public keys.
-4. The objects are uploaded to every destination in parallel with multipart
-   uploads, so the memory used does not depend on the size of the snapshot.
-   Each upload is verified (its size, and with `verify_checksum` its SHA-256),
-   then the manifest is written last: without a manifest, an object set is not
-   a backup.
+4. The objects are uploaded to every destination in parallel, with multipart
+   uploads to a store and crash-safe writes to a directory (a temporary file,
+   synced and renamed), so the memory used does not depend on the size of the
+   snapshot. Each object is verified (its size, and with `verify_checksum` its
+   SHA-256), then the manifest is written last: without a manifest, an object
+   set is not a backup.
 5. The record of the backup (ID, Raft index, destinations, object counts) is
    written to Raft, and the retention deletes expired backups.
 
@@ -78,10 +82,30 @@ A backup is `complete` when it was verified on every destination, `partial`
 when on at least one, and `failed` otherwise. All servers of the region must
 run a Norca version that supports backups.
 
+### Directory destinations and leader changes
+
+A [`type = "directory"`](/docs/configuration/backup#destination-parameters)
+destination writes the same files, in the same layout, below a directory of
+the server. Because the leader writes the backups and the leader changes, the
+directory must be **the same storage on every server of the region**: a file
+server (NFS, SMB) or a cluster filesystem mounted at the same path everywhere.
+A region with a single server can use a local disk. With a separate local
+directory on each server, a new leader neither sees nor prunes the backups of
+the previous one. Norca detects this: the new leader logs a warning when the
+newest backup recorded on the destination is missing, browsing and restoring
+such a backup fail with an error that names the requirement, and the retention
+keeps the record instead of dropping it silently.
+
+A directory is fast to restore from, but it is in the same site as the
+servers: combine it with an S3 store in another site, or copy the folders off
+the file server, for disaster recovery. Directories have no pre-signed
+download URLs; administrators copy the files directly.
+
 ### Storage format
 
 Every destination holds the backups of a region under its prefix
-(`norca/${region}` by default), one folder per backup:
+(`norca/${region}` by default; below `path` for a directory), one folder per
+backup:
 
 ```plaintext
 norca/eu-1/
@@ -139,7 +163,7 @@ sequenceDiagram
   participant A as Administrator 1
   participant B as Administrator 2
   participant L as Leader
-  participant S as S3 store
+  participant S as Destination
   A->>L: restore -full -dry-run
   L->>S: download, decrypt, compare
   L-->>A: preview
@@ -178,13 +202,13 @@ authoritative region.
 [`operator backup restore-bootstrap`](/docs/commands/operator/backup/restore-bootstrap)
 runs on an administrator's machine against the first server of a new cluster.
 It reads the backup from the store with the administrator's S3 credentials,
-decrypts it locally, restores the root keys, then the Raft state, and re-wraps
+or from a folder copied from a directory destination, decrypts it locally, restores the root keys, then the Raft state, and re-wraps
 the key of the secret store with the seal of the new server. The other new
 servers then join and replicate state and keys from the first one.
 
 ```mermaid
 flowchart TB
-  B[("Encrypted backup<br/>in the S3 store")]
+  B[("Encrypted backup<br/>in a store or directory")]
   B --> SEL["Selective restore<br/>jobs, Variables, secrets,<br/>namespaces, ACL objects"]
   B --> FULL["Full region restore<br/>preview, confirm,<br/>second approval"]
   B --> BOOT["restore-bootstrap<br/>new cluster"]
@@ -214,6 +238,37 @@ The age identity is entered on the page and kept in the memory of the browser
 tab only.
 
 ## Example
+
+A region backs up hourly into a directory on a file server, mounted at the
+same path on every server, and into a RustFS store in another site:
+
+```hcl {filename="norca.hcl"}
+server {
+  backup {
+    enabled  = true
+    schedule = "0 * * * *" # hourly, cron syntax, UTC
+
+    destination "nfs" {
+      type = "directory"
+      path = "/mnt/norca-backup" # the same NFS export on every server
+    }
+
+    destination "rustfs" {
+      type             = "s3"
+      endpoint         = "https://rustfs.other-site.example.com"
+      bucket           = "norca-backup"
+      region           = "us-east-1"
+      force_path_style = true
+      credentials_file = "/etc/norca.d/backup-credentials"
+    }
+
+    encryption {
+      # The public key printed by: age-keygen -o backup-identity.txt
+      recipients = ["age1..."]
+    }
+  }
+}
+```
 
 The [single node example](/docs/getting-started/examples/02-single-node)
 backs up hourly into a RustFS store deployed with the `rustfs` pack:
@@ -281,7 +336,7 @@ The [`backup` block](/docs/configuration/backup) of the server configuration:
 | `browse_cache_ttl` | duration | `"5m"` | How long a decrypted backup stays loaded |
 | `require_approval` | bool | `true` | Two-person approval of full restores; can't be disabled |
 | `approval_ttl` | duration | `"1h"` | How long a full restore request waits |
-| `destination "<name>"` | block | | S3-compatible store: `endpoint`, `bucket`, `prefix`, `region`, `force_path_style`, credentials, `ca_file`, `sse`, `kms_key`, `encryption`, `prune` |
+| `destination "<name>"` | block | | `type = "s3"`: `endpoint`, `bucket`, `prefix`, `region`, `force_path_style`, credentials, `ca_file`, `sse`, `kms_key`, `encryption`, `prune`; `type = "directory"`: `path`, `prefix`, `encryption`, `prune` |
 | `encryption` | block | | `recipients` (age public keys) |
 | `retention` | block | | `keep_hourly` 24, `keep_daily` 14, `keep_weekly` 8, `keep_monthly` 12, `min_keep` 3, `keep_failed` 10 |
 
@@ -326,8 +381,12 @@ destination); see [Monitoring](/docs/operations/monitoring#backups).
 - Available: scheduled backups, manual backups, browsing and comparison,
   selective restore, full region restore with two-person approval, keyring
   restore, `restore-bootstrap`, and the web UI pages.
-- `type = "s3"` is the only destination type; Azure Blob Storage and other
-  stores without the S3 API need an S3-compatible gateway.
+- The destination types are `"s3"` and `"directory"`; Azure Blob Storage and
+  other stores without the S3 API need an S3-compatible gateway or a mounted
+  share.
+- A directory destination must be shared storage mounted at the same path on
+  every server of the region (or the region has a single server); Norca does
+  not replicate it between servers. It has no download URLs.
 - `age` is the only encryption mode. The `kms` mode of the design (envelope
   encryption with a cloud KMS, so the servers could decrypt for browsing
   without an administrator) is reserved and rejected by the configuration.
@@ -335,7 +394,8 @@ destination); see [Monitoring](/docs/operations/monitoring#backups).
   in time across the federation.
 - Server configuration, the local state of clients, allocation directories,
   CSI volume contents and the state of Consul or Vault are not backed up.
-- Norca never creates the bucket.
+- Norca never creates the bucket. It creates the directory of a directory
+  destination, but not the mount behind it.
 
 ## Design
 
