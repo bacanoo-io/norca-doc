@@ -1,7 +1,7 @@
 ---
 title: "The Norca pack registry"
 linkTitle: "Pack registry"
-weight: 6
+weight: 7
 description: "The public pack registry of Norca (bacanoo-io/norca-registry): the operations packs of a Norca cluster, how to add it pinned to a release tag, and what each pack deploys."
 ---
 
@@ -11,7 +11,8 @@ cross-region mTLS gateway, the backup store, the git server and image registry, 
 observability with OpenObserve and the OpenTelemetry Collector, optional Consul) and the reference
 operator pack. `norca pack` uses it like any git pack registry. Its packs use Norca's
 [extended package format](/docs/features/packages/releases#extended-package-format): object kinds, ACL
-and admission policies next to jobs, and a JSON Schema for the variables.
+and admission policies next to jobs, and `validation` and `rule` blocks for the variables, which also
+build their install form in the [web UI catalog](/docs/features/packages/catalog).
 
 The packs and the documentation of the registry are licensed under the Mozilla Public License 2.0.
 The software the packs install keeps its own license. The packs **reference** that software (images,
@@ -60,6 +61,16 @@ From a checkout, the packs can also be used by path, without a registry:
 git clone https://github.com/bacanoo-io/norca-registry
 norca pack run ./norca-registry/packs/nats -f nats.hcl
 ```
+
+### On a cluster
+
+The registry can also be a [cluster pack registry](/docs/features/packages/catalog): in the web UI,
+**Packages → Registries → Add registry**, type *Git repository*, source
+`https://github.com/bacanoo-io/norca-registry`, reference a release tag, and a sync interval. Its packs
+then appear under **Catalog** and are installed from their form. A release of the registry can notify
+the clusters over NATS so that they sync at once: the `notify` job of its release workflow publishes a
+push notice when the repository variable `NATS_NOTIFY` is `true` (secrets `NATS_URL` and `NATS_CREDS`),
+and the [NATS bridges](/docs/features/nats-bridge#pack-registry-syncs) with `-sync-pushes` sync.
 
 Example variable files for the packs are in `examples/<pack>/` of the registry; the
 [deployment examples](/docs/getting-started/examples) use the packs of this registry. Pinning,
@@ -254,6 +265,7 @@ lame duck shutdown. NATS is Apache-2.0; the pack references the official `nats` 
 | `tls_enabled`, `auth_mode` | `false`, `none` | `auth_mode`: `none`, `token`, `nkey`, `config`, `userpass` |
 | `users` | `[]` | `auth_mode = "userpass"`: users, accounts, permissions; passwords from the secret store |
 | `bridge_enabled` | `false` | deploys the bridge |
+| `bridge_sync_pushes`, `bridge_sync_regions` | `false`, `false` | the bridge syncs the [cluster pack registries](/docs/features/packages/catalog) on push notices / on the registry events of other regions ([pack registry syncs](/docs/features/nats-bridge#pack-registry-syncs)) |
 | `metrics_enabled` | `false` | the Prometheus exporter |
 
 ```shell
@@ -410,9 +422,8 @@ For signed packs and air-gapped clusters, push the packs of a tag into an intern
 ```plaintext
 README.md, LICENSE, REUSE.toml
 packs/<name>/            one pack per directory (the layout "norca pack registry add" expects)
-  metadata.hcl           name, version, requirements, variables_schema
-  variables.hcl          variables with descriptions and defaults
-  values.schema.json     JSON Schema of the variable values (optional)
+  metadata.hcl           name, version, requirements
+  variables.hcl          variables with descriptions, defaults, validation blocks and rules
   templates/*.nomad.tpl  jobs; *.kind.hcl.tpl, *.acl.hcl.tpl, ... other resources
   templates/_*.tpl       helper templates
   outputs.tpl            text printed after a deployment
@@ -428,8 +439,9 @@ Every commit needs a DCO sign-off (`git commit -s`).
 
 - Write packs as described in [Writing packs](/docs/features/packages/writing-packs) and the
   [extended package format](/docs/features/packages/releases#extended-package-format): `[[ ]]`
-  delimiters, `var "name" .` / `vars .` to read variables, a `values.schema.json` for anything the
-  variable types can't express.
+  delimiters, `var "name" .` / `vars .` to read variables, `validation` and `rule` blocks in
+  `variables.hcl` for anything the variable types can't express
+  ([form and constraints](/docs/features/packages/writing-packs#form-and-constraints)).
 - New files carry the SPDX header `SPDX-FileCopyrightText: 2026 Norca contributors` /
   `SPDX-License-Identifier: MPL-2.0`; the packs are MPL-2.0.
 - Packs reference third-party software by name, tag and optionally digest; they never include it.
@@ -446,6 +458,6 @@ Every commit needs a DCO sign-off (`git commit -s`).
   ```
 
   The script runs `norca pack fmt -check`, renders every pack with its defaults and every file in
-  `examples/<pack>/` (which also checks the variables schema), and validates the rendered jobs with
+  `examples/<pack>/` (which also checks the validation blocks and rules), and validates the rendered jobs with
   `norca job validate` without an agent. Run `norca pack plan` against a test cluster for what local
   validation can't check (drivers, the tasks the servers inject).

@@ -33,7 +33,7 @@ The previous UI stays available at **`/ui/legacy`** for one release.
 | Menu group | Pages |
 | --- | --- |
 | Overview | **Dashboard**: the federation strip (one column per region), health numbers, warnings with what to do, deployments in progress, the latest events |
-| Workloads | Jobs (with allocations, deployments, versions, scaling, services, placement and events per job), Packages (pack releases), Objects (custom objects of the operator framework), Deployments (including multiregion deployments) |
+| Workloads | Jobs (with allocations, deployments, versions, scaling, services, placement and events per job), Packages (pack releases, the catalog of the cluster pack registries with install and upgrade forms, the registries), Objects (custom objects of the operator framework), Deployments (including multiregion deployments) |
 | Services and networking | Services (catalog with per-instance health), Intentions and rules (service intentions and network rules) |
 | Capacity | Clients, Topology, Storage, Quotas, Scaling |
 | Configuration | Variables, Secrets, Admission policies, Type definitions |

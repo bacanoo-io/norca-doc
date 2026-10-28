@@ -8,6 +8,10 @@ The `/release` endpoints manage [pack releases](/docs/features/packages/releases
 upgrades of rendered pack resources applied by the servers, with a revision history. `norca pack` uses
 them; the Go client is `client.Releases()` in `github.com/hashicorp/nomad/api`.
 
+Packs of [cluster pack registries](/docs/features/packages/catalog) are rendered by the servers and
+installed with `plan-pack` and `deploy-pack`, described in the
+[Pack registries HTTP API](/docs/api/pack-registries#plan-or-install-a-pack).
+
 Releases are custom objects of the built-in kind `packs.norca.io/Release` in a namespace, with
 revisions of the kind `packs.norca.io/ReleaseRevision`. They can be read with the object API too, but
 only these endpoints write them. All endpoints are bound to a namespace (`namespace` query parameter

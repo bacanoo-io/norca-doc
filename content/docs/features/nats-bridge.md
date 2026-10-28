@@ -1,7 +1,7 @@
 ---
 title: "Event stream to NATS bridge"
 linkTitle: "NATS bridge"
-description: "norca-natsbridge forwards the event stream of a region to NATS subjects, one job per region, with checkpoints, leader election and at-least-once delivery."
+description: "norca-natsbridge forwards the event stream of a region to NATS subjects, one job per region, with checkpoints, leader election and at-least-once delivery, and can sync the cluster pack registries on NATS messages."
 weight: 47
 ---
 
@@ -24,7 +24,9 @@ per region and, with `bridge_enabled = true`, the bridge next to it.
 NATS is used only as an event and notification bridge. Nothing in Norca reads
 from NATS: scheduling, deployments and [multiregion rollouts](/docs/features/multiregion)
 run over Norca's own RPC. A NATS outage delays the events but affects neither
-scheduling nor deployments.
+scheduling nor deployments. The optional inbound mode
+([pack registry syncs](#pack-registry-syncs)) only makes the bridge call the
+Norca API sooner; the registries sync on their own interval without it.
 
 ## How it works
 
@@ -267,6 +269,66 @@ The bridge reads its own NATS credentials from `nomad/jobs/<bridge_job_name>`
 [nats pack README](https://github.com/bacanoo-io/norca-registry/blob/main/packs/nats/README.md)
 for users and accounts, storage and the supercluster.
 
+## Pack registry syncs
+
+The [cluster pack registries](/docs/features/packages/catalog) sync when they
+are saved, on request and on their sync interval. With the inbound mode, NATS
+messages make the bridge sync them sooner, through the API
+(`POST /v1/pack-registry/:name/sync`). The bridge instances of a region
+subscribe in the queue group `norca-natsbridge-sync.<region>`, so one of them
+handles each message, and `-sync-cooldown` (default `1m`) limits the syncs a
+registry gets from NATS.
+
+**Push notices** (`-sync-pushes`). Whoever pushes packs, typically the release
+workflow of a pack registry, publishes a notice on `<prefix>.packs.pushed` (the
+region token `packs` is reserved). The bridge syncs the cluster registries of
+that source, compared without the scheme case, a trailing `/` or `.git`, or the
+registry the notice names:
+
+```shell
+norca-natsbridge notify-push -nats-url "$NATS_URL" -nats-creds ci.creds \
+  -source https://github.com/bacanoo-io/norca-registry
+```
+
+```json
+{"Source":"https://github.com/bacanoo-io/norca-registry","Registry":"","Pack":"","Version":"","Digest":""}
+```
+
+`notify-push` takes the NATS flags of the bridge, `-subject-prefix`, `-source`
+or `-registry`, and the informational `-pack`, `-version` and `-digest`. The
+release workflow of the [Norca pack registry](/docs/features/packages/registry#on-a-cluster)
+runs it when the repository variable `NATS_NOTIFY` is `true`.
+
+**Regions** (`-sync-regions`). The bridge also forwards the events of the
+registries (the topic filter `CustomObject:packs.norca.io/Registry` is added to
+`-topics`) and subscribes to `<prefix>.*.CustomObject`. When the registry of
+another region found other packs (versions and digests) than the local registry
+of the same name, type and source, the bridge syncs the local one, so a new pack
+version appears in every region at about the same time. A registry of the same
+name with another source is left alone.
+
+```mermaid
+flowchart LR
+  CI["CI: notify-push"] --> N[("NATS")]
+  B1["natsbridge eu-1<br/>-sync-pushes -sync-regions"] -- "sync" --> S1["Norca eu-1"]
+  S1 -- "Registry event" --> B1 -- "nomad.eu-1.CustomObject" --> N
+  N -- "packs.pushed" --> B1
+  N -- "packs.pushed,<br/>nomad.eu-1.CustomObject" --> B2["natsbridge us-1"] -- "sync" --> S2["Norca us-1"]
+```
+
+The token of the bridge needs `read` and `write` on the registries, in the
+`namespace "*"` block of its ACL policy:
+
+```hcl
+namespace "*" {
+  capabilities = ["read-job"]
+
+  object "packs.norca.io/Registry" {
+    capabilities = ["read", "write"]
+  }
+}
+```
+
 ## Configuration reference
 
 The bridge is configured with flags; most have an environment variable as the
@@ -302,6 +364,9 @@ default.
 | `-identity` | | `NOMAD_ALLOC_ID` | Identity of this instance |
 | `-metrics-addr` | `NATSBRIDGE_METRICS_ADDR` | `127.0.0.1:9464` | `/metrics` and `/healthz`; empty disables |
 | `-log-level` | `NATSBRIDGE_LOG_LEVEL` | `info` | `debug`, `info`, `warn` or `error` |
+| `-sync-pushes` | `NATSBRIDGE_SYNC_PUSHES` | `false` | Sync pack registries on push notices ([pack registry syncs](#pack-registry-syncs)) |
+| `-sync-regions` | `NATSBRIDGE_SYNC_REGIONS` | `false` | Publish the pack registry events, sync on those of other regions |
+| `-sync-cooldown` | `NATSBRIDGE_SYNC_COOLDOWN` | `1m` | Minimum time between two syncs of a registry triggered from NATS |
 
 The default topics are those a workload identity with `read-job` and node read
 may subscribe to. `ACLToken`, `ACLPolicy`, `NodePool` and `*` need a
@@ -312,8 +377,11 @@ The `nats` pack variables of the bridge: `bridge_enabled` (`false`),
 `bridge_job_name` (`natsbridge`), `bridge_count` (`2`), `bridge_driver`
 (`raw_exec`; `exec` or `docker` with `bridge_image`), `bridge_binary`,
 `bridge_artifact_url`, `bridge_subject_prefix` (`nomad`), `bridge_topics`,
-`bridge_jetstream_stream` (`NORCA_EVENTS_<region>`), `bridge_resources`, and
-`bridge_nkey` for `auth_mode = "userpass"`.
+`bridge_jetstream_stream` (`NORCA_EVENTS_<region>`), `bridge_resources`,
+`bridge_nkey` for `auth_mode = "userpass"`, and `bridge_sync_pushes` and
+`bridge_sync_regions` (`false`) for the [pack registry syncs](#pack-registry-syncs):
+the pack then gives the bridge's NATS user the subscribe permissions and prints
+the ACL policy with the registry permissions.
 
 ### Metrics
 
@@ -335,7 +403,7 @@ The `nats` pack variables of the bridge: `bridge_enabled` (`false`),
 
 ## CLI and API
 
-The bridge has no CLI of its own besides its flags. It uses:
+The bridge has no CLI of its own besides its flags and `notify-push`. It uses:
 
 | What | Interface |
 | --- | --- |
@@ -343,6 +411,8 @@ The bridge has no CLI of its own besides its flags. It uses:
 | Checkpoint and lease | Variables, through the task API socket |
 | Deploy | `norca job run natsbridge.nomad.hcl`, or `norca pack run nats --var bridge_enabled=true` |
 | Stop gracefully | `SIGINT` or `SIGTERM`: the checkpoint is stored, the lease released |
+| Sync pack registries | `POST /v1/pack-registry/:name/sync` ([Pack registries HTTP API](/docs/api/pack-registries)) |
+| Publish a push notice | `norca-natsbridge notify-push -source <url>` |
 
 ## Limits and status
 
@@ -350,6 +420,7 @@ The bridge has no CLI of its own besides its flags. It uses:
   `nomad/natsbridge` module of the Norca repository; no image is published.
   A built-in output in the agent may follow later.
 - Delivery is at-least-once; consumers of core NATS must deduplicate.
+- The inbound mode syncs pack registries only.
 - The bridge's own checkpoint and lease writes are Variables events; when the
   `Variables` topic is forwarded, they are skipped.
 - After a restore of the cluster from a snapshot taken before the checkpoint,

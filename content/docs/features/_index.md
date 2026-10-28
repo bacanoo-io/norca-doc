@@ -24,7 +24,7 @@ Only features marked *Available* can be used; the others are being built.
 | Health check roles (startup, readiness, liveness) | Available | [Health check roles](/docs/features/health-check-roles) |
 | Network rules, levels A and B (`NetworkPolicy`, cluster-level `AdminNetworkPolicy` with explicit deny, nftables in the allocation's network namespace) | Available | [Network rules](/docs/features/network-rules) |
 | Operator framework: custom object kinds and objects, controller SDK, lifecycle (finalizers, deletion modes, garbage collection), ecosystem (operator packs, webhooks, schema migrations, limits, `norca operator init`, `norca object-kind lint`) | Available (phases 1–4, with the web UI pages) | [Operator framework](/docs/features/operator-framework) |
-| Event stream → NATS bridge (one job per region) | Available | [NATS bridge](/docs/features/nats-bridge) |
+| Event stream → NATS bridge (one job per region), pack registry syncs from NATS | Available | [NATS bridge](/docs/features/nats-bridge) |
 | Multiregion deployments (staged rollout, `on_failure`, global tokens, `norca deployment run`) | Available | [Multiregion deployments](/docs/features/multiregion) |
 | Backup and restore: scheduled, age-encrypted backups to S3-compatible stores and shared directories, browsing and selective restore | Available | [Backup and restore](/docs/features/backup-restore) |
 | Backup and restore: full region restore with preview and two-person approval, keyring restore, `restore-bootstrap` | Available | [Backup and restore](/docs/features/backup-restore) |
@@ -37,7 +37,8 @@ Only features marked *Available* can be used; the others are being built.
 | Package management: Nomad Pack built in (`norca pack`) | Available | [Packages](/docs/features/packages) |
 | Norca pack registry (`nats`, `mtls-gateway`, `rustfs`, `consul`, `loadbalancer-operator`, `openobserve`, `otel-collector`, `postgres`, `forgejo`) | Available | [Pack registry](/docs/features/packages/registry) |
 | Package management: OCI registries, signing and trust policies, offline bundles, `pack.lock` | Available | [Supply chain](/docs/features/packages/supply-chain) |
-| Package management: server-side releases, signature enforcement in admission, variable schemas, multi-region installs | Available | [Releases](/docs/features/packages/releases) |
+| Package management: server-side releases, signature enforcement in admission, variable constraints, rules and schemas, multi-region installs | Available | [Releases](/docs/features/packages/releases) |
+| Package management: cluster pack registries, catalog and install form in the web UI, server-side render (private registries not yet) | Available | [Catalog and install form](/docs/features/packages/catalog) |
 | Embedded secret store: sealed keyring, versioned and audited secrets, `secret` block, Vault compatibility without a Vault | In progress (phases 0–4 available) | [Secret store](/docs/features/secrets) |
 | New web UI | Available (phases 1–4) | [Web UI](/docs/features/web-ui) |
 

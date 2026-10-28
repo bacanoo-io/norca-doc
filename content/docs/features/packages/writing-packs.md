@@ -20,8 +20,8 @@ First, make a pack registry: a repository that holds the structure, templates an
 packs.
 
 The [Norca pack registry](https://github.com/bacanoo-io/norca-registry) is a complete example: packs
-with Norca's extended package format (object kinds, ACL and admission policies,
-`values.schema.json`) and its local checks (`scripts/check-packs.sh`).
+with Norca's extended package format (object kinds, ACL and admission policies, `validation` and
+`rule` blocks in `variables.hcl`) and its local checks (`scripts/check-packs.sh`).
 
 Each registry should have a `README.md` file that describes the packs in it, and a top-level
 directory named `packs` that contains a subdirectory for each pack. Conventionally, the pack
@@ -52,7 +52,8 @@ To add a new pack, create a new directory in the `packs` directory of the regist
 - An optional `outputs.tpl` file that defines an output printed when the pack is deployed.
 - A `templates` subdirectory with the templates the resources are rendered from.
 - Optionally a `values.schema.json` file, a JSON Schema for the variable values
-  ([variables schema](/docs/features/packages/releases#variables-schema)).
+  ([variables schema](/docs/features/packages/releases#variables-schema)); the `validation` and `rule`
+  blocks of `variables.hcl` usually make it unnecessary ([form and constraints](#form-and-constraints)).
 
 ### metadata.hcl
 
@@ -71,8 +72,11 @@ attributes:
   [requirements](/docs/features/packages/releases#extended-package-format).
 - `dependency "<name>" { source, ref, alias, enabled }` - The dependencies of the pack on other packs.
   Several dependencies can be given.
-- `variables_schema` - (Norca) A JSON Schema for the variable values, usually
-  `file("values.schema.json")`.
+- `ui { tab "<id>" { label, icon } }` - (Norca) The tabs of the install form in the web UI, in their
+  order ([form and constraints](#form-and-constraints)).
+- `variables_schema` - (Norca) An optional JSON Schema for the variable values, usually
+  `file("values.schema.json")`; it is laid over the constraints of `variables.hcl` and replaces them
+  for validation.
 - `regions` - (Norca) The regions to install the pack in by default
   ([multi-region installs](/docs/features/packages/releases#multi-region-installs)).
 
@@ -93,7 +97,15 @@ pack {
   }
 }
 
-variables_schema = file("values.schema.json")
+ui {
+  tab "general" {
+    label = "General"
+  }
+  tab "security" {
+    label = "Security"
+    icon  = "lock"
+  }
+}
 ```
 
 ### variables.hcl
@@ -135,10 +147,101 @@ variable "resources" {
 }
 ```
 
-Never take secrets from pack variables: their values end up in the shell history and, for
+Never take secrets from plain pack variables: their values end up in the shell history and, for
 releases, in the revision. Read them in the job from the
-[built-in secret store](/docs/features/secrets) or Variables, or pass them with `--var-secret` to a
-Variables template ([secrets](/docs/features/packages/releases#extended-package-format)).
+[built-in secret store](/docs/features/secrets) or Variables, pass them with `--var-secret` to a
+Variables template ([secrets](/docs/features/packages/releases#extended-package-format)), or give the
+variable a `secret` block (below).
+
+### Form and constraints
+
+(Norca) A variable can have `ui`, `secret` and `validation` blocks, and `variables.hcl` can have `rule`
+blocks. They describe the install form of the [web UI catalog](/docs/features/packages/catalog) and
+the constraints on the values, which `render`, `plan`, `run` and `upgrade` check before rendering, as do
+the servers that render the pack:
+
+```hcl {filename="variables.hcl"}
+variable "mode" {
+  description = "Topology of the servers."
+  type        = string
+  default     = "standalone"
+
+  ui {
+    tab           = "general"
+    group         = "Topology"
+    order         = 1
+    options       = ["standalone", "replica"]
+    option_labels = { replica = "Primary + Replicas" }
+  }
+}
+
+variable "replicas" {
+  type    = number
+  default = 2
+
+  ui {
+    tab     = "general"
+    group   = "Topology"
+    widget  = "slider"
+    unit    = "nodes"
+    show_if = { field = "mode", equals = "replica" }
+  }
+
+  validation {
+    integer = true
+    min     = 1
+    max     = 9
+  }
+}
+
+variable "password" {
+  description = "Password of the clients."
+  type        = string
+  default     = ""
+
+  ui {
+    tab = "security"
+  }
+
+  secret {
+    path = "nomad/jobs/redis"   # a Variable the pack declares in a *.var.hcl.tpl template
+    item = "password"           # default: the variable name
+  }
+
+  validation {
+    min_length = 12
+  }
+}
+
+variable "extra_env" {
+  type    = map(string)
+  default = {}
+}
+
+rule "extra_env" {
+  condition = alltrue([
+    for k in keys(var.extra_env) : can(regex("^APP_[A-Z0-9_]+$", k)) && !can(regex("(SECRET|TOKEN)", k))
+  ])
+  error_message = "extra_env: the names must match ^APP_[A-Z0-9_]+$ and not hold secrets."
+}
+```
+
+| Block | Attributes |
+| --- | --- |
+| `ui` | `tab`, `group`, `order` (placement); `label`; `widget` (`text`, `number`, `slider`, `switch`, `segmented`, `select`, `secret`, `code`, `tags`, `key-value`, `object-list`, `namespace-select`, `region-select`, `node-pool-select`, `datacenter-multiselect`, `storage-volume-select`); `unit`; `presets`; `options` (the allowed values; a choice widget unless `widget` says otherwise) and `option_labels`; `show_if`: a variable name (shown when it is set) or `{ field = "<var>", equals \| notEquals \| in = ... }` |
+| `secret` | `path`, `item`: the value goes to that item of the Variable, applied by the servers but never stored in the release or rendered into the templates, which see the default. This holds for the UI and for `norca pack run --var`; `--var-secret` overrides it. |
+| `validation` | `min`, `max`, `integer`, `pattern`, `min_length`, `max_length`, `min_items`, `max_items`, `unique`, `item_pattern`, `item_min_length` |
+| `rule "<name>"` | `condition`: an HCL expression on `var.<name>` with the [job specification functions](/docs/job-specification/hcl2/functions) plus `regex`, `regexall`, `alltrue` and `anytrue` (`can(regex(...))` tests a pattern); `error_message`, which may interpolate the variables |
+
+Without a `ui` block, the tab and group follow from the variable name (secret-like names go to
+`secrets`, `cpu`, `memory`, `count`, `replica` to `resources`, `port`, `tls`, `service`, `host` to
+`network`, `volume`, `storage`, `backup` to `storage`, everything else to `general`), the widget from
+the type, and variables without a default are required.
+
+HCL evaluates both sides of `&&` and `||`. Optional attributes of objects that the user did not set
+are absent from the value, so read them with `try(x.attr, default)` in rules. Rules are checked where
+the pack is rendered (the CLI, or the servers for packs of a cluster registry); the `validation` blocks
+and options also become the variables schema of the revision, which the servers check again.
 
 ### outputs.tpl
 

@@ -234,8 +234,29 @@ scenarios have variable files for it ([local development](/docs/getting-started/
 [multi-region](/docs/getting-started/examples/04-multi-region)). It needs Docker on the clients; for
 `network_mode = "bridge"` and `mtls_sidecar` a root client with the CNI plugins.
 
+## Cluster registries
+
+A [cluster pack registry](/docs/features/packages/catalog) is pinned with its reference
+(`spec.defaultRef`, the release tag). Moving it to a new tag is an edit of the registry in the web UI
+(or `PUT /v1/pack-registry/:name`), which syncs it; the catalog then offers the new versions, and the
+releases installed from it are upgraded with **Upgrade** on their pages.
+
+- **Sync interval.** With `spec.syncInterval` (at least `1m`) the leader fetches the registry again
+  periodically; a branch reference follows the branch, a tag reference only picks up a moved tag.
+  Leave it empty for pinned tags and sync on request.
+- **Failed syncs** keep the packs of the last good sync: the registry shows `Error` with the message,
+  the catalog and installs keep working with the cached packs.
+- **Leader changes.** The new leader fetches each registry again before it serves its packs; the
+  registry must be reachable from every server.
+- **Push notices.** The release workflow of the Norca pack registry can notify the clusters over NATS
+  (`norca-natsbridge notify-push`); bridges with `-sync-pushes` then sync at once
+  ([pack registry syncs](/docs/features/nats-bridge#pack-registry-syncs)).
+- **Air-gapped clusters** use a `bundle` registry (an offline bundle on the servers) or an internal OCI
+  or git registry as the source.
+
 ## Related pages
 
 - [Supply chain](/docs/features/packages/supply-chain): OCI registries, signing, bundles, `pack.lock`.
 - [Releases](/docs/features/packages/releases): revisions, rollback, drift, multi-region installs.
+- [Catalog and install form](/docs/features/packages/catalog): cluster pack registries in the web UI.
 - [`norca pack` reference](/docs/commands/pack).
