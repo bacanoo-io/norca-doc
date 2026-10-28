@@ -35,10 +35,13 @@ between each other to ensure liveness and high throughput scheduling. Norca
 servers can be spread across multiple datacenters if they have low latency
 connections between them to achieve high availability.
 
-For example, on AWS every region comprises of multiple zones which have very low
-latency links between them, so every zone can be modeled as a Norca datacenter
-and every Zone can have a single Norca server which could be connected to form a
-quorum and a region.
+For example, on AWS every region comprises of multiple availability zones which
+have very low latency links between them, so every availability zone can be
+modeled as a Norca datacenter and every availability zone can have a single
+Norca server which could be connected to form a quorum and a region. The
+datacenter is then the failure domain of topology-aware service discovery
+(`discovery { prefer = "datacenter" }`) and of placement rules such as
+`separate` and `spread` on `${node.datacenter}`.
 
 Norca servers uses Raft for state replication and Raft being highly consistent
 needs a quorum of servers to function, therefore we recommend running an odd

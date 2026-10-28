@@ -11,7 +11,7 @@ The placement rules inherited from Nomad v1.6.5 look either at node attributes
 (`constraint`, `affinity`, `spread`) or at the allocations of the **same** job
 (`distinct_hosts`, `distinct_property`, the built-in job anti-affinity). None of
 them can express a relation to the allocations of **other** jobs: "run the cache
-on the node of the API", or "never put two database replicas in the same zone,
+on the node of the API", or "never put two database replicas in the same datacenter,
 whichever job they belong to".
 
 Norca adds two task group blocks for this:
@@ -23,7 +23,8 @@ Norca adds two task group blocks for this:
 
 Allocations are selected by the `meta` of their job and task group, which act as
 labels. "Close" is defined by a topology domain (`scope`): the node, the
-datacenter, a zone attribute or any node `meta` value. Each rule is either a hard
+datacenter (one per availability zone), a node attribute or any node `meta`
+value. Each rule is either a hard
 rule (`required = true`, a feasibility filter) or a weighted preference
 (`weight`, a score).
 
@@ -58,7 +59,7 @@ flowchart TB
   rule searches the namespace of the job, or the namespace set with `namespace`.
 - **Domains.** For every matching allocation, the scheduler reads the `scope`
   property of its node (for example the node ID, the datacenter or
-  `${meta.zone}`) and counts the allocations per domain value.
+  `${meta.rack}`) and counts the allocations per domain value.
 - **Own placements count.** Placements and stops already in the plan of the
   current evaluation are folded into the counts before each placement, so the
   rules also work between the instances of the same group (for example
@@ -76,7 +77,7 @@ flowchart TB
   resource filter.
 - **Explanation.** A node filtered by a required rule is recorded in the
   placement metrics under the rule's name, for example
-  `separate {app=cache} by ${meta.zone}`, so `norca job status` and
+  `separate {app=cache} by ${node.datacenter}`, so `norca job status` and
   `norca job plan` show why a placement failed. The preference score appears as
   `alloc-affinity` in the placement scores of `norca alloc status -verbose`.
 
@@ -121,8 +122,8 @@ job "probe" {
 }
 ```
 
-Replicas of a database that must never share a zone, and a cache that should
-run in the same datacenter as the API:
+Replicas of a database that must never share a datacenter (availability zone),
+and a cache that should run in the same datacenter as the API:
 
 ```hcl
 job "db" {
@@ -133,12 +134,12 @@ job "db" {
   group "replica" {
     count = 3
 
-    # Hard rule: at most one replica per zone (node meta "zone").
+    # Hard rule: at most one replica per datacenter.
     separate {
       selector {
         app = "postgres"
       }
-      scope    = "${meta.zone}"
+      scope    = "${node.datacenter}"
       required = true
     }
 
@@ -167,7 +168,7 @@ job "cache" {
 }
 ```
 
-With `required = true` and fewer zones than replicas, the remaining replicas
+With `required = true` and fewer datacenters than replicas, the remaining replicas
 cannot be placed: the evaluation is blocked and `norca job status` shows the
 rule that filtered the nodes. When the number of instances can exceed the
 number of domains (for example under the autoscaler), use a preference instead,

@@ -15,7 +15,7 @@ Prometheus `nomad_sd_configs`, therefore send traffic to broken instances.
 In Norca every registration carries the health of its instance: a `Ready` flag, an aggregate `Health`
 (`passing`, `warning` or `critical`), the state of each check and the time of the last change. Lookups
 can filter on it, the built-in DNS and the Consul-compatible API only hand out healthy instances, and
-registrations also carry the topology zone of their node and the discovery settings of their service.
+registrations also carry the datacenter of their node and the discovery settings of their service.
 
 ## How it works
 

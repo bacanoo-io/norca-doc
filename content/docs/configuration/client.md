@@ -190,10 +190,6 @@ client {
   (Norca) Makes the service lookups of the client's workloads (templates, Task API) return only
   healthy instances by default.
 
-- `topology` <code>([topology](/docs/configuration/topology): nil)</code> - (Norca) Sets the
-  topology zone of the node, used by topology-aware service discovery. Defaults to the node meta
-  `zone`.
-
 - `dns` <code>([dns](/docs/configuration/dns): nil)</code> - (Norca) Runs the built-in DNS server
   that answers from the native service catalog, and sets the token the client reads the catalog
   with.

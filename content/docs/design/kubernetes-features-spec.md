@@ -358,7 +358,7 @@ Each of them examines either node attributes or the allocations of the **same** 
 ### Proposed semantics
 
 - **Selection:** a selector picks the target allocations based on the `meta` fields of the job and the task group (the jobspec's existing `meta` block plays the role of labels). By default it searches only in its own namespace; another namespace can be specified explicitly.
-- **Topology domain (`scope`):** a node-attribute interpolation, for example `${node.unique.id}` (node), `${node.datacenter}`, `${attr.platform.aws.placement.availability-zone}` (zone) or a custom `${meta.rack}`.
+- **Topology domain (`scope`):** a node-attribute interpolation, for example `${node.unique.id}` (node), `${node.datacenter}` (datacenter, one per availability zone) or a custom `${meta.rack}`.
 - **Mandatory rule** (`required = true`): a feasibility filter. For affinity, only nodes whose domain contains a matching allocation remain; for anti-affinity, only nodes whose domain contains none.
 - **Preference** (`weight`, between −100 and 100): scoring, consistent with the normalization logic of the existing `NodeAffinityIterator`.
 - **Within the same evaluation**, allocations that are already planned but not yet placed also count (the contents of the plan), so it also works for a job's own replicas.
@@ -378,10 +378,10 @@ job "cache" {
       weight   = 50
     }
 
-    # Do not end up in the same zone as another cache replica
+    # Do not end up in the same datacenter (availability zone) as another cache replica
     separate {
       selector { app = "cache" }
-      scope    = "${attr.platform.aws.placement.availability-zone}"
+      scope    = "${node.datacenter}"
       required = true
     }
   }

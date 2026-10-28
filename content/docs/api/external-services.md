@@ -214,7 +214,6 @@ $ curl \
       { "ID": "ttl", "Name": "legacy-pg ttl check", "Role": "", "Status": "passing", "Output": "" }
     ],
     "HealthUpdatedAt": 1761573120000000000,
-    "Zone": "",
     "Meta": null,
     "Discovery": null,
     "External": {

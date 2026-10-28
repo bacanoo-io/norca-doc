@@ -21,7 +21,7 @@ For multi-cloud operation the plan proposes one federated region per cloud with 
 
 The plan also includes S3-based, per-region scheduled backup and restore (encrypted backups copied to multiple clouds, with selective and full restore managed from the UI); its detailed plan is in a separate document: [backup-restore-plan.md](/docs/design/backup-restore-plan).
 
-The plan also aims at Consul independence: a native catalog driven by health, built-in DNS, a Consul-compatible read layer for tools built on the Consul API (for example Traefik, Prometheus), external service registration and native mTLS. Discovery is topology-aware (same zone, datacenter and region preferred, with regional failover), and a DNS alias can also be given for external services. Consul remains optional only for the full service mesh, installed by Nomad. Details: [consul-independence-plan.md](/docs/design/consul-independence-plan).
+The plan also aims at Consul independence: a native catalog driven by health, built-in DNS, a Consul-compatible read layer for tools built on the Consul API (for example Traefik, Prometheus), external service registration and native mTLS. Discovery is topology-aware (same datacenter and region preferred, with regional failover), and a DNS alias can also be given for external services. Consul remains optional only for the full service mesh, installed by Nomad. Details: [consul-independence-plan.md](/docs/design/consul-independence-plan).
 
 Package management builds on Nomad Pack: the package format and the command-line tool stay, while Helm-level capabilities (a release object with revisions, rollback, non-job resources, atomic installation, hooks, tests, OCI registry, signing) are provided by the server side of the fork. Details: [package-management-plan.md](/docs/design/package-management-plan).
 
@@ -257,7 +257,7 @@ The outage of one cloud affects only its own region, because every region has it
 | Application messages            | NATS supercluster with gateways, leaf nodes for edge, JetStream for durable streams                   | Apache 2.0              |
 | Events, audit                   | Event stream → NATS bridge → history and audit service                                                | own                     |
 
-**Cross-region failover:** service discovery prefers the local zone and region, and if there is no healthy instance in the local region, it switches to the regions in the `failover` list of the `discovery` block (Consul independence plan, phase 2). Cloud load balancers are managed by the first sample operator of the operator framework, the LoadBalancer operator (Kubernetes item 8).
+**Cross-region failover:** service discovery prefers the local datacenter and region, and if there is no healthy instance in the local region, it switches to the regions in the `failover` list of the `discovery` block (Consul independence plan, phase 2). Cloud load balancers are managed by the first sample operator of the operator framework, the LoadBalancer operator (Kubernetes item 8).
 
 **The role of Consul:** in this setup Consul is optional. Service discovery, DNS and serving the tools built on the Consul API are provided by the native catalog and the compatibility layer, and in the longer term the encrypted traffic between regions by native mTLS. Consul is needed only for a full service mesh, installed by Nomad ([consul-independence-plan.md](/docs/design/consul-independence-plan)).
 

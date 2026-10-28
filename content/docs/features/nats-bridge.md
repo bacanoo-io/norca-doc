@@ -245,7 +245,7 @@ client service of the cluster. It publishes into the JetStream stream
 # example/04-multi-region/nats-eu-1.hcl, with the bridge turned on
 region            = "eu-1"
 count             = 3
-separate_scope    = "$${meta.zone}"
+separate_scope    = "$${node.datacenter}"
 separate_required = true
 gateway_enabled   = true
 remote_gateways = [

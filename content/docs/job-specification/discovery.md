@@ -22,7 +22,7 @@ service {
   provider = "nomad"
 
   discovery {
-    prefer            = "zone"
+    prefer            = "datacenter"
     min_local         = 2
     overflow_fraction = 0.3
     failover          = ["eu-gcp", "us-hetzner"]
@@ -36,16 +36,14 @@ service {
 - `prefer` `(string: "none")` - Topology preference relative to the caller:
 
   - `none` - no preference: every eligible instance of the region;
-  - `zone` - the instances in the caller's zone (and datacenter), then those of its datacenter, then the
-    rest of the region;
   - `datacenter` - the instances in the caller's datacenter, then the rest of the region;
   - `region` - like `none`; it makes the use of `failover` alone explicit.
 
-- `min_local` `(int: 0)` - Number of eligible instances a tier must hold before the next tier is left
-  out. Values below 1 act as 1. Must not be negative.
+- `min_local` `(int: 0)` - Number of eligible instances the caller's datacenter must hold before the
+  rest of the region is left out. Values below 1 act as 1. Must not be negative.
 
-- `overflow_fraction` `(float: <server default>)` - Fraction of all eligible instances of the region a
-  tier must hold before the next tier is left out, between 0 and 1; `0` disables the rule. When unset,
+- `overflow_fraction` `(float: <server default>)` - Fraction of all eligible instances of the region the
+  caller's datacenter must hold before the rest of the region is left out, between 0 and 1; `0` disables the rule. When unset,
   the servers fill in their
   [`default_overflow_fraction`](/docs/configuration/native_service_discovery#server-block) (0.2 unless
   configured) when the job is registered, so the stored job carries a concrete value.
@@ -60,16 +58,16 @@ service {
 ## Requirements
 
 - The service must use `provider = "nomad"`.
-- The zone of each node comes from the client's [`topology`](/docs/configuration/topology)
-  configuration (by default the node meta `zone`).
+- The caller's datacenter is the [`datacenter`](/docs/configuration) of its node. Model
+  one availability zone as one datacenter.
 
 ## `discovery` Examples
 
-### Stay in the zone while two instances are healthy there
+### Stay in the datacenter while two instances are healthy there
 
 ```hcl
 discovery {
-  prefer    = "zone"
+  prefer    = "datacenter"
   min_local = 2
 }
 ```

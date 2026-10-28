@@ -222,7 +222,7 @@ norca pack uninstall test-app --namespace=apps
 | `network_mode` | `bridge` | `host` for dev agents without the CNI plugins |
 | `secrets_enabled` | `true` | |
 | `disruption_max_unavailable` | `"1"` | empty removes the block |
-| `separate_scope` | `""` | for example `"$${meta.zone}"` in variable files |
+| `separate_scope` | `""` | for example `"$${node.datacenter}"` in variable files |
 | `scaling_enabled` | `true` | needs `server { autoscaler { enabled = true } }`; `false` with `multiregion` |
 | `mtls_sidecar` | `false` | needs `network_mode = "bridge"` |
 | `multiregion` | `[]` | `[{ name = "eu-1", count = 2 }, ...]` |
