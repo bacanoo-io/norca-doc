@@ -38,7 +38,9 @@ last server runs Norca. See [Upgrades](/docs/operations/upgrades).
 The HTTP API is the Nomad 1.6.5 API: the same paths, request and response bodies, blocking queries,
 the `X-Nomad-Token` header and the `X-Nomad-Index` response headers. Clients written for it, such as the
 Go `api` package of Nomad 1.6.5, Terraform providers or CI integrations, work unchanged. The Norca
-features add endpoints under `/v1/`; see the [HTTP API](/docs/api) section.
+features add endpoints under `/v1/`; see the [HTTP API](/docs/api) section. With ACLs enabled, two
+access checks are stricter than in Nomad v1.6.5; see
+[Security differences from Nomad v1.6.5](/docs/security/nomad-differences).
 
 ## The `norca` binary and the `nomad` alias
 

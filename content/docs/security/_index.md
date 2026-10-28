@@ -7,9 +7,9 @@ description: "An overview of the security mechanisms of Norca: transport encrypt
 Norca is **not secure by default**: a development agent runs without TLS, ACLs or encryption. This page
 lists the mechanisms a production cluster should use and links to their documentation. The threat model
 inherited from Nomad v1.6.5 is described in the [security model](/docs/concepts/security); how to report a
-vulnerability is described in [Reporting vulnerabilities](/docs/security/upstream-model). Fixed security
-issues and what they change for users are listed in the upgrade notes:
-[Security fixes in 0.1.0](/docs/operations/upgrades#security-fixes-in-010).
+vulnerability is described in [Reporting vulnerabilities](/docs/security/upstream-model). Where Norca's
+access checks are stricter than those of Nomad v1.6.5 is described in
+[Security differences from Nomad v1.6.5](/docs/security/nomad-differences).
 
 The deployment examples [single node](/docs/getting-started/examples/02-single-node) and
 [three nodes](/docs/getting-started/examples/03-three-node) enable TLS, ACLs, gossip encryption, the
