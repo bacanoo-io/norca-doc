@@ -1,13 +1,13 @@
 ---
-title: "S3-based scheduled backup and restore – plan"
+title: "Scheduled backup and restore to S3 and directories – plan"
 weight: 4
 status: "In progress"
 origin: "norca/docs/design/backup-restore-plan.md"
 ---
 
-**Status:** In progress · 2026-10-25 (phases 1, 2 and 4 implemented; phase 3, the web UI, planned with the new UI) · Starting point: Nomad v1.6.5 (MPL 2.0) · Related document: [nomad-fork-development-plan.md](/docs/design/nomad-fork-development-plan)
+**Status:** In progress · 2026-10-29 (phases 1–4 implemented, the web UI in the new UI; destinations of the types `s3` and `directory`; `age` is the only encryption mode, the `kms` mode is reserved) · Feature page: [backup and restore](/docs/features/backup-restore) · Starting point: Nomad v1.6.5 (MPL 2.0) · Related document: [nomad-fork-development-plan.md](/docs/design/nomad-fork-development-plan)
 
-In every region, Norca automatically backs up the cluster state on a schedule to one or more S3-compatible stores. Backups can be browsed, compared and restored in the web UI. A restore can be selective (a single job, a single Variables path), full (an entire region returned to an earlier state), or the building of a new cluster from a backup. The schedule and the stores live in the server configuration; manual backup, versioning and restore live in the UI.
+In every region, Norca automatically backs up the cluster state on a schedule to one or more S3-compatible stores or shared directories. Backups can be browsed, compared and restored in the web UI. A restore can be selective (a single job, a single Variables path), full (an entire region returned to an earlier state), or the building of a new cluster from a backup. The schedule and the stores live in the server configuration; manual backup, versioning and restore live in the UI.
 
 ## Table of contents
 
@@ -290,6 +290,17 @@ On the new servers (which have not yet formed a cluster), the command first writ
 
 The UI gains a new **Backups** menu item in the existing Ember application (`ui/app/routes/`, `ui/app/components/`), consistent with the region selector.
 
+> [!NOTE]
+> Implemented in the new web UI ([UI plan](/docs/design/ui-plan)): the **Backups** page
+> (`ui/app/routes/backups/`, `ui/app/components/backups/`) with the list and the state of the
+> schedule, **Back up now**, the details and contents of a backup, the comparison with the job diff,
+> the job history across backups, the restore wizard (selective and full), and the page of a full
+> restore request with its preview, approval and rejection; the versions of a job retrievable from
+> backups on the job's versions page (`ui/app/components/jobs/backup-versions`). The age identity is
+> entered on the page and kept in the memory of the browser tab only. Backups on a directory
+> destination have no download link. The [feature page](/docs/features/backup-restore#web-ui)
+> describes the pages.
+
 **Backup list.** Per region, the backups in chronological order: time, trigger (scheduled or manual), Raft index, size, destinations and their state (uploaded, verified), labels, pin indicator. Above it, the state of the schedule: last successful backup, next due, and a warning if the last successful backup is older than two intervals.
 
 **Manual backup.** A "Back up now" button, with an optional note and pinning. Typical use: before a major change.
@@ -347,7 +358,7 @@ The `backup` block of the server configuration can make two-person approval mand
 | --- | --- | --- |
 | 1. Scheduled backup | Leader subsystem, `backup` configuration block, S3 upload (multipart), `kms` and `age` encryption, manifest, retention, `backup_status` table, `Backup` event topic, metrics | new `nomad/backup/` (scheduler, destinations, encryption, retention); `nomad/leader.go`; `nomad/config.go`, `command/agent/config.go`; `nomad/state/schema.go`; `nomad/structs/` |
 | 2. API, CLI, selective restore | Listing, browsing, comparison based on `RestoreFromArchive`; selective restore with normal writes; `backup` ACL block | new `nomad/backup_endpoint.go`; `command/agent/backup_endpoint.go`; new `command/operator_backup_*.go`; `acl/policy.go`; `api/backup.go` |
-| 3. Web UI | Backup list, details, comparison, extension of the job version history, selective restore wizard | `ui/app/routes/backups*`, `ui/app/components/backup-*`, `ui/app/adapters/backup.js`, `ui/app/models/backup.js` |
+| 3. Web UI | Backup list, details, comparison, extension of the job version history, selective restore wizard | `ui/app/routes/backups/`, `ui/app/templates/backups/`, `ui/app/components/backups/`, `ui/app/components/jobs/backup-versions`, `ui/app/utils/backups.js` (implemented in the new web UI) |
 | 4. Full restore and bootstrap | `Keyring.Restore` RPC, full restore with preview and two-person approval, automatic pre-restore backup, `restore-bootstrap` CLI | `nomad/encrypter.go`, `nomad/keyring_endpoint.go`; `nomad/operator_endpoint.go`; the full mode of the UI wizard |
 
 The phases build on each other, but after phase 1 there is already an automatic, encrypted backup copied to several clouds, and a restore can already be done at that point with the existing `nomad operator snapshot restore` command (and by manually copying the keystore back).

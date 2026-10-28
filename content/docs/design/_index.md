@@ -15,7 +15,7 @@ marker: *Plan*, *In progress* or *Implemented*. The status of the features thems
 | [Development plan](/docs/design/nomad-fork-development-plan) | Built-in autoscaler, Kubernetes-inspired features overview, multi-cloud connectivity, multiregion deployments, roadmap | In progress |
 | [Kubernetes-inspired features](/docs/design/kubernetes-features-spec) | Namespace quotas, admission control, event stream, cross-job affinity, disruption budget, health check roles, network rules, operator framework | In progress (items 1–7 implemented; item 8 phases 1–4 implemented) |
 | [Consul independence](/docs/design/consul-independence-plan) | Catalog, built-in DNS, Consul-compatible API, external services, native mTLS, Consul as an option | In progress (phases 1–4 and 6 implemented; phase 5 steps 1–3 implemented) |
-| [Backup and restore](/docs/design/backup-restore-plan) | Scheduled S3 backups, encryption, retention, selective and full restore | In progress (phases 1, 2 and 4 implemented) |
+| [Backup and restore](/docs/design/backup-restore-plan) | Scheduled backups to S3 and shared directories, encryption, retention, selective and full restore, web UI | In progress (phases 1–4 implemented; the `kms` encryption mode not yet) |
 | [Package management](/docs/design/package-management-plan) | `norca pack`, releases, registries and supply chain | In progress (phases 1–4 implemented) |
 | [Secret storage](/docs/design/secrets-plan) | Sealed keyring, built-in secret store, delivery, Vault compatibility, external providers | In progress (phases 0–4 implemented) |
 | [Web UI](/docs/design/ui-plan) | The new web UI, Tabler migration, [visual mockup](/design/mockups/ui-mockup.html) (fictional data) | In progress |
