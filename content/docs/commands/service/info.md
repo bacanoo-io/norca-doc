@@ -87,8 +87,8 @@ precedence when both are set.
 
 - `-t` : Format and display the service registrations using a Go template.
 
-- `-verbose` : Display full information, including (Norca) the zone, readiness and
-  health of each instance and the table of its checks with their roles, states and
+- `-verbose` : Display full information, including the datacenter and (Norca) the
+  readiness and health of each instance and the table of its checks with their roles, states and
   output.
 
 - `-healthy` : (Norca) Only show healthy instances, and those of services that

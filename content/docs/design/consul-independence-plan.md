@@ -94,7 +94,7 @@ The native service catalog stores a health state for every instance, and discove
 - New fields of `ServiceRegistration`: `Health` (`passing`, `warning`, `critical`), `Checks` (per check: name, state, last output in brief), `HealthUpdatedAt`.
 - If the service has readiness (or role-less) checks, `Health` is their aggregate; if it has no checks, it is `passing`.
 - The state is computed by the client (it already runs the native checks today, `client/allocrunner/checks_hook.go`) and sent to the server only **on a state change**, after the `success_before_passing` and `failures_before_critical` thresholds.
-- **Topology field:** in addition to `Datacenter` (which already exists today), the registration also gets a `Zone` field, which the client fills in from its own node's attributes at registration time. This is the basis of the topology-aware routing in phase 2.
+- **Topology field:** the `Datacenter` field, which already exists today, is the topology of the registration: one datacenter per availability zone. It is the basis of the topology-aware routing in phase 2.
 - **Publishing not-ready instances:** per service, the `discovery { include_not_ready = true }` setting makes instances that are not yet healthy appear in discovery as well (the equivalent of Kubernetes `publishNotReadyAddresses`). It is needed for stateful clusters (databases, NATS), where members must find their not-yet-ready peers at startup.
 
 ### Raft load
@@ -163,25 +163,20 @@ client {
 
 ### Topology-aware routing and regional failover
 
-**Goal:** discovery (DNS, template, API, sidecar upstream, Consul-compatible layer) prefers healthy instances in the same zone, then in the same datacenter and region, and if there is no healthy instance in the local region, it fails over to other regions in a specified order. No external Consul is needed.
+**Goal:** discovery (DNS, template, API, sidecar upstream, Consul-compatible layer) prefers healthy instances in the same datacenter, then in the same region, and if there is no healthy instance in the local region, it fails over to other regions in a specified order. No external Consul is needed.
 
 **Starting point in Nomad 1.6.5:**
 
 | Required data or capability | Status |
 | --- | --- |
 | The instance's datacenter | Present: the `Datacenter` field of the registration |
-| The node's zone | Partly: AWS `platform.aws.placement.availability-zone`, Google Cloud `platform.gce.zone`, Azure zone attribute (`client/fingerprint/env_*.go`); DigitalOcean provides only a region, there is no fingerprinter for Hetzner, so it must be given in the node's `meta` field |
-| The instance's zone in the registration | Missing; the `Zone` field of phase 1 fills the gap |
+| The node's datacenter | Present: the `datacenter` of the agent configuration, set per availability zone (or location) by the installer |
 | Consistent subset selection | Present: the `choose` parameter of the service API |
 
-**The source of the zone** is in the client configuration, because it differs per cloud:
+**The failure domain is the datacenter:** Norca keeps two topology levels, region and datacenter, and one availability zone is modeled as one datacenter (Nomad's own guidance). The installer sets it in the agent configuration of every node, on every cloud:
 
 ```hcl
-client {
-  topology {
-    zone = "${attr.platform.aws.placement.availability-zone}"   # for Hetzner, for example: "${meta.zone}"
-  }
-}
+datacenter = "eu-central-1a"   # one datacenter per availability zone or location
 ```
 
 **Per-service configuration:**
@@ -192,7 +187,7 @@ service {
   provider = "nomad"
 
   discovery {
-    prefer            = "zone"                    # "zone", "datacenter", "region" or "none"
+    prefer            = "datacenter"              # "datacenter", "region" or "none"
     min_local         = 2
     failover          = ["eu-gcp", "us-hetzner"]  # in order, if there is no healthy instance in the local region
     include_not_ready = false
@@ -200,9 +195,9 @@ service {
 }
 ```
 
-**Ordering in tiers:** (1) same zone, (2) same datacenter, (3) same region, (4) the regions of the `failover` list in order. By default the response returns the first tier that contains enough instances.
+**Ordering in tiers:** (1) same datacenter, (2) same region, (3) the regions of the `failover` list in order. By default the response returns the first tier that contains enough instances.
 
-**Overflow protection:** the next tier is also included in the response if the current tier has fewer healthy instances than the `min_local` value, or fewer than a configurable fraction (default 20%) of all healthy instances. This way a small zone does not receive the entire traffic of a large region.
+**Overflow protection:** the next tier is also included in the response if the current tier has fewer healthy instances than the `min_local` value, or fewer than a configurable fraction (default 20%) of all healthy instances. This way a small datacenter does not receive the entire traffic of a large region.
 
 **Default overflow fraction (built 2026-10-26):** the fraction is set per service with `discovery { overflow_fraction = 0.3 }` (0..1, 0 disables the rule). When a service leaves it unset, the servers fill in their own default at job registration, set in the server configuration:
 
@@ -230,10 +225,10 @@ server {
 | Nomad template (`nomadService`) | Yes |
 | Native mTLS sidecar upstream (phase 5) | Yes, with the same ordering |
 | Own code on the Nomad API, with the `near=self` parameter | Yes |
-| Consul-compatible layer (`/v1/health/service`) | Optionally: the layer can return a list ordered and filtered by the client's zone |
+| Consul-compatible layer (`/v1/health/service`) | Optionally: the layer can return a list ordered and filtered by the client's datacenter |
 | Traefik `nomad` provider, Prometheus `nomad_sd` and other tools that read the catalog themselves | No: they receive all healthy instances |
 
-For Traefik running at the edge, one Traefik instance per zone is therefore recommended (with a `constraint` block filtering on the zone), or Traefik reads through the Consul-compatible layer with a zone-filtered configuration.
+For Traefik running at the edge, one Traefik instance per datacenter is therefore recommended (with `datacenters` set to that datacenter), or Traefik reads through the Consul-compatible layer with a datacenter-filtered configuration.
 
 **Cross-region failover:** responses pointing to other regions reach the client's cache through region forwarding, and the connection is established through the native mTLS gateway (phase 5); until then, over the WireGuard mesh between regions. In the multi-cloud setup (one cloud per region), local preference also reduces the cost of cross-region traffic.
 
@@ -463,7 +458,7 @@ The importance of native mTLS (phase 5) grows: it is the only path to a service 
 
 The `consul` pack of the pack registry (`packs/consul/` of the [Norca pack registry](https://github.com/bacanoo-io/norca-registry), a separate repository since 2026-10-26; rendered and run with `norca pack`) installs the official release; the project ships no Consul code, binary or image. The pack references the official `hashicorp/consul` image by registry, repository, tag and optional digest (`image_registry` defaults to `docker.io`; air-gapped installs mirror the unmodified image into the internal OCI registry), or the official release archive by URL and checksum for `exec`/`raw_exec`. It does not render until `consul_license_accepted = true`: the user accepts the BSL 1.1 at install time, and the README states the license.
 
-- **Servers** (`consul`, service job): 3 or 5 servers, one per node marked with node meta `consul_server = "true"`, spread over node meta `zone` (optionally one per zone with the fork's `separate` block), Raft data on a client host volume, static ports on the host network. **Clients** (`consul-clients`, system job): on every other node. Agents find each other through Norca native service discovery (`nomadService "consul-serf"` in a `retry_join` template), so Nomad does not depend on Consul.
+- **Servers** (`consul`, service job): 3 or 5 servers, one per node marked with node meta `consul_server = "true"`, spread over the datacenters of the nodes (optionally one per datacenter with the fork's `separate` block), Raft data on a client host volume, static ports on the host network. **Clients** (`consul-clients`, system job): on every other node. Agents find each other through Norca native service discovery (`nomadService "consul-serf"` in a `retry_join` template), so Nomad does not depend on Consul.
 - **Bootstrap without manual steps:** a prestart task runs the `norca` CLI through the task API socket with its workload identity (`norca` now accepts `unix://` agent addresses, `command/meta_unix_socket.go`): it generates the gossip key (`operator gossip keyring generate`), a CA and a server certificate for `server.<dc>.<domain>` (`tls ca/cert create`) and the ACL tokens once, stores them in the Variable `nomad/jobs/<job>/servers/bootstrap` with check-and-set (concurrent servers converge on one set) and derives the Variables of the server group, the client job and the snapshot job from it. The servers bootstrap ACLs through `acl.tokens.initial_management`; a poststart task creates the agent policy and token (and the snapshot token) with pre-generated IDs, idempotently. With Norca ACLs, one policy bound to the bootstrap task is the only manual step (printed by the pack, which cannot create policies).
 - **Interim security minimum on every install:** ACLs mandatory with `default_policy = "deny"` and no anonymous token, gossip encryption, TLS with verified server names and `auto_encrypt` for the clients, plain HTTP/gRPC on localhost only, HTTPS/gRPC-TLS on localhost and the private network (`host_network`), DNS on localhost, no update check.
 - **Operations:** rolling upgrades one server at a time (`update`, `migrate`, `disruption { max_unavailable = 1 }`, servers do not leave on stop), the documented order servers first, then clients; certificate renewal and gossip key rotation are documented manual steps. Optional periodic `consul-snapshot` batch job: `consul snapshot save` on a server node, uploaded with the AWS CLI image (Apache 2.0) to the S3-compatible store of the Norca backups.
@@ -485,7 +480,7 @@ README feature table row after the merge: "Service discovery without Consul: nat
 
 | Phase | Content | Prerequisite | Result |
 | --- | --- | --- | --- |
-| 1 | Health-based catalog, `Zone` field, option for not-ready instances | – | The native Nomad integration of Traefik and Prometheus is safe in production |
+| 1 | Health-based catalog, topology from the datacenter, option for not-ready instances | – | The native Nomad integration of Traefik and Prometheus is safe in production |
 | 2 | Built-in DNS, topology-aware routing, regional failover | 1 | Name resolution without Consul, local instances preferred, cross-region failover |
 | 3 | Consul-compatible read layer | 1, 2 (shared cache) | Tools that only know Consul work without modification |
 | 4 | External registration (with DNS alias) and Consul agent write endpoints | 3 | Self-registering frameworks and services outside Nomad |
@@ -500,7 +495,7 @@ After phases 1–3, most users no longer need Consul. Phase 6 can proceed at any
 - The Consul integrations of Traefik and Prometheus with the compatibility layer give the same end result as with a real Consul (conformance test suite).
 - The `hashicorp/consul/api` client works flawlessly on the supported endpoints, and gets a clear `501` error on the unsupported ones.
 - With 1,000 service instances changing state at the same time, the number of Raft writes is significantly lower than the number of changes thanks to batching and flapping protection, and scheduling latency does not measurably degrade.
-- With `prefer = "zone"` and `min_local = 2`, the DNS answer for a client in a zone contains only instances of its own zone as long as at least two are healthy there; if that drops to one, the other instances of the datacenter appear as well; if there is none in the region, those of the first region of the `failover` list.
+- With `prefer = "datacenter"` and `min_local = 2`, the DNS answer for a client in a datacenter contains only instances of its own datacenter as long as at least two are healthy there; if that drops to one, the other instances of the region appear as well; if there is none in the region, those of the first region of the `failover` list.
 - An external service of type `alias` appears in the native DNS as a CNAME, and a change of the target takes effect after the TTL expires.
 - With `include_not_ready = true`, the members of a starting stateful cluster find each other even before readiness.
 - With native mTLS, services running in two different regions in different clouds can connect to each other, and a `deny` intention rejects the connection.
@@ -529,5 +524,5 @@ After phases 1–3, most users no longer need Consul. Phase 6 can proceed at any
 - [x] Should filtering for healthy instances be the default in the new fork version (a behavior change), or remain opt-in? Decided 2026-10-24: opt-in (`default_healthy_only = false`).
 - [x] For native mTLS, do we use Envoy as the sidecar proxy, or our own lighter proxy? Decided 2026-10-24: Envoy.
 - [x] Is handling the Consul Enterprise namespace parameter needed in the compatibility layer? Decided 2026-10-24: no.
-- [x] What should the default of topology ordering be (`prefer = "zone"` or `"none"`), and what is the default overflow fraction? Decided 2026-10-24: `prefer = "none"` by default, zone preference is opt-in; the overflow fraction keeps the default proposed in this plan.
-- [x] From which `meta` key do we take the zone of Hetzner nodes, and who fills it in (installer, configuration management)? Decided 2026-10-24: node meta `zone`, filled in by the installer.
+- [x] What should the default of topology ordering be (`prefer = "datacenter"` or `"none"`), and what is the default overflow fraction? Decided 2026-10-24: `prefer = "none"` by default, the datacenter preference is opt-in; the overflow fraction keeps the default proposed in this plan.
+- [x] How do nodes without a cloud fingerprinter (Hetzner) get their failure domain, and who fills it in (installer, configuration management)? Decided 2026-10-28: the `datacenter` of the agent configuration, one per location or availability zone, filled in by the installer.

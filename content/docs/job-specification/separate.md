@@ -23,12 +23,12 @@ job "db" {
   group "replica" {
     count = 3
 
-    # Never two replicas in the same zone.
+    # Never two replicas in the same datacenter (availability zone).
     separate {
       selector {
         app = "postgres"
       }
-      scope    = "${meta.zone}"
+      scope    = "${node.datacenter}"
       required = true
     }
   }
@@ -63,12 +63,12 @@ The parameters are the same as those of [`colocate`](/docs/job-specification/col
 
 ## `separate` Examples
 
-### Spread the instances of a job over zones, as a preference
+### Spread the instances of a job over datacenters, as a preference
 
 With a selector that matches the job itself, `separate` spreads the job's own
 instances. A preference still places the instances when there are more of them
-than zones (from `example/packs/test-app` with
-`separate_scope = "$${meta.zone}"`):
+than datacenters (from `example/packs/test-app` with
+`separate_scope = "$${node.datacenter}"`):
 
 ```hcl
 job "test-app" {
@@ -81,7 +81,7 @@ job "test-app" {
       selector {
         app = "test-app"
       }
-      scope    = "${meta.zone}"
+      scope    = "${node.datacenter}"
       required = false
     }
   }
@@ -104,5 +104,5 @@ separate {
 - With `required = true` and fewer domains than instances, the remaining
   instances cannot be placed. The evaluation is blocked, and
   `norca job status` lists the rule (for example
-  `separate {app=postgres} by ${meta.zone}`) among the filters.
+  `separate {app=postgres} by ${node.datacenter}`) among the filters.
 - The rule applies only at placement time and is not symmetric.

@@ -312,8 +312,8 @@ consul {
 
 - `region` `(string: "global")` - Specifies the region the Norca agent is a
   member of. A region typically maps to a geographic region, for example `us`,
-  with potentially multiple zones, which map to [datacenters](#datacenter) such
-  as `us-west` and `us-east`.
+  with potentially multiple availability zones, which map to
+  [datacenters](#datacenter) such as `us-west` and `us-east`.
 
   > [!CAUTION]
   > Changing the `region` of an agent with data stored in its

@@ -80,13 +80,15 @@ consul {
 
 ## Example
 
-On the nodes that will run the Consul servers (one per zone):
+On the nodes that will run the Consul servers (one per datacenter, one datacenter per availability
+zone):
 
 ```hcl
+datacenter = "eu-central-1a"
+
 client {
   meta {
     consul_server = "true"
-    zone          = "eu-central-1a"
   }
   host_volume "consul-server" {
     path = "/srv/consul"
@@ -114,7 +116,7 @@ The pack's variables (the most important ones; the
 | `server_count` | `3` | 3 or 5 (1 for development) |
 | `driver` | `docker` | `docker`, `exec` or `raw_exec` |
 | `image_registry`, `image_digest` | `docker.io`, `""` | Internal mirror and digest pinning |
-| `server_node_meta`, `zone_attribute` | `consul_server`, `${meta.zone}` | Placement of the servers |
+| `server_node_meta`, `datacenter_attribute` | `consul_server`, `${node.datacenter}` | Placement of the servers |
 | `host_network` | `""` | Private network (for example the VPN interface) |
 | `datacenter`, `domain` | `dc1`, `consul` | Consul datacenter and domain |
 | `tls_enabled` | `true` | TLS for RPC, HTTPS and gRPC |

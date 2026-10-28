@@ -210,7 +210,6 @@ Norca adds health, topology and external services to the native catalog (see
 | `Health` | Aggregate health: `passing`, `warning` or `critical`; empty for registrations written before the health-based catalog |
 | `Checks` | The checks of the instance: `ID` (external services only), `Name`, `Role`, `Status`, `Output` |
 | `HealthUpdatedAt` | Time of the last recorded health change, in Unix nanoseconds |
-| `Zone` | Topology zone of the node |
 | `Meta` | Meta of the service |
 | `Discovery` | The `discovery` block of the service: `Prefer`, `MinLocal`, `OverflowFraction`, `Failover`, `IncludeNotReady` |
 | `External` | Set for [external services](/docs/api/external-services): `Kind`, `Source`, `LocalID`, `Checks`, `DeregisterCriticalAfter` |
@@ -243,10 +242,9 @@ $ curl \
       { "ID": "", "Name": "ready", "Role": "readiness", "Status": "passing", "Output": "HTTP GET http://10.0.0.11:24512/ready: 200 OK" }
     ],
     "HealthUpdatedAt": 1761573120000000000,
-    "Zone": "zone-a",
     "Meta": null,
     "Discovery": {
-      "Prefer": "zone",
+      "Prefer": "datacenter",
       "MinLocal": 2,
       "OverflowFraction": 0.2,
       "Failover": null,

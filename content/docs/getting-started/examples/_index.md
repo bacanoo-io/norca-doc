@@ -17,7 +17,7 @@ the LoadBalancer operator, the mTLS gateway) come from the
 | --- | --- | --- |
 | [01-local-dev](/docs/getting-started/examples/01-local-dev) | 1, `norca agent -dev` | try the features in minutes: new UI, catalog, DNS, Consul-compatible API, secrets, autoscaler; nothing persists |
 | [02-single-node](/docs/getting-started/examples/02-single-node) | 1 (server + client) | run a small, secured installation: TLS, ACLs, gossip encryption, the `shares` seal, backups to RustFS, quotas, admission |
-| [03-three-node](/docs/getting-started/examples/03-three-node) | 3 (server + client each) | run a highly available region: unseal per server, native mTLS and intentions, network rules, placement rules over zones, drains, operators, NATS |
+| [03-three-node](/docs/getting-started/examples/03-three-node) | 3 (server + client each) | run a highly available region: unseal per server, native mTLS and intentions, network rules, placement rules over datacenters, drains, operators, NATS |
 | [04-multi-region](/docs/getting-started/examples/04-multi-region) | 3 per region | federate regions (one per cloud): ACL replication, multiregion deployments, cross-region mTLS gateway, NATS supercluster, multi-region pack installs |
 
 Each scenario builds on the previous one; read 02 before 03 and 03 before 04.
@@ -89,7 +89,7 @@ built-in store) are merged and used here.
 | Feature | 01 | 02 | 03 | 04 |
 | --- | --- | --- | --- | --- |
 | New web UI | ✓ | ✓ | ✓ | ✓ |
-| Native service catalog with health, topology-aware `discovery { prefer }` | ✓ | ✓ | ✓ (zones) | ✓ |
+| Native service catalog with health, topology-aware `discovery { prefer }` | ✓ | ✓ | ✓ (datacenters) | ✓ |
 | Built-in DNS | ✓ | ✓ | ✓ | ✓ |
 | Consul-compatible API | ✓ | | | |
 | External services, DNS alias (`norca service register`) | ✓ | | | |

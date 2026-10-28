@@ -37,7 +37,7 @@ flowchart LR
 | Check role | The role of a service check: startup, readiness or liveness | Service check | [Health check roles](/docs/features/health-check-roles) |
 | Network policy, admin network policy | Allowed and denied traffic of allocations, enforced on the nodes | Namespace / cluster | [Network rules](/docs/features/network-rules) |
 | Object kind, custom object | A user-defined type with a schema, and its instances, reconciled by controllers | Cluster / namespace | [Operator framework](/docs/features/operator-framework) |
-| Service catalog entry | A service instance with its health, zone and check roles; also external services | Namespace | [Service discovery](/docs/features/service-discovery) |
+| Service catalog entry | A service instance with its health, datacenter and check roles; also external services | Namespace | [Service discovery](/docs/features/service-discovery) |
 | Workload certificate | A short-lived SPIFFE certificate of a task group with mTLS services | Allocation | [Native mTLS](/docs/features/native-mtls) |
 | Service intention | Allows or denies connections between services | Namespace, per region | [Intentions](/docs/features/native-mtls/intentions) |
 | Secret | A versioned, audited value of the built-in secret store | Namespace, per region | [Secret store](/docs/features/secrets) |

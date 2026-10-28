@@ -221,7 +221,7 @@ Connect][connect] integration.
 
 With `provider = "nomad"`, Norca also stores the `meta` (or `canary_meta` for
 canaries) of the service in its registrations, records the
-health and the topology zone of every instance (see the
+health of every instance (see the
 [health-based catalog](/docs/features/service-discovery/catalog)), and makes the
 services discoverable through the [built-in DNS](/docs/features/service-discovery/dns)
 and the [Consul-compatible API](/docs/features/service-discovery/consul-compatible-api)

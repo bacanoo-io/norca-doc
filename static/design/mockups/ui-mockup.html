@@ -410,9 +410,9 @@ const JOBTAB = {
     tr(['api-e441', reg('us-hetzner'), '10.40.2.5:8080', badge('passing'), badge('passing'), badge('passing'), 'igen'])]),
   placement: () => `<div class="card-body"><div class="row g-3"><div class="col-md-6"><h4>Elhelyezési szabályok</h4><pre class="fl-code">separate {
   selector { app = "api" }
-  scope    = "\${attr.platform.zone}"
+  scope    = "\${node.datacenter}"
   required = true
-}</pre><div class="small text-secondary">Két replika nem kerül közös zónába, más jobok azonos címkéjű allokációival együtt sem.</div></div>
+}</pre><div class="small text-secondary">Két replika nem kerül közös adatközpontba, más jobok azonos címkéjű allokációival együtt sem.</div></div>
     <div class="col-md-6"><h4>Disruption budget</h4><div class="datagrid mb-2"><div class="datagrid-item"><div class="datagrid-title">Szabály</div><div class="datagrid-content">min_healthy = 4</div></div><div class="datagrid-item"><div class="datagrid-title">Egészséges most</div><div class="datagrid-content">6 / 6 (eu-aws)</div></div><div class="datagrid-item"><div class="datagrid-title">Megszakítható most</div><div class="datagrid-content text-success">2 allokáció</div></div></div>
     <div class="small text-secondary">A drain és a kilakoltatás ezt tartja be; a darabszám csökkentésére nem vonatkozik.</div></div></div></div>`,
   events: () => `<div class="card-body">${tl([['git-branch', 'blue', '14:02', 'eu-gcp: deployment fut', 'canary promotálva automatikusan', ''], ['arrows-maximize', 'blue', '14:11', 'Felskálázva 4 → 6 (eu-gcp)', 'cpu 82%', ''], ['circle-check', 'green', '13:20', 'eu-aws: deployment sikeres', '6/6 egészséges', '']])}</div>`

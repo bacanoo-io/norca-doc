@@ -45,7 +45,7 @@ features; everything is gone when the agent stops.
 
 | File | |
 | --- | --- |
-| [dev.hcl](https://github.com/bacanoo-io/norca/blob/main/example/01-local-dev/dev.hcl) | Additions to the dev agent: autoscaler, DNS, Consul-compatible API, zone, healthy-only service lookups of the workloads (`default_healthy_only`: templates and the Task API; other API calls filter only with `?healthy=true`, and the DNS server always answers with healthy instances) |
+| [dev.hcl](https://github.com/bacanoo-io/norca/blob/main/example/01-local-dev/dev.hcl) | Additions to the dev agent: autoscaler, DNS, Consul-compatible API, healthy-only service lookups of the workloads (`default_healthy_only`: templates and the Task API; other API calls filter only with `?healthy=true`, and the DNS server always answers with healthy instances) |
 | [test-app.hcl](https://github.com/bacanoo-io/norca/blob/main/example/01-local-dev/test-app.hcl) | Variables of the [test-app pack](https://github.com/bacanoo-io/norca/blob/main/example/packs/test-app/README.md) for a dev agent |
 
 ## Steps
@@ -146,7 +146,7 @@ Then stop the agent with Ctrl-C: the dev agent keeps nothing.
 - **Services**: the catalog with the health of every instance.
 - **Scaling**: the policies of the built-in autoscaler and their events.
 - **Packages**: the `test-app` release and its revisions.
-- **Topology** and **Clients**: the node with its zone `dev`.
+- **Topology** and **Clients**: the node in its datacenter `dc1`.
 
 The **Secrets** page lists the secrets with their metadata and seal status; revealing a value is audited ([web UI](/docs/features/web-ui)).
 The task events of the allocation show which provider delivered each secret,
