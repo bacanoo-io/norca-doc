@@ -17,6 +17,7 @@ IBM and is not affiliated with them.
   {{< card link="configuration" title="Agent configuration" icon="cog" subtitle="Server and client configuration, including the Norca blocks." >}}
   {{< card link="commands" title="Commands (CLI)" icon="terminal" subtitle="The `norca` command line." >}}
   {{< card link="api" title="HTTP API" icon="code" subtitle="The Nomad 1.6.5 compatible HTTP API and the Norca endpoints." >}}
+  {{< card link="deployer" title="Deployer" icon="cloud-upload" subtitle="Install and maintain clusters from a declarative plan: servers and clients over SSH, rolling restarts, TLS, ACLs, packages, packs, secrets." >}}
   {{< card link="operations" title="Operations" icon="server" subtitle="Backups, seal and unseal, upgrades, monitoring, the pack registry." >}}
   {{< card link="design" title="Design" icon="pencil" subtitle="The design documents of the Norca features, with their status." >}}
 {{< /cards >}}
