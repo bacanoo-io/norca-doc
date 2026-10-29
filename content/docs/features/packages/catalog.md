@@ -48,7 +48,10 @@ flowchart LR
    category, whether the cluster can run it (the pack's `requires` block) and whether it is signed.
 3. **Install** opens the form of the pack. The leader builds it from `variables.hcl` and `metadata.hcl`
    ([the install form](#the-install-form)). **Plan** renders the pack on the leader and shows the
-   changes; **Install** applies it.
+   changes; **Install** applies it. **Atomic** below the form is the
+   [atomic mode](/docs/features/packages/releases#atomic-mode-and-production-namespaces) of this
+   install or upgrade: the namespace default (shown with its value, from the namespace meta
+   `pack.atomic` or `environment`), or on or off for this operation (`--atomic` in the CLI command).
 4. Releases installed from a cluster registry get **Upgrade** on their page: the same form with the
    values of the deployed revision, and a version select to move to another pack version. Releases
    installed with the CLI get it too when the cluster has a registry of the same source
@@ -94,7 +97,7 @@ and `uninstall` work on it.
 
 | Field | Meaning |
 | --- | --- |
-| `spec.type` | `git`, `oci`, `dir` (a directory on the servers; the source `builtin` is the packs that ship with Norca) or `bundle` (an [offline bundle](/docs/features/packages/supply-chain) on the servers) |
+| `spec.type` | `git`, `oci`, `dir` (a directory on the servers; the source `builtin` is the packs that ship with Norca), `bundle` (an [offline bundle](/docs/features/packages/supply-chain) on the servers) or `uploads` ([uploaded packs](#uploaded-packs)) |
 | `spec.source` | A git URL, `oci://host/repository`, a server path, or `builtin` |
 | `spec.defaultRef` | The tag or branch to fetch (`latest`) |
 | `spec.syncInterval` | Sync periodically, for example `15m` or `24h` (at least `1m`); empty or `0s` syncs on request only |
@@ -138,6 +141,29 @@ curl -X POST "$NORCA_ADDR/v1/pack-registry" -H "X-Nomad-Token: $NORCA_TOKEN" -d 
 - The credentials never appear in a URL, the clone, the cache or the status of the registry, and the
   servers never use credentials of their own environment or docker configuration.
 
+### Uploaded packs
+
+Packs without a registry, such as packs installed with the CLI from a local directory, are uploaded to
+a registry of the type `uploads` (by default the registry `uploads`, created by the first upload):
+**Upload pack** on the Registries tab, or `PUT /v1/pack-upload` with the archive as the body. An upload
+is at most 8 MiB and is one of:
+
+- a bundle of [`norca pack bundle create`](/docs/commands/pack/bundle/create), verified with the trusted
+  keys of the registry;
+- a tar or tar.gz of a pack directory (`metadata.hcl` at its root) or of several pack directories. These
+  carry no signatures: a registry with trusted keys takes bundles only. Every pack needs a version in
+  its `metadata.hcl`.
+
+```shell
+tar czf web-app.tgz -C ./packs web-app
+curl -X PUT "$NORCA_ADDR/v1/pack-upload?filename=web-app.tgz" -H "X-Nomad-Token: $NORCA_TOKEN" \
+  --data-binary @web-app.tgz
+```
+
+The servers keep the archive in their state (in chunks, which backups include), so every leader can
+rebuild the registry from it; a later upload of the same pack version replaces the earlier one. The
+Registries tab lists the uploads of the registry with their packs, and removes them.
+
 Syncs:
 
 | When | How |
@@ -167,7 +193,8 @@ from the type, and variables without a default are required.
 | Widget | For | Control |
 | --- | --- | --- |
 | `text` | strings | Input |
-| `number`, `slider` | numbers | Number input with its unit, bounds and preset buttons |
+| `number` | numbers | Number input with its unit, bounds and preset buttons |
+| `slider` | numbers with a validation `min` and `max` | Slider between the bounds, beside a number input with the unit; `step` sets its steps (default 1 for whole numbers, else a power of ten below a hundredth of the range), `presets` are marks and buttons |
 | `switch` | booleans | Switch |
 | `segmented`, `select` | allowed values | Radio group (up to three values) or select, with `option_labels` |
 | `secret` | secret strings | Masked input |
@@ -181,7 +208,10 @@ from the type, and variables without a default are required.
 
 The form sends only the values that differ from the pack's defaults, the required ones and those the
 release already had; hidden fields (`show_if`) are not sent. A tab shows the number of its errors, and
-Install opens the first tab with one. The **CLI command** tab shows the equivalent `norca pack run`.
+Install opens the first tab with one. The **JSON** tab shows the values the install sends as JSON and
+takes edits, which the other tabs show; a text that is not valid JSON or names a variable the pack
+doesn't have blocks the install until it is fixed (Variable secrets are entered on their own tab). The
+**CLI command** tab shows the equivalent `norca pack run`.
 
 ### Secrets
 
@@ -204,8 +234,8 @@ location of its registry, and `ref`, the tag or branch. The release page uses th
 - no such registry: **Add its registry to upgrade** adds one, filled in from the release (name, type,
   source, reference), and **Upgrade** follows. Add private sources on the Registries tab, with their
   credentials;
-- a pack from a local directory or a bundle has no source: upgrade it with the CLI (**Edit values** shows
-  its values and the command).
+- a pack from a local directory or an offline bundle: **Upload the pack to upgrade** uploads it (a tar.gz
+  of its directory, or the bundle) to the `uploads` registry, and **Upgrade** follows.
 
 Sources compare without the scheme case, a trailing `/` or `.git`, and for OCI without the tag.
 Releases installed before the source was recorded are upgraded with the CLI, or once with the CLI to
@@ -232,6 +262,7 @@ namespace "*" {
 | Task | Interface |
 | --- | --- |
 | Registries | `GET /v1/pack-registries`, `POST /v1/pack-registry`, `GET`, `PUT`, `DELETE /v1/pack-registry/:name`, `POST /v1/pack-registry/:name/sync` ([Pack registries HTTP API](/docs/api/pack-registries)) |
+| Uploads | `PUT /v1/pack-upload`, `DELETE /v1/pack-upload/:registry/:digest` |
 | Catalog and pack details | `GET /v1/packs`, `GET /v1/pack/:registry/:pack` |
 | Plan and install | `POST /v1/release/:name/plan-pack`, `POST /v1/release/:name/deploy-pack` |
 | Releases afterwards | [`norca pack status`](/docs/commands/pack/status), [`history`](/docs/commands/pack/history), [`rollback`](/docs/commands/pack/rollback), [`uninstall`](/docs/commands/pack/uninstall), [Releases HTTP API](/docs/api/releases) |
@@ -239,14 +270,12 @@ namespace "*" {
 
 ## Limits and status
 
-- Available: cluster registries of the types `git`, `oci`, `dir` and `bundle`, private git and OCI
-  sources, periodic and
+- Available: cluster registries of the types `git`, `oci`, `dir`, `bundle` and `uploads`, private git
+  and OCI sources, pack uploads, periodic and
   NATS-triggered syncs, the catalog, the install form, server-side plan and install, and upgrades of
   releases installed from a cluster registry.
-- Releases installed with the CLI from a local directory or a bundle are upgraded with the CLI
-  (**Edit values** on the release page shows their values and the command).
-- The form installs into the region of the UI; multi-region installs and the atomic switch are set with
-  the CLI. `slider` renders as a number input, and lists of objects are edited as JSON.
+- The form installs into the region of the UI; multi-region installs are set with the CLI. Lists of
+  objects are edited as JSON.
 
 ## Design
 

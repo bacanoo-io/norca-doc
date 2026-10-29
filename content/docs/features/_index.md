@@ -38,7 +38,7 @@ Only features marked *Available* can be used; the others are being built.
 | Norca pack registry (`nats`, `mtls-gateway`, `rustfs`, `consul`, `loadbalancer-operator`, `openobserve`, `otel-collector`, `postgres`, `forgejo`) | Available | [Pack registry](/docs/features/packages/registry) |
 | Package management: OCI registries, signing and trust policies, offline bundles, `pack.lock` | Available | [Supply chain](/docs/features/packages/supply-chain) |
 | Package management: server-side releases, signature enforcement in admission, variable constraints, rules and schemas, multi-region installs | Available | [Releases](/docs/features/packages/releases) |
-| Package management: cluster pack registries, catalog and install form in the web UI, server-side render, private git and OCI sources | Available | [Catalog and install form](/docs/features/packages/catalog) |
+| Package management: cluster pack registries, catalog and install form in the web UI, server-side render, private git and OCI sources, pack uploads, upgrades of CLI installs | Available | [Catalog and install form](/docs/features/packages/catalog) |
 | Embedded secret store: sealed keyring, versioned and audited secrets, `secret` block, Vault compatibility without a Vault | In progress (phases 0–4 available) | [Secret store](/docs/features/secrets) |
 | New web UI | Available (phases 1–4) | [Web UI](/docs/features/web-ui) |
 

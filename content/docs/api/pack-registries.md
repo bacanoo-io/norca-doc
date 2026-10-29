@@ -110,8 +110,9 @@ This endpoint creates or updates a registry and syncs it before it returns.
 - `Name` `(string: <required>)` - The registry name: lowercase letters, digits and dashes. With
   `/v1/pack-registry/:name`, the name of the path.
 
-- `Spec.type` `(string: <required>)` - `git`, `oci`, `dir` (a directory on the servers) or `bundle`
-  (an offline bundle on the servers).
+- `Spec.type` `(string: <required>)` - `git`, `oci`, `dir` (a directory on the servers), `bundle`
+  (an offline bundle on the servers) or `uploads` (uploaded packs, with the source `uploads`; see
+  [upload pack](#upload-pack)).
 
 - `Spec.source` `(string: <required>)` - A git URL, `oci://host/repository`, a server path, or
   `builtin` (type `dir`: the packs that ship with Norca).
@@ -170,6 +171,48 @@ This endpoint removes a registry and its cache. Releases installed from it keep 
 | Method   | Path                       | Produces           |
 | -------- | -------------------------- | ------------------ |
 | `DELETE` | `/v1/pack-registry/:name`  | `application/json` |
+
+| Blocking Queries | ACL Required |
+| ---------------- | ------------ |
+| `NO`             | registry `write` |
+
+## Upload pack
+
+This endpoint uploads a pack archive to a registry of the type `uploads` and syncs it; the registry is
+created if it doesn't exist. The body is the archive (at most 8 MiB): a bundle of
+`norca pack bundle create`, verified with the trusted keys of the registry, or a tar or tar.gz of pack
+directories, which a registry with trusted keys refuses.
+
+| Method         | Path              | Produces           |
+| -------------- | ----------------- | ------------------ |
+| `PUT` / `POST` | `/v1/pack-upload` | `application/json` |
+
+| Blocking Queries | ACL Required |
+| ---------------- | ------------ |
+| `NO`             | registry `write` |
+
+### Parameters
+
+- `registry` `(string: "uploads")` - The registry, a query parameter.
+
+- `filename` `(string: "")` - The file name, shown with the upload.
+
+### Response
+
+- `Registry` - The registry after the sync; `Status.uploads` lists its uploads (`digest`, `fileName`,
+  `format`, `size`, `uploadedAt`, `packs`, and `error` for an upload that no longer imports).
+- `Digest` - The SHA-256 digest of the archive.
+
+An archive that is not a bundle, tar or tar.gz, has no pack, or has entries outside its root or links is
+refused with `400`, a larger one with `413`.
+
+## Delete upload
+
+This endpoint removes an upload and syncs its registry; its packs leave the catalog.
+
+| Method   | Path                                 | Produces           |
+| -------- | ------------------------------------ | ------------------ |
+| `DELETE` | `/v1/pack-upload/:registry/:digest`  | `application/json` |
 
 | Blocking Queries | ACL Required |
 | ---------------- | ------------ |
