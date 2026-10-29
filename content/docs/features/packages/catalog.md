@@ -50,7 +50,9 @@ flowchart LR
    ([the install form](#the-install-form)). **Plan** renders the pack on the leader and shows the
    changes; **Install** applies it.
 4. Releases installed from a cluster registry get **Upgrade** on their page: the same form with the
-   values of the deployed revision, and a version select to move to another pack version.
+   values of the deployed revision, and a version select to move to another pack version. Releases
+   installed with the CLI get it too when the cluster has a registry of the same source
+   ([CLI installs](#cli-installs)).
 
 All writes, pack details and renders run on the leader, which keeps the cache; the other servers and
 the client agents forward them.
@@ -192,6 +194,23 @@ Variables with secret-like names but without a `secret` block are recorded as `(
 release, but rendered into the templates like any variable; an upgrade from the form asks for them
 again.
 
+## CLI installs
+
+`norca pack run` records in the release where the pack came from: `source`, the git URL or `oci://`
+location of its registry, and `ref`, the tag or branch. The release page uses them:
+
+- a cluster registry with the same source that has the pack: **Upgrade** opens the form with the values
+  of the deployed revision, and the leader renders the pack from that registry;
+- no such registry: **Add its registry to upgrade** adds one, filled in from the release (name, type,
+  source, reference), and **Upgrade** follows. Add private sources on the Registries tab, with their
+  credentials;
+- a pack from a local directory or a bundle has no source: upgrade it with the CLI (**Edit values** shows
+  its values and the command).
+
+Sources compare without the scheme case, a trailing `/` or `.git`, and for OCI without the tag.
+Releases installed before the source was recorded are upgraded with the CLI, or once with the CLI to
+record it.
+
 ## Permissions
 
 | What | ACL |
@@ -224,8 +243,8 @@ namespace "*" {
   sources, periodic and
   NATS-triggered syncs, the catalog, the install form, server-side plan and install, and upgrades of
   releases installed from a cluster registry.
-- Releases installed with the CLI are upgraded with the CLI (**Edit values** on the release page shows
-  their values and the command); upgrading them from the form is planned.
+- Releases installed with the CLI from a local directory or a bundle are upgraded with the CLI
+  (**Edit values** on the release page shows their values and the command).
 - The form installs into the region of the UI; multi-region installs and the atomic switch are set with
   the CLI. `slider` renders as a number input, and lists of objects are edited as JSON.
 

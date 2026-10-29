@@ -136,9 +136,11 @@ another release without `TakeOwnership`.
 
 - `:name` `(string: <required>)` - The release name, in the path.
 
-- `Pack` `(object: <required>)` - The pack: `Name`, `Version`, `Registry`, `Path`, `Digest`,
-  `Signer`, `Signatures` (each `Payload` and `Signature`, the cosign simple signing format),
-  `Requires`.
+- `Pack` `(object: <required>)` - The pack: `Name`, `Version`, `Registry`, `Path`, `Source` (the git
+  URL or `oci://` location of its registry) and `Ref` (the tag or branch), `Digest`, `Signer`,
+  `Signatures` (each `Payload` and `Signature`, the cosign simple signing format), `Requires`.
+  `norca pack` fills `Source` and `Ref` for packs of git and OCI registries; the web UI upgrades the
+  release from a cluster registry of that source.
 
 - `Description` `(string: "")` - Description of the revision.
 

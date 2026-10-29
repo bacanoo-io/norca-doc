@@ -133,15 +133,17 @@ The complete command list is in the [`norca pack` reference](/docs/commands/pack
   `pack.lock`, variable constraints, rules and schemas, signature enforcement in admission policies,
   cluster pack registries with the catalog and install form of the web UI.
 - `norca pack` renders on the client; the servers render only the packs of cluster pack registries.
-- Releases installed with the CLI are upgraded with the CLI.
+- Releases installed with the CLI from a local directory or a bundle are upgraded with the CLI; those
+  from a git or OCI registry are upgraded in the web UI once the cluster has a registry of its source.
 - `*.netpol.hcl.tpl` (network rules) is reserved and rejected by the release apply for now.
 - Signatures are key-based cosign signatures; transparency log (Rekor) entries and keyless
   (Sigstore identity) signing are not supported.
 - The [web UI](/docs/features/web-ui) lists the releases under **Packages** (pack, revision, phase,
   drift, signature), shows resources, revisions and events, and can roll back, run the tests, check
   drift and uninstall. Its **Catalog** and **Registries** tabs install packs of cluster registries,
-  and their releases get **Upgrade**; for releases installed with the CLI, changed values become an
-  `upgrade` command to run with the CLI.
+  and their releases get **Upgrade**, as do releases installed with the CLI from a registry of the
+  cluster (**Add its registry to upgrade** adds a missing one); for packs from a local directory,
+  changed values become an `upgrade` command to run with the CLI.
 
 ## Design
 
