@@ -29,7 +29,44 @@ with Consul service mesh.
 
 Install the [CNI reference plugins](https://github.com/containernetworking/plugins/releases)
 in the client's [`cni_path`](/docs/configuration/client#cni_path) (default `/opt/cni/bin`)
-on each Linux client.
+on each Linux client. They are not part of the Norca archives.
+
+### Supported versions
+
+| | |
+| --- | --- |
+| CNI library of the client | `containernetworking/cni` v1.3.1, `containerd/go-cni` v1.1.14 |
+| CNI specification versions (`cniVersion`) | 0.1.0, 0.2.0, 0.3.0, 0.3.1, 0.4.0, 1.0.0, 1.1.0 |
+| Configuration of the `bridge` network mode | `cniVersion` 0.4.0 |
+| CNI reference plugins | v1.9.1 recommended; any 1.x release works |
+
+A network configuration with a `cniVersion` above 1.1.0 is rejected. The
+`GC` and `STATUS` operations of the 1.1.0 specification are not called by
+Norca.
+
+### Downloads
+
+| Platform | Archive | Checksum |
+| --- | --- | --- |
+| Linux x86-64 | [cni-plugins-linux-amd64-v1.9.1.tgz](https://github.com/containernetworking/plugins/releases/download/v1.9.1/cni-plugins-linux-amd64-v1.9.1.tgz) | [SHA-256](https://github.com/containernetworking/plugins/releases/download/v1.9.1/cni-plugins-linux-amd64-v1.9.1.tgz.sha256) |
+| Linux ARM64 | [cni-plugins-linux-arm64-v1.9.1.tgz](https://github.com/containernetworking/plugins/releases/download/v1.9.1/cni-plugins-linux-arm64-v1.9.1.tgz) | [SHA-256](https://github.com/containernetworking/plugins/releases/download/v1.9.1/cni-plugins-linux-arm64-v1.9.1.tgz.sha256) |
+
+Other versions and platforms: [all releases of the CNI reference plugins](https://github.com/containernetworking/plugins/releases).
+The specification of the supported versions: [SPEC.md of CNI v1.3.1](https://github.com/containernetworking/cni/blob/v1.3.1/SPEC.md).
+
+Install them on a client, as root:
+
+```shell
+CNI_VERSION=v1.9.1
+ARCH=$(dpkg --print-architecture 2>/dev/null || uname -m | sed 's/x86_64/amd64/; s/aarch64/arm64/')
+curl -fsSLO "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-${ARCH}-${CNI_VERSION}.tgz"
+curl -fsSL "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-${ARCH}-${CNI_VERSION}.tgz.sha256" | sha256sum -c -
+mkdir -p /opt/cni/bin
+tar -C /opt/cni/bin -xzf "cni-plugins-linux-${ARCH}-${CNI_VERSION}.tgz"
+```
+
+Restart the client agent afterwards: it fingerprints the plugins at start
+(node attributes `plugins.cni.version.<plugin>`).
 
 ## CNI plugins
 
