@@ -201,7 +201,7 @@ from the type, and variables without a default are required.
 | `code` | configuration text | Monospace text area |
 | `tags`, `datacenter-multiselect` | lists | Comma or line separated values |
 | `key-value` | maps | `key=value` lines |
-| `object-list` | lists of objects | JSON |
+| `object-list` | lists of objects (`list(object({...}))`, the default for them) | A table: a row per item, a column per attribute (a select for an attribute with `item_options`, a number input, a checkbox or text; lists and objects in a cell as JSON), rows added and removed, errors per cell. Lists whose items have no declared attributes stay JSON |
 | (objects) | `object({...})` | A field per attribute |
 | `namespace-select`, `region-select` | names | The namespaces and regions of the cluster |
 | `node-pool-select`, `storage-volume-select` | names | Input |

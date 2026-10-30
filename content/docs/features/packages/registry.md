@@ -85,11 +85,12 @@ updating and air-gapped use are described in
 | [forgejo](#forgejo) | 0.2.0 | 0.2.0 | Forgejo (GPL-3.0-or-later, referenced, never shipped) as the internal git server and container registry: SQLite and repositories on a host volume, packages and LFS in RustFS, secrets from the built-in secret store, optional HTTPS, SSH, initial admin and periodic dumps; optional `/metrics` |
 | [loadbalancer-operator](#loadbalancer-operator) | 0.1.0 | 0.1.0 | The LoadBalancer operator as an operator pack: object kind (webhooks, limits), ACL policy bound to the controller job, admission policy, controller job |
 | [mtls-gateway](#mtls-gateway) | 0.2.1 | 0.2.0 | The cross-region native mTLS gateway of a region (`mtls { mode = "gateway" }`): SNI passthrough Envoy on the gateway nodes, injected by the servers or defined by the pack; optional Envoy statistics |
-| [nats](#nats) | 0.3.0 | 0.2.0 | A NATS cluster per region (JetStream, supercluster gateways, TLS and auth from Variables, or users in accounts with subject permissions and passwords from the built-in secret store) and the event stream to NATS bridge, optional Prometheus exporter |
+| [nats](#nats) | 0.5.1 | 0.2.0 | A NATS cluster per region (JetStream, supercluster gateways, TLS and auth from Variables, or users in accounts with subject permissions and passwords from the built-in secret store) and the event stream to NATS bridge, optional Prometheus exporter |
 | [openobserve](#openobserve) | 0.2.0 | 0.1.0 | OpenObserve (AGPL-3.0, referenced, never shipped) as the observability backend (logs, metrics, traces): single node on a host volume or a cluster of node roles on PostgreSQL, NATS and RustFS, TLS with Norca's workload certificates, root user and the ingest credentials of the collectors in the built-in secret store |
 | [otel-collector](#otel-collector) | 0.1.1 | 0.1.0 | The OpenTelemetry Collector (contrib, Apache-2.0) on every node: host, Norca agent, NATS, RustFS, Forgejo, mTLS gateway, Consul and PostgreSQL metrics found through the native catalog, an OTLP receiver for the applications, export to OpenObserve trusting Norca's CA |
 | [postgres](#postgres) | 0.1.0 | 0.1.0 | A single PostgreSQL server (PostgreSQL License, referenced, never shipped): data on a host volume, superuser, application databases and a `pg_monitor` role from the built-in secret store, optional TLS with Norca's workload certificates, optional periodic dumps to S3 |
 | [rustfs](#rustfs) | 0.2.0 | 0.2.0 | RustFS (Apache-2.0) as the S3 store of the Norca backups: single node or distributed, credentials from the built-in secret store, host volumes, health check roles, optional bucket creation, optional OTLP metrics |
+| [traefik](#traefik) | 0.1.0 | – | Traefik Proxy (MIT, the official image) as the edge router of a region: entrypoints for HTTP, HTTPS, TCP and UDP edited as a table in the install form, certificates from the built-in secret store applied without a restart, routes from the tags of the native catalog and static configuration; examples for web, WebSocket, gRPC and TCP (Norca 0.3.0) |
 
 The *Version* column shows the pack versions on the registry's `main` branch; the `v0.1.0` tag
 contains `mtls-gateway` 0.2.0 (its printed upstream example lacks the label of the `upstream`
@@ -397,6 +398,39 @@ protect.
 ```shell
 norca secret put rustfs/root access_key=norca-backup secret_key=-
 norca pack run rustfs --registry=norca --var='buckets=["norca-backup"]'
+```
+
+## traefik
+
+[Traefik Proxy](https://traefik.io/traefik/) (MIT) as the edge router of a region, from the official
+image: a service job with instances on different nodes or a system job on the edge nodes. The
+**Entrypoints** tab of the install form is a table of the ports open to the outside (name, port,
+protocol `http`, `https`, `tcp` or `udp`, and a redirect from an `http` to an `https` entrypoint); the
+admin port serves `/ping` (the health check) and optionally the dashboard and `/metrics`.
+
+Certificates come from the built-in secret store: every secret of `tls_certificates` holds the items
+`cert` and `key` (PEM); Traefik picks one by the SNI name, and a renewed certificate is applied without
+a restart. Routes come from the tags of the services of Norca's native catalog
+(`traefik.enable=true`, `traefik.http.routers.<name>.rule=...`), read with the workload identity of
+Traefik, and from `dynamic_config`: Traefik's dynamic configuration (YAML) for backends outside the
+catalog. The registry's `examples/traefik/` has it for a website over HTTPS (`web.hcl`), WebSocket
+(`websocket.hcl`), gRPC to h2c backends (`grpc.hcl`) and raw TCP with TLS passthrough and UDP
+(`tcp.hcl`).
+
+| Variable | Default | |
+| --- | --- | --- |
+| `job_type`, `count` | `service`, `2` | `system`: one per node of the node pool |
+| `entrypoints` | `web` (80, redirected to 443), `websecure` (443) | name, port, protocol, redirect_to |
+| `network_mode`, `host_network` | `host`, `""` | where the ports are bound |
+| `admin_port`, `dashboard`, `metrics` | `8080`, `false`, `false` | the admin entrypoint |
+| `tls_certificates`, `tls_min_version` | `[]`, `VersionTLS12` | secrets with the items cert and key |
+| `catalog_enabled`, `catalog_namespaces` | `true`, `["default"]` | routing by service tags |
+| `dynamic_config` | `""` | static routes (YAML) |
+| `image` | `docker.io/library/traefik:v3.7.16` | the official image |
+
+```shell
+norca secret put traefik/certs/example-com cert=@fullchain.pem key=@privkey.pem
+norca pack run traefik --registry=norca -f examples/traefik/web.hcl
 ```
 
 ## Versions and tags
