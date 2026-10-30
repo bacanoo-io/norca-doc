@@ -32,6 +32,9 @@ The following subcommands are available:
 - [`operator backup`](/docs/commands/operator/backup) - (Norca) List, browse
   and restore the scheduled backups of a region
 
+- [`operator bus status`](/docs/commands/operator/bus/status) - (Norca)
+  Display the status of the system bus of a server
+
 - [`operator debug`][debug] - Build an archive of debug data
 
 - [`operator gossip keyring generate`][gossip_keyring_generate] - Generates a gossip encryption key

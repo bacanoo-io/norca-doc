@@ -86,14 +86,16 @@ successful backup is older than two intervals. The metrics come from the
 current leader only, so scrape all servers. See
 [Backup and restore operations](/docs/operations/backup-restore).
 
-### NATS bridge
+### System bus
 
-The [NATS bridge](/docs/features/nats-bridge) serves its own Prometheus metrics
-(`norca_natsbridge_*`) on its metrics port, registered as the service
-`natsbridge-metrics`. Watch `norca_natsbridge_lag_seconds` (it grows while NATS
-is unreachable), `norca_natsbridge_gaps_total` (events were lost because the
-event buffer of the servers overflowed) and `norca_natsbridge_leader` (exactly
-one instance per region should report 1).
+[`norca operator bus status`](/docs/commands/operator/bus/status) (or
+`GET /v1/operator/bus` on each server) shows the routes, the JetStream meta
+leader, the streams with their message counts and the connections of the
+[system bus](/docs/features/system-bus) of a server. Check that every server
+of a region is clustered with routes to the others, that JetStream has a meta
+leader, and that `NORCA_EVENTS_<region>` grows; gap markers on
+`<prefix>.<region>.Bus` mean that events were lost because the event buffer
+of the servers overflowed.
 
 ## A metrics, traces and logs stack from the registry
 

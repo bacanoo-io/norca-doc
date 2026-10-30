@@ -11,7 +11,7 @@ This page records under which license each part of the project falls, where the 
 
 ## Principle
 
-**Wherever possible, everything is MPL 2.0.** This applies to the Nomad fork (modified and new files alike), the Nomad Pack fork, the standalone components (for example the controller SDK in `nomad/controller` and the NATS bridge in `nomad/natsbridge`) and the documentation. The only exceptions are files taken from third parties, unchanged or modified: these keep their original license.
+**Wherever possible, everything is MPL 2.0.** This applies to the Nomad fork (modified and new files alike), the Nomad Pack fork, the standalone components (for example the controller SDK in `nomad/controller`) and the documentation. The only exceptions are files taken from third parties, unchanged or modified: these keep their original license.
 
 **There is no separate control plane.** Every feature is built into the fork, according to the design documents.
 
@@ -76,7 +76,7 @@ We do not mix licenses within one file: code from a third party goes into a sepa
 
 **Checking:** in CI, `go-licenses` runs on every Go module, and an npm license checker runs for the UI, against the allowed list; the build fails on a prohibited or unknown license. A new dependency can only be added if its license is on the allowed list; an exception requires a decision, with an update of this page.
 
-**NATS:** the license of NATS was disputed in 2025 (a planned switch to BSL); the project stayed in the CNCF under Apache 2.0. Verified on 2026-10-24 for the versions in `nomad/natsbridge/go.mod`: `nats.go` v1.54.0, `nkeys` v0.4.16, `nuid` v1.0.1 and, as a test-only dependency, `nats-server/v2` v2.15.0 (with `jwt/v2` v2.8.2) each ship the unmodified Apache License 2.0 text, their Go files carry Apache 2.0 headers, and none contains a BUSL or other non-open-source marking. A NATS version bump must repeat this check.
+**NATS:** the license of NATS was disputed in 2025 (a planned switch to BSL); the project stayed in the CNCF under Apache 2.0. Verified on 2026-10-24 for the versions in `nomad/go.mod`: `nats.go` v1.54.0, `nkeys` v0.4.16, `nuid` v1.0.1 and `nats-server/v2` v2.15.0 (embedded in the servers as the system bus, with `jwt/v2` v2.8.2) each ship the unmodified Apache License 2.0 text, their Go files carry Apache 2.0 headers, and none contains a BUSL or other non-open-source marking. A NATS version bump must repeat this check.
 
 **Supply chain:** a new dependency version is only accepted if it was released at least two weeks ago.
 
@@ -87,7 +87,7 @@ We do not mix licenses within one file: code from a third party goes into a sepa
 - **Container images:** the same files in the image (for example `/usr/share/doc/norca/`), and the `org.opencontainers.image.source`, `org.opencontainers.image.revision` and `org.opencontainers.image.licenses` labels.
 - **SBOM:** a CycloneDX or SPDX format software bill of materials per release, for the binaries and the images.
 
-**Implementation:** `nomad/tools/thirdparty` generates `THIRD_PARTY_NOTICES.md` (`make notices` in `nomad/`) from the Go modules linked into `norca` and `norca-natsbridge` on every release platform and from the production npm dependencies of the UI, and writes a CycloneDX SBOM per binary from its Go build information (`make sbom`). It fails on a license outside the allowed list; decisions about individual components (dual licenses, unusual license files) are recorded with their reasons in `nomad/tools/thirdparty/overrides.go`, and a decision marked as pending legal review blocks the release. The compliance workflow checks that the committed file is current. `.github/workflows/release.yml` (tag `v*`) builds the archives with `LICENSE`, `NOTICE` and `THIRD_PARTY_NOTICES.md`, the SBOMs and checksums, the container image (files in `/usr/share/doc/norca/`, OCI labels, SBOM and provenance attestations), and a draft release whose notes link the source tag and state the MPL 2.0 terms.
+**Implementation:** `nomad/tools/thirdparty` generates `THIRD_PARTY_NOTICES.md` (`make notices` in `nomad/`) from the Go modules linked into `norca` on every release platform and from the production npm dependencies of the UI, and writes a CycloneDX SBOM per binary from its Go build information (`make sbom`). It fails on a license outside the allowed list; decisions about individual components (dual licenses, unusual license files) are recorded with their reasons in `nomad/tools/thirdparty/overrides.go`, and a decision marked as pending legal review blocks the release. The compliance workflow checks that the committed file is current. `.github/workflows/release.yml` (tag `v*`) builds the archives with `LICENSE`, `NOTICE` and `THIRD_PARTY_NOTICES.md`, the SBOMs and checksums, the container image (files in `/usr/share/doc/norca/`, OCI labels, SBOM and provenance attestations), and a draft release whose notes link the source tag and state the MPL 2.0 terms.
 
 ## Trademarks and branding
 
@@ -123,7 +123,6 @@ norca/
 ├── nomad/                    # Nomad v1.6.5 fork, with history (main Go module)
 │   ├── api/                  # API client (separate Go module)
 │   ├── controller/           # controller SDK and sample operators (separate Go module, uses only api/)
-│   ├── natsbridge/           # event stream → NATS bridge (separate Go module, uses only api/ and controller/)
 │   ├── secretstore/ubix/     # uBixVault v1.5.0 (BSD-3-Clause), with history; core of the built-in secret store
 │   └── pack/                 # Nomad Pack v0.4.2 fork, with history; `norca pack` subcommand
 └── .github/
@@ -140,7 +139,7 @@ Checked on 2026-10-25 (branch `chore/prepublish-audit`); each item notes how it 
 - [x] Binary and CLI named `norca` (CLI text, build outputs, container image, `NORCA_*` CLI environment variables); `nomad` remains only as a documented, not shipped compatibility alias
 - [x] Neutral project name; trademark notice in the README and the NOTICE; HashiCorp logos and branding removed outside the UI — name, README and NOTICE notices done; the HashiCorp logos were removed from the OIDC login page, the upstream `nomad/README.md` and the website assets; `nomad/website` keeps only `content/`, the MPL 2.0 documentation text of v1.6.5, as a reference (the website scaffolding and its `LICENSE.md`, which called the design proprietary to HashiCorp, were removed; branch `chore/upstream-branding`); the CLI help, log and error texts and the `job init` templates no longer link the Nomad or HashiCorp developer websites, and the HTTP User-Agent is `Norca/<version> (Nomad API <version>; <go version>)`; the inert upstream infrastructure (`nomad/.github`, `CODEOWNERS`, `.release`, `.copywrite.hcl`) was deleted. The UI branding is handled by the UI rebuild (UI phase 4 of [ui-plan.md](/docs/design/ui-plan)); compatibility names (`NOMAD_*` variables, `X-Nomad-Token`, module paths, metric names) stay by design
 - [x] The original copyright and SPDX headers are intact; `reuse lint` is clean — reuse 5.0.2: compliant with REUSE 3.3, licenses MIT and MPL-2.0 only; for every file of the two upstream tags still present, the copyright and SPDX lines are unchanged, except the 43 BUSL-1.1 files replaced clean room at the same paths, which carry Norca headers
-- [x] License check in CI: no prohibited license, no ApexCharts — the commands of every job of `.github/workflows/compliance.yml` were replayed locally: `go-licenses` v1.6.0 passes for the nomad, api, controller, natsbridge and tools modules, the UI license checker passes on the production dependencies, `make check-notices` passes, and no lock or package file names `apexcharts`
+- [x] License check in CI: no prohibited license, no ApexCharts — the commands of every job of `.github/workflows/compliance.yml` were replayed locally: `go-licenses` v1.6.0 passes for the nomad, api, controller and tools modules, the UI license checker passes on the production dependencies, `make check-notices` passes, and no lock or package file names `apexcharts`
 - [x] THIRD_PARTY_NOTICES generated, and included in the binaries and the container images (release archives and image via `release.yml`; no decision in `nomad/tools/thirdparty/overrides.go` is pending: the UI exceptions are recorded as `Exception` overrides, and the `-strict` check of the release passes)
 - [x] In the release process: source tag link, MPL notice, OCI labels, SBOM
 - [x] CONTRIBUTING.md, pull request template, DCO check — the three agree on sign-off, headers, the BSL and clean room rules, third-party code and dependencies; the `dco` job's command finds no unsigned commit on `main` after the repository skeleton; CONTRIBUTING.md lists the checks CI actually runs, including the test workflow (`.github/workflows/test.yml`)

@@ -488,6 +488,31 @@ The `policy` field for the backup rule can have one of the following values:
 
 Full restores, their approval and the keyring restore need a management token.
 
+## Bus rules
+
+(Norca) The `bus` rule allows a token to connect to the
+[system bus](/docs/configuration/bus) of the servers and lists the NATS
+subjects it may use. Without a bus rule a token can't connect; management
+tokens may use every subject.
+
+```hcl
+bus {
+  subscribe = ["nomad.*.>"]
+  publish   = ["nomad.packs.pushed", "nomad.packs.pushed.>"]
+}
+```
+
+- `subscribe` `(array<string>: [])` - Subjects the token may subscribe to.
+- `publish` `(array<string>: [])` - Subjects the token may publish to.
+- `leafnode` `(bool: false)` - Reserved for leaf node connections of NATS
+  servers to the bus; the bus does not accept leaf nodes yet.
+
+Subjects may use the NATS wildcards `*` (one token) and `>` (the remaining
+tokens, last only). Subjects starting with `$SYS` can't be granted. The lists
+of all policies of a token are combined. A connection may always receive the
+replies to its own requests. When the token or its policies change, its
+connections are closed and reconnect with the new rights.
+
 ## Host Volume rules
 
 The `host_volume` rule controls access to mounting and accessing [host

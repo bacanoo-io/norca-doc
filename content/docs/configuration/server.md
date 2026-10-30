@@ -41,6 +41,9 @@ server {
   into S3-compatible stores and directories. See the
   [`backup` block](/docs/configuration/backup).
 
+- `bus` - (Norca) Configures the system bus, the NATS server with JetStream
+  embedded in the servers. See the [`bus` block](/docs/configuration/bus).
+
 - `bootstrap_expect` `(int: required)` - Specifies the number of server nodes to
   wait for before bootstrapping. It is most common to use the odd-numbered
   integers `3` or `5` for this value, depending on the cluster size. A value of

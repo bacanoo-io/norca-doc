@@ -5,8 +5,7 @@ description: The features Norca adds to the Nomad v1.6.5 core, with their status
 weight: 4
 ---
 
-Every feature below is built into the `norca` binary, except the NATS bridge (`norca-natsbridge`, in the
-release archives) and the deployer (`norca-deployer`, run on the operator's machine); there is no separate
+Every feature below is built into the `norca` binary, except the deployer (`norca-deployer`, run on the operator's machine); there is no separate
 control plane. Features that
 write new kinds of data to Raft are enabled once every server of the region runs a Norca version that
 supports them ([version gate](/docs/introduction/compatibility#version-gate-of-the-norca-features)).
@@ -26,7 +25,7 @@ Only features marked *Available* can be used; the others are being built.
 | Health check roles (startup, readiness, liveness) | Available | [Health check roles](/docs/features/health-check-roles) |
 | Network rules, levels A and B (`NetworkPolicy`, cluster-level `AdminNetworkPolicy` with explicit deny, nftables in the allocation's network namespace) | Available | [Network rules](/docs/features/network-rules) |
 | Operator framework: custom object kinds and objects, controller SDK, lifecycle (finalizers, deletion modes, garbage collection), ecosystem (operator packs, webhooks, schema migrations, limits, `norca operator init`, `norca object-kind lint`) | Available (phases 1–4, with the web UI pages) | [Operator framework](/docs/features/operator-framework) |
-| Event stream → NATS bridge (one job per region), pack registry syncs from NATS | Available | [NATS bridge](/docs/features/nats-bridge) |
+| System bus: NATS with JetStream embedded in the servers; the event stream of each region and pack push notices on it | Available | [System bus](/docs/features/system-bus) |
 | Multiregion deployments (staged rollout, `on_failure`, global tokens, `norca deployment run`) | Available | [Multiregion deployments](/docs/features/multiregion) |
 | Backup and restore: scheduled, age-encrypted backups to S3-compatible stores and shared directories, browsing and selective restore | Available | [Backup and restore](/docs/features/backup-restore) |
 | Backup and restore: full region restore with preview and two-person approval, keyring restore, `restore-bootstrap` | Available | [Backup and restore](/docs/features/backup-restore) |

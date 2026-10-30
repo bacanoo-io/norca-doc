@@ -164,6 +164,39 @@ the packs of its last good sync.
 
 The response is the registry after the sync.
 
+## Notify a pack push
+
+This endpoint announces that packs were pushed to a registry source. It names
+the source, or a cluster registry by name. The leader of every region with a
+matching registry syncs it: through the
+[system bus](/docs/features/system-bus#pack-push-notices) when it runs,
+otherwise directly in the region of the request.
+
+| Method | Path                               | Produces           |
+| ------ | ---------------------------------- | ------------------ |
+| `POST` | `/v1/pack-registries/notify-push`  | `application/json` |
+
+| Blocking Queries | ACL Required |
+| ---------------- | ------------ |
+| `NO`             | registry `write` |
+
+### Payload
+
+- `Source` `(string: "")` - The source the packs were pushed to, for example
+  `oci://ghcr.io/acme/packs`. Compared without the scheme case, a trailing
+  `/` and `.git`.
+- `Registry` `(string: "")` - The name of a cluster registry to sync. One of
+  `Source` and `Registry` is required.
+- `Pack`, `Version`, `Digest` `(string: "")` - Informational.
+
+### Sample Request
+
+```shell-session
+$ curl -X POST -H "X-Nomad-Token: $TOKEN"     -d '{"Source": "oci://ghcr.io/acme/packs", "Pack": "web", "Version": "1.4.0"}'     https://localhost:4646/v1/pack-registries/notify-push
+```
+
+A registry is synced at most once a minute on push notices.
+
 ## Delete registry
 
 This endpoint removes a registry and its cache. Releases installed from it keep running.

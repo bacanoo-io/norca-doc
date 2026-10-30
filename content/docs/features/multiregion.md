@@ -134,8 +134,8 @@ flowchart LR
 
 The regions talk over the server RPC port (4647) with region-specific server
 certificates, typically inside a VPN between the clouds. Nothing in the
-rollout uses NATS; the [NATS bridge](/docs/features/nats-bridge) only forwards
-the deployment events of each region for observation.
+rollout uses NATS; the [system bus](/docs/features/system-bus) of each region only
+keeps its deployment events for observation.
 
 ## Example
 

@@ -124,8 +124,8 @@ Not shown, with pointers:
   (mentioned in 02), keyring restore: [backup plan](/docs/design/backup-restore-plan).
 - The `consul` pack (mentioned in 03): Consul is BSL 1.1 and is installed from
   HashiCorp's release after you accept its license.
-- The event stream → NATS bridge (`bridge_enabled` of the `nats` pack, mentioned
-  in 04) and the Variables topic of the event stream.
+- The event stream on the [system bus](/docs/features/system-bus) of the servers
+  and the Variables topic of the event stream.
 - Pack supply chain (OCI registries, signatures, trust policies, bundles,
   `pack.lock`) and signature enforcement in admission:
   [supply-chain.md](/docs/features/packages/supply-chain), [releases.md](/docs/features/packages/releases).

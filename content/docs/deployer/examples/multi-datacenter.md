@@ -1,11 +1,11 @@
 ---
 title: "Several datacenters with NATS"
-description: "One region over three datacenters: a server per datacenter, a NATS cluster with one server per datacenter, the event bridge into a JetStream stream with 3 replicas."
+description: "One region over three datacenters: a server per datacenter, the event stream on the system bus with 3 replicas, a NATS cluster with one server per datacenter for the applications."
 weight: 3
 origin: "norca-deployer/examples/multi-datacenter.yaml"
 ---
 
-One region over three datacenters: a server per datacenter, a NATS cluster with one server per datacenter, the event bridge into a JetStream stream with 3 replicas.
+One region over three datacenters: a server per datacenter, the event stream on the system bus with 3 replicas, a NATS cluster with one server per datacenter for the applications.
 
 `multi-datacenter.yaml`:
 
@@ -19,9 +19,10 @@ One region over three datacenters: a server per datacenter, a NATS cluster with 
 #   - two clients per datacenter with Docker
 #   - a NATS cluster with one server per datacenter (the "separate" rule on
 #     ${node.datacenter}), JetStream, users with generated passwords
-#   - the event stream bridge: the Norca events of the region go to
-#     nomad.eu.<topic> and into a JetStream stream with 3 replicas, one per
-#     datacenter, so the event history survives a datacenter loss as well
+#   - the event stream on the system bus of the servers: the Norca events of
+#     the region go to nomad.eu.<topic> in the stream NORCA_EVENTS_eu with 3
+#     replicas, one per server, so the event history survives a datacenter
+#     loss as well
 #
 #   norca-deployer plan  -c examples/multi-datacenter.yaml
 #   norca-deployer apply -c examples/multi-datacenter.yaml
@@ -39,7 +40,6 @@ metadata:
 release:
   version: v0.2.0
   source: official
-  natsbridge: true                  # norca-natsbridge on the clients, for the bridge job.
 
 upgrade:
   max_parallel_clients: 1           # Clients restart one at a time (also across datacenters).
@@ -74,10 +74,8 @@ security:
     enabled: true
     auto_bootstrap: true
     policies:
-      - name: natsbridge            # The bridge job reads the events with its workload identity.
-        rules_file: policies/natsbridge.hcl
-        job:
-          job_id: natsbridge
+      - name: events-reader         # A service that reads the event stream from the bus
+        rules_file: policies/events-reader.hcl   # (written for eu-central: use eu here).
 
 host_packages:
   repositories:
@@ -119,9 +117,6 @@ secrets:
       items: {password: "!generate:nats-app"}
     - path: nats/users/ops
       items: {password: "!generate:nats-ops"}
-    # NKey seed of the bridge's NATS user; its public key is a pack value below.
-    - path: nats/users/natsbridge
-      items: {seed: "!nkey-seed:natsbridge"}
 
 packs:
   registries:
@@ -146,18 +141,9 @@ packs:
         users:
           - name: app
             publish_allow: ["app.>", "$JS.API.>"]
-            subscribe_allow: ["app.>", "nomad.>", "_INBOX.>"]
+            subscribe_allow: ["app.>", "_INBOX.>"]
           - name: ops
             account: SYS            # nats server report, raft peer-remove.
-        bridge_enabled: true
-        bridge_count: 2             # Two instances on different nodes; one publishes (leader lease).
-        bridge_nkey: "!nkey-public:natsbridge"
-        bridge_driver: exec
-        bridge_binary: /usr/local/bin/norca-natsbridge
-        bridge_jetstream_replicas: 3   # The events stream NORCA_EVENTS_eu on all three servers,
-        bridge_jetstream_max_age: 72h  # kept for 3 days
-        bridge_jetstream_max_bytes: 512MB   # or up to 512MB per server (oldest dropped first),
-        bridge_jetstream_compression: s2    # compressed.
 
 inventory:
   masters:
@@ -231,39 +217,22 @@ inventory:
       client_settings: {meta: {rack: c2}}
 ```
 
-## policies/natsbridge.hcl
+## policies/events-reader.hcl
 
 ```hcl
-# ACL policy of the NATS bridge (the natsbridge job of the nats pack). The
-# deployer binds it to the job (security.acl.policies[].job), so the bridge
-# runs with its workload identity and needs no static token.
-#
-# The forwarded topics need read-job in the namespaces of the events (Job,
-# Deployment, Evaluation, Allocation, Service, Scaling) and the node read
-# policy (Node). Topics not covered here (ACL objects, node pools, "*") need
-# a management token.
-
-# Events of all namespaces (the bridge subscribes with -namespace "*").
-# With bridge_sync_pushes or bridge_sync_regions the bridge also reads and
-# syncs the cluster pack registries:
-#   object "packs.norca.io/Registry" { capabilities = ["read", "write"] }
-namespace "*" {
-  capabilities = ["read-job"]
-}
-
-# The namespace of the bridge job: its checkpoint and leader election lease
-# under the job's own Variables path.
-namespace "default" {
-  capabilities = ["read-job"]
-
-  variables {
-    path "nomad/jobs/natsbridge/*" {
-      capabilities = ["list", "read", "write"]
-    }
-  }
-}
-
-node {
-  policy = "read"
+# ACL policy of a service that reads the event stream of region eu-central
+# from the system bus of the servers (NATS embedded in Norca): a durable
+# JetStream consumer of the stream NORCA_EVENTS_eu-central. Give its token to
+# the service; it connects to the bus port (4649) of any server.
+bus {
+  subscribe = ["nomad.eu-central.>"]
+  publish = [
+    "$JS.API.INFO",
+    "$JS.API.STREAM.INFO.NORCA_EVENTS_eu-central",
+    "$JS.API.CONSUMER.*.NORCA_EVENTS_eu-central",
+    "$JS.API.CONSUMER.*.NORCA_EVENTS_eu-central.>",
+    "$JS.API.CONSUMER.MSG.NEXT.NORCA_EVENTS_eu-central.>",
+    "$JS.ACK.NORCA_EVENTS_eu-central.>",
+  ]
 }
 ```

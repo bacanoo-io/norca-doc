@@ -24,13 +24,6 @@ The `ui` build tag embeds the web UI (its assets are committed in
 `nomad/command/agent/bindata_assetfs.go`). Without `-tags ui` the binary works the same but serves no
 web UI.
 
-The [NATS bridge](/docs/features/nats-bridge) is a separate binary, `norca-natsbridge`, built from
-`nomad/natsbridge`:
-
-```shell
-go -C nomad/natsbridge build -o norca-natsbridge ./cmd/norca-natsbridge
-```
-
 ## Release archives and container image
 
 Tagged releases (`v<version>`, for example `v0.1.0`) are built by the release workflow of the
@@ -38,8 +31,8 @@ repository and published as a GitHub release with:
 
 | Artifact | Contents |
 | --- | --- |
-| `norca_<version>_<os>_<arch>.tar.gz` / `.zip` | `norca` and `norca-natsbridge` for linux/amd64, linux/arm64, darwin/arm64 and windows/amd64, with `LICENSE`, `NOTICE` and `THIRD_PARTY_NOTICES.md` |
-| Checksums and SBOMs | SHA-256 checksums and a CycloneDX SBOM per binary |
+| `norca_<version>_<os>_<arch>.tar.gz` / `.zip` | `norca` for linux/amd64, linux/arm64, darwin/arm64 and windows/amd64, with `LICENSE`, `NOTICE` and `THIRD_PARTY_NOTICES.md` |
+| Checksums and SBOMs | SHA-256 checksums and a CycloneDX SBOM |
 | Container image | `ghcr.io/<owner>/norca:<version>`, with the licence files in `/usr/share/doc/norca/` and OCI labels |
 
 Each release links the exact source tag; the code is available under the MPL 2.0.

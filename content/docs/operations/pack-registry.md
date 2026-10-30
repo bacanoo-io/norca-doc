@@ -248,9 +248,9 @@ releases installed from it are upgraded with **Upgrade** on their pages.
   the catalog and installs keep working with the cached packs.
 - **Leader changes.** The new leader fetches each registry again before it serves its packs; the
   registry must be reachable from every server.
-- **Push notices.** The release workflow of the Norca pack registry can notify the clusters over NATS
-  (`norca-natsbridge notify-push`); bridges with `-sync-pushes` then sync at once
-  ([pack registry syncs](/docs/features/nats-bridge#pack-registry-syncs)).
+- **Push notices.** The release workflow of the Norca pack registry can notify a cluster
+  (`POST /v1/pack-registries/notify-push`); its leader then syncs the registries of that source at once
+  ([push notices](/docs/features/system-bus#pack-push-notices)).
 - **Air-gapped clusters** use a `bundle` registry (an offline bundle on the servers) or an internal OCI
   or git registry as the source.
 

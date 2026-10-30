@@ -68,9 +68,9 @@ The registry can also be a [cluster pack registry](/docs/features/packages/catal
 **Packages → Registries → Add registry**, type *Git repository*, source
 `https://github.com/bacanoo-io/norca-registry`, reference a release tag, and a sync interval. Its packs
 then appear under **Catalog** and are installed from their form. A release of the registry can notify
-the clusters over NATS so that they sync at once: the `notify` job of its release workflow publishes a
-push notice when the repository variable `NATS_NOTIFY` is `true` (secrets `NATS_URL` and `NATS_CREDS`),
-and the [NATS bridges](/docs/features/nats-bridge#pack-registry-syncs) with `-sync-pushes` sync.
+a cluster so that it syncs at once: the `notify` job of its release workflow sends a
+[push notice](/docs/features/system-bus#pack-push-notices) to `NORCA_ADDR` (repository variable) with
+the token `NORCA_TOKEN` (secret).
 
 Example variable files for the packs are in `examples/<pack>/` of the registry; the
 [deployment examples](/docs/getting-started/examples) use the packs of this registry. Pinning,
@@ -85,7 +85,7 @@ updating and air-gapped use are described in
 | [forgejo](#forgejo) | 0.2.0 | 0.2.0 | Forgejo (GPL-3.0-or-later, referenced, never shipped) as the internal git server and container registry: SQLite and repositories on a host volume, packages and LFS in RustFS, secrets from the built-in secret store, optional HTTPS, SSH, initial admin and periodic dumps; optional `/metrics` |
 | [loadbalancer-operator](#loadbalancer-operator) | 0.1.0 | 0.1.0 | The LoadBalancer operator as an operator pack: object kind (webhooks, limits), ACL policy bound to the controller job, admission policy, controller job |
 | [mtls-gateway](#mtls-gateway) | 0.2.1 | 0.2.0 | The cross-region native mTLS gateway of a region (`mtls { mode = "gateway" }`): SNI passthrough Envoy on the gateway nodes, injected by the servers or defined by the pack; optional Envoy statistics |
-| [nats](#nats) | 0.5.1 | 0.2.0 | A NATS cluster per region (JetStream, supercluster gateways, TLS and auth from Variables, or users in accounts with subject permissions and passwords from the built-in secret store) and the event stream to NATS bridge, optional Prometheus exporter |
+| [nats](#nats) | 0.6.0 | 0.2.0 | A NATS cluster per region for the applications (JetStream, supercluster gateways, TLS and auth from Variables, or users in accounts with subject permissions and passwords from the built-in secret store), optional Prometheus exporter |
 | [openobserve](#openobserve) | 0.2.0 | 0.1.0 | OpenObserve (AGPL-3.0, referenced, never shipped) as the observability backend (logs, metrics, traces): single node on a host volume or a cluster of node roles on PostgreSQL, NATS and RustFS, TLS with Norca's workload certificates, root user and the ingest credentials of the collectors in the built-in secret store |
 | [otel-collector](#otel-collector) | 0.1.1 | 0.1.0 | The OpenTelemetry Collector (contrib, Apache-2.0) on every node: host, Norca agent, NATS, RustFS, Forgejo, mTLS gateway, Consul and PostgreSQL metrics found through the native catalog, an OTLP receiver for the applications, export to OpenObserve trusting Norca's CA |
 | [postgres](#postgres) | 0.1.0 | 0.1.0 | A single PostgreSQL server (PostgreSQL License, referenced, never shipped): data on a host volume, superuser, application databases and a `pg_monitor` role from the built-in secret store, optional TLS with Norca's workload certificates, optional periodic dumps to S3 |
@@ -250,8 +250,8 @@ of the gateway port between the regions. See
 
 ## nats
 
-A NATS cluster for one Norca region, and optionally the event stream to NATS bridge of the region
-(see [NATS bridge](/docs/features/nats-bridge)). Deployed once per region, the gateways join the
+A NATS cluster for the applications of one Norca region (the events of Norca are on the
+[system bus](/docs/features/system-bus) of the servers). Deployed once per region, the gateways join the
 regional clusters into a NATS supercluster, JetStream keeps durable streams, and leaf nodes can attach
 edge sites. The job uses Norca's health check roles, a `disruption` block (one server at a time) and
 lame duck shutdown. NATS is Apache-2.0; the pack references the official `nats` image.
@@ -265,8 +265,6 @@ lame duck shutdown. NATS is Apache-2.0; the pack references the official `nats` 
 | `storage` | `ephemeral_disk` | `ephemeral_disk`, `host_volume`, `path` |
 | `tls_enabled`, `auth_mode` | `false`, `none` | `auth_mode`: `none`, `token`, `nkey`, `config`, `userpass` |
 | `users` | `[]` | `auth_mode = "userpass"`: users, accounts, permissions; passwords from the secret store |
-| `bridge_enabled` | `false` | deploys the bridge |
-| `bridge_sync_pushes`, `bridge_sync_regions` | `false`, `false` | the bridge syncs the [cluster pack registries](/docs/features/packages/catalog) on push notices / on the registry events of other regions ([pack registry syncs](/docs/features/nats-bridge#pack-registry-syncs)) |
 | `metrics_enabled` | `false` | the Prometheus exporter |
 
 ```shell

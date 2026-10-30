@@ -37,13 +37,13 @@ flowchart LR
         L --> OBJ[("packs.norca.io/Registry<br/>in Raft")]
     end
     GIT["git, OCI, bundle,<br/>server directory"] --> L
-    N["NATS: push notices,<br/>other regions"] -. "norca-natsbridge" .-> RG
+    N["push notices<br/>(notify-push)"] -. "system bus" .-> RG
 ```
 
 1. A registry is added in the UI (**Packages → Registries**) or with the API. The leader fetches it into
    its pack cache, verifies the packs against the trusted keys of the registry and records the packs it
    found in the status of the registry. It syncs again on request, on the registry's sync interval and,
-   with the [NATS bridge](/docs/features/nats-bridge#pack-registry-syncs), when packs are pushed.
+   with a [push notice](/docs/features/system-bus#pack-push-notices), when packs are pushed.
 2. **Packages → Catalog** lists the packs of all registries of the region: the newest version, the
    category, whether the cluster can run it (the pack's `requires` block) and whether it is signed.
 3. **Install** opens the form of the pack. The leader builds it from `variables.hcl` and `metadata.hcl`
@@ -171,8 +171,7 @@ Syncs:
 | The registry is saved | Before the request returns |
 | On request | **Sync** in the UI, `POST /v1/pack-registry/:name/sync` |
 | Periodically | The leader syncs registries whose `syncInterval` passed since the last attempt |
-| Packs were pushed | A push notice on NATS, through `norca-natsbridge -sync-pushes` ([pack registry syncs](/docs/features/nats-bridge#pack-registry-syncs)) |
-| Another region found new packs | `norca-natsbridge -sync-regions`, for registries of the same name and source |
+| Packs were pushed | A [push notice](/docs/features/system-bus#pack-push-notices): `POST /v1/pack-registries/notify-push` |
 
 ## The install form
 
@@ -266,7 +265,7 @@ namespace "*" {
 | Catalog and pack details | `GET /v1/packs`, `GET /v1/pack/:registry/:pack` |
 | Plan and install | `POST /v1/release/:name/plan-pack`, `POST /v1/release/:name/deploy-pack` |
 | Releases afterwards | [`norca pack status`](/docs/commands/pack/status), [`history`](/docs/commands/pack/history), [`rollback`](/docs/commands/pack/rollback), [`uninstall`](/docs/commands/pack/uninstall), [Releases HTTP API](/docs/api/releases) |
-| Push notices | `norca-natsbridge notify-push` ([NATS bridge](/docs/features/nats-bridge#pack-registry-syncs)) |
+| Push notices | `POST /v1/pack-registries/notify-push` ([system bus](/docs/features/system-bus#pack-push-notices)) |
 
 ## Limits and status
 

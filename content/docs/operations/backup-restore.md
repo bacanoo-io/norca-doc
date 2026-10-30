@@ -287,7 +287,7 @@ Alert on the metrics of the leader (see [Monitoring](/docs/operations/monitoring
 
 The `Backup` topic of the [event stream](/docs/features/event-stream) carries
 `BackupCompleted`, `BackupFailed` and the restore events; the
-[NATS bridge](/docs/features/nats-bridge) can forward it.
+[system bus](/docs/features/system-bus) keeps it in the event stream of the region.
 
 ## Test a restore
 

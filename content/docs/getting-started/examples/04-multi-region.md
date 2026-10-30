@@ -234,8 +234,9 @@ norca service info -region eu-1 nats-gateway
 
 The gateways join the two clusters into one supercluster (cluster names =
 region names). Turn on TLS and authentication across clouds
-(`tls_enabled`, `auth_mode`, see the [nats pack](https://github.com/bacanoo-io/norca-registry/blob/main/packs/nats/README.md#secrets-tls-and-client-authentication));
-`bridge_enabled = true` adds the event stream → NATS bridge per region.
+(`tls_enabled`, `auth_mode`, see the [nats pack](https://github.com/bacanoo-io/norca-registry/blob/main/packs/nats/README.md#secrets-tls-and-client-authentication)).
+The event stream of each region is on the [system bus](/docs/features/system-bus) of its servers,
+not on this NATS.
 
 ### 8. Backups per region
 

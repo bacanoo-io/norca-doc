@@ -1,11 +1,11 @@
 ---
 title: "Cluster"
-description: "Three servers, Linux clients with Docker, a Windows client; firewall, PKI and SPIFFE, node labels and pools, secrets, NATS with the event bridge."
+description: "Three servers, Linux clients with Docker, a Windows client; firewall, PKI and SPIFFE, node labels and pools, secrets, NATS for the applications, an ACL policy for event stream readers."
 weight: 2
 origin: "norca-deployer/examples/cluster.yaml"
 ---
 
-Three servers, Linux clients with Docker, a Windows client; firewall, PKI and SPIFFE, node labels and pools, secrets, NATS with the event bridge.
+Three servers, Linux clients with Docker, a Windows client; firewall, PKI and SPIFFE, node labels and pools, secrets, NATS for the applications, an ACL policy for event stream readers.
 
 {{< tabs >}}
 {{< tab name="YAML" >}}
@@ -40,11 +40,9 @@ release:
   version: v0.2.0                   # Norca release tag.
   source: official                  # official | custom-url | local-path | host-package
   # checksum_sha256: "<64 hex>"     # Optional pin of the release archive digest.
-  natsbridge: true                  # Also install norca-natsbridge (from the same release archive)
-                                    # on the clients, for the bridge job of the nats pack below.
   # Norca from a Debian package instead (Linux-only clusters; your own APT
-  # repository or a local .deb). The package installs norca (and
-  # norca-natsbridge); the deployer only checks the binary:
+  # repository or a local .deb). The package installs norca; the
+  # deployer only checks the binary:
   # source: host-package
   # package: norca                  # The package name (default norca); add it to host_packages.install.
 
@@ -132,12 +130,12 @@ security:
     auto_bootstrap: true            # Bootstrap once; the token goes to management_token_output.
     management_token_output: .norca-deployer/management-token   # Default location.
     policies:                       # Created after the bootstrap (replicated to other regions).
-      - name: natsbridge
-        description: Event stream to NATS bridge
-        rules_file: policies/natsbridge.hcl   # Relative to this file; or rules: | inline.
-        job:                        # Bound to the job: its workload identity gets the policy.
-          namespace: default
-          job_id: natsbridge
+      - name: events-reader
+        description: Reads the event stream from the system bus
+        rules_file: policies/events-reader.hcl   # Relative to this file; or rules: | inline.
+        # job:                      # Or bound to a job: its workload identity gets the policy.
+        #   namespace: default
+        #   job_id: audit
 
 backup:
   enabled: false                    # Set to true after filling in a real destination and age recipient.
@@ -234,11 +232,6 @@ secrets:                            # Written after the cluster is up, before th
     - path: nats/users/ops
       items:
         password: "!generate:nats-ops"
-    # The NKey seed of the bridge's NATS user; its public key goes into the
-    # pack values below (!nkey-public with the same name).
-    - path: nats/users/natsbridge
-      items:
-        seed: "!nkey-seed:natsbridge"
     # Further forms of item values:
     # - path: apps/mailer               # A secret of an application.
     #   namespace: default              # Default "default".
@@ -275,7 +268,7 @@ packs:
         count: 1
         memory: 256
 
-    # NATS cluster (JetStream) and the event stream -> NATS bridge.
+    # NATS cluster (JetStream) for the applications.
     - name: nats
       registry: norca
       pack: nats
@@ -290,17 +283,11 @@ packs:
         users:
           - name: app
             publish_allow: ["app.>", "$JS.API.>"]
-            subscribe_allow: ["app.>", "nomad.>", "_INBOX.>"]
+            subscribe_allow: ["app.>", "_INBOX.>"]
           - name: ops
             account: SYS            # nats server report, raft peer-remove.
         # tls_enabled: true         # TLS: put tls_ca/tls_cert/tls_key into the Variable
                                     # nomad/jobs/nats (a secrets entry of type variable).
-        bridge_enabled: true        # The natsbridge job: Norca events to <prefix>.<region>.<topic>.
-        bridge_nkey: "!nkey-public:natsbridge"   # Public key of the NKey generated above.
-        bridge_driver: exec         # Runs /usr/local/bin/norca-natsbridge (release.natsbridge).
-        bridge_binary: /usr/local/bin/norca-natsbridge
-        # bridge_sync_pushes: true  # Also sync pack registries on push notices; then add the
-                                    # registry permissions to policies/natsbridge.hcl.
 
 # Defaults for every node that runs a client. A node's own client_settings
 # win: values when set, meta entries by key, lists and blocks when given.
@@ -462,7 +449,6 @@ metadata {
 release {
   version = "v0.2.0"
   source  = "official"                 # official | custom-url | local-path | host-package
-  natsbridge = true                    # Also install norca-natsbridge on the clients (nats pack bridge).
 
   # Norca from a Debian package instead (Linux-only clusters); add the
   # package to host_packages:
@@ -557,13 +543,9 @@ security {
     management_token_output = ".norca-deployer/management-token"
 
     policies {                         # Created after the bootstrap.
-      name        = "natsbridge"
-      description = "Event stream to NATS bridge"
-      rules_file  = "policies/natsbridge.hcl"
-      job {                            # Bound to the job's workload identity.
-        namespace = "default"
-        job_id    = "natsbridge"
-      }
+      name        = "events-reader"
+      description = "Reads the event stream from the system bus"
+      rules_file  = "policies/events-reader.hcl"
     }
   }
 }
@@ -670,11 +652,6 @@ secrets {                              # Written after the cluster is up, before
     path  = "nats/users/ops"
     items = { password = "!generate:nats-ops" }
   }
-  # NKey seed of the bridge's NATS user; the public key goes into the pack.
-  bootstrap {
-    path  = "nats/users/natsbridge"
-    items = { seed = "!nkey-seed:natsbridge" }
-  }
   # bootstrap {
   #   path      = "apps/mailer"
   #   items     = { user = "mailer", password = "!enc:v1:aes-gcm:...", ca = "@certs/smtp-ca.pem" }
@@ -714,7 +691,7 @@ packs {
     }
   }
 
-  # NATS cluster (JetStream) and the event stream -> NATS bridge.
+  # NATS cluster (JetStream) for the applications.
   deploy {
     name     = "nats"
     registry = "norca"
@@ -727,13 +704,9 @@ packs {
       jetstream_enabled = true
       auth_mode         = "userpass"
       users = [
-        { name = "app", publish_allow = ["app.>", "$JS.API.>"], subscribe_allow = ["app.>", "nomad.>", "_INBOX.>"] },
+        { name = "app", publish_allow = ["app.>", "$JS.API.>"], subscribe_allow = ["app.>", "_INBOX.>"] },
         { name = "ops", account = "SYS" },
       ]
-      bridge_enabled = true
-      bridge_nkey    = "!nkey-public:natsbridge"
-      bridge_driver  = "exec"
-      bridge_binary  = "/usr/local/bin/norca-natsbridge"
     }
   }
 }
@@ -927,40 +900,23 @@ inventory {
 {{< /tab >}}
 {{< /tabs >}}
 
-## policies/natsbridge.hcl
+## policies/events-reader.hcl
 
 ```hcl
-# ACL policy of the NATS bridge (the natsbridge job of the nats pack). The
-# deployer binds it to the job (security.acl.policies[].job), so the bridge
-# runs with its workload identity and needs no static token.
-#
-# The forwarded topics need read-job in the namespaces of the events (Job,
-# Deployment, Evaluation, Allocation, Service, Scaling) and the node read
-# policy (Node). Topics not covered here (ACL objects, node pools, "*") need
-# a management token.
-
-# Events of all namespaces (the bridge subscribes with -namespace "*").
-# With bridge_sync_pushes or bridge_sync_regions the bridge also reads and
-# syncs the cluster pack registries:
-#   object "packs.norca.io/Registry" { capabilities = ["read", "write"] }
-namespace "*" {
-  capabilities = ["read-job"]
-}
-
-# The namespace of the bridge job: its checkpoint and leader election lease
-# under the job's own Variables path.
-namespace "default" {
-  capabilities = ["read-job"]
-
-  variables {
-    path "nomad/jobs/natsbridge/*" {
-      capabilities = ["list", "read", "write"]
-    }
-  }
-}
-
-node {
-  policy = "read"
+# ACL policy of a service that reads the event stream of region eu-central
+# from the system bus of the servers (NATS embedded in Norca): a durable
+# JetStream consumer of the stream NORCA_EVENTS_eu-central. Give its token to
+# the service; it connects to the bus port (4649) of any server.
+bus {
+  subscribe = ["nomad.eu-central.>"]
+  publish = [
+    "$JS.API.INFO",
+    "$JS.API.STREAM.INFO.NORCA_EVENTS_eu-central",
+    "$JS.API.CONSUMER.*.NORCA_EVENTS_eu-central",
+    "$JS.API.CONSUMER.*.NORCA_EVENTS_eu-central.>",
+    "$JS.API.CONSUMER.MSG.NEXT.NORCA_EVENTS_eu-central.>",
+    "$JS.ACK.NORCA_EVENTS_eu-central.>",
+  ]
 }
 ```
 

@@ -24,7 +24,7 @@ identities, CSI and host volumes, federation of regions and the HTTP API. On top
 | Policy | [Namespace quotas](/docs/features/quotas), [admission control](/docs/features/admission-control) with CEL and webhooks, [disruption budgets](/docs/features/disruption-budget), [network rules](/docs/features/network-rules) |
 | Scheduling | [Cross-job affinity](/docs/features/cross-job-affinity), [health check roles](/docs/features/health-check-roles), [multiregion deployments](/docs/features/multiregion) |
 | Networking | [Service discovery without Consul](/docs/features/service-discovery) (catalog, DNS, Consul-compatible API), [native mTLS](/docs/features/native-mtls) |
-| Extensibility | [Operator framework](/docs/features/operator-framework) with custom object kinds, [event stream extensions](/docs/features/event-stream), [NATS bridge](/docs/features/nats-bridge) |
+| Extensibility | [Operator framework](/docs/features/operator-framework) with custom object kinds, [event stream extensions](/docs/features/event-stream), [system bus](/docs/features/system-bus) |
 | Data | [Embedded secret store](/docs/features/secrets), [backup and restore](/docs/features/backup-restore) |
 | Delivery | [Package management](/docs/features/packages) with `norca pack`, releases and the pack registry |
 | Interface | A new [web UI](/docs/features/web-ui) |

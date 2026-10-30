@@ -300,13 +300,22 @@ consul {
     membership. Both TCP and UDP should be routable between the server nodes on
     this port.
 
+  - `bus` - (Norca) The port of the client connections of the
+    [system bus](/docs/configuration/bus) of a server: nodes and ACL tokens
+    with bus rights connect to it.
+
+  - `bus_cluster` - (Norca) The port of the routes of the system bus between
+    the servers of a region. It should be routable between the server nodes.
+
     The default values are:
 
     ```hcl
     ports {
-      http = 4646
-      rpc  = 4647
-      serf = 4648
+      http        = 4646
+      rpc         = 4647
+      serf        = 4648
+      bus         = 4649
+      bus_cluster = 4650
     }
     ```
 
