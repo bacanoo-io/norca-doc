@@ -2,7 +2,7 @@
 title: "Windows Nodes"
 linkTitle: "Windows nodes"
 description: "Windows nodes are supported as clients (typically for native `.exe` workloads with `raw_exec`) and as servers."
-weight: 12
+weight: 13
 origin: "norca-deployer/doc/windows.md"
 ---
 

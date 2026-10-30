@@ -1,7 +1,7 @@
 ---
 title: "Adding a node"
 description: "A client added to a running cluster: only the new node is installed."
-weight: 4
+weight: 5
 origin: "norca-deployer/examples/add-node.yaml"
 ---
 

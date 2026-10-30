@@ -120,6 +120,7 @@ NORCA_E2E_SSH=127.0.0.1:2222 NORCA_E2E_USER=deploy NORCA_E2E_PASSWORD=... \
   {{< card link="adding-and-removing-nodes" title="Adding and removing nodes" icon="switch-horizontal" >}}
   {{< card link="secrets-and-policies" title="Secrets and ACL policies" icon="key" >}}
   {{< card link="packs" title="Packs" icon="archive" >}}
+  {{< card link="multi-datacenter" title="Several datacenters with NATS" icon="server" >}}
   {{< card link="multi-region" title="Multi-region" icon="globe" >}}
   {{< card link="windows" title="Windows nodes" icon="desktop-computer" >}}
   {{< card link="examples" title="Examples" icon="document-text" >}}

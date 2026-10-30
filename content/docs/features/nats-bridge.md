@@ -352,7 +352,14 @@ default.
 | `-jetstream` | `NATSBRIDGE_JETSTREAM` | `false` | Publish with JetStream and wait for the acknowledgements |
 | `-jetstream-stream` | `NATSBRIDGE_JETSTREAM_STREAM` | | Stream the messages must be stored in |
 | `-jetstream-create` | `NATSBRIDGE_JETSTREAM_CREATE` | `false` | Create that stream for `<prefix>.<region>.>` if missing |
-| `-jetstream-duplicates` | `NATSBRIDGE_JETSTREAM_DUPLICATES` | `10m` | Duplicate window of a stream it creates |
+| `-jetstream-duplicates` | `NATSBRIDGE_JETSTREAM_DUPLICATES` | `10m` | Duplicate window of that stream |
+| `-jetstream-replicas` | `NATSBRIDGE_JETSTREAM_REPLICAS` | `1` | Replicas of that stream (1 to 5); 3 keeps the events when a server or its datacenter fails |
+| `-jetstream-max-age` | `NATSBRIDGE_JETSTREAM_MAX_AGE` | `0` (no limit) | Age after which events are dropped, e.g. `72h`; at least the duplicate window |
+| `-jetstream-max-bytes` | `NATSBRIDGE_JETSTREAM_MAX_BYTES` | `0` (no limit) | Size of the stream on each server, e.g. `512MB` |
+| `-jetstream-storage` | `NATSBRIDGE_JETSTREAM_STORAGE` | `file` | `file` or `memory`; only when the stream is created |
+| `-jetstream-compression` | `NATSBRIDGE_JETSTREAM_COMPRESSION` | `none` | `none` or `s2` (file storage only) |
+| `-jetstream-allow-direct` | `NATSBRIDGE_JETSTREAM_ALLOW_DIRECT` | `false` | Every replica answers direct gets, not only the leader |
+| `-jetstream-deny-delete`, `-jetstream-deny-purge` | `NATSBRIDGE_JETSTREAM_DENY_DELETE`, `NATSBRIDGE_JETSTREAM_DENY_PURGE` | `false` | Forbid deleting messages / purging; only when the stream is created |
 | `-checkpoint` | `NATSBRIDGE_CHECKPOINT` | `variable` | `variable`, `file` or `none` |
 | `-checkpoint-path` | `NATSBRIDGE_CHECKPOINT_PATH` | `<state-prefix>/checkpoint` | Variable path or file; required for `file` |
 | `-checkpoint-interval` | `NATSBRIDGE_CHECKPOINT_INTERVAL` | `1s` | Minimum time between checkpoint writes |
@@ -368,6 +375,14 @@ default.
 | `-sync-regions` | `NATSBRIDGE_SYNC_REGIONS` | `false` | Publish the pack registry events, sync on those of other regions |
 | `-sync-cooldown` | `NATSBRIDGE_SYNC_COOLDOWN` | `1m` | Minimum time between two syncs of a registry triggered from NATS |
 
+The bridge owns the stream of `-jetstream-create`: on every start it brings
+the duplicate window, replicas, `max_age`, `max_bytes`, compression and direct
+gets of an existing stream back to its flags. Storage and the deny flags are
+only chosen at creation; when they differ the bridge logs a warning (recreate
+the stream to change them). A full stream drops its oldest events, so the
+limits never stop the bridge, while a stream without limits fills the servers'
+JetStream store and then every publish fails: set at least one limit.
+
 The default topics are those a workload identity with `read-job` and node read
 may subscribe to. `ACLToken`, `ACLPolicy`, `NodePool` and `*` need a
 management token; the `Backup` topic needs the
@@ -377,7 +392,12 @@ The `nats` pack variables of the bridge: `bridge_enabled` (`false`),
 `bridge_job_name` (`natsbridge`), `bridge_count` (`2`), `bridge_driver`
 (`raw_exec`; `exec` or `docker` with `bridge_image`), `bridge_binary`,
 `bridge_artifact_url`, `bridge_subject_prefix` (`nomad`), `bridge_topics`,
-`bridge_jetstream_stream` (`NORCA_EVENTS_<region>`), `bridge_resources`,
+`bridge_jetstream_stream` (`NORCA_EVENTS_<region>`), `bridge_jetstream_replicas`
+(`1`; `3` with servers in three datacenters), `bridge_jetstream_max_age`
+(`72h`), `bridge_jetstream_max_bytes` (`512MB`), `bridge_jetstream_storage`
+(`file`), `bridge_jetstream_compression` (`s2`), `bridge_jetstream_allow_direct`
+(`true`), `bridge_jetstream_deny_delete` and `bridge_jetstream_deny_purge`
+(`false`), `bridge_resources`,
 `bridge_nkey` for `auth_mode = "userpass"`, and `bridge_sync_pushes` and
 `bridge_sync_regions` (`false`) for the [pack registry syncs](#pack-registry-syncs):
 the pack then gives the bridge's NATS user the subscribe permissions and prints

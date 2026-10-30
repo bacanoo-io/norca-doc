@@ -1,7 +1,7 @@
 ---
 title: "Removing nodes"
 description: "Clients and servers taken out of a running cluster: drain, Raft removal, uninstall."
-weight: 5
+weight: 6
 origin: "norca-deployer/examples/decommission-node.yaml"
 ---
 

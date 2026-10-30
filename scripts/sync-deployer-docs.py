@@ -31,8 +31,9 @@ PAGES = [
     ('adding-and-removing-nodes.md', 'adding-and-removing-nodes', 8, 'Adding and removing nodes'),
     ('secrets-and-policies.md', 'secrets-and-policies', 9, 'Secrets and ACL policies'),
     ('packs.md', 'packs', 10, 'Packs'),
-    ('multi-region.md', 'multi-region', 11, 'Multi-region'),
-    ('windows.md', 'windows', 12, 'Windows nodes'),
+    ('multi-datacenter.md', 'multi-datacenter', 11, 'Several datacenters with NATS'),
+    ('multi-region.md', 'multi-region', 12, 'Multi-region'),
+    ('windows.md', 'windows', 13, 'Windows nodes'),
 ]
 PAGE_OF = {src: slug for src, slug, _, _ in PAGES}
 
@@ -44,6 +45,8 @@ EXAMPLES = [
      [('YAML', 'examples/cluster.yaml', 'yaml'), ('HCL', 'examples/cluster.hcl', 'hcl'),
       ('policies/natsbridge.hcl', 'examples/policies/natsbridge.hcl', 'hcl'),
       ('scripts/prepare-data-disk.sh', 'examples/scripts/prepare-data-disk.sh', 'bash')]),
+    ('multi-datacenter', 'Several datacenters with NATS', 'One region over three datacenters: a server per datacenter, a NATS cluster with one server per datacenter, the event bridge into a JetStream stream with 3 replicas.',
+     [('YAML', 'examples/multi-datacenter.yaml', 'yaml'), ('policies/natsbridge.hcl', 'examples/policies/natsbridge.hcl', 'hcl')]),
     ('local-dev', 'Local development node', 'Norca on the machine the deployer runs on, without SSH, on loopback only.',
      [('YAML', 'examples/local-dev.yaml', 'yaml')]),
     ('add-node', 'Adding a node', 'A client added to a running cluster: only the new node is installed.',
@@ -141,7 +144,7 @@ def main():
 
     cards = ['{{< cards >}}']
     icons = ['play', 'refresh', 'adjustments', 'shield-check', 'cube', 'globe-alt', 'tag', 'switch-horizontal',
-             'key', 'archive', 'globe', 'desktop-computer']
+             'key', 'archive', 'server', 'globe', 'desktop-computer']
     descs = {}
     for src, slug, weight, link_title in PAGES:
         t, b = split_title(read('doc/' + src))
@@ -168,7 +171,7 @@ def main():
     rows = ['| Example | Content |', '| --- | --- |']
     for slug, title, desc, _ in EXAMPLES:
         rows.append(f'| [{title}]({BASE}/examples/{slug}) | {desc} |')
-    ex_index = front_matter('Deployer examples', 'Examples', 13, 'norca-deployer/examples',
+    ex_index = front_matter('Deployer examples', 'Examples', 14, 'norca-deployer/examples',
                             'Complete deployment plans with a comment on every setting.')
     ex_index += ('Complete plans with a comment on every setting. YAML and HCL plans use the same keys, and the '
                  'YAML and HCL versions of an example load to the same plan. Paths in a plan (keys, `.deb` files, '

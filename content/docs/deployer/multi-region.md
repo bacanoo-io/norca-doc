@@ -2,11 +2,11 @@
 title: "Multi-Region"
 linkTitle: "Multi-region"
 description: "A Norca cluster can span several regions."
-weight: 11
+weight: 12
 origin: "norca-deployer/doc/multi-region.md"
 ---
 
-A Norca cluster can span several regions. Each region has its own servers and Raft quorum; the regions are joined over Serf (federation) and forward API requests to each other. ACLs are bootstrapped in one **authoritative region** and replicated to the others.
+A Norca cluster can span several regions. (Nearby sites with low latency can also be datacenters of one region: see [one region over several datacenters](/docs/deployer/multi-datacenter).) Each region has its own servers and Raft quorum; the regions are joined over Serf (federation) and forward API requests to each other. ACLs are bootstrapped in one **authoritative region** and replicated to the others.
 
 ## One plan per region
 

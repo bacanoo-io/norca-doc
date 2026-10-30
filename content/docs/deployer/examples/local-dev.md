@@ -1,7 +1,7 @@
 ---
 title: "Local development node"
 description: "Norca on the machine the deployer runs on, without SSH, on loopback only."
-weight: 3
+weight: 4
 origin: "norca-deployer/examples/local-dev.yaml"
 ---
 
