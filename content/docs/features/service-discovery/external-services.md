@@ -32,7 +32,7 @@ applications can reach a managed database by an internal name that survives a mi
 | Way | How | Removed when |
 | --- | --- | --- |
 | TTL check | The registrant renews the check within its TTL (`norca service ttl`, or the TTL endpoint); a check that is not renewed turns `critical` with the output `TTL expired` | It has been critical for `deregister_critical_after` (default 1 hour through the native API; 0 keeps it) |
-| HTTP or TCP check | Registered through a **client** agent, which then owns the registration and runs the checks | As above, or when the owning node goes down |
+| HTTP or TCP check | Registered through a **client** agent, or bound to a client node with `NodeID` (`-node`, or the node chosen in the UI; needs `node` write), which then owns the registration and runs the checks | As above, or when the owning node goes down |
 | Static | No TTL check and no owning node; requires `operator` write in addition | Only by `norca service deregister` |
 
 The health of an external service is the worst state of its checks (`passing` without checks); like
@@ -112,6 +112,7 @@ External services need no agent configuration. The fields of a registration:
 | `Port` | int | `0` | Port |
 | `Tags`, `Meta` | list, map | – | As for other services |
 | `Datacenter` | string | the owning node's | Datacenter the service is reported in |
+| `NodeID` | string | the client agent of the request | Client node that owns the service and runs its HTTP and TCP checks; needs `node` write |
 | `Checks` | list | – | `ttl`, `http` or `tcp` checks; see the [API](/docs/api/external-services) |
 | `DeregisterCriticalAfter` | duration | `1h` | Time critical before deregistration; `0` keeps the service |
 
@@ -125,13 +126,21 @@ External services need no agent configuration. The fields of a registration:
 | List the external services | – | [`GET /v1/services/external`](/docs/api/external-services#list-external-services) |
 | Register at the agent, Consul style | – | [Consul agent endpoints](/docs/api/consul-compatible#agent-write-endpoints) |
 
+**Web UI.** *Services and networking → Endpoints and domains* lists the external services of the
+namespace with their health, the target and the node that runs their checks, and creates, changes and
+deletes them: an endpoint (an address and port) or a domain (a DNS alias), tags, meta, TTL, HTTP and TCP
+checks with the client node that runs them, and the deregistration time. Creating and changing needs
+`register-external-service` in the namespace (and `operator` write for an endpoint without checks);
+choosing the node of the checks needs `node` write. Services registered through the Consul agent API
+are listed but changed by their application.
+
 ## Limits and status
 
 - Check types: `ttl`, `http` and `tcp`. Script, gRPC and TLS TCP checks are not supported.
-- HTTP and TCP checks must be registered through a client agent; a server-only agent rejects them.
+- HTTP and TCP checks run on a client node: register them through a client agent, or name the node
+  with `NodeID` (`-node`); a server-only agent rejects them otherwise.
 - A registration with Connect settings, or a `Kind` other than a typical service, is rejected by the
   Consul agent endpoints.
-- The Consul KV is not mapped to Variables; this is a deliberate non-goal.
 
 ## Design
 

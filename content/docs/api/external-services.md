@@ -63,6 +63,9 @@ it.
 - `Datacenter` `(string: "")` - The datacenter the service is reported in. Defaults to the datacenter of
   the owning client node.
 
+- `NodeID` `(string: "")` - The client node that owns the service and runs its `http` and `tcp` checks,
+  instead of the client agent the request is sent to. Requires `node:write`.
+
 - `DeregisterCriticalAfter` `(int: 3600000000000)` - How long the service may stay critical before it is
   deregistered (default 1 hour); `0` keeps it.
 

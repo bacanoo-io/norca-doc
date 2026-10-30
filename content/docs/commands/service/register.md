@@ -57,6 +57,9 @@ including `-namespace` and `-region`.
 
 - `-tcp=<host:port>`: Add a `tcp` check of the address, run by the client agent.
 
+- `-node=<node id>`: The client node that owns the service and runs its `http` and `tcp` checks,
+  instead of the client agent the command talks to. Requires `node:write`.
+
 - `-interval=<duration>`: Interval of the `http` and `tcp` checks. Defaults to `10s`.
 
 - `-timeout=<duration>`: Timeout of the `http` and `tcp` checks. Defaults to `10s`.
