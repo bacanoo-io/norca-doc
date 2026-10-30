@@ -5,7 +5,9 @@ description: The features Norca adds to the Nomad v1.6.5 core, with their status
 weight: 4
 ---
 
-Every feature below is built into the `norca` binary; there is no separate control plane. Features that
+Every feature below is built into the `norca` binary, except the NATS bridge (`norca-natsbridge`, in the
+release archives) and the deployer (`norca-deployer`, run on the operator's machine); there is no separate
+control plane. Features that
 write new kinds of data to Raft are enabled once every server of the region runs a Norca version that
 supports them ([version gate](/docs/introduction/compatibility#version-gate-of-the-norca-features)).
 Only features marked *Available* can be used; the others are being built.
@@ -41,6 +43,7 @@ Only features marked *Available* can be used; the others are being built.
 | Package management: cluster pack registries, catalog and install form in the web UI, server-side render, private git and OCI sources, pack uploads, upgrades of CLI installs | Available | [Catalog and install form](/docs/features/packages/catalog) |
 | Embedded secret store: sealed keyring, versioned and audited secrets, `secret` block, Vault compatibility without a Vault | In progress (phases 0–4 available) | [Secret store](/docs/features/secrets) |
 | New web UI | Available (phases 1–4) | [Web UI](/docs/features/web-ui) |
+| Deployer: clusters on your own machines from a declarative plan (`norca-deployer`, a separate tool) | Available | [Deployer](/docs/features/deployer) |
 
 ## Kubernetes-inspired features
 
