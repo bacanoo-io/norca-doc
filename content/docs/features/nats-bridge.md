@@ -28,6 +28,17 @@ scheduling nor deployments. The optional inbound mode
 ([pack registry syncs](#pack-registry-syncs)) only makes the bridge call the
 Norca API sooner; the registries sync on their own interval without it.
 
+> [!WARNING]
+> **One region with the bridge means every region with the bridge.** When a
+> region of the cluster runs the NATS bridge, every region must run it, with
+> the same settings: the subject prefix, JetStream on or off, and the registry
+> sync flags (`-sync-pushes`, `-sync-regions`). A region without a bridge
+> publishes none of its events, so the history in NATS has gaps; with the
+> registry syncs it neither sends its registry events to the other regions
+> nor syncs on theirs or on the push notices. With JetStream, a region whose
+> bridge publishes with core NATS has no event stream, and the durable
+> consumers of the other regions don't see its registry events.
+
 ## How it works
 
 ```mermaid
@@ -274,10 +285,35 @@ for users and accounts, storage and the supercluster.
 The [cluster pack registries](/docs/features/packages/catalog) sync when they
 are saved, on request and on their sync interval. With the inbound mode, NATS
 messages make the bridge sync them sooner, through the API
-(`POST /v1/pack-registry/:name/sync`). The bridge instances of a region
-subscribe in the queue group `norca-natsbridge-sync.<region>`, so one of them
+(`POST /v1/pack-registry/:name/sync`). One bridge instance of the region
 handles each message, and `-sync-cooldown` (default `1m`) limits the syncs a
 registry gets from NATS.
+
+Every region runs the bridge with the same sync flags (see the warning in
+[What and why](#what-and-why)): a region without it is left out of the syncs.
+
+**Durable with JetStream.** With `-jetstream` the bridge reads the messages
+through durable consumers named `norca-sync-<region>`, shared by the
+instances of the region, so messages published while no instance runs are
+handled when one starts again:
+
+- push notices are kept in the stream `-sync-stream` (default
+  `NORCA_PACK_PUSHES`: `<prefix>.packs.pushed` and `<prefix>.packs.pushed.>`,
+  24 hours, at most 64MB), created by a bridge with `-jetstream-create`; one
+  stream serves all regions, each region has its consumer on it;
+- the registry events of another region are read from that region's event
+  stream (`NORCA_EVENTS_<region>`): the bridge looks for these streams every
+  minute and creates its consumer on each, filtered to
+  `<prefix>.<region>.CustomObject`. Regions whose bridge publishes with core
+  NATS have no stream, so their events are not seen.
+
+A handled message is acknowledged, one that failed because the Norca API was
+unreachable comes again after 30 seconds (at most 10 times), an invalid one is
+dropped. A new consumer starts with the messages published after its creation;
+the server removes a consumer after 7 days without a bridge of its region.
+Without JetStream the instances subscribe in the queue group
+`norca-natsbridge-sync.<region>`, and messages sent while none runs are lost
+(the registries still sync on their interval).
 
 **Push notices** (`-sync-pushes`). Whoever pushes packs, typically the release
 workflow of a pack registry, publishes a notice on `<prefix>.packs.pushed` (the
@@ -301,7 +337,8 @@ runs it when the repository variable `NATS_NOTIFY` is `true`.
 
 **Regions** (`-sync-regions`). The bridge also forwards the events of the
 registries (the topic filter `CustomObject:packs.norca.io/Registry` is added to
-`-topics`) and subscribes to `<prefix>.*.CustomObject`. When the registry of
+`-topics`) and reads the `<prefix>.<region>.CustomObject` events of the other
+regions. When the registry of
 another region found other packs (versions and digests) than the local registry
 of the same name, type and source, the bridge syncs the local one, so a new pack
 version appears in every region at about the same time. A registry of the same
@@ -374,6 +411,7 @@ default.
 | `-sync-pushes` | `NATSBRIDGE_SYNC_PUSHES` | `false` | Sync pack registries on push notices ([pack registry syncs](#pack-registry-syncs)) |
 | `-sync-regions` | `NATSBRIDGE_SYNC_REGIONS` | `false` | Publish the pack registry events, sync on those of other regions |
 | `-sync-cooldown` | `NATSBRIDGE_SYNC_COOLDOWN` | `1m` | Minimum time between two syncs of a registry triggered from NATS |
+| `-sync-stream` | `NATSBRIDGE_SYNC_STREAM` | `NORCA_PACK_PUSHES` | With `-jetstream`: stream of the push notices, read through a durable consumer; created with `-jetstream-create` |
 
 The bridge owns the stream of `-jetstream-create`: on every start it brings
 the duplicate window, replicas, `max_age`, `max_bytes`, compression and direct
