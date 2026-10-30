@@ -120,13 +120,12 @@ the [security differences from Nomad v1.6.5](/docs/security/nomad-differences):
 tools that use a node secret ID as a token need an ACL token on Norca.
 <!-- TODO: verify: an end-to-end tested migration path from Nomad v1.6.5 servers to Norca (mixed cluster), and from which Nomad versions -->
 
-## Web UI and the legacy UI
+## Web UI
 
-Norca ships a new web UI at `/ui/`. The previous UI of Nomad v1.6.5 stays
-available at `/ui/legacy/` for one release, so bookmarks and habits can move
-over. It is only served by binaries built with it (the `ember-dist-legacy`
-make target, part of `make prerelease`); a binary built without it serves the
-new UI for those paths. See [Web UI](/docs/features/web-ui).
+Norca ships a new web UI at `/ui/`; the UI of Nomad v1.6.5 is not included.
+Bookmarks keep working where the page exists under the same path; old links
+to `/ui/legacy/` (the previous UI, served up to Norca v0.2.0) open the not-found
+page of the UI. See [Web UI](/docs/features/web-ui).
 
 ## The `nomad` alias
 

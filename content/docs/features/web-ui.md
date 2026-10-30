@@ -16,14 +16,12 @@ Norca ships a new UI, served by every agent at `/ui/`. It is built on **Ember 6.
 and open views update live from the [event stream](/docs/features/event-stream). Every page meets the
 WCAG 2.1 AA contrast requirements in light and in dark mode and can be operated by keyboard.
 
-The previous UI stays available at **`/ui/legacy`** for one release.
-
 ## How it works
 
 ### Frame
 
 - **Top bar:** the command palette (`Ctrl K`: navigation, search and actions, including switching the
-  theme and opening the previous UI), the region selector with an **All regions** mode, the namespace
+  theme), the region selector with an **All regions** mode, the namespace
   selector, notifications from the event stream, the light/dark switch, and the token.
 - **Left menu:** grouped, collapsible.
 - **Page header:** title, the region and namespace in scope, and the page's main action.
@@ -64,8 +62,8 @@ the stream reports a change there and falls back to polling while the stream is 
 ### Building the UI into the binary
 
 The UI is embedded into the `norca` binary when it is built with the `ui` Go build tag. `make` sets the tag
-unless the `NOMAD_NO_UI` environment variable is set, and `make prerelease` builds both the new UI and the
-previous UI before embedding them. A binary built without the tag serves no UI. At run time the UI is
+unless the `NOMAD_NO_UI` environment variable is set, and `make prerelease` builds the UI before embedding
+it. A binary built without the tag serves no UI. At run time the UI is
 controlled with the agent's [`ui`](/docs/configuration/ui) block.
 
 ## Example
@@ -102,10 +100,10 @@ The UI uses the public [HTTP API](/docs/api) only.
 
 ## Limits and status
 
-- Available (UI phases 1–4): the frame, the dashboard, all pages listed above, light and dark mode, the
-  previous UI at `/ui/legacy`.
+- Available (UI phases 1–4): the frame, the dashboard, all pages listed above, light and dark mode.
 - English only; there is no translation layer.
-- The previous UI at `/ui/legacy` is removed in a later release.
+- The previous UI of Nomad v1.6.5 (formerly at `/ui/legacy`) has been removed; its links open the
+  not-found page of the UI.
 - The Secrets page takes the last access from the `SecretAccess` event stream (there is no audit query
   endpoint), and finds the jobs that reference a path by reading the first 50 job specifications of the
   namespace.
