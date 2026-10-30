@@ -108,9 +108,40 @@ $ curl \
 $ curl --request PUT 'http://127.0.0.1:8500/v1/agent/check/pass/service:billing?note=ok'
 ```
 
+## KV endpoints
+
+The Consul KV, kept in Norca Variables (default) or a NATS JetStream bucket, see
+[`consul_compat { kv }`](/docs/configuration/consul_compat#kv-parameters). The token of the request
+needs the Variables capabilities of the path of the key (`consul/kv/<key>` by default) in the namespace
+of the KV: `read` to read, `list` for `recurse` and `keys` (the keys it cannot read are left out),
+`write` to write and `destroy` to delete.
+
+| Method and path | Parameters | Answer |
+| --- | --- | --- |
+| `GET /v1/kv/:key` | `raw`, `index`, `wait`, `stale`, `dc` | `[{"Key", "Value" (base64), "Flags", "CreateIndex", "ModifyIndex", "LockIndex": 0}]`; with `raw` the value itself; `404` when missing |
+| `GET /v1/kv/:prefix?recurse` | `index`, `wait` | Every key with the prefix (a string prefix), sorted; `404` when none |
+| `GET /v1/kv/:prefix?keys` | `separator`, `index`, `wait` | The key names; with a separator the names below the prefix up to the first separator, once |
+| `PUT /v1/kv/:key` | Body: the value (at most 512 KB); `flags`, `cas` | `true`, or `false` when the `cas` index (0: the key must not exist) does not match |
+| `DELETE /v1/kv/:key` | `recurse`, `cas` | `true`, or `false` when `cas` does not match; `recurse` deletes the keys one by one |
+
+`X-Consul-Index` is the Raft index (variables backend) or the highest revision of the matched keys
+(nats backend). `?acquire`, `?release` and `/v1/txn` answer `501`. The nats backend rejects `flags`;
+the variables backend rejects keys whose Variables path exceeds 128 characters (`400`).
+
+### Sample Request
+
+```shell
+$ curl --request PUT --data 'postgres://db:5432/app' http://127.0.0.1:8500/v1/kv/app/db.url
+true
+$ curl 'http://127.0.0.1:8500/v1/kv/app/db.url?raw'
+postgres://db:5432/app
+$ curl 'http://127.0.0.1:8500/v1/kv/app/?keys&separator=/'
+["app/db.url"]
+```
+
 ## Unsupported endpoints
 
 Every other path answers `501 Not Implemented` with the message
-`Not Implemented: <method> <path> is not supported by the Consul-compatible API of Norca; it serves the catalog, health and status endpoints and the agent service endpoints only`.
-This includes the KV store, sessions, prepared queries, events, ACLs, Connect, config entries,
+`Not Implemented: <method> <path> is not supported by the Consul-compatible API of Norca; it serves the catalog, health, status and KV endpoints and the agent service endpoints only`.
+This includes sessions, transactions, prepared queries, events, ACLs, Connect, config entries,
 `/v1/catalog/register` and `/v1/agent/members`.

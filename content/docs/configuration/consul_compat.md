@@ -8,8 +8,9 @@ description: "The consul_compat block of the client configuration runs the Consu
 
 The `consul_compat` block (Norca) configures the
 [Consul-compatible API](/docs/features/service-discovery/consul-compatible-api) of a client: the catalog,
-health, status and agent service endpoints of Consul's HTTP API, served from the native catalog, for tools
-that only know Consul. It is off by default. The served endpoints are listed on the
+health, status and agent service endpoints of Consul's HTTP API, served from the native catalog, and the
+Consul KV, kept in Norca Variables or a NATS JetStream bucket, for tools that only know Consul. It is off
+by default. The served endpoints are listed on the
 [API reference](/docs/api/consul-compatible).
 
 ```hcl
@@ -42,6 +43,39 @@ client {
   (`X-Consul-Token`, `Authorization: Bearer` or `?token=`). Use a read-only token, for example with
   `read-job` on the shown namespaces and `node { policy = "read" }`.
 
+- `kv` <code>([kv](#kv-parameters): nil)</code> - Where the Consul KV (`/v1/kv`) lives.
+
+## `kv` Parameters
+
+- `backend` `(string: "variables")` - `"variables"` keeps every key in a Norca Variable,
+  `"nats"` in a NATS JetStream key-value bucket, `"disabled"` turns the KV endpoints off (they answer
+  `501`).
+
+- `namespace` `(string: "")` - Namespace of the keys; empty uses the first of `namespaces`.
+
+- `path` `(string: "consul/kv")` - Variables path the keys live under: the key `app/config` is the
+  Variable `consul/kv/app/config`. The ACL rules of this path apply with both backends: reading a key
+  needs `read`, listing `list`, writing `write` and deleting `destroy` on
+  `<path>/<key>` in `namespace` (characters outside letters, digits, `-` and `_` appear as `~XX`).
+
+- `nats` <code>([nats](#nats-parameters): nil)</code> - The bucket of the `nats` backend.
+
+### `nats` Parameters
+
+- `urls` `(array<string>: [])` - NATS servers, for example `["nats://10.0.0.1:4222"]`; required for
+  the `nats` backend. The client connects on the first KV request and reconnects on its own.
+
+- `bucket` `(string: "consul-kv")` - JetStream key-value bucket.
+
+- `create_bucket` `(bool: true)` - Create the bucket (history 1) when it is missing.
+
+- `replicas` `(int: 1)` - Replicas of a created bucket.
+
+- `credentials_file`, `nkey_seed_file`, `user` and `password`, `token` - Authentication, in this
+  order of precedence. `password` and `token` are redacted from `/v1/agent/self`.
+
+- `ca_file`, `cert_file`, `key_file` - TLS: the CA of the servers and a client certificate.
+
 ## Interaction with the `consul` block
 
 The default `bind` is also the default address of the agent's own [`consul`](/docs/configuration/consul)
@@ -67,6 +101,24 @@ client {
 ```
 
 The service `api` of namespace `apps` is then `apps--api` in the Consul-compatible API.
+
+### Consul KV in a NATS bucket
+
+```hcl
+client {
+  consul_compat {
+    enabled = true
+    kv {
+      backend = "nats"
+      nats {
+        urls             = ["nats://10.0.0.1:4222", "nats://10.0.0.2:4222"]
+        credentials_file = "/etc/norca.d/nats-kv.creds"
+        replicas         = 3
+      }
+    }
+  }
+}
+```
 
 ### Consul datacenters as Norca datacenters
 

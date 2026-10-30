@@ -26,6 +26,7 @@ flowchart LR
   ct["consul-template"] --> api
   fw["Self-registering framework"] -->|"PUT /v1/agent/service/register"| api
   api["Consul-compatible API (client, :8500)"] -->|"Nomad ACL token"| servers["Servers: native catalog"]
+  api -->|"/v1/kv"| kv["Variables or a NATS JetStream bucket"]
   api -->|"other paths"| e501["501 Not Implemented"]
 ```
 
@@ -52,6 +53,24 @@ Write endpoints (PUT), added for self-registering applications (design phase 4):
 | `/v1/agent/service/deregister/:id` | Removes it |
 | `/v1/agent/check/pass/:id`, `/warn/:id`, `/fail/:id` | Sets a TTL check (`?note=` is the output) |
 | `/v1/agent/check/update/:id` | Sets a TTL check from a body with `Status` and `Output` |
+
+The Consul KV (`GET`, `PUT` and `DELETE /v1/kv/:key`, with `recurse`, `keys`, `separator`, `raw`,
+`cas`, `flags` and blocking queries), for consul-template's `key`, `keyOrDefault`, `ls` and `tree`,
+Traefik's and Spring Cloud's Consul KV configuration and similar tools. The keys live in Norca
+Variables below `consul/kv` (default) or in a NATS JetStream key-value bucket, set by
+`consul_compat { kv { backend } }`:
+
+| | `variables` (default) | `nats` |
+| --- | --- | --- |
+| Storage | Raft of the region, encrypted, in the Norca backups | The JetStream bucket (`consul-kv`), with its replicas |
+| Needs | Nothing | A NATS server with JetStream, e.g. of the `nats` pack |
+| `ModifyIndex`, blocking queries | Raft index of the Variable | Revision of the key; a NATS watch wakes the query |
+| Keys and values | Variables path at most 128 characters (`~XX` for other characters), values up to 64 KB | Any key, values up to 512 KB (the bucket's message size) |
+| `flags` | Kept | Rejected (`400`) |
+| ACL | The Variables rules of `consul/kv/<key>`, checked by the servers | The same rules, checked by the client |
+
+Sessions and locks (`?acquire`, `?release`) and transactions (`/v1/txn`) are not served (`501`), and a
+recursive delete removes the keys one by one, not atomically.
 
 Every other path answers `501 Not Implemented` with a message that names the path, so a missing feature
 shows up instead of failing silently. The full list with parameters is on the
@@ -134,6 +153,7 @@ All keys are in the `client { consul_compat { ... } }` block. Full reference:
 | `datacenter_from` | string | `"region"` | `"region"` or `"datacenter"`: what a Consul datacenter is. Also applies to the datacenter label of `*.service.consul` DNS names. |
 | `namespaces` | list(string) | `["default"]` | Namespaces shown; the first without a prefix. |
 | `anonymous_token` | string | `""` | Nomad ACL token for requests without a token; use a read-only token. |
+| `kv` | block | | KV backend: `backend` (`"variables"`, `"nats"`, `"disabled"`), `namespace`, `path`, `nats { urls, bucket, ... }`. |
 
 ## CLI and API
 
@@ -141,9 +161,9 @@ There is no CLI. Endpoints and parameters: [Consul-compatible API reference](/do
 
 ## Limits and status
 
-- Consul KV, sessions, prepared queries, events, ACL endpoints, Connect and config entries are not
-  served (`501`). Consul KV is a deliberate non-goal: Norca Variables and the
-  [secret store](/docs/features/secrets) have a different model.
+- Sessions (and the KV locks built on them), transactions, prepared queries, events, ACL endpoints,
+  Connect and config entries are not served (`501`). For secrets use Norca Variables or the
+  [secret store](/docs/features/secrets) directly; the KV is for tools that only know Consul.
 - `/v1/health/connect/:name` is always empty and registrations with Connect settings or a non-typical
   `Kind` are rejected.
 - Agent check registrations support `TTL`, `HTTP` and `TCP` checks; script, gRPC, H2PING, UDP, alias and

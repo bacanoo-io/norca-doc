@@ -12,6 +12,12 @@ field: the checks of the service restart tasks and gate deployments, but every l
 instances whose checks fail. Tools that read the catalog, such as Traefik's `nomad` provider or
 Prometheus `nomad_sd_configs`, therefore send traffic to broken instances.
 
+In Norca the native provider is also the default: a `service` block without `provider` registers in
+the native catalog, unless it has a `connect` block (Consul Connect needs Consul). Write
+`provider = "consul"` for a service that should go to Consul; script and gRPC checks need it as well.
+When no node of the region runs a Consul agent, registering a job with Consul services returns a
+warning, since the job could not be placed.
+
 In Norca every registration carries the health of its instance: a `Ready` flag, an aggregate `Health`
 (`passing`, `warning` or `critical`), the state of each check and the time of the last change. Lookups
 can filter on it, the built-in DNS and the Consul-compatible API only hand out healthy instances, and

@@ -325,9 +325,14 @@ external_service "szamlazas-db" {
 
 External services are rows of the existing `service_registrations` table with an `External` block (kind, source, check definitions, `DeregisterCriticalAfter`) and no job or allocation, so the catalog, the event stream, DNS and the compatibility layer serve them unchanged (`nomad/structs/service_external.go`). No new Raft message type is needed. TTL checks are tracked in memory on the leader like node heartbeats (`nomad/service_external.go`): renewals reset a deadline, only status changes are written, a new leader gives every check a full TTL, and registrations critical for longer than `DeregisterCriticalAfter` (default 1h through the native API) are deregistered. Registrations made through a client agent with HTTP or TCP checks, and every registration made through the Consul agent endpoints, are owned by that client node: it runs their checks (`client/externalsvc/`) and they are removed when the node goes down. The Consul agent endpoints live in `client/consulcompat/agent.go`; the native endpoints, API client and the `service register|deregister|ttl` commands in `command/agent/service_external_endpoint.go`, `api/services_external.go` and `command/service_external.go`.
 
-### Non-goal
+### Consul KV (revised 2026-10-30)
 
-Mapping Consul KV to Variables. The two models differ too much (Variables are a key-value map belonging to a path, with encryption, while Consul KV stores raw bytes with flags and sessions); a half-working mapping would do more harm than good.
+First a non-goal (the models differ: Variables are an encrypted map per path, Consul KV raw bytes with flags and sessions). Revised on 2026-10-30: tools that read their configuration from Consul KV (consul-template's `key` and `tree`, Traefik's and Spring Cloud's Consul KV providers) are common enough, and the mapping without sessions is well defined. The layer serves `GET`, `PUT` and `DELETE /v1/kv/:key` with `recurse`, `keys`, `separator`, `raw`, `cas`, `flags` and blocking queries, from one of two backends (`consul_compat { kv { backend } }`):
+
+- `variables` (default): one Variable per key below `consul/kv` in a namespace; characters outside the Variables path alphabet become `~XX`, empty segments `~`, so string prefixes stay prefixes of the paths. Values in the item `value` (UTF-8) or `value_base64`, flags in `flags`. `ModifyIndex` is the Raft index, CAS maps to the Variables check-and-set, blocking to the blocking Variables queries. Limits: a 128-character path and 64 KB values.
+- `nats`: a NATS JetStream key-value bucket (`consul-kv`, history 1). Segments become subject tokens, other characters `=XX`. `ModifyIndex` is the revision, CAS maps to `Create`/`Update`/`LastRevision`, a blocking query is a watch of the key or of the directory of the prefix. No flags. NATS does not know the Norca ACLs, so the client checks the Variables rules of `consul/kv/<key>`, the same rules the servers apply to the variables backend.
+
+Not served: sessions and the locks built on them (`?acquire`, `?release`), `/v1/txn`; a recursive delete is not atomic. Implementation: `client/consulcompat/kv.go`, `kv_variables.go`, `kv_nats.go`.
 
 ## 5. Native mTLS and service authorization
 
@@ -414,7 +419,7 @@ Whatever is left out of the above still requires a real Consul:
 
 - Consul Connect, if native mTLS is not yet enough (for example L7 traffic management, Traefik's Connect mode);
 - sessions and locking (for example Vault's Consul storage; for Vault the built-in Raft storage is the recommended one today anyway);
-- the full KV, prepared queries and config entries.
+- sessions and locks on the KV, prepared queries and config entries.
 
 ### Why not Consul v1.16.4?
 
