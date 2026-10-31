@@ -83,7 +83,33 @@ The servers sample the allocations every sample interval, also of task groups
 whose clients report no usage; a task group gets these series once it has a
 running or queued allocation.
 
-Read the history with the [metrics store API](/docs/api/metrics-store), and
+### Cluster and quota metrics
+
+Every sample interval each server also samples the capacity of the cluster and
+the quotas from its state and from the latest usage report of every node. A
+series counts 2 towards `max_series`.
+
+| Metric | Labels | Value |
+| --- | --- | --- |
+| `norca.cluster.cpu_allocated` | `dc`, `pool` | CPU of the running allocations, in percent of the CPU of the ready, eligible nodes after their reserved CPU |
+| `norca.cluster.cpu_used` | `dc`, `pool` | CPU the allocations actually use, in percent of the same capacity |
+| `norca.cluster.memory_allocated` | `dc`, `pool` | memory of the running allocations, in percent |
+| `norca.cluster.memory_used` | `dc`, `pool` | memory the allocations actually use, in percent |
+| `norca.cluster.disk_allocated` | `dc`, `pool` | ephemeral disk of the running allocations, in percent |
+| `norca.cluster.nodes_ready` | `dc`, `pool` | ready, eligible nodes |
+| `norca.cluster.autopilot_healthy` | | 1 when the servers are healthy, else 0; stored by the leader only |
+| `norca.cluster.autopilot_failure_tolerance` | | servers that can fail without losing the quorum; stored by the leader only |
+| `norca.quota.cpu_mhz_allocated` | `quota` | MHz of the allocations of the namespaces of the quota in the region |
+| `norca.quota.cpu_mhz_used` | `quota` | MHz they actually use |
+| `norca.quota.memory_mb_allocated` | `quota` | MiB of the allocations |
+| `norca.quota.memory_mb_used` | `quota` | MiB they actually use |
+
+The `used` values come from the clients' usage reports: a node whose latest
+report is older than two report intervals counts as using nothing.
+
+Read the history, the list of series and the usage summary of a task group
+(the right-sizing view: average, 95th percentile and maximum against the
+allocated resources) with the [metrics store API](/docs/api/metrics-store), and
 the state of the store with
 [`norca operator metrics-store status`](/docs/commands/operator/metrics-store/status).
 

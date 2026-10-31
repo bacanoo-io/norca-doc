@@ -1,11 +1,12 @@
 ---
 title: "Metrics Store HTTP API"
 linkTitle: "Metrics Store"
-description: "The /metrics/history endpoint returns the history of the task group usage the servers keep."
+description: "The /metrics endpoints return the history of the task group usage, the cluster and the quotas the servers keep."
 ---
 
-The `/metrics/history` endpoint returns the history of a metric of a task
-group from the [metrics store](/docs/configuration/metrics_store) of a server.
+The `/metrics` endpoints return the history of the
+[metrics store](/docs/configuration/metrics_store) of a server: the history of
+a metric, the list of the series, and the usage summary of a task group.
 
 ## Read History
 
@@ -20,17 +21,22 @@ The table below shows this endpoint's support for
 [blocking queries](/docs/api#blocking-queries) and
 [required ACLs](/docs/api#acls).
 
-| Blocking Queries | ACL Required         |
-| ---------------- | -------------------- |
-| `NO`             | `namespace:read-job` |
+| Blocking Queries | ACL Required |
+| ---------------- | ------------ |
+| `NO`             | `namespace:read-job` for a metric of a task group, `node:read` for a cluster metric, `quota:read` for a quota metric, `operator:read` for the autopilot metrics |
 
 ### Parameters
 
-- `job` `(string: <required>)` - The ID of the job.
-- `group` `(string: <required>)` - The name of the task group.
-- `namespace` `(string: "default")` - The namespace of the job.
 - `metric` `(string: "norca.group.cpu")` - One of the
   [metrics](/docs/configuration/metrics_store#metrics).
+- `job` `(string: "")` - The ID of the job; required for a metric of a task
+  group.
+- `group` `(string: "")` - The name of the task group; required for a metric
+  of a task group.
+- `namespace` `(string: "default")` - The namespace of the job.
+- `dc`, `pool` `(string: "")` - The datacenter and node pool of a cluster
+  metric.
+- `quota` `(string: "")` - The quota of a quota metric.
 - `from` `(string: "1h")` - The start of the history: an RFC 3339 time, Unix
   seconds, or a duration before now.
 - `to` `(string: "")` - The end of the history (exclusive), in the same
@@ -66,6 +72,76 @@ $ curl -H "X-Nomad-Token: $NORCA_TOKEN" \
   ]
 }
 ```
+
+## List Series
+
+This endpoint lists the task groups with series in the namespaces the token
+may read jobs of, and the series of the cluster and quota metrics the token
+may read.
+
+| Method | Path                 | Produces           |
+| ------ | -------------------- | ------------------ |
+| `GET`  | `/v1/metrics/series` | `application/json` |
+
+| Blocking Queries | ACL Required |
+| ---------------- | ------------ |
+| `NO`             | none; the list is filtered |
+
+### Sample Response
+
+```json
+{
+  "Enabled": true,
+  "Groups": [
+    { "Namespace": "default", "JobID": "api", "Group": "web" }
+  ],
+  "Gauges": [
+    { "Metric": "norca.cluster.cpu_used", "Labels": { "dc": "dc1", "pool": "default" } }
+  ]
+}
+```
+
+## Read Usage Summary
+
+This endpoint returns the usage of a task group over a window, per
+allocation, against the CPU and memory an allocation of the current job
+version has: for every usage metric the mean of the interval averages, the
+95th percentile and the largest of the interval maxima.
+
+| Method | Path                  | Produces           |
+| ------ | --------------------- | ------------------ |
+| `GET`  | `/v1/metrics/summary` | `application/json` |
+
+| Blocking Queries | ACL Required         |
+| ---------------- | -------------------- |
+| `NO`             | `namespace:read-job` |
+
+### Parameters
+
+- `job` `(string: <required>)` - The ID of the job.
+- `group` `(string: <required>)` - The name of the task group.
+- `namespace` `(string: "default")` - The namespace of the job.
+- `window` `(string: "720h")` - The range before now.
+- `server_id` `(string: "")` - The name or ID of a server of the region to read
+  instead.
+
+### Sample Response
+
+```json
+{
+  "Enabled": true,
+  "Window": 2592000000000000,
+  "AllocatedCPUMHz": 2000,
+  "AllocatedMemoryMB": 1024,
+  "Metrics": {
+    "norca.group.cpu_mhz": { "Avg": 312.5, "P95": 451.0, "Max": 980.2, "Samples": 86400 },
+    "norca.group.memory_mb": { "Avg": 402.1, "P95": 488.0, "Max": 612.7, "Samples": 86400 }
+  }
+}
+```
+
+The summary has `norca.group.cpu`, `cpu_mhz`, `cpu_throttled`, `memory`,
+`memory_mb` and `memory_cache_mb`.
 
 ## Read Metrics Store Status
 
