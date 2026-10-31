@@ -36,9 +36,11 @@ NATS, for example the `nats` pack. The bus is configured in the server's
 
 ## Task group usage
 
-While the [built-in autoscaler](/docs/features/autoscaler) is enabled, the
-servers ask the clients in the heartbeat response for the usage of their task
-groups every `client_metrics_interval`. A client publishes the report as JSON
+While the [built-in autoscaler](/docs/features/autoscaler) or the
+[metrics store](/docs/configuration/metrics_store) is enabled, the servers ask
+the clients in the heartbeat response for the usage of their task groups
+every `client_metrics_interval` of the autoscaler (`10s` while only the
+metrics store needs it). A client publishes the report as JSON
 on its own subject, the only subject a node may publish on; a report larger
 than one message is split into several of the same window. The reports travel
 on the bus only: without it the clients are not asked for usage.
@@ -48,7 +50,7 @@ on the bus only: without it the clients are not asked for usage.
 | Stream | `NORCA_TELEMETRY_<region>` (memory storage, created by the leader) |
 | Subjects | `norca.telemetry.<region>.<node_id>` |
 | Limits | 1 hour, a quarter of `max_memory`, 64KiB per message; the oldest reports are dropped first |
-| Consumers | `norca-usage-<server_id>`: every server reads every report; the leader keeps them for the autoscaler |
+| Consumers | `norca-usage-<server_id>`: every server reads every report into its [metrics store](/docs/configuration/metrics_store); the leader also keeps them for the autoscaler |
 
 ## The event stream
 

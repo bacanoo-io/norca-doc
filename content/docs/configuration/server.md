@@ -44,6 +44,10 @@ server {
 - `bus` - (Norca) Configures the system bus, the NATS server with JetStream
   embedded in the servers. See the [`bus` block](/docs/configuration/bus).
 
+- `metrics_store` - (Norca) Configures the history of the task group usage
+  every server keeps. See the
+  [`metrics_store` block](/docs/configuration/metrics_store).
+
 - `bootstrap_expect` `(int: required)` - Specifies the number of server nodes to
   wait for before bootstrapping. It is most common to use the odd-numbered
   integers `3` or `5` for this value, depending on the cluster size. A value of

@@ -35,6 +35,9 @@ The following subcommands are available:
 - [`operator bus status`](/docs/commands/operator/bus/status) - (Norca)
   Display the status of the system bus of a server
 
+- [`operator metrics-store status`](/docs/commands/operator/metrics-store/status) -
+  (Norca) Display the state of the metrics store of a server
+
 - [`operator consul-kv migrate`](/docs/commands/operator/consul-kv/migrate) -
   (Norca) Copy the Consul KV from Variables to the system bus
 
