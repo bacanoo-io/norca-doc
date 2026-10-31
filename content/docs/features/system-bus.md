@@ -17,7 +17,10 @@ Norca's own traffic:
   holding an HTTP stream open to every region.
 - **The Consul KV of the Consul-compatible API.** The clients keep the KV in the key-value
   bucket `consul-kv` of the bus (backend `"auto"` of [`consul_compat`](/docs/configuration/consul_compat)),
-  shared by every node of the region and replicated over the servers.
+  shared by every node of the region and replicated over the servers. When a single-server
+  region gets its second server, the bus restarts clustered and the server carries the keys of
+  its standalone store over; keys kept in Variables move with
+  [`norca operator consul-kv migrate`](/docs/commands/operator/consul-kv/migrate).
 - **Pack push notices.** A release pipeline announces that it pushed packs.
   The leader syncs the matching [cluster registries](/docs/features/packages/registry)
   at once, without waiting for their sync interval.

@@ -35,6 +35,9 @@ The following subcommands are available:
 - [`operator bus status`](/docs/commands/operator/bus/status) - (Norca)
   Display the status of the system bus of a server
 
+- [`operator consul-kv migrate`](/docs/commands/operator/consul-kv/migrate) -
+  (Norca) Copy the Consul KV from Variables to the system bus
+
 - [`operator debug`][debug] - Build an archive of debug data
 
 - [`operator gossip keyring generate`][gossip_keyring_generate] - Generates a gossip encryption key

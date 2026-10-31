@@ -54,7 +54,8 @@ client {
   - `"bus"`: in the key-value bucket `consul-kv` of the system bus. The servers create it with one
     replica per server, up to three. The client connects to the bus with its node secret, with TLS
     when the agent uses TLS for RPC.
-  - `"variables"`: every key in a Norca Variable.
+  - `"variables"`: every key in a Norca Variable. To move the keys to the bus, run
+    [`norca operator consul-kv migrate`](/docs/commands/operator/consul-kv/migrate).
   - `"nats"`: a JetStream key-value bucket of an external NATS (the `nats` block).
   - `"disabled"`: the KV endpoints answer `501`.
 
