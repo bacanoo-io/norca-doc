@@ -15,6 +15,12 @@ reports in memory for `metrics_window` (default `5m`) in a fixed number of time
 buckets per task group, so the memory used does not depend on the number of
 nodes or allocations, and no RPC is made per allocation.
 
+A check may set a `query_window` longer than `metrics_window`, up to the
+retention of the [metrics store](/docs/configuration/metrics_store), for
+example `query_window = "1h"` to scale on the usage of the last hour: such a
+query is read from the store, at its 30 second resolution, instead of from the
+leader's memory.
+
 `nomad-apm` is the default `source` of a check. It needs no `apm` block and no
 ACL token, but it needs the system bus: without it the clients report no usage
 and the checks of this source return an error.

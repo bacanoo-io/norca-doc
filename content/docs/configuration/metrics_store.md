@@ -116,9 +116,10 @@ the state of the store with
 ## Autoscaler
 
 A new leader fills the usage window of the
-[built-in autoscaler](/docs/configuration/autoscaler) (`metrics_window`) from
-its store, so the built-in metrics do not wait one window after a leader
-change.
+[built-in autoscaler](/docs/configuration/autoscaler) (`metrics_window`, 5
+minutes by default) from its store, so the built-in metrics do not wait one
+window after a leader change. Checks whose `query_window` is longer than
+`metrics_window` read the built-in metrics from the store.
 
 ## High availability
 

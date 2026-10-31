@@ -75,8 +75,11 @@ send the usage of their task groups.
   change, the new leader fills the window from its
   [metrics store](/docs/configuration/metrics_store); without the store, or
   for the part of the window the store has no data of, the built-in metrics
-  report insufficient data until one full window has been collected. Must not
-  be shorter than `client_metrics_interval`.
+  report insufficient data until one full window has been collected. A check
+  whose `query_window` reaches back beyond this window reads the built-in
+  metrics from the metrics store (the mean of the interval averages, the
+  largest maximum); without points there, from this window only. Must not be
+  shorter than `client_metrics_interval`.
 
 - `client_metrics_interval` `(string: "10s")` - The aggregation window of the
   task group usage on the clients, which is also how often they send it. Must be
