@@ -110,7 +110,8 @@ $ curl --request PUT 'http://127.0.0.1:8500/v1/agent/check/pass/service:billing?
 
 ## KV endpoints
 
-The Consul KV, kept in Norca Variables (default) or a NATS JetStream bucket, see
+The Consul KV, kept in the bucket of the [system bus](/docs/features/system-bus) of the servers
+(default when they run one), in Norca Variables or in a bucket of an external NATS, see
 [`consul_compat { kv }`](/docs/configuration/consul_compat#kv-parameters). The token of the request
 needs the Variables capabilities of the path of the key (`consul/kv/<key>` by default) in the namespace
 of the KV: `read` to read, `list` for `recurse` and `keys` (the keys it cannot read are left out),

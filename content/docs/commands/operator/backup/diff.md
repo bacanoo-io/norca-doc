@@ -90,7 +90,8 @@ precedence when both are set.
 
 - `-type=<type>`: Only compare one content type: `namespaces`, `jobs`,
   `job-versions`, `variables`, `secrets`, `acl-policies`, `acl-roles`,
-  `deployments` or `allocations`.
+  `deployments`, `allocations` or `consul-kv` (keys compared by the hash of
+  their value).
 
 - `-job=<id>`: Only compare the objects of a job, and show the job diff.
 

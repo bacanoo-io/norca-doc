@@ -197,6 +197,20 @@ client {
 - `consul_compat` <code>([consul_compat](/docs/configuration/consul_compat): nil)</code> - (Norca)
   Runs the Consul-compatible HTTP API on top of the native service catalog.
 
+- `bus` - (Norca) Whether the client uses the [system bus](/docs/features/system-bus) of the
+  servers. With `enabled = true` (default), the client connects to the bus when a feature needs
+  it, for example the Consul KV of `consul_compat`. It logs in with its node secret, and uses TLS
+  when the agent uses TLS for RPC. The servers send their bus addresses with the heartbeat.
+  `enabled = false` keeps the client off the bus; the KV backend `"auto"` then uses Variables.
+
+  ```hcl
+  client {
+    bus {
+      enabled = true
+    }
+  }
+  ```
+
 - `secrets` <code>([secrets](/docs/configuration/secrets#client-secrets-block): nil)</code> -
   (Norca) Configures the secret delivery of the client: provider routes, the mapping of Vault
   KV paths to the built-in secret store and the Vault-compatible endpoint for tasks.

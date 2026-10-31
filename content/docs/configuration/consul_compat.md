@@ -47,14 +47,21 @@ client {
 
 ## `kv` Parameters
 
-- `backend` `(string: "variables")` - `"variables"` keeps every key in a Norca Variable,
-  `"nats"` in a NATS JetStream key-value bucket, `"disabled"` turns the KV endpoints off (they answer
-  `501`).
+- `backend` `(string: "auto")` - Where the keys are kept:
+  - `"auto"`: in the bucket of the [system bus](/docs/features/system-bus) of the servers
+    when they run one, otherwise in Variables. The client decides at the first KV request after it
+    learned its servers, and keeps that store.
+  - `"bus"`: in the key-value bucket `consul-kv` of the system bus. The servers create it with one
+    replica per server, up to three. The client connects to the bus with its node secret, with TLS
+    when the agent uses TLS for RPC.
+  - `"variables"`: every key in a Norca Variable.
+  - `"nats"`: a JetStream key-value bucket of an external NATS (the `nats` block).
+  - `"disabled"`: the KV endpoints answer `501`.
 
 - `namespace` `(string: "")` - Namespace of the keys; empty uses the first of `namespaces`.
 
 - `path` `(string: "consul/kv")` - Variables path the keys live under: the key `app/config` is the
-  Variable `consul/kv/app/config`. The ACL rules of this path apply with both backends: reading a key
+  Variable `consul/kv/app/config`. The ACL rules of this path apply with every backend: reading a key
   needs `read`, listing `list`, writing `write` and deleting `destroy` on
   `<path>/<key>` in `namespace` (characters outside letters, digits, `-` and `_` appear as `~XX`).
 

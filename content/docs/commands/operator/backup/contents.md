@@ -90,8 +90,10 @@ precedence when both are set.
   identity is sent to the server only for this request and is never stored.
 
 - `-type=<type>`: The content to show: `namespaces`, `jobs`, `job-versions`,
-  `variables`, `secrets`, `acl-policies`, `acl-roles`, `deployments` or
-  `allocations`. Defaults to `jobs`. `job-versions` requires `-job`.
+  `variables`, `secrets`, `acl-policies`, `acl-roles`, `deployments`,
+  `allocations` or `consul-kv` (the keys of the Consul KV of the system bus,
+  with size, revision and value hash). Defaults to `jobs`. `job-versions`
+  requires `-job`.
 
 - `-job=<id>`: Only show the job versions, deployments and allocations of this
   job.

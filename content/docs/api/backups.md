@@ -85,7 +85,7 @@ $ curl \
 The sample is shortened: a backup record also carries `LeaderID`, `KeyIDs`
 (the root keys in its keyring) and `Seals`, and every destination
 `RecipientsFingerprint`, `Duration`, `Error` and `Objects` (`state`,
-`keyring`, `secret_store_key`, each with `Key`, `Size` and `SHA256`). The
+`keyring`, `secret_store_key`, `consul_kv`, each with `Key`, `Size` and `SHA256`). The
 `Location` of a backup folder is an `s3://<bucket>/<key>` URL on an S3
 destination and a `file://` URL of the folder on a directory destination, for
 example `file:///var/backups/norca/norca/eu-1/2026/10/24/20261024T140000Z-1834567/`
@@ -207,8 +207,11 @@ their paths, metadata and value hashes.
 
 - `type` `(string: "jobs")` - The content type, as a query parameter:
   `namespaces`, `jobs`, `job-versions`, `variables`, `secrets`,
-  `acl-policies`, `acl-roles`, `deployments` or `allocations`.
-  `job-versions` requires `job`.
+  `acl-policies`, `acl-roles`, `deployments`, `allocations` or `consul-kv`.
+  `job-versions` requires `job`. `consul-kv` lists the keys of the Consul KV
+  of the system bus with their size, revision and the SHA-256 of their value,
+  never the value; the Variables rules of `consul/kv/<key>` in the namespace
+  of the request (`default` by default) apply.
 
 - `namespace` `(string: "")` - The namespace, as a query parameter; `*` for all
   namespaces. Objects in namespaces the token can't read are hidden.
@@ -284,7 +287,9 @@ previews and requests a full restore of the region.
   restore takes no items. Each item has:
 
   - `Type` `(string: <required>)` - `job`, `variable`, `secret`, `namespace`,
-    `acl-policy` or `acl-role`.
+    `acl-policy`, `acl-role` or `consul-kv` (a key of the Consul KV of the
+    system bus, written back into its bucket; an existing key needs its
+    current revision as `CheckIndex`).
   - `Namespace` `(string: "")` - The namespace of a job, Variables entry or
     secret.
   - `ID` `(string: <required>)` - The job ID, Variables path, secret path,

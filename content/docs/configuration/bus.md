@@ -68,7 +68,9 @@ ports {
   - `max_age` `(string: "72h")` - How long events are kept.
   - `max_bytes` `(string: "1GiB")` - The size limit of the stream, within
     `max_storage`. Without it the stream takes at most a quarter of
-    `max_storage`.
+    `max_storage`. JetStream reserves this space together with the 64MiB of
+    the pack push notices; both must stay below `max_storage`, so that the
+    Consul KV bucket still fits.
   - `topics` `(array<string>: ["*"])` - The published topics, for example
     `["Job", "Deployment", "Allocation"]`; `"*"` publishes all.
 

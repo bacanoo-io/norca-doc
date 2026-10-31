@@ -119,6 +119,13 @@ precedence when both are set.
   existing entry give its current modify index (shown by `-dry-run`). Can be
   given several times.
 
+- `-consul-kv=<key>[@<check-index>]`: Restore a key of the Consul KV of the
+  [system bus](/docs/features/system-bus). Without a check index the key is
+  only restored if it does not exist; to overwrite an existing key give its
+  current revision (shown by `-dry-run`). The Variables rules of
+  `consul/kv/<key>` in the namespace of `-namespace` apply. Can be given
+  several times.
+
 - `-secret=<path>[@<check-index>]`: Restore a secret of the built-in secret
   store: the items of one version of the secret in the backup (the version
   that was current at backup time, or the one given with `-version`) are

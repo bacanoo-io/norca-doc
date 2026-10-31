@@ -15,6 +15,9 @@ Norca's own traffic:
   [events](/docs/features/event-stream) into a durable JetStream stream.
   History, audit and automation services read it from there instead of
   holding an HTTP stream open to every region.
+- **The Consul KV of the Consul-compatible API.** The clients keep the KV in the key-value
+  bucket `consul-kv` of the bus (backend `"auto"` of [`consul_compat`](/docs/configuration/consul_compat)),
+  shared by every node of the region and replicated over the servers.
 - **Pack push notices.** A release pipeline announces that it pushed packs.
   The leader syncs the matching [cluster registries](/docs/features/packages/registry)
   at once, without waiting for their sync interval.

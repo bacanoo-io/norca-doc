@@ -115,6 +115,7 @@ norca/eu-1/
       state.snap.age               Raft snapshot, age-encrypted
       keyring.age                  root keys, age-encrypted
       secret-store-key.age         key of the built-in secret store, age-encrypted
+      consul-kv.json.age           Consul KV bucket of the system bus, age-encrypted
   latest.json                      pointer to the newest backup
 ```
 
@@ -191,6 +192,9 @@ in the backup. It is guarded:
   current state is taken. If it fails, nothing is restored.
 - **Keys.** The root keys of the backup are added to the keystore of every
   server, next to the existing keys, before the Raft state is restored.
+- **Consul KV.** The Consul KV bucket of the [system bus](/docs/features/system-bus)
+  is not part of the Raft state: after the state, the bucket gets the keys of
+  the backup, and keys added since are removed.
 
 Restoring the authoritative region rolls the global ACL policies and tokens
 back in every region; the preview warns about it. After a restore of another
