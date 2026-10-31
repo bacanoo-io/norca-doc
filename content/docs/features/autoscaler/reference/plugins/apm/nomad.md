@@ -10,13 +10,14 @@ The `nomad-apm` source provides the CPU and memory usage of task groups without
 an additional application. In the built-in autoscaler it does not query the
 clients at evaluation time: the clients aggregate the usage of their allocations
 per task group over a short window (`client_metrics_interval`, default `10s`) and
-send it with their regular `Node.UpdateAlloc` calls. The leader keeps the
+publish it on the [system bus](/docs/features/system-bus#task-group-usage). The leader keeps the
 reports in memory for `metrics_window` (default `5m`) in a fixed number of time
 buckets per task group, so the memory used does not depend on the number of
 nodes or allocations, and no RPC is made per allocation.
 
-`nomad-apm` is always available and is the default `source` of a check. It needs
-no `apm` block and no ACL token.
+`nomad-apm` is the default `source` of a check. It needs no `apm` block and no
+ACL token, but it needs the system bus: without it the clients report no usage
+and the checks of this source return an error.
 
 > [!NOTE]
 > The data is not replicated between servers. After a leader change the new

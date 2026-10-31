@@ -50,7 +50,7 @@ flowchart LR
     EX["Executor<br/>(quota cap, rate limit,<br/>oscillation guard)"]
   end
   PR["Prometheus or<br/>external APM plugin"]
-  CU -- "Node.UpdateAlloc" --> UC
+  CU -- "system bus" --> UC
   PM --> EV
   UC -- "nomad.cpu, nomad.memory" --> EV
   PR -- "query" --> EV
@@ -66,9 +66,10 @@ flowchart LR
    `default_engine`), it is enabled, and it belongs to a task group. Task level
    scaling policies (`scaling "cpu"`, `scaling "mem"`) are not evaluated.
 2. **Metrics.** Clients aggregate the CPU and memory usage of their allocations
-   per task group and send it with their regular `Node.UpdateAlloc` calls; the
-   servers switch this on through the heartbeat response, so no client setting
-   is needed. The leader keeps the data only in memory, in a fixed ring of time
+   per task group and publish it on the
+   [system bus](/docs/features/system-bus#task-group-usage); the servers switch
+   this on through the heartbeat response when they run the bus, so no client
+   setting is needed. The leader keeps the data only in memory, in a fixed ring of time
    buckets per task group. The built-in metrics `nomad.cpu`, `nomad.memory`,
    `nomad.cpu_mhz` and `nomad.memory_mb` are served from it without any RPC to
    the clients. Application metrics come from a Prometheus APM or an external
