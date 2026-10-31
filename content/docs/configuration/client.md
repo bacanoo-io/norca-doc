@@ -212,6 +212,23 @@ client {
   }
   ```
 
+- `usage` - (Norca) Whether the client reports the CPU and memory usage of its task groups
+  on the [system bus](/docs/features/system-bus#task-group-usage). The servers ask for it while
+  the [built-in autoscaler](/docs/configuration/autoscaler) or the
+  [metrics store](/docs/configuration/metrics_store) is enabled; with `enabled = true` (default)
+  the client then reports every `client_metrics_interval`. `enabled = false` turns the reports
+  off on this node, for example when an external monitoring system collects the usage: its task
+  groups then get no built-in autoscaler metrics and no history. A client off the bus
+  (`bus { enabled = false }`) reports nothing either.
+
+  ```hcl
+  client {
+    usage {
+      enabled = false
+    }
+  }
+  ```
+
 - `secrets` <code>([secrets](/docs/configuration/secrets#client-secrets-block): nil)</code> -
   (Norca) Configures the secret delivery of the client: provider routes, the mapping of Vault
   KV paths to the built-in secret store and the Vault-compatible endpoint for tasks.
