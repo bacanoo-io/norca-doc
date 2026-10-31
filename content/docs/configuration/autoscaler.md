@@ -72,8 +72,11 @@ send the usage of their task groups.
 
 - `metrics_window` `(string: "5m")` - How long the leader keeps the task group
   usage reported by clients, the data of the built-in metrics. After a leader
-  change, the built-in metrics report insufficient data until one full window
-  has been collected. Must not be shorter than `client_metrics_interval`.
+  change, the new leader fills the window from its
+  [metrics store](/docs/configuration/metrics_store); without the store, or
+  for the part of the window the store has no data of, the built-in metrics
+  report insufficient data until one full window has been collected. Must not
+  be shorter than `client_metrics_interval`.
 
 - `client_metrics_interval` `(string: "10s")` - The aggregation window of the
   task group usage on the clients, which is also how often they send it. Must be

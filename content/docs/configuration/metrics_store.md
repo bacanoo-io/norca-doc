@@ -54,7 +54,7 @@ server {
   partitions are removed first, whatever their age.
 
 - `max_series` `(int: 50000)` - The largest number of series. Every task
-  group has 8 series (the average and the maximum of 4 metrics); the task
+  group has 18 series (the average and the maximum of 9 metrics); the task
   groups beyond the limit are not stored.
 
 - `wal_buffered_size` `(int: 4096)` - The bytes the write-ahead log buffers
@@ -63,19 +63,36 @@ server {
 
 ## Metrics
 
-The values are per allocation of the task group, like those of the
+Each metric is stored as an average and a maximum per sample interval. The
+usage values are per allocation of the task group, like those of the
 [built-in autoscaler](/docs/features/autoscaler):
 
-| Metric | Unit |
-| --- | --- |
-| `norca.group.cpu` | percent of the allocated CPU |
-| `norca.group.cpu_mhz` | MHz |
-| `norca.group.memory` | percent of the allocated memory |
-| `norca.group.memory_mb` | MiB |
+| Metric | Unit | Source |
+| --- | --- | --- |
+| `norca.group.cpu` | percent of the allocated CPU | clients |
+| `norca.group.cpu_mhz` | MHz | clients |
+| `norca.group.cpu_throttled` | percent of the time the tasks were throttled by their CPU limit; the tasks of an allocation add up | clients |
+| `norca.group.memory` | percent of the allocated memory | clients |
+| `norca.group.memory_mb` | MiB | clients |
+| `norca.group.memory_cache_mb` | MiB of page cache (reclaimable) | clients |
+| `norca.group.oom_kills` | tasks killed for running out of memory, of all allocations: the average is the sum in the interval or step | clients |
+| `norca.group.allocs_running` | running allocations | servers, from the job summary |
+| `norca.group.allocs_queued` | queued allocations | servers, from the job summary |
+
+The servers sample the allocations every sample interval, also of task groups
+whose clients report no usage; a task group gets these series once it has a
+running or queued allocation.
 
 Read the history with the [metrics store API](/docs/api/metrics-store), and
 the state of the store with
 [`norca operator metrics-store status`](/docs/commands/operator/metrics-store/status).
+
+## Autoscaler
+
+A new leader fills the usage window of the
+[built-in autoscaler](/docs/configuration/autoscaler) (`metrics_window`) from
+its store, so the built-in metrics do not wait one window after a leader
+change.
 
 ## High availability
 

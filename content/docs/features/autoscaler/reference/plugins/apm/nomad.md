@@ -20,9 +20,12 @@ ACL token, but it needs the system bus: without it the clients report no usage
 and the checks of this source return an error.
 
 > [!NOTE]
-> The data is not replicated between servers. After a leader change the new
-> leader starts with an empty window, and checks of this source return an
-> "insufficient data" error until one full `metrics_window` has been collected.
+> The window is kept in the memory of the leader. After a leader change the new
+> leader fills it from its [metrics store](/docs/configuration/metrics_store),
+> which every server keeps from the same reports, so the checks continue at
+> once. Without the store the new leader starts with an empty window, and
+> checks of this source return an "insufficient data" error until one full
+> `metrics_window` has been collected.
 > With the default `on_check_error = "ignore"` such a check is left out of the
 > evaluation, so the group is not scaled on partial data.
 
