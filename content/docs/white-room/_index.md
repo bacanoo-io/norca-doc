@@ -49,9 +49,10 @@ For the findings that were fixed:
 - every fix carries a `// white room bugfix:` comment in the code, which
   explains what was wrong, so the fixes can be found with
   `git grep "white room bugfix"`;
-- every fix that can be exercised without a running Docker daemon or a failing
-  plugin launch has a test; the report pages name the test, or say that there
-  is none and why.
+- every fix that can be exercised in a test has one; fixes that need a running
+  Docker daemon or a failing plugin launch, a test hook into the state store,
+  or that only remove dead code have none. The report pages name the test, or
+  say that there is none and why.
 
 The checking also found defects that were not in the reports; they are listed
 on the page of the report whose code they are in.
