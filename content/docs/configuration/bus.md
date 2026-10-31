@@ -63,7 +63,7 @@ ports {
   - `enabled` `(bool: true)` - The leader publishes the events into the
     stream `NORCA_EVENTS_<region>` and handles the push notices.
   - `subject_prefix` `(string: "nomad")` - The first part of the subjects
-    `<prefix>.<region>.<topic>` and `<prefix>.packs.pushed`. One or more
+    `<prefix>.<region>.<namespace>.<topic>` and `<prefix>.packs.pushed`. One or more
     tokens separated by dots.
   - `max_age` `(string: "72h")` - How long events are kept.
   - `max_bytes` `(string: "1GiB")` - The size limit of the stream, within

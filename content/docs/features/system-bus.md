@@ -34,7 +34,7 @@ NATS, for example the `nats` pack. The bus is configured in the server's
 | Item | Value |
 | --- | --- |
 | Stream | `NORCA_EVENTS_<region>` (file storage, S2 compression) |
-| Subjects | `<prefix>.<region>.<topic>`, e.g. `nomad.eu.Job`, `nomad.eu.Allocation` (prefix `nomad` by default) |
+| Subjects | `<prefix>.<region>.<namespace>.<topic>`, e.g. `nomad.eu.default.Job`, `nomad.eu.shop.Allocation` (prefix `nomad` by default); events without a namespace (nodes, operator events) use `_`, e.g. `nomad.eu._.Node` |
 | Payload | the event JSON exactly as `/v1/event/stream` returns it, with a `Region` field in front |
 | Retention | `max_age` (72h) and `max_bytes` (1GiB, at most a quarter of `max_storage` by default), the oldest events dropped first |
 | Replicas | one per server, up to three |
@@ -91,9 +91,17 @@ come to the connection's own `_INBOX`, which is always allowed. A plain
 subscriber of the live events needs only `subscribe = ["nomad.eu.>"]`.
 Wildcards are whole tokens, so the stream is named in full.
 
+The namespace in the subject limits a live subscriber to the events of some
+namespaces: `subscribe = ["nomad.eu.shop.>"]` receives the events of the
+namespace `shop` only, `["nomad.*.*.Job"]` the job events of every region and
+namespace. A JetStream consumer reads whatever its filter subject selects, so
+for a namespace-limited reader of the stream allow only consumers filtered
+to the namespace (`$JS.API.CONSUMER.CREATE.NORCA_EVENTS_eu.*.nomad.eu.shop.>`)
+instead of `$JS.API.CONSUMER.*.NORCA_EVENTS_eu`.
+
 ```shell-session
 $ nats --server tls://server1:4649 --tlsca ca.pem --user "$TOKEN" \
-    sub 'nomad.eu.Job'
+    sub 'nomad.eu.*.Job'
 ```
 
 ## Pack push notices
