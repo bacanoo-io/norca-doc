@@ -199,9 +199,10 @@ client {
 
 - `bus` - (Norca) Whether the client uses the [system bus](/docs/features/system-bus) of the
   servers. With `enabled = true` (default), the client connects to the bus when a feature needs
-  it, for example the Consul KV of `consul_compat`. It logs in with its node secret, and uses TLS
-  when the agent uses TLS for RPC. The servers send their bus addresses with the heartbeat.
-  `enabled = false` keeps the client off the bus; the KV backend `"auto"` then uses Variables.
+  it. It logs in with its node secret, and uses TLS when the agent uses TLS for RPC. The servers
+  send their bus addresses with the heartbeat. `enabled = false` keeps the client off the bus.
+  The Consul KV of `consul_compat` does not use this connection: the client reaches the bucket of
+  the bus through the RPC of the servers, whatever this setting.
 
   ```hcl
   client {
