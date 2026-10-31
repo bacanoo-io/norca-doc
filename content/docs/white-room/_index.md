@@ -50,9 +50,9 @@ For the findings that were fixed:
   explains what was wrong, so the fixes can be found with
   `git grep "white room bugfix"`;
 - every fix that can be exercised in a test has one; fixes that need a running
-  Docker daemon or a failing plugin launch, a test hook into the state store,
-  or that only remove dead code have none. The report pages name the test, or
-  say that there is none and why.
+  Docker daemon or a failing plugin launch, or that only remove dead code,
+  have none. The report pages name the test, or say that there is none and
+  why.
 
 The checking also found defects that were not in the reports; they are listed
 on the page of the report whose code they are in.
@@ -83,6 +83,7 @@ with it, made in the same code.
 | norca | `80b2a526f` | Consul KV on the bus through the servers; nodes lose direct access | SEC-04 |
 | norca | `d6c681885` | Consul KV on the bus: keys kept apart by namespace and path | SEC-04 (remaining gap) |
 | norca | `82b586a80` | Volume watcher: white room bugfixes | VOLWATCH-DEADLOCK-01, VOLWATCH-RACE-01, VOLWATCH-SPIN-01, VOLWATCH-KEY-01, VOLWATCH-DEAD-01, watcher state store race |
+| norca | `bc65e20b7` | Volume watcher: test for the backoff of a failed volumes query | VOLWATCH-SPIN-01 (test) |
 | norca | `a452d75c1` | Plugins: white room bugfixes | PLUG-LEAK-01, PLUG-LEAK-02, PLUG-PIPE-01, PLUG-ARG-01, PLUG-CSI-01, PLUG-ATTR-01, PLUG-NIL-01, PLUG-SRV-01, eventer consumer channels, exec input errors |
 | norca | `d88223f40` | Core and scheduler: white room bugfixes | CORE-SEC-01, CORE-SCHED-01, CORE-SCHED-02, `Node.UpdateStatus` caller check |
 | norca-doc | `a269151` | Bus event subjects carry the namespace | SEC-05 |

@@ -17,7 +17,7 @@ are relative to the `nomad` directory of the norca repository. See the
 | --- | --- | --- | --- |
 | VOLWATCH-DEADLOCK-01 | `Notify` blocks with the watcher lock held | Valid | `82b586a80` |
 | VOLWATCH-RACE-01 | A late goroutine of the previous leadership term removes the new watcher | Partially valid | `82b586a80` |
-| VOLWATCH-SPIN-01 | `watchVolumes` retries without a pause when the query fails | Partially valid (latent) | `82b586a80` |
+| VOLWATCH-SPIN-01 | `watchVolumes` retries without a pause when the query fails | Partially valid (latent) | `82b586a80`, `bc65e20b7` |
 | VOLWATCH-RACE-02 | `getVolume` writes the volume under a read lock | Invalid | — |
 | VOLWATCH-KEY-01 | The watch list key `ID + Namespace` collides | Valid | `82b586a80` |
 | VOLWATCH-RETRY-01 | A failed unpublish is never retried | Invalid | — |
@@ -106,10 +106,15 @@ be triggered today.
 when its context ends), and keeps the last-seen index. File:
 `nomad/volumewatcher/volumes_watcher.go`.
 
-**Test.** None: the state store cannot return such an error without a test
-hook.
+**Test.** `TestVolumeWatch_QueryErrorBackoff`: the volumes query and the
+retry interval are fields of the watcher, so the test replaces the query with
+a failing one and checks that each retry waits the interval, keeps the
+last-seen index, and that the loop stops when its context is cancelled during
+the wait. It fails on the old loop, which retried at once with index 0. The
+state store itself returns no such error, so the test needs the replaceable
+query.
 
-**Commit.** `82b586a80`.
+**Commit.** `82b586a80` (fix), `bc65e20b7` (test).
 
 ### VOLWATCH-RACE-02 Write under a read lock in `getVolume`
 
