@@ -92,7 +92,7 @@ precedence when both are set.
 - `-type=<type>`: The content to show: `namespaces`, `jobs`, `job-versions`,
   `variables`, `secrets`, `acl-policies`, `acl-roles`, `deployments`,
   `allocations` or `consul-kv` (the keys of the Consul KV of the system bus,
-  with size, revision and value hash). Defaults to `jobs`. `job-versions`
+  with their namespace and Variables path, size, revision and value hash). Defaults to `jobs`. `job-versions`
   requires `-job`.
 
 - `-job=<id>`: Only show the job versions, deployments and allocations of this

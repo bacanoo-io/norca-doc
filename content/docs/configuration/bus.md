@@ -114,8 +114,10 @@ configuration). A clustered server waits for its peers like Raft does.
 
 A region with a single server runs a standalone JetStream. When a second
 server joins, the bus of the first server restarts clustered. Its standalone
-store is moved to `[data_dir]/server/bus.standalone`, and its streams are not
-carried over.
+store is moved to `[data_dir]/server/bus.standalone`. The server carries the
+keys of the Consul KV over into the clustered bucket (a key already there is
+kept) and marks the store as carried over; the other streams, such as the
+event history, are not carried over.
 
 [`norca operator bus status`](/docs/commands/operator/bus/status) shows the
 routes, the JetStream meta leader, the usage and the connections of a server.

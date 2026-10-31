@@ -91,7 +91,8 @@ precedence when both are set.
 - `-type=<type>`: Only compare one content type: `namespaces`, `jobs`,
   `job-versions`, `variables`, `secrets`, `acl-policies`, `acl-roles`,
   `deployments`, `allocations` or `consul-kv` (keys compared by the hash of
-  their value).
+  their value; a key kept under another Variables path than `consul/kv`
+  shows as `<path>:<key>`).
 
 - `-job=<id>`: Only compare the objects of a job, and show the job diff.
 
