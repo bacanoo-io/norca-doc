@@ -32,7 +32,7 @@ change can be measured on the same test afterwards.
 - [Testing and acceptance](#testing-and-acceptance)
 - [Risks](#risks)
 - [Licenses](#licenses)
-- [Open questions](#open-questions)
+- [Decisions](#decisions)
 
 ## Phase 0: baseline performance test
 
@@ -139,12 +139,26 @@ v1.5.0). What Norca gets from the update:
 1. **MessagePack.** Upstream moved to `go-msgpack/v2` (1.6.0). The fork keeps the transport and the
    log encoding helpers on `hashicorp/go-msgpack` v1.1.5, the codec Norca uses, so the raft messages
    stay byte for byte what they are today.
-2. **Metrics.** Upstream 1.8.0 emits metrics only through `hashicorp/go-metrics`; Norca collects
-   through `armon/go-metrics` (about 110 files). The fork keeps emitting to `armon/go-metrics` until
-   Norca moves to `hashicorp/go-metrics` in a separate change, so that the raft metrics (`raft.*`) stay
-   in the metrics store, on the Prometheus endpoint and in the alerts.
-3. Each change is a separate commit with a `Norca:` line in the message; the fork tags its releases as
+2. Each change is a separate commit with a `Norca:` line in the message; the fork tags its releases as
    `v<upstream>-norca.<n>` (for example `v1.8.0-norca.1`).
+
+### Metrics library
+
+Upstream raft 1.8.0 emits its metrics only through `hashicorp/go-metrics` (MIT), the renamed
+continuation of `armon/go-metrics`; Norca collects through `armon/go-metrics` v0.4.1, pinned to a
+2023 commit, in about 113 files. Without a change the raft metrics (`raft.*`) would leave the metrics
+store, the Prometheus endpoint and the alerts. Norca therefore moves to `hashicorp/go-metrics` v0.7.0 in
+phase 1, before it takes the updated raft:
+
+- What it brings: the Prometheus sink can clear metrics that are no longer reported even when nobody
+  scrapes the endpoint (`RunBackgroundCleanup`, v0.6.0), the Prometheus client library with its
+  security updates (v0.6.1), error logging for the statsd and statsite sinks, and the DataDog line
+  ending that the DataDog agent uses to detect truncation.
+- What it saves: the fork needs no metrics patch, and the newer versions of `serf`, `memberlist` and
+  `raft-autopilot`, which emit through `hashicorp/go-metrics`, can be taken later without patches.
+- What it costs: the import path in about 113 files and the sink setup of the agent (in-memory,
+  Prometheus, statsd, statsite, DataDog and Circonus sinks all exist in v0.7.0); metric names do not
+  change. The `replace` of `armon/go-metrics` is removed.
 
 Norca uses the fork through a `replace` directive, so the import path stays `github.com/hashicorp/raft`
 and `raft-autopilot`, which imports raft by that path, needs no fork:
@@ -194,8 +208,9 @@ part of the design, not an afterthought.
 ### Configuration against compaction spikes
 
 The values below are the starting point, to be tuned with the soak test (M6) and the store benchmark
-(B1). The agent exposes the important ones in a `badger` block of the server and client configuration;
-the rest stay internal.
+(B1). The agent exposes the options that matter for tuning (memory, the level 0 thresholds, the
+compactors, the caches, the value log GC interval) in a `badger` block of the server and client
+configuration; the rest are fixed by Norca, so the configuration stays shallow.
 
 | Option | Badger default | Starting value (server) | Starting value (client) | Why |
 | --- | --- | --- | --- | --- |
@@ -287,8 +302,10 @@ fork (module path `storj.io/drpc`, through a `replace` directive, like the raft 
   plugin's handshake says which protocol it serves, and the agent uses drpc when the plugin serves it
   and gRPC otherwise. A plugin built with the Norca plugin SDK serves both on one listener
   (`drpcmigrate` tells the two apart by the first bytes of a connection).
-- `go-plugin` stays for starting and supervising plugin processes; the drpc protocol is added to it
-  (in Norca's code or a `bacanoo-io/go-plugin` fork, MPL 2.0, decided in phase 4).
+- `go-plugin` stays for starting and supervising plugin processes. The drpc side of the plugin
+  protocol (serving a plugin over drpc, the client side, the protocol name in the handshake) lives in
+  the `bacanoo-io/drpc` fork, as a package next to drpc's own, so Norca and plugin authors take it from
+  one place.
 - Streaming calls (task stats, log streaming, `alloc exec`) map to drpc streams; cancellation and
   deadlines are carried through the context as today.
 
@@ -304,7 +321,7 @@ the speed of scheduling or of raft (M1–M4); the baseline shows how large the p
 | Phase | Content | Depends on |
 | --- | --- | --- |
 | 0 | Benchmark suite (B1–B4, M1–M6) and collector in `norca-lab`; the baseline on the current main | – |
-| 1 | Raft fork: synchronized with upstream, MessagePack v1.1.5 and `armon/go-metrics` kept, tagged; Norca switches with `replace`; B1, M2, M3 against the baseline | 0 |
+| 1 | Norca moves to `hashicorp/go-metrics`; raft fork synchronized with upstream with MessagePack v1.1.5 kept, tagged; Norca switches with `replace`; B1, M2, M3 against the baseline | 0 |
 | 2 | Badger raft store (`raft/badger`), `helper/raftutil`, the `badger` server options, metrics and alerts; `raft-boltdb` removed; B1, M1–M4, M6 | 1 |
 | 3 | Badger client state, the `badger` client options; `bbolt` removed; B2, M5, M6 | 2 |
 | 4 | drpc for `logmon`, executor and `docker_logger`; the handshake and reattach; B3, M5 | 0 |
@@ -349,12 +366,9 @@ None of them is a HashiCorp product under BSL; the raft fork is MPL code. `THIRD
 regenerated with every dependency change, and `bbolt`, `boltdb/bolt` and `raft-boltdb` leave it with
 phases 2 and 3.
 
-## Open questions
+## Decisions
 
-- Should the fork keep emitting to `armon/go-metrics`, or should Norca move to `hashicorp/go-metrics`
-  first (phase 1 would then take the upstream metrics unchanged)?
-- Are the `badger` options exposed in the agent configuration, or only a small set (memory size, stall
-  threshold) with the rest fixed?
-- Does drpc for external plugins (phase 5) go into a `go-plugin` fork or into Norca's own plugin code?
-- Does the benchmark suite also run on hardware other than the lab VMs (for example a physical server
-  with NVMe), to see the storage change without the virtual disk?
+- 2026-11-03: Norca moves to `hashicorp/go-metrics` in phase 1 (see [metrics library](#metrics-library)).
+- 2026-11-03: the agent exposes only the Badger options that matter for tuning (the `badger` block).
+- 2026-11-03: the drpc plugin protocol lives in the `bacanoo-io/drpc` fork.
+- 2026-11-03: the benchmarks run on the lab VMs only.
