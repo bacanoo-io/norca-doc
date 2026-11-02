@@ -158,7 +158,13 @@ phase 1, before it takes the updated raft:
   `raft-autopilot`, which emit through `hashicorp/go-metrics`, can be taken later without patches.
 - What it costs: the import path in about 113 files and the sink setup of the agent (in-memory,
   Prometheus, statsd, statsite, DataDog and Circonus sinks all exist in v0.7.0); metric names do not
-  change. The `replace` of `armon/go-metrics` is removed.
+  change. The `replace` of `armon/go-metrics` is removed when `raft-boltdb`, its last user, goes in
+  phase 2.
+- What comes with it: `serf` (v0.10.1 → v0.11.0) and `memberlist` (v0.5.0 → v0.7.0), both MPL 2.0,
+  emit through `hashicorp/go-metrics` v0.7.0 as well, so they are updated in the same step and the
+  gossip metrics stay in the same sinks. `memberlist` v0.7.0 encodes its own gossip messages with
+  `go-msgpack/v2`; that is internal to the gossip protocol, every agent runs the same version, and
+  Norca's own encoding (section 1) does not change.
 
 Norca uses the fork through a `replace` directive, so the import path stays `github.com/hashicorp/raft`
 and `raft-autopilot`, which imports raft by that path, needs no fork:
