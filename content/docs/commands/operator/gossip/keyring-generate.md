@@ -1,0 +1,33 @@
+---
+title: "Command: operator gossip keyring generate"
+linkTitle: "operator gossip keyring generate"
+description: "The `operator gossip keyring generate` command generates an encryption key that can be used for Norca server's gossip traffic encryption. The keygen command uses a cryptographically strong pseudo-random number generator to generate the key."
+upstream:
+  path: "website/content/docs/commands/operator/gossip/keyring-generate.mdx"
+---
+
+The `operator gossip keyring generate` command generates an encryption
+key that can be used for Norca server's gossip traffic encryption. The
+keygen command uses a cryptographically strong pseudo-random number
+generator to generate the key.
+
+The resulting key is encoded in the [RFC4648] "URL and filename safe"
+base64 alphabet. If you use another tool such as OpenSSL to generate
+the gossip key, you should pipe the input through the `base64(1)`
+command to ensure it is safely encoded. For example:
+`openssl rand 32 | base64`
+
+## Usage
+
+```plaintext
+norca operator gossip keyring generate
+```
+
+## Example
+
+```shell
+$ norca operator gossip keyring generate
+6RhfKFZ5uYEaU6RgWzx69ssLcpiIkvnEZs5KBOQxvxA=
+```
+
+[rfc4648]: https://tools.ietf.org/html/rfc4648#section-5

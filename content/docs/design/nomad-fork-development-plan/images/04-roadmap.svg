@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1344 954" width="1344" height="954" role="img" aria-labelledby="t4">
+  <title id="t4">Roadmap: four phases, each followed by a measurable gate; the external autoscaler can be stopped after phase 1</title>
+  <defs>
+    <style>
+      text { font-family: Inter, "Segoe UI", Helvetica, Arial, sans-serif; fill: #111; }
+      .h { font-size: 26px; font-weight: 600; }
+      .b { font-size: 22px; font-weight: 600; }
+      .s { font-size: 19px; fill: #333; }
+      .g { font-size: 19px; fill: #555; }
+      .box { fill: #fff; stroke: #c9c7bd; stroke-width: 2; }
+      .hi { fill: #dce6f2; stroke: #2f78d4; stroke-width: 3; }
+      .ln { stroke: #c9c7bd; stroke-width: 2; fill: none; }
+      .gate { fill: #e9e8e3; stroke: #c9c7bd; stroke-width: 2; }
+    </style>
+  </defs>
+  <rect width="1344" height="954" fill="#fff"/>
+  <text class="h" x="44" y="56">Four phases, each followed by a measurable gate; the external autoscaler can be stopped after phase 1</text>
+
+  <path class="ln" d="M99,218 V318 M99,444 V544 M99,670 V770"/>
+
+  <rect class="hi" x="42" y="92" width="1260" height="126" rx="14"/>
+  <text class="b" x="71" y="133">Phase 1 · Embedding</text>
+  <text class="s" x="71" y="163">The evaluation loop of the autoscaler on the leader, with the existing policy format</text>
+  <text class="s" x="71" y="191">engine field, ListPolicies filter, built-in plugins, internal Job.Scale call</text>
+
+  <rect class="gate" x="81" y="251" width="36" height="36" transform="rotate(45 99 269)"/>
+  <text class="g" x="156" y="263">Gate: the two engines run side by side without double scaling; the cooldown survives a leader change</text>
+  <text class="g" x="156" y="292">a load test with 1,000 task groups passes</text>
+
+  <rect class="box" x="42" y="318" width="1260" height="126" rx="14"/>
+  <text class="b" x="71" y="359">Phase 2 · Typed jobspec and coordination</text>
+  <text class="s" x="71" y="389">check block in HCL2, jobScalingValidate admission hook</text>
+  <text class="s" x="71" y="417">Scaling event topic, deployment block, rate limit, oscillation guard</text>
+
+  <rect class="gate" x="81" y="477" width="36" height="36" transform="rotate(45 99 495)"/>
+  <text class="g" x="156" y="489">Gate: job plan rejects a faulty rule; jobs in the old format run unchanged</text>
+  <text class="g" x="156" y="518">in a mixed-version cluster the Raft log stays readable</text>
+
+  <rect class="box" x="42" y="544" width="1260" height="126" rx="14"/>
+  <text class="b" x="71" y="585">Phase 3 · Native metrics</text>
+  <text class="s" x="71" y="615">client-side push in the Node.UpdateAlloc message, leader-side collector</text>
+  <text class="s" x="71" y="643">nomad.cpu and nomad.memory sources, replacing the nomad APM plugin</text>
+
+  <rect class="gate" x="81" y="703" width="36" height="36" transform="rotate(45 99 721)"/>
+  <text class="g" x="156" y="715">Gate: no per-allocation Stats RPC; the metric drift against the client's own measurement is small</text>
+  <text class="g" x="156" y="744">after a leader change no scale-down until the first full window</text>
+
+  <rect class="box" x="42" y="770" width="1260" height="126" rx="14"/>
+  <text class="b" x="71" y="811">Phase 4 · Node pool scaling</text>
+  <text class="s" x="71" y="841">scaling block in the node pool specification, cloud target plugins</text>
+  <text class="s" x="71" y="869">drain with the built-in drainer before scale-down</text>
+</svg>

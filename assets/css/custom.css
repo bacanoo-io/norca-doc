@@ -1,0 +1,23 @@
+/* SPDX-FileCopyrightText: 2026 Norca contributors */
+/* SPDX-License-Identifier: MPL-2.0 */
+
+.norca-attribution {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(127, 127, 127, 0.25);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  opacity: 0.75;
+}
+
+.norca-attribution a {
+  text-decoration: underline;
+}
+
+.norca-status {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(127, 127, 127, 0.35);
+  font-size: 0.8rem;
+}

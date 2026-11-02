@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1344 926" width="1344" height="926" role="img" aria-labelledby="t1">
+  <title id="t1">Target architecture: the whole scaling loop runs on the leader, with a single Raft writer as its output</title>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#bdbcb2"/>
+    </marker>
+    <style>
+      text { font-family: Inter, "Segoe UI", Helvetica, Arial, sans-serif; fill: #111; }
+      .h { font-size: 26px; font-weight: 600; }
+      .b { font-size: 22px; font-weight: 600; }
+      .s { font-size: 19px; fill: #555; }
+      .l { font-size: 19px; fill: #555; }
+      .box { fill: #fff; stroke: #c9c7bd; stroke-width: 2; }
+      .hi { fill: #dce6f2; stroke: #2f78d4; stroke-width: 3; }
+      .ln { stroke: #bdbcb2; stroke-width: 2; fill: none; }
+    </style>
+  </defs>
+  <rect width="1344" height="926" fill="#fff"/>
+  <text class="h" x="44" y="56">The whole scaling loop runs on the leader, with a single Raft writer as its output</text>
+
+  <rect class="box" x="71" y="92" width="339" height="126" rx="14"/>
+  <text class="b" x="92" y="133">External systems</text>
+  <text class="s" x="92" y="163">Prometheus, Datadog</text>
+  <text class="s" x="92" y="191">cloud: ASG, VMSS, MIG</text>
+
+  <rect class="box" x="481" y="92" width="382" height="126" rx="14"/>
+  <text class="b" x="502" y="133">State store (Raft)</text>
+  <text class="s" x="502" y="163">scaling_policy, scaling_event</text>
+  <text class="s" x="502" y="191">deployments, quotas, pools</text>
+
+  <rect class="box" x="891" y="92" width="382" height="126" rx="14"/>
+  <text class="b" x="912" y="133">Clients (nodes)</text>
+  <text class="s" x="912" y="163">CPU/memory per task group</text>
+  <text class="s" x="912" y="191">in the Node.UpdateAlloc message</text>
+
+  <rect x="42" y="262" width="1260" height="452" rx="14" fill="#ededea" stroke="#d6d4cc" stroke-width="2"/>
+  <text class="h" x="266" y="303">Leader server</text>
+  <text class="l" x="700" y="303">norca/autoscaler package</text>
+
+  <rect class="box" x="71" y="332" width="339" height="127" rx="14"/>
+  <text class="b" x="92" y="374">Plugin host</text>
+  <text class="s" x="92" y="404">go-plugin, separate process</text>
+  <text class="s" x="92" y="432">APM, strategy, target</text>
+
+  <rect class="box" x="481" y="332" width="382" height="127" rx="14"/>
+  <text class="b" x="502" y="374">Policy manager</text>
+  <text class="s" x="502" y="404">only engine = builtin</text>
+  <text class="s" x="502" y="432">blocking query, cooldown</text>
+
+  <rect class="box" x="891" y="332" width="382" height="127" rx="14"/>
+  <text class="b" x="912" y="374">Metrics collector</text>
+  <text class="s" x="912" y="404">in memory, no Raft writes</text>
+  <text class="s" x="912" y="432">5-minute window per group</text>
+
+  <rect class="box" x="71" y="530" width="339" height="156" rx="14"/>
+  <text class="b" x="92" y="572">Executor</text>
+  <text class="s" x="92" y="602">internal Job.Scale call</text>
+  <text class="s" x="92" y="630">token bucket: 10 writes/s</text>
+  <text class="s" x="92" y="658">oscillation guard</text>
+
+  <rect class="hi" x="481" y="530" width="792" height="156" rx="14"/>
+  <text class="b" x="502" y="572">Evaluator worker pool</text>
+  <text class="s" x="502" y="602" style="fill:#222">check → metric → strategy → proposed count</text>
+  <text class="s" x="502" y="630" style="fill:#222">applies min/max, quota and deployment block</text>
+  <text class="s" x="502" y="658" style="fill:#222">“not enough data” after a leader change</text>
+
+  <rect class="box" x="71" y="771" width="339" height="98" rx="14"/>
+  <text class="b" x="92" y="813">Job.Scale path</text>
+  <text class="s" x="92" y="843">Raft, evaluation, scheduler</text>
+
+  <rect class="box" x="481" y="771" width="792" height="98" rx="14"/>
+  <text class="b" x="502" y="813">Event stream · Scaling topic</text>
+  <text class="s" x="502" y="843">every decision: old/new count, triggering check, reason</text>
+
+  <path class="ln" d="M240,218 V330" marker-end="url(#a)"/>
+  <path class="ln" d="M671,218 V330" marker-end="url(#a)"/>
+  <path class="ln" d="M1082,218 V330" marker-end="url(#a)"/>
+  <path class="ln" d="M671,459 V528" marker-end="url(#a)"/>
+  <path class="ln" d="M1082,459 V528" marker-end="url(#a)"/>
+  <path class="ln" d="M530,530 V494 H240 V461" marker-end="url(#a)"/>
+  <text class="l" x="328" y="485">plugin call</text>
+  <path class="ln" d="M481,608 H412" marker-end="url(#a)"/>
+  <text class="l" x="446" y="596" text-anchor="middle" style="font-size:16px">decision</text>
+  <path class="ln" d="M240,686 V769" marker-end="url(#a)"/>
+  <path class="ln" d="M410,820 H479" marker-end="url(#a)"/>
+  <text class="l" x="446" y="808" text-anchor="middle" style="font-size:16px">event</text>
+</svg>

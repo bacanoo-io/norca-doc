@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1344 1004" width="1344" height="1004" role="img" aria-labelledby="t3">
+  <title id="t3">Multi-cloud topology: a self-contained region per cloud; a WireGuard mesh connects the clouds</title>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#bdbcb2"/>
+    </marker>
+    <style>
+      text { font-family: Inter, "Segoe UI", Helvetica, Arial, sans-serif; fill: #111; }
+      .h { font-size: 26px; font-weight: 600; }
+      .c { font-size: 22px; font-weight: 600; }
+      .b { font-size: 22px; font-weight: 600; }
+      .s { font-size: 19px; fill: #555; }
+      .l { font-size: 19px; fill: #555; }
+      .col { fill: #fff; stroke: #d6d4cc; stroke-width: 2; }
+      .box { fill: #fff; stroke: #c9c7bd; stroke-width: 2; }
+      .hi { fill: #dce6f2; stroke: #2f78d4; stroke-width: 3; }
+      .fed { stroke: #bdbcb2; stroke-width: 3; fill: none; }
+      .cons { stroke: #bdbcb2; stroke-width: 2.5; stroke-dasharray: 3 5; fill: none; }
+      .nats { stroke: #bdbcb2; stroke-width: 2.5; stroke-dasharray: 10 7; fill: none; }
+      .ln { stroke: #bdbcb2; stroke-width: 2; fill: none; }
+    </style>
+  </defs>
+  <rect width="1344" height="1004" fill="#fff"/>
+  <text class="h" x="44" y="56">A self-contained region per cloud; a WireGuard mesh connects the clouds</text>
+
+  <rect x="42" y="85" width="1260" height="56" rx="14" fill="#ededea" stroke="#d6d4cc" stroke-width="2"/>
+  <text class="s" x="672" y="120" text-anchor="middle" style="fill:#222">WireGuard mesh (Headscale or Nebula): every machine has a fixed mesh IP, every connection runs over it</text>
+
+  <g>
+    <rect class="col" x="42" y="170" width="397" height="558" rx="14"/>
+    <text class="c" x="71" y="211">Cloud A · region a</text>
+    <rect class="hi" x="71" y="241" width="339" height="98" rx="14"/>
+    <text class="b" x="92" y="282">Nomad servers</text>
+    <text class="s" x="92" y="312">own Raft, 3 or 5</text>
+    <rect class="box" x="71" y="361" width="339" height="98" rx="14"/>
+    <text class="b" x="92" y="402">Nomad clients</text>
+    <text class="s" x="92" y="432">workloads, NATS bridge job</text>
+    <rect class="box" x="71" y="481" width="339" height="98" rx="14"/>
+    <text class="b" x="92" y="522">Consul</text>
+    <text class="s" x="92" y="552">mesh gateway, mTLS</text>
+    <rect class="box" x="71" y="601" width="339" height="98" rx="14"/>
+    <text class="b" x="92" y="642">NATS cluster</text>
+    <text class="s" x="92" y="672">JetStream</text>
+  </g>
+  <g>
+    <rect class="col" x="474" y="170" width="396" height="558" rx="14"/>
+    <text class="c" x="502" y="211">Cloud B · region b</text>
+    <rect class="hi" x="502" y="241" width="340" height="98" rx="14"/>
+    <text class="b" x="523" y="282">Nomad servers</text>
+    <text class="s" x="523" y="312">own Raft, 3 or 5</text>
+    <rect class="box" x="502" y="361" width="340" height="98" rx="14"/>
+    <text class="b" x="523" y="402">Nomad clients</text>
+    <text class="s" x="523" y="432">workloads, NATS bridge job</text>
+    <rect class="box" x="502" y="481" width="340" height="98" rx="14"/>
+    <text class="b" x="523" y="522">Consul</text>
+    <text class="s" x="523" y="552">mesh gateway, mTLS</text>
+    <rect class="box" x="502" y="601" width="340" height="98" rx="14"/>
+    <text class="b" x="523" y="642">NATS cluster</text>
+    <text class="s" x="523" y="672">JetStream</text>
+  </g>
+  <g>
+    <rect class="col" x="905" y="170" width="397" height="558" rx="14"/>
+    <text class="c" x="934" y="211">Cloud C · region c</text>
+    <rect class="hi" x="934" y="241" width="339" height="98" rx="14"/>
+    <text class="b" x="955" y="282">Nomad servers</text>
+    <text class="s" x="955" y="312">own Raft, 3 or 5</text>
+    <rect class="box" x="934" y="361" width="339" height="98" rx="14"/>
+    <text class="b" x="955" y="402">Nomad clients</text>
+    <text class="s" x="955" y="432">workloads, NATS bridge job</text>
+    <rect class="box" x="934" y="481" width="339" height="98" rx="14"/>
+    <text class="b" x="955" y="522">Consul</text>
+    <text class="s" x="955" y="552">mesh gateway, mTLS</text>
+    <rect class="box" x="934" y="601" width="339" height="98" rx="14"/>
+    <text class="b" x="955" y="642">NATS cluster</text>
+    <text class="s" x="955" y="672">JetStream</text>
+  </g>
+
+  <!-- federation, Consul and NATS links between the regions, over the column borders -->
+  <path class="fed" d="M410,290 H502 M842,290 H934"/>
+  <path class="cons" d="M410,530 H502 M842,530 H934"/>
+  <path class="nats" d="M410,651 H502 M842,651 H934"/>
+
+  <path class="ln" d="M240,699 V764 H459 V797" marker-end="url(#a)"/>
+  <path class="ln" d="M671,699 V797" marker-end="url(#a)"/>
+  <path class="ln" d="M1103,699 V764 H884 V797" marker-end="url(#a)"/>
+  <text class="l" x="385" y="750">nomad.&lt;region&gt;.* events</text>
+
+  <rect class="box" x="389" y="799" width="566" height="98" rx="14"/>
+  <text class="b" x="410" y="840">History and audit service</text>
+  <text class="s" x="410" y="870">SQLite, from the events of the NATS bridge</text>
+
+  <path class="fed" d="M42,947 H98"/>
+  <text class="l" x="113" y="954">federation: Serf WAN + RPC</text>
+  <path class="cons" d="M480,947 H537"/>
+  <text class="l" x="552" y="954">Consul mesh gateway</text>
+  <path class="nats" d="M849,947 H906"/>
+  <text class="l" x="920" y="954">NATS gateway (supercluster)</text>
+</svg>

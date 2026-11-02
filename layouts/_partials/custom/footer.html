@@ -1,0 +1,36 @@
+{{- /*
+SPDX-FileCopyrightText: 2026 Norca contributors
+SPDX-License-Identifier: MPL-2.0
+
+Parameter anchors: reference pages list parameters as "- `name` (type) - ...".
+Links such as /docs/job-specification/update#max_parallel point to such a list
+item, which Markdown gives no id. This script gives each list item that starts
+with inline code an id equal to that code (when the id is free) and scrolls to
+it when it is the target of the page's fragment.
+*/ -}}
+<script>
+(function () {
+  function run() {
+    var items = document.querySelectorAll("main li, article li");
+    for (var i = 0; i < items.length; i++) {
+      var li = items[i];
+      var first = li.firstElementChild;
+      if (!first || first.tagName !== "CODE" || li.id) continue;
+      var lead = li.firstChild;
+      if (lead && lead.nodeType === 3 && lead.textContent.trim() !== "") continue;
+      var id = first.textContent.trim();
+      if (!/^[A-Za-z0-9_.\-]+$/.test(id) || document.getElementById(id)) continue;
+      li.id = id;
+    }
+    if (location.hash) {
+      var target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (target && target.tagName === "LI") target.scrollIntoView();
+    }
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", run);
+  } else {
+    run();
+  }
+})();
+</script>
