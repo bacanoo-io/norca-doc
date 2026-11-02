@@ -39,6 +39,13 @@ client {
 - `disable_remote_exec` `(bool: false)` - Specifies if the client should disable
   remote task execution to tasks running on this client.
 
+- `dynamic_user_min` `(int: 80000)` and `dynamic_user_max` `(int: 89999)` -
+  The range of user IDs (inclusive) that the client hands out to tasks without
+  a `user` on drivers that run such tasks as anonymous users, such as
+  [`exec2`](/docs/drivers/exec2/#dynamic-users). Each task gets its own ID as
+  UID and GID while it may run. Choose a range that no user or group of the
+  node uses; the client does not start if the range is empty or not positive.
+
 - `meta` `(map[string]string: nil)` - Specifies a key-value map that annotates
   with user-defined metadata.
 
