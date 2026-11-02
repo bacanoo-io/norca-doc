@@ -109,7 +109,9 @@ job "docs" {
   which waits between de-registering group services and stopping tasks.
 
 - `user` `(string: <varies>)` - Specifies the user that will run the task.
-  Defaults to `nobody` for the [`exec`][exec] and [`java`][java] drivers.
+  Defaults to `nobody` for the [`exec`][exec] and [`java`][java] drivers. With
+  the [`exec2`][exec2] driver a task without `user` runs as an anonymous
+  [dynamic user](/docs/drivers/exec2/#dynamic-users).
   [Docker][] and [rkt][] images specify their own default users. This can only
   be set on Linux platforms, and clients can restrict
   [which drivers][user_drivers] are allowed to run tasks as
@@ -224,6 +226,7 @@ task "server" {
 [vault]: /docs/job-specification/vault/ 'Norca vault Job Specification'
 [volumemount]: /docs/job-specification/volume_mount/ 'Norca volume_mount Job Specification'
 [exec]: /docs/drivers/exec/ 'Norca exec Driver'
+[exec2]: /docs/drivers/exec2/ 'Norca exec2 Driver'
 [java]: /docs/drivers/java/ 'Norca Java Driver'
 [docker]: /docs/drivers/docker/ 'Norca Docker Driver'
 [rkt]: /docs/plugins/drivers/community/rkt/ 'Norca rkt Driver'

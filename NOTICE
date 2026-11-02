@@ -36,6 +36,13 @@ name their source in the `origin` front matter key:
   content/docs/features/packages/writing-packs.md <- docs/writing-packs.md
   content/docs/features/packages/functions.md <- docs/functions.md
 
+One page is adapted from the documentation of HashiCorp nomad-driver-exec2
+v0.1.1 (MPL 2.0, https://github.com/hashicorp/nomad-driver-exec2, tag v0.1.1,
+Copyright (c) HashiCorp, Inc.); it names its source in the `adapted` front
+matter key:
+
+  content/docs/drivers/exec2.md <- README.md
+
 Adapted pages of the Nomad v1.6.5 documentation (site file <- upstream file):
 
   content/docs/api/_index.md <- website/content/api-docs/index.mdx

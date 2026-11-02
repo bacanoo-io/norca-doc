@@ -91,5 +91,6 @@ Names that are part of the compatibility surface are unchanged:
 
 Job files written for Nomad 1.6.5 run after the `NOMAD_*` variables in them are renamed to `NORCA_*`. The task drivers of Nomad 1.6.5 (Docker, Podman via
 its plugin, exec, raw_exec, Java, QEMU) and external driver and device plugins built against the 1.6.5
-plugin API keep working. The Consul and Vault integrations of Nomad 1.6.5 are still available; Norca adds
+plugin API keep working. Norca adds the [`exec2`](/docs/drivers/exec2/) driver (Landlock, cgroups v2,
+anonymous users) on Linux. The Consul and Vault integrations of Nomad 1.6.5 are still available; Norca adds
 [alternatives that need neither](/docs/features/service-discovery).

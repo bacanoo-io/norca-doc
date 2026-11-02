@@ -263,6 +263,7 @@ path = [
   "content/docs/drivers/_index.md",
   "content/docs/drivers/docker.md",
   "content/docs/drivers/exec.md",
+  "content/docs/drivers/exec2.md",
   "content/docs/drivers/java.md",
   "content/docs/drivers/qemu.md",
   "content/docs/drivers/raw_exec.md",
