@@ -1,0 +1,193 @@
+---
+title: "01 – Local development agent"
+linkTitle: "01 Local dev agent"
+weight: 1
+origin: "norca/example/01-local-dev/README.md"
+---
+
+> [!NOTE]
+> The files of this scenario are in the Norca repository: [example/01-local-dev](https://github.com/bacanoo-io/norca/tree/main/example/01-local-dev).
+
+```mermaid
+flowchart LR
+  cli["norca CLI"] -->|"HTTP :4646"| agent
+  browser["Browser"] -->|"/ui/"| agent
+  subgraph agent["norca agent -dev (server and client, in memory)"]
+    direction TB
+    cat["Service catalog"]
+    dns["Built-in DNS :8600"]
+    compat["Consul-compatible API :8500"]
+    sec["Secret store"]
+    as["Autoscaler"]
+  end
+  agent -->|"Docker driver"| app["test-app (nginx)"]
+  dig["dig, Traefik, Prometheus"] --> dns
+  dig --> compat
+  sec -.->|"secret block"| app
+  as -.->|"scales"| app
+```
+
+A development agent (`norca agent -dev`: server and client in one process,
+state in memory, no ACLs, no TLS) with the web UI, the native service
+catalog with the built-in DNS and the Consul-compatible API and KV, the built-in
+secret store and the built-in autoscaler. It is the quickest way to try the
+features; everything is gone when the agent stops.
+
+## Prerequisites
+
+- Linux (or macOS) with Docker; the agent's user must be allowed to use
+  Docker.
+- The `norca` binary built with the web UI (see
+  [../README.md](/docs/getting-started/examples#getting-the-norca-binary)).
+- Optional: `dig` and `curl`.
+
+## Files
+
+| File | |
+| --- | --- |
+| [dev.hcl](https://github.com/bacanoo-io/norca/blob/main/example/01-local-dev/dev.hcl) | Additions to the dev agent: autoscaler, DNS, Consul-compatible API, healthy-only service lookups of the workloads (`default_healthy_only`) |
+| [test-app.hcl](https://github.com/bacanoo-io/norca/blob/main/example/01-local-dev/test-app.hcl) | Variables of the [test-app pack](https://github.com/bacanoo-io/norca/blob/main/example/packs/test-app/README.md) for a dev agent |
+
+## Steps
+
+Run the commands from this directory.
+
+### 1. Start the agent
+
+```shell
+norca agent -dev -config dev.hcl
+```
+
+In a second terminal, the CLI talks to `http://127.0.0.1:4646` by default.
+Open the web UI at <http://127.0.0.1:4646/ui/>.
+
+### 2. Put a secret
+
+```shell
+norca secret put -description "Database login of test-app" test-app/db username=app password=-
+# type a password, then Ctrl-D
+norca secret list
+norca secret info test-app/db        # metadata and versions, never the value
+```
+
+### 3. Run the test application
+
+```shell
+norca pack run ../packs/test-app -f test-app.hcl
+norca pack status test-app
+norca job status test-app
+```
+
+`network_mode = "host"` in `test-app.hcl` uses Docker port mapping, so no
+CNI plugins and no root agent are needed. For bridge networking run the
+agent as root with the CNI plugins in `/opt/cni/bin` and drop that line.
+
+### 4. Look at it
+
+```shell
+# Native catalog with the health of every instance and the check roles
+norca service info -verbose test-app
+
+# Built-in DNS (healthy instances only)
+dig @127.0.0.1 -p 8600 test-app.service.norca SRV
+dig @127.0.0.1 -p 8600 test-app.service.consul SRV   # consul_compat names
+
+# Consul-compatible API, as Traefik or Prometheus would read it
+curl http://127.0.0.1:8500/v1/catalog/services
+curl 'http://127.0.0.1:8500/v1/health/service/test-app?passing'
+
+# Consul KV of the same API, kept in a bucket of the system bus of the servers
+curl -X PUT --data 'hello' http://127.0.0.1:8500/v1/kv/test-app/motd
+curl 'http://127.0.0.1:8500/v1/kv/test-app/motd?raw'
+norca operator bus status
+
+# The page shows the version of the secret read with a Vault-style template
+curl http://<address:port from service info>/
+
+# Built-in autoscaler: the typed policy and its decisions
+norca scaling policy list
+norca job scaling-events test-app
+```
+
+### 5. Rotate the secret
+
+```shell
+norca secret put test-app/db username=app password=-
+norca secret info test-app/db
+curl http://<address:port>/            # "version 2" once the template re-rendered
+
+# Audit trail of the reads (one JSON event per read; stop with Ctrl-C)
+norca operator api '/v1/event/stream?topic=SecretAccess'
+```
+
+The `secret` block of the job delivers the new version into
+`secrets/db.env` and the environment (with `change_mode = "signal"`, nginx
+gets `SIGHUP`); the Vault-style template (`{{ with secret "kv/data/test-app/db" }}`)
+is served by the built-in store because the agent has no Vault integration.
+
+### 6. Install from the catalog
+
+Cluster pack registries feed the **Packages → Catalog** of the web UI, and
+the install form is built from the `ui`, `validation` and `rule` blocks of
+the pack. Add the packs of the examples as a registry of the type `dir` (the
+dev agent is its own server, so it reads this checkout):
+
+```shell
+curl -X POST http://127.0.0.1:4646/v1/pack-registry \
+  -d "{\"Name\": \"examples\", \"Spec\": {\"type\": \"dir\", \"source\": \"$(cd ../packs && pwd)\"}}"
+curl -s http://127.0.0.1:4646/v1/packs     # test-app 0.3.0, registry examples
+```
+
+Or add it on **Packages → Registries** (type *Server directory*, source the
+absolute path of `example/packs`). Then, in the web UI:
+
+1. **Packages → Catalog → test-app → Install**, release name `test-ui`.
+2. **General**: job name `test-ui`; switch off *Deliver the secret* (or put
+   `test-ui/db` first).
+3. **Networking**: network mode *Host* (no CNI plugins on the dev agent).
+   The mTLS switch disappears: it needs bridge networking.
+4. **Resources & Scaling**: move *Instances* to 6. **Plan** reports the rule
+   `count_within_scaling` (6 is above `scaling_max` 4); set it back to 2.
+5. **Plan**, then **Install**. The release has the revision and an
+   **Upgrade** with the same form, which sends only the changed values.
+
+```shell
+norca pack status test-app --name=test-ui
+norca pack uninstall test-ui          # or Uninstall in the UI
+```
+
+### 7. External service and DNS alias (optional)
+
+```shell
+norca service register -alias db.example.com legacy-db
+dig @127.0.0.1 -p 8600 legacy-db.service.norca    # CNAME db.example.com
+norca service deregister legacy-db
+```
+
+### 8. Teardown
+
+```shell
+norca pack uninstall test-app
+```
+
+Then stop the agent with Ctrl-C: the dev agent keeps nothing.
+
+## What to look at in the web UI
+
+- **Dashboard** (landing page): jobs, allocations, clients, live updates
+  over the event stream.
+- **Jobs → test-app**: allocations, the service with its startup, readiness
+  and liveness checks, the **Scaling** tab with the typed policy, versions
+  and the job definition (HCL/JSON).
+- **Services**: the catalog with the health of every instance.
+- **Scaling**: the policies of the built-in autoscaler, their events and the
+  usage history of the task groups.
+- **Packages**: the `test-app` release and its revisions; the **Registries**
+  tab with `examples`, the **Catalog** with its packs and the install form
+  (step 6).
+- **Topology** and **Clients**: the node in its datacenter `dc1`.
+- **Configuration → Secrets**: the secrets of the built-in secret store with
+  their versions and metadata (`norca secret ...` on the command line).
+
+The task events of the allocation show which provider delivered each secret,
+never the value.

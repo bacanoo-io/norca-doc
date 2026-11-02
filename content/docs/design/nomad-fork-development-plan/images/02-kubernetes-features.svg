@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1344 766" width="1344" height="766" role="img" aria-labelledby="t2">
+  <title id="t2">Kubernetes features by value and effort: quotas and admission give the most value for a medium effort</title>
+  <defs>
+    <style>
+      text { font-family: Inter, "Segoe UI", Helvetica, Arial, sans-serif; fill: #111; }
+      .h { font-size: 26px; font-weight: 600; }
+      .sub { font-size: 19px; fill: #555; }
+      .ax { font-size: 20px; fill: #555; }
+      .axb { font-size: 22px; font-weight: 600; }
+      .p { font-size: 20px; text-anchor: middle; }
+      .pb { font-size: 20px; font-weight: 600; text-anchor: middle; }
+      .pill { fill: #fff; stroke: #c9c7bd; stroke-width: 2; }
+      .hi { fill: #dce6f2; stroke: #2f78d4; stroke-width: 3; }
+      .grid { stroke: #e3e2dc; stroke-width: 2; fill: none; }
+    </style>
+  </defs>
+  <rect width="1344" height="766" fill="#fff"/>
+  <text class="h" x="44" y="56">Quotas and admission give the most value for a medium effort</text>
+  <text class="sub" x="44" y="91">Highlighted: the first wave, a prerequisite or a model for phase 2 of the autoscaler</text>
+
+  <rect class="grid" x="293" y="127" width="1008" height="510"/>
+  <path class="grid" d="M629,127 V637 M965,127 V637 M293,297 H1301 M293,467 H1301"/>
+
+  <text class="ax" x="271" y="219" text-anchor="end">high</text>
+  <text class="ax" x="271" y="389" text-anchor="end">medium–high</text>
+  <text class="ax" x="271" y="559" text-anchor="end">medium</text>
+  <text class="axb" x="44" y="389">Value</text>
+
+  <text class="ax" x="461" y="672" text-anchor="middle">low</text>
+  <text class="ax" x="797" y="672" text-anchor="middle">medium</text>
+  <text class="ax" x="1133" y="672" text-anchor="middle">high</text>
+  <text class="axb" x="797" y="711" text-anchor="middle">Effort</text>
+
+  <rect class="hi" x="641" y="166" width="312" height="50" rx="25"/>
+  <text class="pb" x="797" y="198">1 Namespace quotas</text>
+  <rect class="hi" x="641" y="229" width="312" height="50" rx="25"/>
+  <text class="pb" x="797" y="261">2 Dynamic admission</text>
+  <rect class="pill" x="977" y="187" width="312" height="50" rx="25"/>
+  <text class="p" x="1133" y="219">7 Network rules</text>
+
+  <rect class="hi" x="305" y="357" width="312" height="50" rx="25"/>
+  <text class="pb" x="461" y="389">3 Event stream extension</text>
+  <rect class="pill" x="641" y="357" width="312" height="50" rx="25"/>
+  <text class="p" x="797" y="389">4 Cross-job affinity</text>
+
+  <rect class="pill" x="305" y="527" width="312" height="50" rx="25"/>
+  <text class="p" x="461" y="559">6 Health check roles</text>
+  <rect class="pill" x="641" y="527" width="312" height="50" rx="25"/>
+  <text class="p" x="797" y="559">5 Disruption budget</text>
+</svg>

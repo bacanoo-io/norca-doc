@@ -1,0 +1,24 @@
+---
+title: "merge Function"
+linkTitle: "merge"
+description: "The merge function takes an arbitrary number of maps and returns a single map after merging the keys from each argument."
+upstream:
+  path: "website/content/docs/job-specification/hcl2/functions/collection/merge.mdx"
+---
+
+`merge` takes an arbitrary number of maps and returns a single map that
+contains a merged set of elements from all of the maps.
+
+If more than one given map defines the same key then the one that is later
+in the argument sequence takes precedence.
+
+## Examples
+
+```shell
+> merge({"a"="b", "c"="d"}, {"e"="f", "c"="z"})
+{
+  "a" = "b"
+  "c" = "z"
+  "e" = "f"
+}
+```

@@ -1,0 +1,129 @@
+---
+title: "metrics_store Block"
+linkTitle: "metrics_store"
+description: "The \"metrics_store\" block configures the history of the task group usage that every server keeps."
+---
+
+**Placement:** `server -> metrics_store`
+
+The `metrics_store` block configures the history of the CPU and memory usage
+of the task groups. The clients publish their usage on the
+[system bus](/docs/features/system-bus#task-group-usage); every server reads
+every report and keeps the history in its data directory
+(`[data_dir]/server/tsdb`), in an embedded time-series store. The history is
+never written to Raft and is not part of the backups.
+
+The store is enabled by default on servers. It needs the
+[system bus](/docs/configuration/bus): without the bus the clients report no
+usage and nothing is stored. While the store or the
+[built-in autoscaler](/docs/configuration/autoscaler) is enabled, the servers
+ask the clients for their usage.
+
+```hcl
+server {
+  metrics_store {
+    enabled            = true
+    retention          = "720h"
+    partition_duration = "6h"
+    sample_interval    = "30s"
+    max_disk_size      = "2GiB"
+    max_series         = 50000
+    wal_buffered_size  = 4096
+  }
+}
+```
+
+## Parameters
+
+- `enabled` `(bool: true)` - Stores the usage. With `false` the server creates
+  no directory and stores nothing.
+
+- `retention` `(string: "720h")` - How long the points are kept, at most 30
+  days. The store drops a whole partition once it is older.
+
+- `partition_duration` `(string: "6h")` - The time range of a partition. The
+  points of the two newest partitions are kept in memory and in a write-ahead
+  log, the older ones in compressed files mapped into memory. A report older
+  than one partition before the newest one is dropped.
+
+- `sample_interval` `(string: "30s")` - The resolution of the history. The
+  reports of an interval are combined into one point per task group: the
+  averages weighted by the number of samples, and the largest maximum.
+
+- `max_disk_size` `(string: "2GiB")` - The disk cap. Above it the oldest
+  partitions are removed first, whatever their age.
+
+- `max_series` `(int: 50000)` - The largest number of series. Every task
+  group has 18 series (the average and the maximum of 9 metrics); the task
+  groups beyond the limit are not stored.
+
+- `wal_buffered_size` `(int: 4096)` - The bytes the write-ahead log buffers
+  before it writes them: `0` writes every point, `-1` disables the log, so
+  the newest points are lost when the server stops abruptly.
+
+## Metrics
+
+Each metric is stored as an average and a maximum per sample interval. The
+usage values are per allocation of the task group, like those of the
+[built-in autoscaler](/docs/features/autoscaler):
+
+| Metric | Unit | Source |
+| --- | --- | --- |
+| `norca.group.cpu` | percent of the allocated CPU | clients |
+| `norca.group.cpu_mhz` | MHz | clients |
+| `norca.group.cpu_throttled` | percent of the time the tasks were throttled by their CPU limit; the tasks of an allocation add up | clients |
+| `norca.group.memory` | percent of the allocated memory | clients |
+| `norca.group.memory_mb` | MiB | clients |
+| `norca.group.memory_cache_mb` | MiB of page cache (reclaimable) | clients |
+| `norca.group.oom_kills` | tasks killed for running out of memory, of all allocations: the average is the sum in the interval or step | clients |
+| `norca.group.allocs_running` | running allocations | servers, from the job summary |
+| `norca.group.allocs_queued` | queued allocations | servers, from the job summary |
+
+The servers sample the allocations every sample interval, also of task groups
+whose clients report no usage; a task group gets these series once it has a
+running or queued allocation.
+
+### Cluster and quota metrics
+
+Every sample interval each server also samples the capacity of the cluster and
+the quotas from its state and from the latest usage report of every node. A
+series counts 2 towards `max_series`.
+
+| Metric | Labels | Value |
+| --- | --- | --- |
+| `norca.cluster.cpu_allocated` | `dc`, `pool` | CPU of the running allocations, in percent of the CPU of the ready, eligible nodes after their reserved CPU |
+| `norca.cluster.cpu_used` | `dc`, `pool` | CPU the allocations actually use, in percent of the same capacity |
+| `norca.cluster.memory_allocated` | `dc`, `pool` | memory of the running allocations, in percent |
+| `norca.cluster.memory_used` | `dc`, `pool` | memory the allocations actually use, in percent |
+| `norca.cluster.disk_allocated` | `dc`, `pool` | ephemeral disk of the running allocations, in percent |
+| `norca.cluster.nodes_ready` | `dc`, `pool` | ready, eligible nodes |
+| `norca.cluster.autopilot_healthy` | | 1 when the servers are healthy, else 0; stored by the leader only |
+| `norca.cluster.autopilot_failure_tolerance` | | servers that can fail without losing the quorum; stored by the leader only |
+| `norca.quota.cpu_mhz_allocated` | `quota` | MHz of the allocations of the namespaces of the quota in the region |
+| `norca.quota.cpu_mhz_used` | `quota` | MHz they actually use |
+| `norca.quota.memory_mb_allocated` | `quota` | MiB of the allocations |
+| `norca.quota.memory_mb_used` | `quota` | MiB they actually use |
+
+The `used` values come from the clients' usage reports: a node whose latest
+report is older than two report intervals counts as using nothing.
+
+Read the history, the list of series and the usage summary of a task group
+(the right-sizing view: average, 95th percentile and maximum against the
+allocated resources) with the [metrics store API](/docs/api/metrics-store), and
+the state of the store with
+[`norca operator metrics-store status`](/docs/commands/operator/metrics-store/status).
+
+## Autoscaler
+
+A new leader fills the usage window of the
+[built-in autoscaler](/docs/configuration/autoscaler) (`metrics_window`, 5
+minutes by default) from its store, so the built-in metrics do not wait one
+window after a leader change. Checks whose `query_window` is longer than
+`metrics_window` read the built-in metrics from the store.
+
+## High availability
+
+Every server stores every report: the telemetry stream of the bus keeps the
+reports for an hour, so a server that restarts catches up on what it missed in
+that time. A server that was down for longer has a gap; a request can read the
+history of another server with `server_id`.

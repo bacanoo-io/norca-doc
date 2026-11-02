@@ -1,0 +1,25 @@
+---
+title: "reverse Function"
+linkTitle: "reverse"
+description: "The reverse function reverses a sequence."
+upstream:
+  path: "website/content/docs/job-specification/hcl2/functions/collection/reverse.mdx"
+---
+
+`reverse` takes a sequence and produces a new sequence of the same length
+with all of the same elements as the given sequence but in reverse order.
+
+## Examples
+
+```shell
+> reverse([1, 2, 3])
+[
+  3,
+  2,
+  1,
+]
+```
+
+## Related Functions
+
+- [`strrev`](/docs/job-specification/hcl2/functions/string/strrev/) reverses a string.

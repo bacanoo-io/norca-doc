@@ -1,0 +1,40 @@
+---
+title: "mount_options Block"
+linkTitle: "mount_options"
+description: "The \"mount_options\" block allows for configuring how a volume is mounted."
+upstream:
+  path: "website/content/docs/other-specifications/volume/mount_options.mdx"
+---
+
+**Placement:** `volume -> mount_options`
+
+Options for mounting `file-system` volumes that don't already have a
+pre-formatted file system.
+
+```hcl
+id           = "ebs_prod_db1"
+namespace    = "default"
+name         = "database"
+type         = "csi"
+plugin_id    = "ebs-prod"
+capacity_max = "200G"
+capacity_min = "100G"
+
+mount_options {
+  fs_type     = "ext4"
+  mount_flags = ["noatime"]
+}
+```
+
+This block will be validated during volume creation against the `capability`
+field. The `mount_options` provided in a job specification's [`volume`] block
+will override this block. Consult the documentation for your storage provider
+and CSI plugin as to whether these options are required or necessary.
+
+## `mount_options` Parameters
+
+- `fs_type` `(string <optional>)` - File system type (ex. `"ext4"`)
+- `mount_flags` `([]string: <optional>)` - The flags passed to `mount` (ex.
+  `["ro", "noatime"]`)
+
+[`volume`]: /docs/job-specification/volume/

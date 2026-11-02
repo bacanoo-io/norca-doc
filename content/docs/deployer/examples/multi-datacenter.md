@@ -1,0 +1,238 @@
+---
+title: "Several datacenters with NATS"
+description: "One region over three datacenters: a server per datacenter, the event stream on the system bus with 3 replicas, a NATS cluster with one server per datacenter for the applications."
+weight: 3
+origin: "norca-deployer/examples/multi-datacenter.yaml"
+---
+
+One region over three datacenters: a server per datacenter, the event stream on the system bus with 3 replicas, a NATS cluster with one server per datacenter for the applications.
+
+`multi-datacenter.yaml`:
+
+```yaml
+# One region over three datacenters, connected by NATS.
+#
+#   - three datacenters (availability zones) eu-a, eu-b, eu-c of one region,
+#     joined by a VPN (WireGuard, 10.10.0.0/16) with low latency between them
+#   - one Norca server per datacenter: the Raft quorum (2 of 3) survives the
+#     loss of a whole datacenter
+#   - two clients per datacenter with Docker
+#   - a NATS cluster with one server per datacenter (the "separate" rule on
+#     ${node.datacenter}), JetStream, users with generated passwords
+#   - the event stream on the system bus of the servers: the Norca events of
+#     the region go to nomad.eu.<namespace>.<topic> in the stream NORCA_EVENTS_eu with 3
+#     replicas, one per server, so the event history survives a datacenter
+#     loss as well
+#
+#   norca-deployer plan  -c examples/multi-datacenter.yaml
+#   norca-deployer apply -c examples/multi-datacenter.yaml
+#
+# Datacenters of one region share one Raft cluster, so they must be close:
+# a round trip of a few milliseconds (availability zones of a cloud region,
+# buildings of a campus). Distant sites become regions of their own (see the
+# multi-region documentation; NATS then joins them with gateways).
+
+metadata:
+  name: norca-eu
+  region: eu
+  datacenter: eu-a                  # Default; every node below names its own datacenter.
+
+release:
+  version: v0.2.0
+  source: official
+
+upgrade:
+  max_parallel_clients: 1           # Clients restart one at a time (also across datacenters).
+  health_timeout: 240
+
+tuning:
+  apply_sysctl: true
+  apply_firewall_rules: true
+  open_ephemeral_ports: true
+  setup_logrotate: true
+  firewall:
+    cluster_cidrs: [10.10.0.0/16]   # The VPN of all three datacenters: RPC, Serf, allocation ports.
+    api_cidrs: [10.10.0.0/16, 192.0.2.0/24]   # Operators' network for the API and UI.
+    extra_ports:
+      - port: "4222"                # NATS clients.
+      - port: "6222"                # NATS routes between the servers in the three datacenters.
+    default_deny: true              # ufw on; SSH stays open.
+
+network:
+  interface_prefix: wg              # Agents listen on and advertise the VPN address (wg0).
+  # Without bind_address the agent listens on the VPN address only (HTTP also on 127.0.0.1).
+
+security:
+  tls_enabled: true
+  verify_server_hostname: true
+  gossip_encryption_key: AUTO_GENERATE
+  pki:
+    spiffe:
+      enabled: true
+      trust_domain: eu.example.com
+  acl:
+    enabled: true
+    auto_bootstrap: true
+    policies:
+      - name: events-reader         # A service that reads the event stream from the bus
+        rules_file: policies/events-reader.hcl   # (written for eu-central: use eu here).
+
+host_packages:
+  repositories:
+    - name: docker
+      uri: https://download.docker.com/linux/debian
+      suite: bookworm
+      components: [stable]
+      architectures: [amd64]
+      key_file: keys/docker.asc     # https://download.docker.com/linux/debian/gpg
+      pin_priority: 600
+      roles: [client]
+  install:
+    - {name: docker-ce, roles: [client]}
+    - {name: docker-ce-cli, roles: [client]}
+    - {name: containerd.io, roles: [client]}
+    - name: chrony                  # Correct clocks for Raft, TLS and JetStream.
+    - name: ufw
+
+# Every client: Docker and exec, the VPN interface for allocation addresses,
+# resources kept for the OS. The datacenter is a node attribute of its own
+# (${node.datacenter}); jobs spread over it or keep instances apart with it.
+client_defaults:
+  network_interface: wg0
+  drivers: [docker, exec]
+  meta:
+    environment: production
+  reserved:
+    cpu: 200
+    memory: 512
+    reserved_ports: "22"
+  drain_on_shutdown:
+    deadline: 30m
+
+secrets:
+  bootstrap:
+    # Passwords of the NATS users (item password of nats/users/<user>),
+    # generated once and kept in .norca-deployer/generated/.
+    - path: nats/users/app
+      items: {password: "!generate:nats-app"}
+    - path: nats/users/ops
+      items: {password: "!generate:nats-ops"}
+
+packs:
+  registries:
+    - name: norca
+      type: git
+      url: https://github.com/bacanoo-io/norca-registry
+      ref: v0.3.0                   # nats 0.5.0: stream limits, datacenter placement tags.
+  deploy:
+    - name: nats
+      registry: norca
+      pack: nats
+      enabled: true
+      values:
+        datacenters: [eu-a, eu-b, eu-c]
+        count: 3                    # One NATS server per datacenter...
+        separate_scope: "${node.datacenter}"   # ...kept apart by the datacenter (a Norca
+        separate_required: true                # placement rule), one per node (distinct_hosts).
+        jetstream_enabled: true     # Streams with 3 replicas keep a majority without one datacenter.
+        jetstream_unique_tag: dc    # Replicas of every stream in different datacenters.
+        cluster_compression: s2_auto   # Compressed routes between the datacenters.
+        auth_mode: userpass
+        users:
+          - name: app
+            publish_allow: ["app.>", "$JS.API.>"]
+            subscribe_allow: ["app.>", "_INBOX.>"]
+          - name: ops
+            account: SYS            # nats server report, raft peer-remove.
+
+inventory:
+  masters:
+    # One server per datacenter. host: the SSH address; cluster_address: the VPN address.
+    - host: 198.51.100.11
+      hostname: eu-a-server
+      datacenter: eu-a
+      cluster_address: 10.10.1.10
+      connection: &ssh
+        mode: ssh
+        ssh_user: devops
+        ssh_key_path: ~/.ssh/norca_deployer
+        become: true
+      server_settings: &server
+        # When a datacenter (and its server) is lost, the clients that talked
+        # to that server wait for the RPC timeout (~30s) before they heartbeat
+        # to another one. The grace keeps these healthy nodes from being
+        # marked down, which would replace their allocations (NATS servers).
+        # A failed node is noticed this much later.
+        extra_hcl: |
+          heartbeat_grace = "60s"
+    - host: 198.51.100.21
+      hostname: eu-b-server
+      datacenter: eu-b
+      cluster_address: 10.10.2.10
+      connection: *ssh
+      server_settings: *server
+    - host: 198.51.100.31
+      hostname: eu-c-server
+      datacenter: eu-c
+      cluster_address: 10.10.3.10
+      connection: *ssh
+      server_settings: *server
+
+  clients:
+    - host: 198.51.100.12
+      hostname: eu-a-worker-1
+      datacenter: eu-a
+      cluster_address: 10.10.1.11
+      connection: *ssh
+      client_settings: {meta: {rack: a1}}   # Merged with client_defaults.
+    - host: 198.51.100.13
+      hostname: eu-a-worker-2
+      datacenter: eu-a
+      cluster_address: 10.10.1.12
+      connection: *ssh
+      client_settings: {meta: {rack: a2}}
+    - host: 198.51.100.22
+      hostname: eu-b-worker-1
+      datacenter: eu-b
+      cluster_address: 10.10.2.11
+      connection: *ssh
+      client_settings: {meta: {rack: b1}}
+    - host: 198.51.100.23
+      hostname: eu-b-worker-2
+      datacenter: eu-b
+      cluster_address: 10.10.2.12
+      connection: *ssh
+      client_settings: {meta: {rack: b2}}
+    - host: 198.51.100.32
+      hostname: eu-c-worker-1
+      datacenter: eu-c
+      cluster_address: 10.10.3.11
+      connection: *ssh
+      client_settings: {meta: {rack: c1}}
+    - host: 198.51.100.33
+      hostname: eu-c-worker-2
+      datacenter: eu-c
+      cluster_address: 10.10.3.12
+      connection: *ssh
+      client_settings: {meta: {rack: c2}}
+```
+
+## policies/events-reader.hcl
+
+```hcl
+# ACL policy of a service that reads the event stream of region eu-central
+# from the system bus of the servers (NATS embedded in Norca): a durable
+# JetStream consumer of the stream NORCA_EVENTS_eu-central. Give its token to
+# the service; it connects to the bus port (4649) of any server.
+bus {
+  subscribe = ["nomad.eu-central.>"]
+  publish = [
+    "$JS.API.INFO",
+    "$JS.API.STREAM.INFO.NORCA_EVENTS_eu-central",
+    "$JS.API.CONSUMER.*.NORCA_EVENTS_eu-central",
+    "$JS.API.CONSUMER.*.NORCA_EVENTS_eu-central.>",
+    "$JS.API.CONSUMER.MSG.NEXT.NORCA_EVENTS_eu-central.>",
+    "$JS.ACK.NORCA_EVENTS_eu-central.>",
+  ]
+}
+```

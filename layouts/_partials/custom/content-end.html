@@ -1,0 +1,16 @@
+{{- /*
+SPDX-FileCopyrightText: 2026 Norca contributors
+SPDX-License-Identifier: MPL-2.0
+
+Attribution footer. Pages adapted from the Nomad v1.6.5 documentation carry
+`upstream.path` in their front matter (MPL 2.0 section 3.1 notice); pages
+moved from the Norca repository carry `origin`.
+*/ -}}
+{{- with .Params.upstream -}}
+<div class="norca-attribution">
+  Adapted from the HashiCorp Nomad v1.6.5 documentation (<code>{{ .path }}</code>),
+  Copyright (c) HashiCorp, Inc., licensed under the
+  <a href="https://mozilla.org/MPL/2.0/" target="_blank" rel="noopener">Mozilla Public License 2.0</a>;
+  modified by Norca contributors. See <a href="{{ "docs/introduction/license/" | relURL }}">licence and attribution</a>.
+</div>
+{{- end -}}

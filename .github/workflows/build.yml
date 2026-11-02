@@ -1,0 +1,100 @@
+# SPDX-FileCopyrightText: 2026 Norca contributors
+# SPDX-License-Identifier: MPL-2.0
+#
+# Builds the site on every push and pull request (hugo --panicOnWarning),
+# checks the internal links and the forbidden HashiCorp links
+# (scripts/check-links.py) and, on a push to main, deploys it to GitHub Pages.
+# The Pages source of the repository must be set to "GitHub Actions"
+# (Settings -> Pages). The baseURL comes from the Pages configuration, so
+# hugo.yaml's baseURL only matters for local builds.
+#
+# Actions are pinned by commit:
+#   actions/checkout v7.0.1, actions/setup-go v7.0.0,
+#   actions/configure-pages v6.0.0, actions/upload-pages-artifact v5.0.0,
+#   actions/deploy-pages v5.0.1.
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  HUGO_VERSION: 0.167.0
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27"
+          cache: false
+      - name: Install Hugo extended (checksum verified)
+        run: |
+          set -euo pipefail
+          base="https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}"
+          archive="hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz"
+          mkdir -p "$RUNNER_TEMP/hugo"
+          cd "$RUNNER_TEMP/hugo"
+          curl -fsSLO "$base/$archive"
+          curl -fsSLO "$base/hugo_${HUGO_VERSION}_checksums.txt"
+          grep " ${archive}\$" "hugo_${HUGO_VERSION}_checksums.txt" | sha256sum -c -
+          tar -xzf "$archive" hugo
+          echo "$RUNNER_TEMP/hugo" >> "$GITHUB_PATH"
+      - name: Pages base URL
+        id: pages
+        if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - name: Build
+        env:
+          BASE_URL: ${{ steps.pages.outputs.base_url }}
+        run: |
+          hugo version
+          flags=(--minify --panicOnWarning)
+          if [ -n "$BASE_URL" ]; then flags+=(--baseURL "${BASE_URL%/}/"); fi
+          hugo "${flags[@]}"
+      - name: Links
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: python3 scripts/check-links.py public "${BASE_PATH:-/norca-doc}/"
+      - name: Upload the site
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: public
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
