@@ -11,7 +11,7 @@ and compared with the same measurements after it.
 
 | Document | Covers | Status |
 | --- | --- | --- |
-| [Storage and RPC update](/docs/technology-updates/storage-and-rpc-plan) | Baseline performance test; MessagePack kept; the `bacanoo-io/raft` fork updated; BoltDB replaced by Badger (raft log, client state); gRPC replaced by drpc for plugin connections | Plan |
+| [Storage and RPC update](/docs/technology-updates/storage-and-rpc-plan) | Baseline performance test; MessagePack kept; the `bacanoo-io/raft` fork updated; BoltDB replaced by Badger (raft log, client state); gRPC stays for plugin connections (drpc dropped) | Plan |
 
 > [!NOTE]
 > A plan here describes intended work. Until its status says otherwise, Norca runs on the libraries
