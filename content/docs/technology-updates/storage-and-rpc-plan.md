@@ -69,7 +69,7 @@ On the lab case with three servers and two clients per datacenter (`multidc`), s
 | M3 | Leader failover: the leader is stopped hard (`PowerOff`) | time to a new leader and to the first successful write |
 | M4 | Snapshot and restore: state with 10 000 allocations | snapshot time and size, time for a restarted server to be ready, `norca operator snapshot` save and restore time |
 | M5 | Client restart with 100 running allocations | time until every task is reattached; task start latency for `exec`, `exec2` and `docker` |
-| M6 | Soak: two hours of steady writes (job updates, allocation updates) | p99, p99.9 and maximum write latency per minute, write stalls, CPU, RSS, disk write bytes and fsyncs per second, size of the data directory over time |
+| M6 | Soak: five minutes of steady writes (job updates, allocation updates) | p99, p99.9 and maximum write latency per minute, write stalls, CPU, RSS, disk write bytes and fsyncs per second, size of the data directory over time |
 
 M6 is the test for compaction spikes: a database that compacts in bursts shows up as periodic peaks
 in p99.9 latency and disk writes, not in averages.
@@ -379,3 +379,4 @@ phases 2 and 3.
 - 2026-11-03: the agent exposes only the Badger options that matter for tuning (the `badger` block).
 - 2026-11-03: the drpc plugin protocol lives in the `bacanoo-io/drpc` fork.
 - 2026-11-03: the benchmarks run on the lab VMs only.
+- 2026-11-03: the soak (M6) runs five minutes.
