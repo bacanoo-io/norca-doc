@@ -427,6 +427,28 @@ The `small` profile brings the memory back to the level of BoltDB and the data d
 at a slightly higher tail latency of the raft writes (the smaller memtables flush more often), still
 well below the baseline (p50 9.4–18.5 ms, p99.9 22–41 ms).
 
+### Optional BoltDB stores
+
+Badger stays the default, but both stores can be switched back to BoltDB, for machines where memory
+matters more than write speed, as a fallback, and for comparisons:
+
+| Setting | Values | Data |
+| --- | --- | --- |
+| `server { raft_store }` | `badger` (default), `boltdb` | `server/raft/badger/` or `server/raft/raft.db`; `raft_boltdb { no_freelist_sync }` tunes BoltDB |
+| `client { state_store }` | `badger` (default), `boltdb` | `client/state/` or `client/state.db` |
+
+- The BoltDB code is the one before phases 2 and 3 (`raft-boltdb/v2`, the client's `BoltStateDB` and
+  `helper/boltdd`), without the upgrades from Nomad 0.8, 0.9 and 1.3 state.
+- No conversion between the stores: an agent whose directory holds only the other store does not
+  start, and says what to change or remove. A server switches by rejoining the cluster from the
+  leader's snapshot, a client by being drained; servers of one cluster may use different stores.
+- A `badger` block next to `boltdb`, or a `raft_boltdb` block next to `badger`, is logged as having no
+  effect.
+- `norca operator raft info/logs/state` and `norca operator client-state` read both formats.
+- `bbolt` and `raft-boltdb` are shipped again and listed in `THIRD_PARTY_NOTICES.md`.
+- Tested with the store tests on both stores, a server with the BoltDB raft log, and the
+  configuration; no lab measurement (the BoltDB numbers are those of the baseline).
+
 ## Testing and acceptance
 
 - The existing tests of `norca/`, `client/state`, `helper/raftutil`, the plugins and the drivers pass,
@@ -470,3 +492,5 @@ through it `bbolt`) is only a dependency of the B1 benchmark, which compares the
 - 2026-11-03: the soak (M6) runs five minutes.
 - 2026-11-03: the move to drpc (phases 4 and 5) is dropped; gRPC stays for all plugin connections
   (see [section 4](#4-plugin-connections-grpc-stays)).
+- 2026-11-03: BoltDB stays available as an option (`raft_store`, `state_store`), Badger is the default;
+  no conversion command.

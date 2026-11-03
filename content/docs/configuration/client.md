@@ -46,6 +46,13 @@ client {
   UID and GID while it may run. Choose a range that no user or group of the
   node uses; the client does not start if the range is empty or not positive.
 
+- `state_store` `(string: "badger")` - The store of the client state:
+  `badger` (in `<data_dir>/client/state`) or `boltdb` (the BoltDB file
+  `<data_dir>/client/state.db`). A client does not start when its state
+  directory holds only the other store: to switch a client, drain it, stop it,
+  remove the state, change the setting and start it; it gets its allocations
+  from the servers again.
+
 - `badger` - A nested object that tunes the [Badger](https://github.com/dgraph-io/badger)
   database of the client state (`<data_dir>/client/state`), where the client
   keeps its allocations and task states for restarts. Writes are always
