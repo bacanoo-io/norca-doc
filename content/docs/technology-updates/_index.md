@@ -1,6 +1,6 @@
 ---
 title: Technology updates
-description: Planned changes of the libraries and protocols Norca is built on, with the measurements that decide them.
+description: Planned changes of the libraries Norca is built on, with the measurements that decide them.
 weight: 21
 ---
 
@@ -11,7 +11,7 @@ and compared with the same measurements after it.
 
 | Document | Covers | Status |
 | --- | --- | --- |
-| [Storage and RPC update](/docs/technology-updates/storage-and-rpc-plan) | Baseline performance test; MessagePack kept; the `bacanoo-io/raft` fork updated; BoltDB replaced by Badger (raft log, client state); gRPC stays for plugin connections (drpc dropped) | Done |
+| [Storage update](/docs/technology-updates/storage-update) | Baseline performance test; MessagePack kept; the `bacanoo-io/raft` fork updated; Badger as the default store of the raft log and the client state, with profiles; BoltDB as an option | Done |
 
 > [!NOTE]
 > A plan here describes intended work. Until its status says otherwise, Norca runs on the libraries

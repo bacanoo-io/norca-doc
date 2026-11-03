@@ -280,7 +280,7 @@ server {
   | Raft write latency, p50 under a steady load | 9.4–18.5 ms (growing over time) | about 4.1 ms | about 4.6 ms |
   | Data directory | about 150 MB | about 820 MB (preallocated files) | about 250 MB |
 
-  The [storage update](/docs/technology-updates/storage-and-rpc-plan/#results)
+  The [storage update](/docs/technology-updates/storage-update/#results)
   has the full measurements.
 
   ```hcl
