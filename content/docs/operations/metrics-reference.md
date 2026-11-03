@@ -484,6 +484,32 @@ log of a server as `nomad.badger.raft.*`, the client state as
 | `nomad.badger.raft.store_logs`          | Time to store a batch of raft log entries (one sync)               | Milliseconds | Summary |
 | `nomad.badger.raft.delete_range`        | Time to delete a range of raft log entries after a snapshot        | Milliseconds | Summary |
 
+## Raft BoltDB Metrics
+
+Servers with `raft_store = "boltdb"` emit the metrics of the `raft-boltdb` library for their raft
+log.
+
+| Metric                                    | Description                               | Unit        | Type    |
+| ----------------------------------------- | ----------------------------------------- | ----------- | ------- |
+| `nomad.raft.boltdb.numFreePages`          | Number of free pages                      | Integer     | Gauge   |
+| `nomad.raft.boltdb.numPendingPages`       | Number of pending pages                   | Integer     | Gauge   |
+| `nomad.raft.boltdb.freePageBytes`         | Number of free page bytes                 | Integer     | Gauge   |
+| `nomad.raft.boltdb.freelistBytes`         | Number of freelist bytes                  | Integer     | Gauge   |
+| `nomad.raft.boltdb.totalReadTxn`          | Count of total read transactions          | Integer     | Counter |
+| `nomad.raft.boltdb.openReadTxn`           | Number of current open read transactions  | Integer     | Gauge   |
+| `nomad.raft.boltdb.txstats.pageCount`     | Number of pages in use                    | Integer     | Gauge   |
+| `nomad.raft.boltdb.txstats.pageAlloc`     | Number of page allocations                | Integer     | Gauge   |
+| `nomad.raft.boltdb.txstats.cursorCount`   | Count of total database cursors           | Integer     | Counter |
+| `nomad.raft.boltdb.txstats.nodeCount`     | Count of total database nodes             | Integer     | Counter |
+| `nomad.raft.boltdb.txstats.nodeDeref`     | Count of total database node dereferences | Integer     | Counter |
+| `nomad.raft.boltdb.txstats.rebalance`     | Count of total rebalance operations       | Integer     | Counter |
+| `nomad.raft.boltdb.txstats.rebalanceTime` | Sample of rebalance operation times       | Nanoseconds | Summary |
+| `nomad.raft.boltdb.txstats.split`         | Count of total split operations           | Integer     | Counter |
+| `nomad.raft.boltdb.txstats.spill`         | Count of total spill operations           | Integer     | Counter |
+| `nomad.raft.boltdb.txstats.spillTime`     | Sample of spill operation times           | Nanoseconds | Summary |
+| `nomad.raft.boltdb.txstats.write`         | Count of total write operations           | Integer     | Counter |
+| `nomad.raft.boltdb.txstats.writeTime`     | Sample of write operation times           | Nanoseconds | Summary |
+
 ## Agent Metrics
 
 Agent metrics are emitted by all Norca agents running in either client or server mode.

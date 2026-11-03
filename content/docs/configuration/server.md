@@ -179,6 +179,21 @@ server {
   Configuration for the plan rejection tracker that the Norca leader uses to
   track the history of plan rejections.
 
+- `raft_store` `(string: "badger")` - The store of the raft log: `badger`
+  (in `<data_dir>/server/raft/badger`) or `boltdb` (the BoltDB file
+  `<data_dir>/server/raft/raft.db`, tuned with `raft_boltdb`). Choose BoltDB on
+  machines where memory matters more than write speed (see the comparison
+  below), or as a fallback. A server does not start when its raft directory
+  holds only the other store: to switch a server, stop it, remove
+  `<data_dir>/server/raft/`, change the setting and start it; it rejoins the
+  cluster from the leader's snapshot. Switch one server at a time; servers of
+  one cluster may use different stores.
+
+- `raft_boltdb` - A nested object for the BoltDB raft log
+  (`raft_store = "boltdb"`):
+    - `no_freelist_sync` `(bool: false)` - Do not write the free list of the
+      BoltDB file with every commit: faster writes, a longer start.
+
 - `badger` - A nested object that tunes the [Badger](https://github.com/dgraph-io/badger)
   database of the raft log (`<data_dir>/server/raft/badger`). Writes are always
   durable; the options trade memory against compaction work and disk space.
@@ -249,11 +264,11 @@ server {
   `small` did not; the cluster sizes of `default` and `large` are estimates
   from the memory they need, not measurements.
 
-  Why a profile is needed now: the BoltDB store of earlier Norca versions had
-  nothing to size. It maps one file into memory and leaves caching to the
-  operating system, so its memory grew with the data and the kernel could take
-  it back under pressure; its only option was `raft_boltdb { no_freelist_sync }`.
-  The price was speed and disk writes: BoltDB rewrites whole pages and its free
+  Why Badger needs a profile and BoltDB (`raft_store = "boltdb"`) does not: BoltDB
+  has nothing to size. It maps one file into memory and leaves caching to the
+  operating system, so its memory grows with the data and the kernel can take
+  it back under pressure; its only option is `raft_boltdb { no_freelist_sync }`.
+  The price is speed and disk writes: BoltDB rewrites whole pages and its free
   list with every commit. Badger keeps fixed budgets in the agent's own memory
   (the memtables and caches above), which the kernel cannot reclaim, and in
   return writes faster and far less. On the 2 GB lab machines:
