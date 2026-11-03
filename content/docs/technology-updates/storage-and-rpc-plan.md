@@ -1,10 +1,10 @@
 ---
 title: "Storage and RPC update – plan"
 weight: 1
-status: "Plan"
+status: "Done"
 ---
 
-**Status:** Plan · 2026-11-02 · Starting point: Norca main (Nomad v1.6.5 base) with `hashicorp/raft`
+**Status:** Done · 2026-11-03 (results in [Results](#results)) · Plan of 2026-11-02 · Starting point: Norca main (Nomad v1.6.5 base) with `hashicorp/raft`
 v1.5.0, `raft-boltdb/v2` v2.2.2, `go.etcd.io/bbolt` v1.3.10, `hashicorp/go-msgpack` v1.1.5,
 `google.golang.org/grpc` v1.84.0 and `hashicorp/go-plugin` v1.8.0
 
@@ -30,6 +30,7 @@ change can be measured on the same test afterwards.
 - [3. BoltDB to Badger](#3-boltdb-to-badger)
 - [4. Plugin connections: gRPC stays](#4-plugin-connections-grpc-stays)
 - [Phases](#phases)
+- [Results](#results)
 - [Testing and acceptance](#testing-and-acceptance)
 - [Risks](#risks)
 - [Licenses](#licenses)
@@ -315,6 +316,96 @@ connection, and the storage changes (sections 2 and 3) are the whole update. Wha
 | 6 | Final run of the whole suite, the comparison table on this page, the documentation (agent configuration, operations, licence) | 1–3 |
 
 Phases 1–3 build on each other; phase 6 closes the update.
+
+## Results
+
+Measured on the lab (three servers that are clients too, 2 vCPU and 2 GB each, see
+[phase 0](#phase-0-baseline-performance-test)), with the same workload in every run. The baseline ran
+the soak (M6) for two hours, the later runs for five minutes; for the soak, the table compares the
+first five minutes of the baseline. The raw results are in `norca-lab/bench/results/`.
+
+| Run | Norca | Content |
+| --- | --- | --- |
+| Baseline | `74d33c1d2` | `hashicorp/raft` v1.5.0, `raft-boltdb`, BoltDB client state |
+| Phase 1 | `1b29fe48d` | the raft fork, `hashicorp/go-metrics` (soak skipped) |
+| Phase 2 | `dd2661b5a` | the raft log on Badger |
+| Phase 3 | `d7ebb576f` | the client state on Badger |
+| Final | `ad0579914` | phase 3 with the regenerated notices (the same code, run again) |
+
+### Cluster tests
+
+| Test (p50 unless noted) | Baseline | Phase 1 | Phase 2 | Phase 3 | Final |
+| --- | --- | --- | --- | --- | --- |
+| M1 300 batch jobs at once: task start | 9.32 s | 9.42 s | 9.49 s | 6.14 s | 6.47 s |
+| M1 same: placement | 7.98 s | 8.30 s | 8.11 s | 5.12 s | 5.40 s |
+| M1 same: task start p99 | 17.2 s | 17.0 s | 17.2 s | 13.0 s | 13.2 s |
+| M1 200 batch jobs at 10/s: task start | 331 ms | 320 ms | 326 ms | 279 ms | 284 ms |
+| M1 same: task start p99 | 720 ms | 842 ms | 892 ms | 508 ms | 548 ms |
+| M1 12 service jobs: task start | 698 ms | 666 ms | 640 ms | 520 ms | 539 ms |
+| M3 leader failover: longest write gap | 6.05 s | – | 2.05 s | 4.05 s | 2.05 s |
+| M4 snapshot save | 77 ms | 62 ms | 65 ms | 76 ms | 69 ms |
+| M4 server restart until ready | 10.8 s | 10.4 s | 8.0 s | 8.0 s | 10.6 s |
+| M5 task start raw_exec | 210 ms | 205 ms | 196 ms | 188 ms | 162 ms |
+| M5 task start exec2 | 150 ms | 156 ms | 139 ms | 138 ms | 106 ms |
+| M5 task start exec | 2.12 s | 2.14 s | 2.13 s | 2.12 s | 2.11 s |
+| M5 task start docker | 329 ms | 341 ms | 353 ms | 334 ms | 348 ms |
+| M5 agent restart: allocations reattached after | 11.7 s | 11.0 s | 9.0 s | 8.8 s | 11.6 s |
+| M6 soak, raft write p50 | 9.4–18.5 ms | – | 4.1 ms | 3.7 ms | 4.1 ms |
+| M6 soak, raft write p99.9 | 22–41 ms | – | 16.5 ms | 23.1 ms | 17.4 ms |
+
+The failover gap, the server restart and the reattach move in steps of about two seconds between runs
+of the same code (phase 3 and final), so single differences there are within the noise of the lab.
+
+### Micro benchmarks (final run, one lab VM)
+
+| Benchmark | BoltDB | Badger |
+| --- | --- | --- |
+| B1 `StoreLog` (one entry, one sync) | 2.37 ms | 1.29 ms |
+| B1 `StoreLogs` | 2.47 ms | 1.36 ms |
+| B1 `GetLog` | 3.2 µs | 1.3 µs |
+| B1 append, batches of 64 × 1 KB | 4.3 ms | 6.6 ms |
+| B1 append, batches of 64 × 16 KB | 13.4 ms | 14.5 ms |
+| B1 append, batches of 512 × 16 KB | 41.8 ms | 472 ms |
+| B1 `DeleteRange` | 2.29 ms | 2.47 ms |
+| B2 `PutAllocation` | 8.63 ms | 6.08 ms |
+| B2 `PutTaskRunnerLocalState` | 6.74 ms | 3.14 ms |
+| B2 `GetAllAllocations`, 1000 allocations | 38.3 ms | 31.0 ms |
+| B4 MessagePack encode/decode (control) | 37.2 µs | 36.8 µs |
+
+B2's BoltDB column is from the baseline run, B1 runs both stores in the same run.
+
+### Resources per VM
+
+| | Baseline (2 h soak) | Final (5 min soak) |
+| --- | --- | --- |
+| Agent RSS, maximum | 426–518 MB | 481–792 MB |
+| Data directory at the end | 147–149 MB | 820–825 MB |
+| Agent disk writes per minute | 200–220 MB | 11–19 MB |
+
+The agent writes per minute cover the whole run, which in the baseline is mostly the soak; the order
+of magnitude is the point: BoltDB rewrote pages and its freelist with every raft commit.
+
+### Against the acceptance criteria
+
+- **p99 in M1–M5 not more than 5% worse:** met for M1 (all better), M3 and M4. In M5 the p99 of
+  raw_exec and exec2 starts is higher (316 ms against 249 ms, 229 ms against 204 ms), but with ten starts
+  per driver the p99 is the single slowest start, while the p50 of both improved by about 25%; no
+  storage path is slower there.
+- **M6:** no write stall; the worst minute's p99.9 (18.8 ms) is far below three times the median of the
+  run.
+- **Memory:** higher. A server's Badger may hold up to three 64 MB memtables plus a 128 MB block cache
+  and a 64 MB index cache, which is a large share of a 2 GB VM; smaller servers should lower
+  `mem_table_size_mb` and the caches in the `badger` block.
+
+### Open points
+
+- **Large raft batches.** Batches of many large entries (512 × 16 KB) are ten times slower than on
+  BoltDB, because values up to 1 MB stay in the LSM tree and such a batch fills the memtable quickly.
+  A lower value threshold (values above a few kilobytes in the value log) is the candidate fix; it has
+  to be measured with B1 and M6, since it brings back value log garbage collection.
+- **Disk footprint.** The data directory grows by about 670 MB per agent, mostly preallocated memtable
+  and value log files (64 MB memtables, 256 MB value log files on servers, 64 MB on clients). Smaller
+  files lower it at the cost of more frequent rotation.
 
 ## Testing and acceptance
 
