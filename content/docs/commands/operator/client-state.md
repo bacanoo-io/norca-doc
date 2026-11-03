@@ -9,10 +9,14 @@ upstream:
 The `operator client-state` command generates a representation of the
 stored client state in JSON format.
 
+The client state is a Badger database in `<data_dir>/client/state`. The
+command reads it only while no agent uses the data directory: stop the
+client first.
+
 ## Usage
 
 ```plaintext
-norca operator client-state
+norca operator client-state <data_dir>/client
 ```
 
 ## Example
@@ -20,7 +24,7 @@ norca operator client-state
 The output of this command can be piped to `jq` for further filtering and analysis:
 
 ```shell
-$ norca operator client-state | jq
+$ norca operator client-state /opt/norca/data/client | jq
 {
   "Allocations": {
     "3b0ed734-f721-45d3-420a-3d96926b3f1d": {
