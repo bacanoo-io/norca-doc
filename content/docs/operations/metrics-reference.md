@@ -469,30 +469,20 @@ those listed in [Key Metrics](#key-metrics) above.
 | `nomad.scheduler.allocs.rescheduled.wait_until`      | Time that a rescheduled allocation will be delayed                             | Float                | Gauge   | alloc_id, job, namespace, task_group, follow_up_eval_id |
 | `nomad.state.snapshotIndex`                          | Current snapshot index                                                         | Integer              | Gauge   | host                                                    |
 
-## Raft BoltDB Metrics
+## Badger Metrics
 
-Raft database metrics are emitted by the `raft-boltdb` library.
+The Badger databases of an agent report their shape every 10 seconds: the raft
+log of a server as `nomad.badger.raft.*`, the client state as
+`nomad.badger.client.*` (shown as `<db>` below).
 
-| Metric                                    | Description                               | Unit        | Type    |
-| ----------------------------------------- | ----------------------------------------- | ----------- | ------- |
-| `nomad.raft.boltdb.numFreePages`          | Number of free pages                      | Integer     | Gauge   |
-| `nomad.raft.boltdb.numPendingPages`       | Number of pending pages                   | Integer     | Gauge   |
-| `nomad.raft.boltdb.freePageBytes`         | Number of free page bytes                 | Integer     | Gauge   |
-| `nomad.raft.boltdb.freelistBytes`         | Number of freelist bytes                  | Integer     | Gauge   |
-| `nomad.raft.boltdb.totalReadTxn`          | Count of total read transactions          | Integer     | Counter |
-| `nomad.raft.boltdb.openReadTxn`           | Number of current open read transactions  | Integer     | Gauge   |
-| `nomad.raft.boltdb.txstats.pageCount`     | Number of pages in use                    | Integer     | Gauge   |
-| `nomad.raft.boltdb.txstats.pageAlloc`     | Number of page allocations                | Integer     | Gauge   |
-| `nomad.raft.boltdb.txstats.cursorCount`   | Count of total database cursors           | Integer     | Counter |
-| `nomad.raft.boltdb.txstats.nodeCount`     | Count of total database nodes             | Integer     | Counter |
-| `nomad.raft.boltdb.txstats.nodeDeref`     | Count of total database node dereferences | Integer     | Counter |
-| `nomad.raft.boltdb.txstats.rebalance`     | Count of total rebalance operations       | Integer     | Counter |
-| `nomad.raft.boltdb.txstats.rebalanceTime` | Sample of rebalance operation times       | Nanoseconds | Summary |
-| `nomad.raft.boltdb.txstats.split`         | Count of total split operations           | Integer     | Counter |
-| `nomad.raft.boltdb.txstats.spill`         | Count of total spill operations           | Integer     | Counter |
-| `nomad.raft.boltdb.txstats.spillTime`     | Sample of spill operation times           | Nanoseconds | Summary |
-| `nomad.raft.boltdb.txstats.write`         | Count of total write operations           | Integer     | Counter |
-| `nomad.raft.boltdb.txstats.writeTime`     | Sample of write operation times           | Nanoseconds | Summary |
+| Metric                                  | Description                                                        | Unit         | Type    |
+| --------------------------------------- | ------------------------------------------------------------------ | ------------ | ------- |
+| `nomad.badger.<db>.lsm_bytes`           | Size of the LSM tree                                               | Bytes        | Gauge   |
+| `nomad.badger.<db>.vlog_bytes`          | Size of the value log                                              | Bytes        | Gauge   |
+| `nomad.badger.<db>.level<N>_tables`     | Number of tables on level N; level 0 close to the stall threshold means writes are about to stall | Integer | Gauge |
+| `nomad.badger.<db>.vlog_gc`             | Time of a value log garbage collection run                         | Milliseconds | Summary |
+| `nomad.badger.raft.store_logs`          | Time to store a batch of raft log entries (one sync)               | Milliseconds | Summary |
+| `nomad.badger.raft.delete_range`        | Time to delete a range of raft log entries after a snapshot        | Milliseconds | Summary |
 
 ## Agent Metrics
 

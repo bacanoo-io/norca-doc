@@ -196,9 +196,12 @@ part of the design, not an afterthought.
 
 - Raft log: key = prefix `l/` + the 8-byte big-endian index, value = the encoded `raft.Log` (the
   MessagePack bytes of today). Stable store: prefix `s/` + the key. The commit index: `c/commit`.
-- Client state: today's buckets become key prefixes (`alloc/<id>/...`, `taskrunner/<alloc>/<task>/...`
-  and so on). The write deduplication of `boltdd` (skip a write when the value hash is unchanged) is
-  kept in the new layer.
+- Client state (`<data_dir>/client/state/`): the buckets of `state.db` became key paths whose parts
+  are separated by a zero byte: `a/<alloc>/alloc`, `a/<alloc>/deploy_status`,
+  `a/<alloc>/t/<task>/local_state`, `c/<alloc>_<check>`, `node/meta` and so on. Deleting an
+  allocation or a task deletes its prefix in one transaction. The write deduplication of `boltdd`
+  (skip a write when the value hash is unchanged) is kept in the new layer; concurrent writes share
+  one sync in Badger, so the batch mode of BoltDB needs no counterpart.
 - Every store has a format version key; a store with an unknown version is not opened.
 
 ### Durability and consistency
@@ -269,13 +272,16 @@ server {
 ```
 
 and a `badger` block with the same keys in `client`. Unset keys take the values of the table above.
+Both blocks share one implementation (`helper/badgerdb`); the metrics are `nomad.badger.raft.*` and
+`nomad.badger.client.*`.
 
 ### Moving existing data
 
 Norca has no released versions, so there is no in-place migration of `raft.db` and `state.db`: a server
 or client starts with an empty Badger store and catches up (a server from the leader's snapshot, a
 client from the servers). The lab clusters are redeployed. A `norca operator raft` command that finds an
-old `raft.db` says so instead of failing silently.
+old `raft.db` says so instead of failing silently, and a client that finds an old `state.db` in its
+state directory does not start until it is removed.
 
 ## 4. gRPC to drpc
 
@@ -370,8 +376,8 @@ Phases 1–3 and 4–5 are independent of each other and can run in parallel aft
 | `bacanoo-io/drpc` (fork of `storj.io/drpc`) | MIT | – |
 
 None of them is a HashiCorp product under BSL; the raft fork is MPL code. `THIRD_PARTY_NOTICES.md` is
-regenerated with every dependency change, and `bbolt`, `boltdb/bolt` and `raft-boltdb` leave it with
-phases 2 and 3.
+regenerated with every dependency change. Since phase 3 no Norca code uses BoltDB; `raft-boltdb` (and
+through it `bbolt`) is only a dependency of the B1 benchmark, which compares the two raft stores.
 
 ## Decisions
 

@@ -46,6 +46,22 @@ client {
   UID and GID while it may run. Choose a range that no user or group of the
   node uses; the client does not start if the range is empty or not positive.
 
+- `badger` - A nested object that tunes the [Badger](https://github.com/dgraph-io/badger)
+  database of the client state (`<data_dir>/client/state`), where the client
+  keeps its allocations and task states for restarts. Writes are always
+  durable, and a write of an unchanged value is skipped. It takes the same keys
+  as the [`badger` block of a server](/docs/configuration/server/), with smaller
+  defaults:
+    - `mem_table_size_mb` `(int: 16)`
+    - `num_level_zero_tables` `(int: 5)`
+    - `num_level_zero_tables_stall` `(int: 15)`
+    - `num_compactors` `(int: 2)`
+    - `block_cache_size_mb` `(int: 16)` and `index_cache_size_mb` `(int: 8)`
+    - `value_log_gc_interval` `(string: "10m")`
+
+  The metrics `nomad.badger.client.*` report the size of the LSM tree and the
+  value log and the tables per level.
+
 - `meta` `(map[string]string: nil)` - Specifies a key-value map that annotates
   with user-defined metadata.
 
