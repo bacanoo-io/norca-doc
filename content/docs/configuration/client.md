@@ -50,14 +50,13 @@ client {
   database of the client state (`<data_dir>/client/state`), where the client
   keeps its allocations and task states for restarts. Writes are always
   durable, and a write of an unchanged value is skipped. It takes the same keys
-  as the [`badger` block of a server](/docs/configuration/server/), with smaller
-  defaults:
-    - `mem_table_size_mb` `(int: 16)`
-    - `num_level_zero_tables` `(int: 5)`
-    - `num_level_zero_tables_stall` `(int: 15)`
-    - `num_compactors` `(int: 2)`
-    - `block_cache_size_mb` `(int: 16)` and `index_cache_size_mb` `(int: 8)`
-    - `value_log_gc_interval` `(string: "10m")`
+  as the [`badger` block of a server](/docs/configuration/server/), `profile`
+  included, with the client values of the
+  [profiles](/docs/configuration/server/#badger-profiles); the `default` profile
+  of a client is 16 MB × 2 memtables, 16 MB block and 8 MB index cache and
+  64 MB value log files. Choose the profile by the memory of the node: `small`
+  for 2–4 GB, `default` for 8–16 GB, `large` for 32 GB or more; see
+  [which profile for which system](/docs/configuration/server/#badger-profiles).
 
   The metrics `nomad.badger.client.*` report the size of the LSM tree and the
   value log and the tables per level.

@@ -397,15 +397,35 @@ of magnitude is the point: BoltDB rewrote pages and its freelist with every raft
   and a 64 MB index cache, which is a large share of a 2 GB VM; smaller servers should lower
   `mem_table_size_mb` and the caches in the `badger` block.
 
-### Open points
+### Follow-up: profiles and the value threshold
 
-- **Large raft batches.** Batches of many large entries (512 × 16 KB) are ten times slower than on
-  BoltDB, because values up to 1 MB stay in the LSM tree and such a batch fills the memtable quickly.
-  A lower value threshold (values above a few kilobytes in the value log) is the candidate fix; it has
-  to be measured with B1 and M6, since it brings back value log garbage collection.
-- **Disk footprint.** The data directory grows by about 670 MB per agent, mostly preallocated memtable
-  and value log files (64 MB memtables, 256 MB value log files on servers, 64 MB on clients). Smaller
-  files lower it at the cost of more frequent rotation.
+The open points of the final run were taken up the same day:
+
+- **Large raft batches.** On the 2 GB VMs the slow batches of large entries were a memory problem:
+  with the default server values, Badger filled the memory of the machine and the benchmark was
+  killed. The raft log now keeps values above 4 KB in the value log (`value_threshold_kb`); B1, batches
+  of 512 × 16 KB entries: 153 ms → 37.7 ms with the `small` profile, 175 ms → 34.8 ms with `default`
+  (BoltDB 44.7 ms), at half the memory per batch. A single 16 KB entry costs more (6.2 → 8.5 ms);
+  entries of 1 KB are unchanged. The client state keeps values up to 1 MB in the tree.
+- **Memory and disk footprint.** The `badger` blocks got a `profile` switch (`small`, `default`,
+  `large`) and the keys `value_threshold_kb`, `value_log_file_size_mb`, `compression` and
+  `num_memtables`; see the [server configuration](/docs/configuration/server/#badger-profiles).
+  The lab now runs `small`.
+
+A full run with the `small` profile (`norca-lab/bench/results/20261103-1154-small-vt4k-b089d81e0`),
+against the final run with `default`:
+
+| | Final (`default`) | `small`, 4 KB threshold |
+| --- | --- | --- |
+| Data directory at the end | 820–825 MB | 245–249 MB |
+| Agent RSS, maximum | 481–792 MB | 433–521 MB |
+| M6 soak, raft write p50 / p99.9 | 4.1 / 17.4 ms | 4.6 / 25.9 ms |
+| M1 300 batch jobs: task start p50 | 6.47 s | 6.65 s |
+| M1 200 batch jobs at 10/s: task start p99 | 548 ms | 462 ms |
+
+The `small` profile brings the memory back to the level of BoltDB and the data directory to a third,
+at a slightly higher tail latency of the raft writes (the smaller memtables flush more often), still
+well below the baseline (p50 9.4–18.5 ms, p99.9 22–41 ms).
 
 ## Testing and acceptance
 
