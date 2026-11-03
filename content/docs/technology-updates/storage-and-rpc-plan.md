@@ -8,14 +8,15 @@ status: "Plan"
 v1.5.0, `raft-boltdb/v2` v2.2.2, `go.etcd.io/bbolt` v1.3.10, `hashicorp/go-msgpack` v1.1.5,
 `google.golang.org/grpc` v1.84.0 and `hashicorp/go-plugin` v1.8.0
 
-Norca updates four building blocks of its storage and of its process-to-process connections:
+Norca updates three building blocks of its storage; a fourth change, of the plugin connections, was
+dropped (see [section 4](#4-plugin-connections-grpc-stays)):
 
 | # | Area | Today | After the change |
 | --- | --- | --- | --- |
 | 1 | Encoding | `hashicorp/go-msgpack` v1.1.5 | unchanged: the same MessagePack codec and wire format |
 | 2 | Consensus library | `hashicorp/raft` v1.5.0 | the [`bacanoo-io/raft`](https://github.com/bacanoo-io/raft) fork, updated to the current upstream with Norca's changes |
 | 3 | Embedded databases | BoltDB (`raft-boltdb/v2`, `bbolt`) | [Badger](https://github.com/dgraph-io/badger) v4, tuned against compaction spikes |
-| 4 | Plugin connections | gRPC (through `go-plugin`) | [drpc](https://github.com/bacanoo-io/drpc) (the `bacanoo-io/drpc` fork of `storj.io/drpc`) |
+| 4 | Plugin connections | gRPC (through `go-plugin`) | unchanged: gRPC stays (drpc was planned, then dropped) |
 
 Before any of it, a general performance test records a **baseline**, so that the effect of the whole
 change can be measured on the same test afterwards.
@@ -27,7 +28,7 @@ change can be measured on the same test afterwards.
 - [1. MessagePack stays](#1-messagepack-stays)
 - [2. The raft fork](#2-the-raft-fork)
 - [3. BoltDB to Badger](#3-boltdb-to-badger)
-- [4. gRPC to drpc](#4-grpc-to-drpc)
+- [4. Plugin connections: gRPC stays](#4-plugin-connections-grpc-stays)
 - [Phases](#phases)
 - [Testing and acceptance](#testing-and-acceptance)
 - [Risks](#risks)
@@ -55,7 +56,7 @@ comparison). The suite and its results are versioned, so every run names the Nor
 | --- | --- | --- |
 | B1 | Raft log store: `StoreLog`, `StoreLogs` (batches of 1, 64 and 512 entries of 1 KB and 16 KB), `GetLog`, `FirstIndex`, `LastIndex`, `DeleteRange`; stable store `Set`/`Get`/`SetUint64` | The `bench` package of the raft repository, which runs the same functions against any `LogStore`/`StableStore`: first on `raft-boltdb/v2`, later on the Badger store. Durable writes (fsync) on. |
 | B2 | Client state database: storing and reading allocations and task runner states for 100 and 1000 allocations, the write deduplication | The existing `helper/boltdd` benchmarks plus new ones on `client/state`, with the same interface for both backends |
-| B3 | Plugin connections: round trip of a unary call and of a streaming call (task stats every second) between the client and `logmon`, the executor and an external driver plugin | New benchmarks on the driver test harness and the executor/logmon clients, run with gRPC first and drpc later |
+| B3 | Plugin connections: round trip of a unary call and of a streaming call (task stats every second) between the client and an external driver plugin | New benchmarks on the driver test harness; a control since gRPC stays: it must not change |
 | B4 | MessagePack encoding of the main structures | The existing `BenchmarkEncodeDecode` in `norca/structs`; a control: it must not change |
 
 ### Cluster tests (lab)
@@ -98,8 +99,7 @@ both runs.
 | gRPC for CSI | `plugins/csi` | the connection to CSI plugins, fixed by the CSI specification |
 
 Two things follow from this map. Agent-to-agent traffic (RPC and raft) is MessagePack over `yamux` and
-TCP, so it is not affected by the move from gRPC to drpc; the drpc change speeds up the local
-connections between an agent and its plugin processes. And the raft log is written by every server for
+TCP; gRPC only connects an agent with its plugin processes on the same machine. And the raft log is written by every server for
 every change of the cluster state, so the storage change affects the write latency of the whole
 cluster.
 
@@ -283,51 +283,24 @@ client from the servers). The lab clusters are redeployed. A `norca operator raf
 old `raft.db` says so instead of failing silently, and a client that finds an old `state.db` in its
 state directory does not start until it is removed.
 
-## 4. gRPC to drpc
+## 4. Plugin connections: gRPC stays
 
-### What changes
+The plan was to replace gRPC by [drpc](https://github.com/storj/drpc) (through the `bacanoo-io/drpc`
+fork) for the connections between the agent and its plugin processes, starting with the subprocesses
+the agent starts itself (`logmon`, executor, `docker_logger`) and then external plugins with a gRPC
+fallback.
 
-drpc is a smaller RPC library that uses the same protobuf definitions as gRPC but its own framing
-instead of HTTP/2, which makes each call cheaper in CPU and memory. Norca uses the `bacanoo-io/drpc`
-fork (module path `storj.io/drpc`, through a `replace` directive, like the raft fork).
+On 2026-11-03 this change was dropped; the agent keeps gRPC through `go-plugin` for every plugin
+connection, and the storage changes (sections 2 and 3) are the whole update. What a prototype showed:
 
-| Connection | Today | After |
-| --- | --- | --- |
-| Agent ↔ `logmon` (one subprocess per task) | gRPC through `go-plugin` | drpc |
-| Agent ↔ executor (one subprocess per `exec`, `raw_exec` and `java` task) | gRPC through `go-plugin` | drpc |
-| Agent ↔ `docker_logger` (one per Docker task) | gRPC through `go-plugin` | drpc |
-| Agent ↔ built-in task drivers and devices | in process, no RPC | unchanged |
-| Agent ↔ external task driver and device plugins | gRPC through `go-plugin` | drpc for plugins that support it, gRPC otherwise (see below) |
-| Agent ↔ external autoscaler plugins | gRPC through `go-plugin` | as external task driver plugins |
-| Client ↔ CSI plugins | gRPC | **unchanged**: the CSI specification defines gRPC, and CSI plugins are third-party programs |
-| Agent RPC and raft | MessagePack over `yamux` | unchanged (not gRPC) |
-
-### How
-
-- The `.proto` files stay the single definition of each plugin interface. The drpc code is generated
-  next to the gRPC code (`protoc-gen-go-drpc`), so both protocols serve the same messages.
-- The subprocesses Norca starts itself (`logmon`, executor, `docker_logger`) are part of the same
-  binary, so they switch to drpc completely. The process start, the handshake and the reattach after a
-  client restart keep working as today: the handshake line written by the subprocess names the
-  protocol, and the reattach configuration stored in the client state records it.
-- External plugins built against the Nomad 1.6.5 plugin API speak gRPC. Compatibility with them is a
-  promise of Norca ([compatibility](/docs/introduction/compatibility)), so the agent offers both: the
-  plugin's handshake says which protocol it serves, and the agent uses drpc when the plugin serves it
-  and gRPC otherwise. A plugin built with the Norca plugin SDK serves both on one listener
-  (`drpcmigrate` tells the two apart by the first bytes of a connection).
-- `go-plugin` stays for starting and supervising plugin processes. The drpc side of the plugin
-  protocol (serving a plugin over drpc, the client side, the protocol name in the handshake) lives in
-  the `bacanoo-io/drpc` fork, as a package next to drpc's own, so Norca and plugin authors take it from
-  one place.
-- Streaming calls (task stats, log streaming, `alloc exec`) map to drpc streams; cancellation and
-  deadlines are carried through the context as today.
-
-### Expected effect
-
-The agent keeps a stats stream open for every running task and a `logmon` and often an executor
-process per task, so on a client with many small tasks the plugin connections are a noticeable part of
-the CPU and memory of the agent. That is where drpc is expected to help (B3, M5). It does not change
-the speed of scheduling or of raft (M1–M4); the baseline shows how large the plugin share is.
+- A drpc connection carries one call at a time. The plugin connections have long calls (an executor's
+  wait for its process) and open streams (task statistics) next to short calls, so drpc needs a pool of
+  connections per plugin, or a multiplexer underneath it, where gRPC multiplexes on one HTTP/2
+  connection.
+- Single calls were cheaper over drpc (fewer allocations, less time per call), concurrent calls and
+  message streams were slower without a multiplexer. These connections are local and light (a
+  statistics message per task and second), so the gain did not justify a second plugin protocol next
+  to the gRPC that external plugins need anyway.
 
 ## Phases
 
@@ -337,11 +310,11 @@ the speed of scheduling or of raft (M1–M4); the baseline shows how large the p
 | 1 | Norca moves to `hashicorp/go-metrics`; raft fork synchronized with upstream with MessagePack v1.1.5 kept, tagged; Norca switches with `replace`; B1, M2, M3 against the baseline | 0 |
 | 2 | Badger raft store (`raft/badger`), `helper/raftutil`, the `badger` server options, metrics and alerts; `raft-boltdb` removed; B1, M1–M4, M6 | 1 |
 | 3 | Badger client state, the `badger` client options; `bbolt` removed; B2, M5, M6 | 2 |
-| 4 | drpc for `logmon`, executor and `docker_logger`; the handshake and reattach; B3, M5 | 0 |
-| 5 | drpc for external plugins with gRPC fallback; the plugin SDK; tests with a gRPC-only plugin built against the 1.6.5 API | 4 |
-| 6 | Final run of the whole suite, the comparison table on this page, the documentation (agent configuration, operations, licence) | 1–5 |
+| 4 | ~~drpc for `logmon`, executor and `docker_logger`~~ dropped, gRPC stays | – |
+| 5 | ~~drpc for external plugins with gRPC fallback~~ dropped, gRPC stays | – |
+| 6 | Final run of the whole suite, the comparison table on this page, the documentation (agent configuration, operations, licence) | 1–3 |
 
-Phases 1–3 and 4–5 are independent of each other and can run in parallel after phase 0.
+Phases 1–3 build on each other; phase 6 closes the update.
 
 ## Testing and acceptance
 
@@ -354,7 +327,6 @@ Phases 1–3 and 4–5 are independent of each other and can run in parallel aft
 - Acceptance against the baseline: no p99 in M1–M5 more than 5% worse, unless the comparison explains
   it; in M6, no write stall and no minute whose p99.9 write latency is more than three times the median
   of the run; the memory of the agent within the limits set by the `badger` options.
-- drpc: B3 shows the gain on unary and streaming calls; a gRPC-only external plugin keeps working.
 
 ## Risks
 
@@ -364,7 +336,7 @@ Phases 1–3 and 4–5 are independent of each other and can run in parallel aft
 | Badger memory use (memtables, caches, memory-mapped tables) on small clients | the client sizes in the table, bounded caches, measured RSS in M5/M6 |
 | More disk space during compaction | the free space metric and warning of phase 2, M6 records the size over time |
 | Losing raft entries on power loss | `SyncWrites`, one sync per batch, the crash tests |
-| Plugin incompatibility | gRPC fallback, the test with a 1.6.5 plugin; CSI stays gRPC |
+| Plugin incompatibility | none: the plugin protocol (gRPC) does not change |
 | The forks drift from upstream | Norca's changes are separate, marked commits; the forks are synchronized at least with every upstream release |
 
 ## Licenses
@@ -373,7 +345,6 @@ Phases 1–3 and 4–5 are independent of each other and can run in parallel aft
 | --- | --- | --- |
 | `bacanoo-io/raft` (fork of `hashicorp/raft`) | MPL 2.0 | every version including the current `main` (`LICENSE` and the SPDX header of every Go file); copyright IBM Corp. from 2025-11 |
 | Badger v4 (`github.com/dgraph-io/badger/v4`) | Apache 2.0 | its dependencies (for example `ristretto`, `flatbuffers`, `klauspost/compress`) are listed in `THIRD_PARTY_NOTICES.md` when they are added |
-| `bacanoo-io/drpc` (fork of `storj.io/drpc`) | MIT | – |
 
 None of them is a HashiCorp product under BSL; the raft fork is MPL code. `THIRD_PARTY_NOTICES.md` is
 regenerated with every dependency change. Since phase 3 no Norca code uses BoltDB; `raft-boltdb` (and
@@ -383,6 +354,8 @@ through it `bbolt`) is only a dependency of the B1 benchmark, which compares the
 
 - 2026-11-03: Norca moves to `hashicorp/go-metrics` in phase 1 (see [metrics library](#metrics-library)).
 - 2026-11-03: the agent exposes only the Badger options that matter for tuning (the `badger` block).
-- 2026-11-03: the drpc plugin protocol lives in the `bacanoo-io/drpc` fork.
+- 2026-11-03: the drpc plugin protocol was to live in the `bacanoo-io/drpc` fork (superseded below).
 - 2026-11-03: the benchmarks run on the lab VMs only.
 - 2026-11-03: the soak (M6) runs five minutes.
+- 2026-11-03: the move to drpc (phases 4 and 5) is dropped; gRPC stays for all plugin connections
+  (see [section 4](#4-plugin-connections-grpc-stays)).
