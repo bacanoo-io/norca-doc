@@ -181,25 +181,101 @@ server {
 
 - `badger` - A nested object that tunes the [Badger](https://github.com/dgraph-io/badger)
   database of the raft log (`<data_dir>/server/raft/badger`). Writes are always
-  durable; the options trade memory against compaction work. Unset options take
-  the defaults below.
-    - `mem_table_size_mb` `(int: 64)` - Size of a memtable, the unit written to
-      level 0 of the LSM tree.
-    - `num_level_zero_tables` `(int: 8)` - Number of level 0 tables that starts a
+  durable; the options trade memory against compaction work and disk space.
+  `profile` sets all of them for the size of the machine, and every other key
+  overrides the profile's value.
+    - `profile` `(string: "default")` - `small` for servers with 2-4 GB of
+      memory, `default`, or `large` for servers with plenty of memory and a busy
+      raft log; see the [profiles](#badger-profiles) below.
+    - `mem_table_size_mb` - Size of a memtable, the unit written to level 0 of
+      the LSM tree.
+    - `num_memtables` - Memtables kept in memory; with `mem_table_size_mb` the
+      main memory use of the database.
+    - `num_level_zero_tables` - Number of level 0 tables that starts a
       compaction of level 0.
-    - `num_level_zero_tables_stall` `(int: 24)` - Number of level 0 tables at
-      which writes stall until compaction catches up. Keep a gap to
-      `num_level_zero_tables`, so that a burst of writes does not stall; the
-      agent logs a warning when level 0 gets close to it.
-    - `num_compactors` `(int: 4)` - Parallel compactions, at least 2.
-    - `block_cache_size_mb` `(int: 128)` and `index_cache_size_mb` `(int: 64)` -
-      Bounds of the block and index caches.
+    - `num_level_zero_tables_stall` - Number of level 0 tables at which writes
+      stall until compaction catches up. Keep a gap to `num_level_zero_tables`,
+      so that a burst of writes does not stall; the agent logs a warning when
+      level 0 gets close to it.
+    - `num_compactors` - Parallel compactions, at least 2.
+    - `block_cache_size_mb` and `index_cache_size_mb` - Bounds of the block and
+      index caches.
+    - `value_threshold_kb` `(int: 4)` - Values larger than this go to the
+      value log instead of the LSM tree. Large raft entries in large batches
+      would otherwise fill the memtables and be rewritten by every compaction;
+      the raft log is deleted by ranges, so the value log garbage collection
+      reclaims whole files. The client state keeps its values in the tree
+      (1024 in the `client` block): it rewrites the same keys all the time.
+    - `value_log_file_size_mb` - Size of a value log file; most of the disk
+      space the database preallocates.
+    - `compression` `(string: "snappy")` - Compression of the LSM tables:
+      `snappy`, `zstd` (smaller, more CPU) or `none`.
     - `value_log_gc_interval` `(string: "10m")` - How often the value log garbage
       collection runs, in the background.
 
   The metrics `nomad.badger.raft.*` report the size of the LSM tree and the
   value log, the tables per level and the time of log writes, deletions and
   value log garbage collections.
+
+  <a id="badger-profiles"></a>The profiles, for the raft log of a server and
+  (in the `client` block) for the client state:
+
+  | Key | `small` server | `small` client | `default` server | `default` client | `large` server | `large` client |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | `mem_table_size_mb` | 16 | 8 | 64 | 16 | 128 | 32 |
+  | `num_memtables` | 2 | 2 | 3 | 2 | 4 | 3 |
+  | `num_level_zero_tables` | 5 | 5 | 8 | 5 | 10 | 8 |
+  | `num_level_zero_tables_stall` | 15 | 15 | 24 | 15 | 30 | 24 |
+  | `num_compactors` | 2 | 2 | 4 | 2 | 4 | 2 |
+  | `block_cache_size_mb` | 32 | 8 | 128 | 16 | 512 | 64 |
+  | `index_cache_size_mb` | 16 | 4 | 64 | 8 | 256 | 32 |
+  | `value_log_file_size_mb` | 64 | 16 | 256 | 64 | 512 | 128 |
+  | `value_threshold_kb` | 4 | 1024 | 4 | 1024 | 4 | 1024 |
+
+  Which profile for which system (a rough guide; set the `server` and `client`
+  blocks by the memory of the machine the agent runs on):
+
+  | Profile | Machine memory | Cluster size (guide) | Badger memory, server / client |
+  | --- | --- | --- | --- |
+  | `small` | 2–4 GB | development, test and edge clusters; up to about 50 clients and a few hundred running allocations, a light raft write rate | about 80 MB / 30 MB |
+  | `default` | 8–16 GB | the usual production cluster: up to a few hundred clients and some thousand allocations | about 400 MB / 60 MB |
+  | `large` | 32 GB or more | large or busy clusters: 1000 or more clients, tens of thousands of allocations, frequent bursts of job registrations | about 1.3 GB / 200 MB |
+
+  The Badger memory is the memtables (`mem_table_size_mb` × `num_memtables`)
+  plus the block and index caches; the agent itself and its other state come on
+  top, and a burst of large raft entries needs room beyond it. A server whose
+  agent is also a client needs both blocks. On the 2 GB lab machines the
+  `default` server profile ran out of memory under large raft batches, while
+  `small` did not; the cluster sizes of `default` and `large` are estimates
+  from the memory they need, not measurements.
+
+  Why a profile is needed now: the BoltDB store of earlier Norca versions had
+  nothing to size. It maps one file into memory and leaves caching to the
+  operating system, so its memory grew with the data and the kernel could take
+  it back under pressure; its only option was `raft_boltdb { no_freelist_sync }`.
+  The price was speed and disk writes: BoltDB rewrites whole pages and its free
+  list with every commit. Badger keeps fixed budgets in the agent's own memory
+  (the memtables and caches above), which the kernel cannot reclaim, and in
+  return writes faster and far less. On the 2 GB lab machines:
+
+  | | BoltDB | Badger `default` | Badger `small` |
+  | --- | --- | --- | --- |
+  | Agent memory, maximum | 426–518 MB | 481–792 MB | 433–521 MB |
+  | Agent disk writes per minute | 200–220 MB | 11–19 MB | 12–24 MB |
+  | Raft write latency, p50 under a steady load | 9.4–18.5 ms (growing over time) | about 4.1 ms | about 4.6 ms |
+  | Data directory | about 150 MB | about 820 MB (preallocated files) | about 250 MB |
+
+  The [storage update](/docs/technology-updates/storage-and-rpc-plan/#results)
+  has the full measurements.
+
+  ```hcl
+  server {
+    badger {
+      profile             = "small"
+      block_cache_size_mb = 64
+    }
+  }
+  ```
 
 - `raft_protocol` `(int: 3)` - Specifies the Raft protocol version to use when
   communicating with other Norca servers. This affects available Autopilot
