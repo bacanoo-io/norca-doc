@@ -30,7 +30,7 @@ An example output is as follows:
 
 ```shell
 $ sudo norca operator raft info /opt/norca/data
-path:        /opt/norca/data/server/raft/raft.db
+path:        /opt/norca/data/server/raft/badger
 length:      10
 first index: 1
 last index:  10
