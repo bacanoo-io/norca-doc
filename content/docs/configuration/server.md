@@ -179,12 +179,27 @@ server {
   Configuration for the plan rejection tracker that the Norca leader uses to
   track the history of plan rejections.
 
-- `raft_boltdb` - This is a nested object that allows configuring options for
-  Raft's BoltDB based log store.
-    - `no_freelist_sync` - Setting this to `true` will disable syncing the BoltDB
-    freelist to disk within the `raft.db` file. Not syncing the freelist to disk
-    will reduce disk IO required for write operations at the expense of longer
-    server startup times.
+- `badger` - A nested object that tunes the [Badger](https://github.com/dgraph-io/badger)
+  database of the raft log (`<data_dir>/server/raft/badger`). Writes are always
+  durable; the options trade memory against compaction work. Unset options take
+  the defaults below.
+    - `mem_table_size_mb` `(int: 64)` - Size of a memtable, the unit written to
+      level 0 of the LSM tree.
+    - `num_level_zero_tables` `(int: 8)` - Number of level 0 tables that starts a
+      compaction of level 0.
+    - `num_level_zero_tables_stall` `(int: 24)` - Number of level 0 tables at
+      which writes stall until compaction catches up. Keep a gap to
+      `num_level_zero_tables`, so that a burst of writes does not stall; the
+      agent logs a warning when level 0 gets close to it.
+    - `num_compactors` `(int: 4)` - Parallel compactions, at least 2.
+    - `block_cache_size_mb` `(int: 128)` and `index_cache_size_mb` `(int: 64)` -
+      Bounds of the block and index caches.
+    - `value_log_gc_interval` `(string: "10m")` - How often the value log garbage
+      collection runs, in the background.
+
+  The metrics `nomad.badger.raft.*` report the size of the LSM tree and the
+  value log, the tables per level and the time of log writes, deletions and
+  value log garbage collections.
 
 - `raft_protocol` `(int: 3)` - Specifies the Raft protocol version to use when
   communicating with other Norca servers. This affects available Autopilot

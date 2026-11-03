@@ -262,6 +262,7 @@ server {
     num_level_zero_tables_stall = 24
     num_compactors             = 4
     block_cache_size_mb        = 128
+    index_cache_size_mb        = 64
     value_log_gc_interval      = "10m"
   }
 }
