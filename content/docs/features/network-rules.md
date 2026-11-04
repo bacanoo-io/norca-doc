@@ -51,7 +51,8 @@ is allowed.
 
 **Rules.** A rule matches traffic if it matches one of its peers and one of its
 ports. A rule without peers matches any address, a rule without ports matches
-any port. Peers are either CIDR blocks, or allocations **on the same node**
+any port. Peers are either CIDR blocks (optionally with `except` prefixes taken
+out of them), or allocations **on the same node**
 selected by `namespace` and `selector`. Ports are `5432/tcp`,
 `8000-8100/udp`, `53` (TCP) or, for ingress, a port label of the allocation
 (`db/tcp`, resolved to the port inside the allocation).
@@ -253,8 +254,7 @@ ingress between nodes by label, is dropped in favor of
   enforced.
 - Selector peers match allocations on the same node; other nodes and external
   clients are matched by CIDR.
-- Not available: `except` blocks in CIDR peers, sampled logs of dropped
-  connections, protection against deleting a namespace that has network
+- Not available: sampled logs of dropped connections, protection against deleting a namespace that has network
   policies.
 - Limits per policy: 64 rules per direction, 64 peers per rule, 256 CIDRs per
   peer, 64 ports per rule, 32 selector keys.

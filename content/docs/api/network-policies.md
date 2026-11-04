@@ -58,7 +58,8 @@ and `DefaultDeny`, and its rules must have an `Action` (`allow`, `deny` or
 }
 ```
 
-A peer (`NetworkPolicyPeer`) is either `{"CIDR": [...]}` or
+A peer (`NetworkPolicyPeer`) is either `{"CIDR": [...], "Except": [...]}`
+(`Except` takes prefixes out of the `CIDR` blocks) or
 `{"Namespace": "...", "Selector": {...}}` (allocations on the same node). The
 fields, defaults and limits are those of the
 [specification](/docs/other-specifications/network-policy).
