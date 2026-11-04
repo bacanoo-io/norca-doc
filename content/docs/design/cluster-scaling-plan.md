@@ -192,6 +192,8 @@ node_group "workers-dc-a" {              # a capacity group of this region
 
   min = 1
   max = 20
+  headroom_nodes = 0                     # keep this many empty nodes' worth of free capacity ahead of demand
+  # headroom_percent = 10                # alternative: a share of the group; the larger of the two applies
 
   node {                                 # what a new node looks like
     meta       = { tier = "general" }
@@ -205,14 +207,14 @@ node_group "workers-dc-a" {              # a capacity group of this region
     check "allocated" {                  # ahead of time, on the allocated share of this group
       source = "norca"
       query  = "cluster.cpu_allocated"
-      strategy "target-value" { target = 70 }
+      strategy "target-value" { target = 70 }   # proportional; "threshold" is a fixed step, see below
     }
 
     scale_down {
       unneeded_for      = "10m"
       delay_after_add   = "10m"
       utilization_below = 40             # percent allocated, of the group without the candidate
-      selector          = "least_busy"   # least_busy | empty
+      selector          = "least_busy"   # least_busy | empty (empty: never drain a node with running work)
       drain_deadline    = "15m"
     }
   }
@@ -254,10 +256,11 @@ flowchart TB
 
 **Scale up.**
 
-1. *Trigger.* Blocked demand: the failed placements and blocked evaluations name the exhausted dimension and the datacenters, classes and pool that were possible. Ahead of time: the `allocated` check of one group against its target.
+1. *Trigger.* Blocked demand: the failed placements and blocked evaluations name the exhausted dimension and the datacenters, classes and pool that were possible. Ahead of time: the `allocated` check of one group against its target, and the **headroom** (`headroom_nodes` / `headroom_percent`): when the free capacity of the group falls below the headroom, nodes are added to restore it, before any work is blocked. A node takes minutes to start, so the headroom is what lets new work be placed at once.
 2. *Size, by the reason the work was blocked.*
    - *Resources* (`cpu`, `memory`): the unplaced demand divided by the size of one node of the group (the provider reports the capacity of the machine kind), rounded up.
    - *Constraints that need a node of their own* (`distinct_hosts`, a static port already taken on every node): **one node per unplaced allocation**, however small the allocation is. A proxy like Traefik with static ports 80 and 443 is blocked this way, and dividing resources would ask for too little.
+   - *Ahead of time*, the **strategy** of the check decides the size: `target-value` is proportional (4 nodes at 85% with a target of 70 gives 5 nodes), `threshold` is a **fixed step** (above `upper_bound`, add `delta` nodes). Use `threshold` when load arrives in waves and a fixed number of nodes is known to be needed next (see the [game server example](#example-game-servers-a-fixed-base-and-steps)); `target-value` when load grows smoothly.
    - Then limit by `max_step`, the maximum of the group and of the pool, and the rate limit of the autoscaler.
 3. *Group.* From the usable groups, the **expander** chooses: `spread` (the group with the fewest nodes, the default: the same intent as `spread` on `${node.datacenter}`), `fill` (the fullest group below its maximum), `priority` (an ordered list), `weighted`. A group whose provider refused the last request (quota, no capacity in the zone) is skipped for a back-off time, and the next one is tried.
 4. *Do not double count.* Nodes that were requested and have not joined yet count as capacity, so a second decision does not ask for them again.
@@ -279,8 +282,8 @@ flowchart TB
 
 **Scale down.**
 
-1. *Condition.* No blocked work; the allocated share of the group, **without the candidate node**, stays below `utilization_below` plus a margin; this holds for `unneeded_for`; and `delay_after_add` has passed since the last scale up of the group.
-2. *Candidates.* Only nodes that carry the provider's id in their meta (a node added by hand is never removed), in a group above its minimum, not protected (meta `norca.scale.protect = "true"`), and chosen by `selector` (`empty` first, then `least_busy`: the logic of the Nomad Autoscaler, adapted).
+1. *Condition.* No blocked work; the allocated share of the group, **without the candidate node**, stays below `utilization_below` plus a margin; the free capacity **without the candidate** still covers the headroom; this holds for `unneeded_for`; and `delay_after_add` has passed since the last scale up of the group.
+2. *Candidates.* Only nodes that carry the provider's id in their meta (a node added by hand is never removed), in a group above its minimum, not protected (meta `norca.scale.protect = "true"`), and chosen by `selector` (`empty` first, then `least_busy`: the logic of the Nomad Autoscaler, adapted). With `selector = "empty"` only a node with **no running allocation** is a candidate and **no drain is started on a node with work**: the node is removed after it has emptied by itself. This is for work that must not be interrupted (game matches, long sessions); `least_busy` drains a busy node and is for work that can be rescheduled.
 3. *Keep the spread.* Among groups of a pool, the one with the most nodes above its share is preferred; the minimum of a group keeps at least that many nodes in every datacenter.
 4. *Execute* as described [below](#scale-down-and-drain). One node at a time per pool by default.
 
@@ -433,6 +436,50 @@ flowchart TB
 - **Traefik and mTLS to the backends.** The `traefik` pack does not use mTLS to its backends today. With the means Norca has, Traefik can have an `mtls` block in app mode: it gets `secrets/mtls/{cert,key,bundle}.pem` and the SPIFFE ID of its job and group, uses them as the client certificate and the trust roots of its servers transport, and a service intention allows `traefik` to reach the backend. Every Traefik that starts on a new edge node receives its certificate automatically and keeps the same SPIFFE ID, so the intentions are the same whatever the number of nodes. The renewal is done by the client; Traefik has to reload the files. This is a change of the pack, not of the scaler.
 - **Across regions** the traffic goes through the Envoy `mtls-gateway` job (SNI passthrough), which is a job on some pool's nodes. If the gateway shares the edge pool with Traefik, its capacity follows the scaling of that pool; a pool or a node group of its own keeps the two apart.
 
+## Example: game servers, a fixed base and steps {#example-game-servers-a-fixed-base-and-steps}
+
+A game hosting operator keeps a base of servers ready so that arriving players always find a free one, and knows how many more are needed when the base is used up: *when utilization reaches a level, y more nodes are needed.* Every game server is an allocation of a fixed size; a match must not be interrupted.
+
+```hcl
+node_group "game-dc-a" {
+  pool       = "game"
+  datacenter = "dc-a"
+  provider   = "hetzner-eu"
+  group      = "fsn1"
+
+  min            = 10                    # the base that is always kept
+  max            = 60
+  headroom_nodes = 3                     # at least 3 nodes' worth of free capacity at any time
+
+  policy {
+    cooldown = "5m"
+
+    check "fill" {
+      source = "norca"
+      query  = "cluster.cpu_allocated"
+      strategy "threshold" {
+        upper_bound = 75                 # from this allocated share ...
+        delta       = 5                  # ... add 5 nodes (a fixed step)
+      }
+    }
+
+    scale_down {
+      selector     = "empty"             # only nodes with no running match; no drain of live matches
+      unneeded_for = "30m"
+    }
+  }
+}
+```
+
+| What the operator knows | Setting |
+| --- | --- |
+| "I always keep x servers" | `min` (the base) and `headroom_nodes` (free capacity ahead of demand) |
+| "At this level I will need y more" | the `threshold` strategy: `upper_bound` and `delta` |
+| "If they run out" | work that cannot be placed is blocked; the scaler adds nodes by the missing demand without waiting for the threshold |
+| "A match must not be cut" | `selector = "empty"`: a node is removed only after its matches have ended |
+
+The *allocated share* approximates the use of the servers when every game server has the same size. When the sizes differ or the real unit is *free match slots*, the metric can be supplied by the game's own application (see the [open questions](#open-questions)).
+
 ## Engines: the external autoscaler and the built-in one
 
 The `engine` option stays and keeps its meaning:
@@ -500,3 +547,4 @@ The **policy decides**, not an automatic detection: `engine = "external"` leaves
 10. **Scale-down simulation.** Resource headroom only (proposed for the first version), or a check that the allocations of the candidate fit elsewhere with their constraints.
 11. **Spill.** `spill = false` (proposed default) keeps work waiting when its datacenter's group is full. Is a per-group switch enough, or is a per-job way to allow another datacenter needed (the job already can, with several `datacenters`)?
 12. **Spot and preemptible machines** (a platform removes a node on its own): treat as a node loss, or let the provider tell the scaler in advance so it drains first.
+13. **Slots as a metric.** The allocated share is the first-version basis. A metric of free slots or sessions from the application (a `check` with an external APM source, which the built-in autoscaler can already load) is possible; is a first-class source for it wanted?
