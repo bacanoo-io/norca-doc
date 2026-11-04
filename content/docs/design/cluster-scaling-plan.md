@@ -249,6 +249,12 @@ spec {
     max_node_age    = "45d"                # soft limit: older nodes are replaced (no new work, replaced when empty)
     max_unavailable = 1                    # nodes of the group being replaced at the same time
     max_surge       = 1                    # nodes above `replicas` while replacing (0: remove first)
+    jitter          = "15%"                # spreads the age limit of nodes created together
+  }
+
+  deletion {                               # when the object is deleted
+    policy        = "drain"                # drain | orphan | terminate
+    drain_timeout = "1h"                   # then DeletionBlocked: choose terminate or orphan
   }
 
   join {                                   # a node that comes up; see "The life of a node"
@@ -264,6 +270,8 @@ spec {
   node {                                   # what a new node looks like
     meta       = { tier = "general" }
     attributes = { "unique.storage" = "ssd" }   # what the node will have, for checking constraints ahead of time
+    reserved   = { cpu = 100, memory = 256 }    # reserved by the agent: allocatable = capacity - reserved
+    # capacity = { cpu = 4000, memory = 8192, disk = 40000 }   # only if the provider cannot report it (CapacityUnknown)
     parameters = { size = "cx32", image = "norca-worker-3" }   # for the provider
   }
 
@@ -295,11 +303,12 @@ What the object holds and who writes it:
 | `spec` (except `replicas`) | A person or a GitOps tool | The description of the group above. |
 | `spec.replicas` | The autoscaler (the scale), an external autoscaler, or a person | The desired number of nodes of the group. |
 | `status.replicas`, `status.joining`, `status.failed` | The operator | Nodes of the group that are ready, requested and not joined yet, and failed. |
+| `status.capacity`, `status.allocatable` | The operator | What one node of the group is (from the provider), and what is left of it for allocations; the core sizes requests and the headroom with them. |
 | `status.rollout` | The operator | Nodes that are outdated, being replaced and up to date, and the node in progress. |
 | `status.conditions` | The operator | `ProviderAvailable`, `OperatorReady`, `ScaleDownBlocked`, `Rolling`, `Synced`, each with a reason. |
 | Event log | The autoscaler and the operator | `Scaled` with the trigger and the reason; instances created and deleted; join deadline; drain results. |
 
-CEL rules of the kind: `min <= max`; `min <= replicas <= max`; the network is a valid CIDR; `provider` is set when `engine` is `builtin`. The other checks need more than one object and are made by the operator and shown as conditions: the network range is not shared with another group and lies within the firewall ranges, the pool and the datacenter exist (the pool definition may arrive later by replication), and one `engine` for all groups of a pool.
+CEL rules of the kind: `min <= max`; `min <= replicas <= max`; the network is a valid CIDR; `provider` is set when `engine` is `builtin`. The other checks need more than one object and are made by the operator and shown as conditions: the network range is not shared with another group and lies within the firewall ranges (when the ranges are known, see [the life of a node](#the-life-of-a-node)), the groups of one pool and datacenter do not overlap (either one group without `node_class`, or groups with different classes), the pool and the datacenter exist (the pool definition may arrive later by replication), and one `engine` for all groups of a pool.
 
 The settings that concern the groups of a pool together, or the whole region, are **autoscaler settings of the server**, not an object:
 
@@ -325,7 +334,7 @@ The decisions are made in the core; what is written is a number, `spec.replicas`
 | Trigger | Question | Scope |
 | --- | --- | --- |
 | **Work that cannot be placed** | Which group should grow? | The **groups the work can use** (see [the concepts](#jobs-groups-and-the-all-pool)); one of them is chosen. |
-| **Allocated share** | Is this group nearly full? | **One node group**, its own datacenter: the `dc` + `pool` metric is exactly its allocated share. |
+| **Allocated share** | Is this group nearly full? | **One node group**: the gauge with its `dc`, `pool` and `class` is its allocated share (groups of one pool and datacenter do not overlap, so the series are not shared). |
 
 ```mermaid
 flowchart TB
@@ -346,7 +355,8 @@ flowchart TB
 
 1. *Trigger.* Blocked demand: the failed placements and blocked evaluations name the exhausted dimension and the datacenters, classes and pool that were possible. Ahead of time: the `allocated` check of one group against its target, and the **headroom** (`headroom_nodes` / `headroom_percent`): when the free capacity of the group falls below the headroom, nodes are added to restore it, before any work is blocked. A node takes minutes to start, so the headroom is what lets new work be placed at once.
 2. *Size, by the reason the work was blocked.*
-   - *Resources* (`cpu`, `memory`): the unplaced demand divided by the size of one node of the group (the provider reports the capacity of the machine kind), rounded up.
+   - *Resources* (`cpu`, `memory`, `disk`): not a division of the sum, which would ask for too little: the unplaced allocations are **packed** into virtual nodes of the group's allocatable size (`status.allocatable`, see below), largest first, each into the first node where it fits on every dimension, and the number of nodes used is the size. Four allocations of 6 GB on nodes of 8 GB need four nodes, not three. An allocation that does not fit an empty node of the group makes that group unusable for the work (`AllocationTooLarge` as an event and a condition naming the job); another group of the work may take it.
+   - *The size of a node comes from the status.* The operator writes `status.capacity` (CPU in MHz, memory and disk in MB, as the provider reports them for the machine kind) and `status.allocatable` (the capacity less the reserved resources of the agent, `spec.node.reserved`) on the object, **also when the group has no node** (`min = 0`), because the core cannot read a size from nodes that do not exist and does not talk to the provider. Until the status has them, the group does not scale on resources (`CapacityUnknown`), and `spec.node.capacity` may give them by hand.
    - *Constraints that need a node of their own* (`distinct_hosts`, a static port already taken on every node): **one node per unplaced allocation**, however small the allocation is. A proxy like Traefik with static ports 80 and 443 is blocked this way, and dividing resources would ask for too little.
    - *Ahead of time*, the **strategy** of the check decides the size: `target-value` is proportional (4 nodes at 85% with a target of 70 gives 5 nodes), `threshold` is a **fixed step** (above `upper_bound`, add `delta` nodes). Use `threshold` when load arrives in waves and a fixed number of nodes is known to be needed next (see the [game server example](#example-game-servers-a-fixed-base-and-steps)); `target-value` when load grows smoothly.
    - Then limit by `max_step`, the maximum of the group and of the pool, and the rate limit of the autoscaler.
@@ -388,19 +398,21 @@ flowchart TB
 4. *Keep the spread.* Among groups of a pool, the one with the most nodes above its share is preferred; the `min` of a group keeps at least that many nodes in every datacenter.
 5. *Execute* as described [below](#scale-down-and-drain). One node at a time per pool by default.
 
+**Cooldown.** It is a property of the group, and it does not hold work back. Work that cannot be placed is first netted against the nodes that are joining (the binding in step 5), and only what is left is distributed; so a spike that group A is already growing for is not given to group B in the next cycle, and new work is not delayed by the cooldown of a group. The expander skips a group in **backoff** (the provider refused), not a group in cooldown. The cooldown holds the ahead-of-time triggers (allocated share, headroom) and the scale down. A cooldown of the pool (the `max_nodes` and the nodes per hour) is the second guard.
+
 **Anti-flapping.** Cooldown after any action, a longer one after a scale up before a scale down, the oscillation guard and the rate limit the autoscaler has, and a cap on nodes added or removed per hour per pool.
 
 ## Metrics
 
 | Metric | State | Use |
 | --- | --- | --- |
-| `norca.cluster.cpu_allocated`, `memory_allocated`, `disk_allocated` (`dc`, `pool`) | Exists | The ahead-of-time trigger and the scale-down condition of a group. The autoscaler gets a built-in source `norca` for them, like `nomad.cpu` for task groups. |
+| `norca.cluster.cpu_allocated`, `memory_allocated`, `disk_allocated` (`dc`, `pool`, **`class`**) | Exists, **the label `class` is new** | The ahead-of-time trigger and the scale-down condition of a group. The autoscaler gets a built-in source `norca` for them, like `nomad.cpu` for task groups. |
 | `norca.cluster.cpu_used`, `memory_used` (`dc`, `pool`) | Exists | Shown next to the allocated share (the over-commit); not a trigger by default, as the usage of a node says little about whether work fits. |
 | `norca.cluster.nodes_ready` (`dc`, `pool`) | Exists | Counts the nodes of a group. |
 | `norca.cluster.blocked_cpu_mhz`, `blocked_memory_mb`, `blocked_evals`, `blocked_allocs_exclusive`, `blocked_unverifiable` (`dc`, `pool`) | **New** (core) | The demand that cannot be placed, from the blocked evaluations of the leader; the scale-up trigger. `blocked_allocs_exclusive` counts allocations blocked by constraints that need a node of their own, `blocked_unverifiable` those whose constraint cannot be checked ahead of time (the work waits; see the placement rules). |
 | `norca.nodescaler.requested`, `joining`, `failed`, `drain_stuck` (`dc`, `pool`) | **New** (operator) | The nodes asked for and not joined yet, and the failures, exported by the operator with the metrics of the controller SDK; the same numbers are in the `status` of the object, which is what the double counting rule reads. |
 
-The **headroom** is computed from the allocated shares: the free capacity of a group is the unallocated part of its nodes, and `headroom_nodes = n` means free capacity worth `n` nodes of the group's machine kind (the capacity reported by the provider). Ineligible nodes are not part of the allocatable capacity. *To be checked in the existing sampler, which may still count them.*
+The **headroom** is computed from the allocated shares: the free capacity of a group is the unallocated part of its nodes, and `headroom_nodes = n` means free capacity worth `n` nodes of the group's machine kind (the capacity reported by the provider). Ineligible nodes are not part of the allocatable capacity: the sampler (`metrics_store_sample.go`) skips every node that is not ready and eligible, for the capacity and for the allocations on it, so a node being drained or replaced does not hide a lack of room. The same holds for `nodes_ready`. The gauges have the labels `dc` and `pool` today; the label **`class`** (the `node_class` of the node, empty for none) is added in phase 0, because two groups of one pool and datacenter with different classes would otherwise read the same series. A group without a class takes the sum over the classes.
 
 The new metrics of the core are sampled by the leader from its state, into the same store and with the same retention, so the decisions can be inspected after the fact. An *allocated* share, not the usage, drives the scaler (the way the Kubernetes cluster autoscaler looks at requests): it is what the scheduler cannot place against.
 
@@ -429,7 +441,7 @@ DELETE {endpoint}/v1/groups/{group}/instances/{id}          delete one instance
 }
 ```
 
-`GET` returns, per instance, its `id`, `state` (`creating`, `running`, `deleting`, `failed`), the reason of a failure (`quota`, `no_capacity`, `invalid`, `error`), its addresses and labels, and the `capacity` of the machine kind (CPU in MHz, memory in MB), which is how a request is sized. A provider that cannot create an instance says so with a reason, and does not retry for ever.
+`GET` returns, per instance, its `id`, `state` (`creating`, `running`, `deleting`, `failed`), the reason of a failure (`quota`, `no_capacity`, `invalid`, `error`), its addresses and labels, and, for the group, the `capacity` of the machine kind (CPU in MHz, memory and disk in MB), **also when the group has no instance**: it is a property of the kind named in `parameters`, not of a running machine. The operator copies it to `status.capacity` of the `NodeGroup`; this is how a request is sized. A provider that cannot create an instance says so with a reason, and does not retry for ever.
 
 The `NodeProvider` object has the endpoint (https; a private CA with an option like `-class-ca-file`), the name of the Variable that holds the token, the **capabilities** (the groups it offers, the parameters it accepts) and the published parameters. Credentials of the platform (an API token) stay with the provider application and never enter an object. The ACL of the kind decides who may register a provider, as for load balancers. A node group whose provider is not registered, or whose heartbeat is old, gets the condition `ProviderAvailable = False` (`UnknownProvider`, `ProviderUnavailable`).
 
@@ -450,7 +462,7 @@ flowchart LR
 - **Join deadline** (`join.deadline`, default 15 minutes). An instance that exists but whose node has not registered by then is deleted, and the group is backed off. Instances with the labels of this operator and no node, after the deadline, are orphans and are deleted; a node whose instance is gone is reported.
 - **Two identities.** A node needs its **own identity** to join, and its tasks get **workload identities** afterwards; the scaler only has to deliver the first (see [the mTLS section](#mtls-two-layers)).
 - **Bootstrap.** A new machine needs what the deployer installs on a node: the agent binary, the TLS material (the CA and a client certificate), the gossip key, the addresses of the servers, and the agent configuration with datacenter, pool, class and meta. This plan builds on the **deployer**: it supplies the static parts (the agent configuration template, the CA, the server addresses, the intermediate CA of the region), so the PKI and the configuration stay in one place. The **operator** fills in the parts that belong to one node (its certificate and key, datacenter, pool, class, meta) and renders a **bootstrap bundle** (cloud-init or the platform's user data), which it hands to the provider, and only to it. See [node identity](#node-identity-and-certificates).
-- **Network.** The node must reach the RPC and Serf ports of the servers, and the servers' firewall must let it in. A node group has a network range for its nodes; the ranges are part of `cluster_cidrs` and `api_cidrs`, and the template of the provider puts the instance into that network. A range that the firewall does not cover is a condition of the node group.
+- **Network.** The node must reach the RPC and Serf ports of the servers, and the servers' firewall must let it in. A node group has a network range for its nodes; the ranges are part of `cluster_cidrs` and `api_cidrs`, and the template of the provider puts the instance into that network. A range that the firewall does not cover is a condition of the node group. The operator does not know the firewall rules of the servers: the deployer, which has `cluster_cidrs` and `api_cidrs`, publishes them for the operator (a Variable `nodescaler/network/<region>` written by `apply`). Without it the check is skipped (`NetworkUnchecked`), and a firewall that blocks a node shows as a node that does not join, after the join deadline.
 - **Renewal of the node certificate.** The deployer issues node certificates for 3 years and renews one during `apply` when less than 30 days are left. **A node the operator created is never visited by the deployer**, so it needs its own way; see [node identity](#node-identity-and-certificates).
 - **Public address and DNS.** An edge node needs a public address (the provider's template sets the host network on the public interface). A load balancer that follows the catalog needs nothing more; **DNS records** for a round-robin edge are not handled by this plan.
 - **Counting.** A requested node counts as capacity while it joins (so it is not requested twice) and as `failed` when it does not.
@@ -501,9 +513,9 @@ The operator does this when the scale is lowered (or the count of nodes is above
 
 If the drain does not finish by its deadline, or fails, the operator **does not delete the instance**: it makes the node eligible again, backs the candidate off and raises an event. This is the acceptance criterion of the development plan: no node is removed with an unfinished drain.
 
-**Deleting a node group.** A finalizer of the object keeps it until its nodes are dealt with: the operator drains and deletes the nodes it created (or, if the person asks for it, leaves them and drops only the object). Nodes added by hand are not touched.
+**Deleting a node group.** A finalizer of the object keeps it until its nodes are dealt with, by `spec.deletion`: `drain` (the default: the nodes it created are drained with the deadline of the policy and deleted), `orphan` (the instances stay, labelled, and only the object goes) or `terminate` (the instances are deleted at once and their allocations are rescheduled). A stuck drain does not keep the object for ever: after `deletion.drain_timeout` (1 hour by default) the condition `DeletionBlocked` names the node and the reason, and the person chooses `terminate` or `orphan`. A finalizer removed by force leaves instances behind; they keep the labels of the group, and the operator **reports** instances whose group has no object (`OrphanedInstance`, an event and a metric) and deletes them only when it runs with `-delete-orphans`. Nodes added by hand are not touched.
 
-**Edge nodes.** A node that runs an ingress proxy must leave the traffic first. The order during the drain is: the service is deregistered from the native catalog (a load balancer that follows the catalog drops the target at once); the task's `shutdown_delay` lets running requests finish; then the task stops. A disruption budget on the proxy job keeps enough instances up, and the `min` of the node groups keeps at least one edge node in every datacenter.
+**Edge nodes.** A node that runs an ingress proxy must leave the traffic first. The order during the drain is: the service is deregistered from the native catalog; a load balancer that follows the catalog still needs time to drop the target (the provider reads the change, calls the platform, and the platform's health checks catch up: seconds to half a minute), so the operator waits until the load balancer operator has applied the new targets (the object is `Synced` for the new generation, at most the drain deadline) and then keeps the task's `shutdown_delay`, which has to cover the rest; then the task stops. A service exposed through a load balancer with a `shutdown_delay` below `edge.min_shutdown_delay` (30 seconds by default) raises the event `ShortShutdownDelay` for the job. A disruption budget on the proxy job keeps enough instances up, and the `min` of the node groups keeps at least one edge node in every datacenter.
 
 ## Rolling replacement of nodes
 
@@ -533,7 +545,9 @@ t3  the old instance is deleted       the node goes away
 | Limit | What happens |
 | --- | --- |
 | **Soft** (`max_node_age`, 45 days) | The node becomes ineligible and is replaced as soon as it is empty. With `selector = "empty"` a game server node is not drained: it gets no new matches and goes when the last one has ended. |
-| **Hard** (the certificate expiry minus a margin, 55 days of 60) | A node that is not empty yet is drained with the deadline of the policy, because a node with an expired certificate cannot reconnect and would be lost. This overrides `mode = "paused"` and the `empty` selector, and it raises a `Rolling` event a week before. |
+| **Hard** (the certificate expiry minus a margin, 55 days of 60) | A node that is not empty yet is drained with the deadline of the policy, because a node with an expired certificate cannot reconnect and would be lost. This overrides `mode = "paused"` and the `empty` selector, and it raises a `Rolling` event a week before. `max_unavailable` still limits how many nodes are drained at once, until a node is less than 24 hours from its expiry. |
+
+**Nodes of an age should not all be due on one day.** Nodes created together (a first deployment, a step of `delta = 5`) would reach both limits on the same day. Each node gets a fixed **jitter** from a hash of its id, up to `rolling.jitter` (15% of `max_node_age` by default, so the soft limit falls between 38 and 45 days), the oldest are replaced first, and the operator computes, from the queue and the time one replacement takes, whether the nodes will be done before the hard limit; when they will not, `RollBehind` is raised early, so that a person can raise `max_unavailable` or the pool maximum instead of meeting the hard limit with the whole group.
 
 **Doing it by hand.**
 
@@ -741,7 +755,7 @@ The **policy decides**, not an automatic detection: `engine = "external"` leaves
 
 | Phase | Content | Acceptance |
 | --- | --- | --- |
-| 0 | The built-in source `norca` (the cluster gauges as policy metrics), and the blocked-demand metrics, with the reason of the block. A **read-only advice mode**: the autoscaler only raises events ("would add 2 nodes to dc-a"). | Metrics are readable by a check; advice events match the blocked work in a lab test, including a blocked proxy with a static port (one node per instance) and a `distinct_property` on the datacenter (the node is advised in the other datacenter). No provider and no operator needed. |
+| 0 | The built-in source `norca` (the cluster gauges as policy metrics, with the new label `class`), and the blocked-demand metrics, with the reason of the block; the packing of the unplaced allocations into virtual nodes. A **read-only advice mode**: the autoscaler only raises events ("would add 2 nodes to dc-a"). | Metrics are readable by a check; advice events match the blocked work in a lab test, including a blocked proxy with a static port (one node per instance) and a `distinct_property` on the datacenter (the node is advised in the other datacenter). No provider and no operator needed. |
 | 1 | The kinds `NodeGroup` (with the `scale` block and the CEL rules) and `NodeProvider`; the cluster policy derived from the objects, the expander settings of the server, the headroom, `threshold` and `target-value`; the decision writes the scale. Dry run (`enforce = false`). | Invalid objects are rejected; a pool with two groups shows the expected scale decisions with `enforce = false`; the objects are not replicated between regions; the cooldown survives a leader change. |
 | 2 | The operator `norca-nodescaler` (controller SDK) with the mock provider: the `NodeProvider` registry, the HTTP contract, the scale-up path, join tracking, the join deadline, orphan cleanup, the conditions, the checks of [where it runs](#where-the-operator-and-the-providers-run), the operator pack; the issue of node certificates with the node CA (the first version of [node identity](#node-identity-and-certificates)). | Blocked work makes the scaler raise the scale and the operator request nodes in the right group; a request repeated after a restart creates no extra node; a node that never joins is cleaned up; the operator refuses to run on a scaled node; a node with a certificate of the operator joins the servers in a test (leaf and intermediate in the cert file), and a certificate for a server name, another region or a foreign name is refused. |
 | 3 | Scale down in the operator: candidate selection (the adapted `scaleutils`, `least_busy` and `empty`), protections, the veto and `ScaleDownBlocked`, drain with the edge order, delete, the finalizer, the failure paths; the [rolling replacement](#rolling-replacement-of-nodes) (age, revision, generation, node mark, soft and hard limit, surge). | A node past the soft limit is replaced when empty and one past the hard limit is drained before its certificate expires; a replacement does not change `replicas` and does not make the autoscaler act; a refused surge leaves the old node eligible; no instance is deleted with an unfinished drain; a stuck drain makes the node eligible again; a job with `distinct_hosts` on all its nodes does not make the scaler remove and add the same node again; with `empty`, a node that received work is never deleted and a match is never cut; the `min` of a group keeps an edge in every datacenter; a load balancer following the catalog drops the target before the proxy stops. |
@@ -762,3 +776,5 @@ Each question has the answer proposed after the review of 2026-11-05; none is de
 6. **Who ships the kinds.** *Proposed:* the **core** registers `NodeGroup` and `NodeProvider` when it starts, because the autoscaler in the leader relies on them from the first moment; the operator pack installs only the operator job and its ACL policy. To check in the code before phase 1: whether the core can register a built-in kind, and how the schema is kept in step with the operator.
 7. **A distrusted node CA.** The TLS has no revocation, and a new node CA does not end the validity of the old one (see [node identity](#node-identity-and-certificates)). Is a list of distrusted intermediates in the servers (a check of the chain, a small change in the core) wanted, or are the short validity of the node CA and, at the worst, a new cluster CA enough?
 8. **Validity of the node CA in the deployer.** The deployer issues it in whole years (`--years`, default 5), which is too long for the bound on a compromise that the plan relies on. *Proposed:* a `--days` option and a default of 180 days; the node CA is rotated every 60 to 90 days with an overlap.
+9. **Where the operator gets the firewall ranges.** *Proposed:* the deployer publishes `cluster_cidrs` and `api_cidrs` of the region in a Variable on `apply`; without it the check of the network of a node group is skipped (`NetworkUnchecked`). The alternative is to give the ranges to the operator as a setting.
+10. **The deletion of a group with a stuck drain.** *Proposed:* `spec.deletion.policy` (`drain`, `orphan`, `terminate`) with a `drain_timeout`, and a report of orphaned instances (deleted only with `-delete-orphans`). Is `terminate` after the timeout to be automatic for groups that are deleted by a script, or always a decision of a person?
