@@ -49,6 +49,7 @@ The built-in autoscaler scales the task groups of jobs. This plan lets it scale 
 | Pool rules | Decided 2026-11-04: no separate pool object; the maximum and step of a pool are autoscaler settings of the server. |
 | Bootstrap | Decided 2026-11-04: the static parts of the bundle for a new machine (the agent configuration template, the CA, the addresses) come from the **deployer**; this plan builds on the deployer. |
 | Node certificates | Decided 2026-11-04: the **operator signs** the certificates of the nodes it creates, with a **name-constrained intermediate CA** that the deployer issues for each region. The servers and the agent need no change; see [node identity](#node-identity-and-certificates). |
+| Certificate validity | Decided 2026-11-04: while the key travels in the bundle, a node certificate lives **60 days**, with a soft limit `max_node_age` at 45 days and a hard limit at 55 days ([rolling replacement](#rolling-replacement-of-nodes)). After the hardening step (the key stays on the node) it is 7 days, renewed at two thirds, with no replacement by age. The leaf never outlives the node CA. The Norca TLS has no revocation, so the validity is the only way to end the use of a stolen bundle. |
 | Where it runs | Decided 2026-11-04: the operator and the providers run **outside the pools they scale**; see [the rules](#where-the-operator-and-the-providers-run). The same rules hold for every operator, the load balancer operator included. |
 
 ## Goals and non-goals
@@ -520,8 +521,8 @@ t3  the old instance is deleted       the node goes away
 
 | Limit | What happens |
 | --- | --- |
-| **Soft** (`max_node_age`, proposed 45 days) | The node becomes ineligible and is replaced as soon as it is empty. With `selector = "empty"` a game server node is not drained: it gets no new matches and goes when the last one has ended. |
-| **Hard** (the certificate expiry minus a margin, proposed 55 days of 60) | A node that is not empty yet is drained with the deadline of the policy, because a node with an expired certificate cannot reconnect and would be lost. This overrides `mode = "paused"` and the `empty` selector, and it raises a `Rolling` event a week before. |
+| **Soft** (`max_node_age`, 45 days) | The node becomes ineligible and is replaced as soon as it is empty. With `selector = "empty"` a game server node is not drained: it gets no new matches and goes when the last one has ended. |
+| **Hard** (the certificate expiry minus a margin, 55 days of 60) | A node that is not empty yet is drained with the deadline of the policy, because a node with an expired certificate cannot reconnect and would be lost. This overrides `mode = "paused"` and the `empty` selector, and it raises a `Rolling` event a week before. |
 
 **Doing it by hand.**
 
@@ -737,10 +738,9 @@ The **policy decides**, not an automatic detection: `engine = "external"` leaves
 
 ## Open questions
 
-1. **Validity and node age.** Proposed for the first version, while the key travels: a certificate of **60 days**, the soft limit `max_node_age` at **45 days** and the hard limit at **55 days**. The Norca TLS has no revocation, so the validity is the only way to end the use of a stolen bundle; a longer one (the 3 years of the deployer) would make that window too long, and a shorter one would roll every node more often than game servers with long sessions like. After the hardening step, when the key stays on the node and the operator renews the certificate, the proposal is **7 days**, renewed at two thirds, and no replacement by age. The leaf never outlives the node CA (its `NotAfter` is cut at the end of the node CA, less a margin), and a new node CA is introduced with an overlap.
-2. **The gossip key.** It is a shared secret that the bundle carries in the first version; the hardening step delivers it after the token check instead. Should it be rotated with the node CA, and how?
-3. **The code for issuing.** The operator needs the issuing code of the deployer (`pkg/pki`: identity, names, signing): import the package of the deployer, or move it to a small shared module.
-4. **The demand binding.** Where the blocked evaluations a decision was made for are kept: in the `Scaled` event (proposed), or in a field of the object.
-5. **The scale-down veto.** The autoscaler sets `spec.replicas` back after `ScaleDownBlocked`: is it enough, or does the operator need a way to answer a decision?
-6. **The name and place of the operator.** `norca-nodescaler`, a repository of its own like `norca-loadbalancer`, or part of the provider repository.
-7. **Who ships the kinds.** The operator pack installs the kinds, or the core registers `NodeGroup` and `NodeProvider` itself so that the autoscaler can rely on them.
+1. **The gossip key.** It is a shared secret that the bundle carries in the first version; the hardening step delivers it after the token check instead. Should it be rotated with the node CA, and how?
+2. **The code for issuing.** The operator needs the issuing code of the deployer (`pkg/pki`: identity, names, signing): import the package of the deployer, or move it to a small shared module.
+3. **The demand binding.** Where the blocked evaluations a decision was made for are kept: in the `Scaled` event (proposed), or in a field of the object.
+4. **The scale-down veto.** The autoscaler sets `spec.replicas` back after `ScaleDownBlocked`: is it enough, or does the operator need a way to answer a decision?
+5. **The name and place of the operator.** `norca-nodescaler`, a repository of its own like `norca-loadbalancer`, or part of the provider repository.
+6. **Who ships the kinds.** The operator pack installs the kinds, or the core registers `NodeGroup` and `NodeProvider` itself so that the autoscaler can rely on them.
