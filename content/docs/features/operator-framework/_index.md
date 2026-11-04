@@ -220,8 +220,11 @@ Managing kinds needs `operator` write. See the
   to the `norca_lb_class`, `norca_lb_port` and `norca_lb_internal` service meta
   keys, and the LoadBalancer sample creates objects from services marked with
   them (by hand or by the block). Norca creates no load balancers itself: that
-  is the job of external operators. The sample's only provider is the self-hosted
-  `nomad` class; cloud providers are pending.
+  is the job of external providers, which register a `LoadBalancerClass` object
+  and implement a small HTTP API (see
+  [load balancer providers](/docs/features/operator-framework/loadbalancer-providers)).
+  The sample's only built-in provider is the self-hosted `nomad` class; the
+  cloud providers are separate applications and are pending.
 
 ## Design
 
