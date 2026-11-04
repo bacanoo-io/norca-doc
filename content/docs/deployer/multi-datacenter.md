@@ -6,7 +6,7 @@ weight: 11
 origin: "norca-deployer/doc/multi-datacenter.md"
 ---
 
-A region can span several datacenters: availability zones of a cloud region, or buildings of a campus. The servers form one Raft cluster across them, the clients of every datacenter run jobs, the native service catalog knows the datacenter of every instance and can prefer the caller's own, and the system bus of the servers keeps the event stream of the region on every server. The example plan also runs a NATS cluster with one server per datacenter, as an example of a stateful service spread over the datacenters. Example: [multi-datacenter.yaml](/docs/deployer/examples/multi-datacenter).
+A region can span several datacenters: availability zones of a cloud region, or buildings of a campus. The servers form one Raft cluster across them, the clients of every datacenter run jobs, the native service catalog knows the datacenter of every instance and can prefer the caller's own, and the system bus of the servers (the event stream, the Consul KV, the usage reports of the autoscaler, the pack push notices) is replicated over the datacenters. The example plan also runs a NATS cluster with one server per datacenter, as an example of a stateful service spread over the datacenters. Example: [multi-datacenter.yaml](/docs/deployer/examples/multi-datacenter).
 
 ```mermaid
 flowchart LR
@@ -136,9 +136,22 @@ secrets:
 
 The passwords of the users are in `.norca-deployer/generated/<name>` on the operator machine, for the applications that connect.
 
-## The event stream
+## The system bus
 
-The servers embed NATS with JetStream: their system bus. The leader publishes the event stream of the region (jobs, deployments, evaluations, allocations, nodes, services, scaling, ...) on it:
+The servers embed NATS with JetStream, and the servers of a region form one NATS cluster: the system bus. It carries Norca's own traffic:
+
+| What | Where on the bus |
+| --- | --- |
+| The event stream of the region | stream `NORCA_EVENTS_<region>`, 72 hours by default |
+| The Consul KV of the Consul-compatible API (backend `auto`) | key-value bucket `consul-kv`, shared by every node of the region |
+| The task group usage that the clients report to the autoscaler and the metrics store | stream `NORCA_TELEMETRY_<region>`, 1 hour |
+| The pack push notices that make the leader sync the registries at once | stream `NORCA_PACK_PUSHES`, 24 hours |
+
+Every stream and the bucket have one replica per server, up to three. With one server per datacenter every datacenter holds a copy, and the loss of one leaves a majority. The bus is not a broker for applications (they keep their own NATS, as in the example above); [System bus](/docs/features/system-bus) describes each of the four.
+
+### The event stream
+
+The leader publishes the event stream of the region (jobs, deployments, evaluations, allocations, nodes, services, scaling, ...) on the bus:
 
 - **Subjects:** `nomad.<region>.<namespace>.<topic>`, e.g. `nomad.eu.default.Allocation` (`_` for events without a namespace, such as `nomad.eu._.Node`).
 - **Stream:** `NORCA_EVENTS_<region>` with one replica per server (up to three), so the event history survives the loss of a datacenter. Delivery is at least once, with a stable message id for deduplication; a new leader continues after the newest event of the stream.
@@ -161,7 +174,7 @@ norca operator bus status               # streams, routes and JetStream state of
 | Jobs | Allocations of eu-b are rescheduled to eu-a and eu-c (within the limits of `datacenters`, `spread` and `separate`) |
 | Service lookups | The instances of eu-b stop being returned when their health checks fail or their nodes are marked down; consumers in eu-a and eu-c with `prefer = "datacenter"` keep using the instances of their own datacenter, and the others are served from the rest of the region |
 | NATS | Two servers remain; JetStream streams with 3 replicas keep their majority |
-| Event stream | Two of three replicas remain; the leader (or a new one) keeps publishing |
+| System bus | Two of three replicas of every stream and of the Consul KV bucket remain: events, usage reports, push notices and the Consul KV keep working, and the leader (or a new one) keeps publishing |
 
 `separate_required: true` keeps the third NATS server pending while eu-b is down, instead of putting two NATS servers into one datacenter; it is placed again when eu-b comes back.
 
