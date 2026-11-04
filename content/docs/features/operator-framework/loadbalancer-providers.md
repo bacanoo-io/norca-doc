@@ -83,7 +83,7 @@ spec {
 
 | Field | Description |
 | --- | --- |
-| `spec.endpoint` | Base URL of the provider API. Must be `https` (`http` only with the operator flag `-class-allow-http`, for development). |
+| `spec.endpoint` | Base URL of the provider API. Must be `https`; `http` only with the operator flag `-class-allow-http`, for development. A certificate of a private CA (for example the CA of the cluster) is trusted with the operator flag `-class-ca-file`. |
 | `spec.tokenVariable` | Path of the Variable whose item `token` is sent as `Authorization: Bearer <token>`. The token is never part of the object. Optional. |
 | `spec.capabilities.internal` | The provider can create load balancers that are not reachable from the internet. Default `false`. |
 | `spec.capabilities.ports` | Frontend ports the provider supports, such as `80,443,8000-8100`. Empty means any port. |
@@ -224,6 +224,7 @@ with ACLs on, as jobs with their workload identity:
 | `loadbalancer` | a raw_exec job; it listens on 18444 and registers 18443 (an `iptables` redirect stands in for a port mapping) |
 | `loadbalancer-docker` | a Docker container in bridge mode with a real port mapping (host 18443, container 8443), on the task API socket |
 | `loadbalancer-docker-net` | the same container without the socket: over HTTPS with the CA and the workload identity token |
+| `loadbalancer-docker-tls` | the same with an **https provider**: its certificate is signed by the CA of the cluster, and the operator runs with `-class-ca-file` and without `-class-allow-http`; the certificate is not trusted without that CA |
 
 They check a wrong token that is retried, traffic through the load balancer from
 another node with round robin, targets that follow the service, an unknown and
@@ -260,7 +261,8 @@ service.
 - A MetalLB-like provider for bare metal and the cloud providers (Hetzner,
   Scaleway, AWS, Google) are separate applications and are not part of Norca;
   the example provider above has none of them.
-- The operator's example job runs with `-class-allow-http` in the lab: the
-  providers there are plain http. An https provider whose certificate is signed
-  by a private CA is not covered yet (the operator has no CA option for the
-  calls to providers).
+- An https provider needs a certificate that the operator trusts: one signed by a CA the system
+  trusts, or by a private CA given with `-class-ca-file` (the file is read when the operator
+  starts; a change needs a restart). The certificate must be valid for the host or the IP
+  address in `spec.endpoint`. The operator does not present a client certificate to the provider;
+  it sends the bearer token of the class.
