@@ -160,7 +160,7 @@ The existing endpoints and commands start working in unchanged form: `GET /v1/qu
 
 ### Summary
 
-The validation and mutation chain that runs at job submission becomes configurable: with external webhooks and with rules stored in Raft and written as CEL expressions. This replaces the Enterprise-only Sentinel, and makes it possible to enforce company rules without modifying code.
+The validation and mutation chain that runs at job submission becomes configurable: with external webhooks and with rules stored in Raft and written as CEL expressions. This makes it possible to enforce company rules without modifying code.
 
 ### How does Kubernetes work?
 
@@ -170,7 +170,7 @@ The API server passes every write request through an admission chain. **Mutating
 
 - Both the `Job.Register` and `Job.Plan` RPCs go through the `admissionControllers` function (`norca/job_endpoint.go`, lines 112 and 1743). `Job.Register` first forwards the request to the leader (line 92), so admission always runs on the leader.
 - The two parts of the chain are `admissionMutators` and `admissionValidators` (`norca/job_endpoint_hooks.go`). The built-in hooks: `jobCanonicalizer`, `jobConnectHook`, `jobExposeCheckHook`, `jobImpliedConstraints`, `jobNodePoolMutatingHook`, `jobVaultHook`, `jobValidate`, `memoryOversubscriptionValidate`, `jobNodePoolValidatingHook`.
-- The place of Sentinel: `enforceSubmitJob` (`norca/job_endpoint_oss.go`), which is empty in the OSS version.
+- The policy hook: `enforceSubmitJob` (`norca/job_endpoint_oss.go`), which is empty in the OSS version.
 
 ### Proposed semantics
 
@@ -251,7 +251,7 @@ The request and response follow the structure of the Kubernetes AdmissionReview,
 1. **CEL environment:** using the `cel-go` library (Apache 2.0); the job is available as a typed CEL variable (`job`) built from the API JSON form. Rules are compiled at submission, and if there is a compile error the rule is not even stored (new `norca/admission/cel.go`).
 2. **Webhook client:** with a timeout, without retries, over TLS, with a connection pool (new `norca/admission/webhook.go`).
 3. **Extending the chain:** extend the `admissionMutators` and `admissionValidators` lists in the order above (`norca/job_endpoint_hooks.go`).
-4. **Sentinel slot:** `enforceSubmitJob` runs the CEL rules (a new implementation instead of `norca/job_endpoint_oss.go`).
+4. **Policy hook:** `enforceSubmitJob` runs the CEL rules (a new implementation instead of `norca/job_endpoint_oss.go`).
 5. **Metrics:** per-webhook call count, latency and error count in the existing `go-metrics` framework.
 
 ### Testing and acceptance
