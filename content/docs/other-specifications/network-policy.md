@@ -149,6 +149,26 @@ A peer is either an address block or a set of allocations on the same node:
 - `cidr` `(array<string>: [])` - IPv4 or IPv6 prefixes, up to 256. Cannot be
   combined with `namespace` or `selector`.
 
+- `except` `(array<string>: [])` - Prefixes taken out of the `cidr` blocks of
+  the same peer, up to 256. Each one must lie inside one of the `cidr` prefixes
+  (`10.1.0.0/16` inside `10.0.0.0/8`); only valid together with `cidr`. For
+  example, "everything except the private ranges and the metadata service":
+
+  ```hcl
+  egress {
+    to {
+      cidr   = ["0.0.0.0/0"]
+      except = ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "169.254.169.254/32"]
+    }
+    ports = ["443/tcp"]
+  }
+  ```
+
+  The client subtracts the excepted prefixes from the blocks when it compiles
+  the rules, so the nftables rule set contains only the remaining prefixes. An
+  `except` of a rule does not affect other rules or policies: another policy
+  that allows the excepted range still allows it.
+
 - `namespace` `(string: "")` - The namespace of peer allocations. Empty means
   the namespace of the policy (for admin policies: every namespace); `"*"`
   means every namespace.
