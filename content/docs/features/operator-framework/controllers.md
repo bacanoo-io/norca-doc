@@ -241,6 +241,40 @@ $ norca acl policy apply -namespace default -job loadbalancer-controller \
 The [operator pack](/docs/features/operator-framework/ecosystem#operator-packs)
 of an operator installs the kind, this policy and the job together.
 
+## Where to run a controller
+
+A controller keeps something else running: jobs, load balancers, databases,
+and, for an operator that scales nodes, the nodes themselves. It has to be
+there when the thing it keeps is gone or changing, so it must not depend on it.
+These rules hold for every controller and for the provider applications it
+calls:
+
+- **Run it on nodes that nothing scales or drains for its sake.** Put the job in
+  a node pool whose nodes are added by hand or by the deployer, not by a node
+  scaling operator and not by an autoscaler policy. If the pool is shared,
+  keep the job off scaled nodes with a constraint on the marker of the scaler,
+  `${meta.norca.provider_id}` `is_not_set`. A controller on a node that its own
+  operator removes would delete itself.
+- **Keep two instances on different nodes.** Use `count = 2` with
+  `distinct_hosts`, and a `spread` on the datacenter if the pool has several;
+  the leader election of the SDK lets one of them work, so the loss of a node
+  does not stop it.
+- **Do not scale the controller.** The job has no `scaling` block, and a
+  priority above ordinary jobs so that it is not the first to be preempted.
+- **One controller (or one set) per region** that has the objects it serves:
+  objects belong to a region, and so does the controller.
+- **Give it the least privilege**: the policy bound to the job, as above.
+- **A provider application runs outside the failure domain it serves**: not on
+  the nodes of the group it creates, not behind the load balancer it manages;
+  it is reachable from the controller at the address it registered.
+
+The [node scaling plan](/docs/design/cluster-scaling-plan#where-the-operator-and-the-providers-run)
+makes the rules checkable for its operator (conditions such as
+`RunsOnScaledNode`). The load balancer operator follows the same rules: run
+the operator and the providers in a pool that is not scaled, because a node
+group that removes the node of the operator or of a provider also removes the
+load balancers it keeps.
+
 ## Testing
 
 - **Unit tests** use the in-memory backend of `controller/fake`

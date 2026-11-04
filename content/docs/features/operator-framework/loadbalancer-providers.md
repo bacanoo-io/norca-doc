@@ -194,6 +194,12 @@ no address, CA or token handling.
 **The firewall must allow the ports.** The provider API port, and for a provider
 that serves the traffic itself the frontend ports of the load balancers.
 
+**Run the operator and the providers outside scaled pools.** A provider is
+needed at the moment a load balancer is created, changed or removed. Put the
+operator and the providers in a pool whose nodes nothing scales or drains
+automatically, two instances on different nodes; see
+[where to run a controller](/docs/features/operator-framework/controllers#where-to-run-a-controller).
+
 ### The example provider
 
 [`norca-loadbalancer`](https://github.com/bacanoo-io/norca-loadbalancer) is an
