@@ -184,6 +184,8 @@ node_group "workers-dc-a" {              # a capacity group of this region
   datacenter = "dc-a"                    # the zone
   node_class = "worker"                  # optional: only nodes of this class belong to the group
 
+  spill    = false                       # true: work that cannot be placed here may grow groups of other pools
+
   provider = "hetzner-eu"                # a NodeProvider registered by a provider application
   group    = "fsn1"                      # the provider's name of the zone or group
   network  = "10.10.1.0/24"              # the range of the nodes (must be inside the firewall ranges)
@@ -259,6 +261,21 @@ flowchart TB
    - Then limit by `max_step`, the maximum of the group and of the pool, and the rate limit of the autoscaler.
 3. *Group.* From the usable groups, the **expander** chooses: `spread` (the group with the fewest nodes, the default: the same intent as `spread` on `${node.datacenter}`), `fill` (the fullest group below its maximum), `priority` (an ordered list), `weighted`. A group whose provider refused the last request (quota, no capacity in the zone) is skipped for a back-off time, and the next one is tried.
 4. *Do not double count.* Nodes that were requested and have not joined yet count as capacity, so a second decision does not ask for them again.
+5. *Bind the request to the work.* Every request records the blocked evaluations it was made for. A node that is still joining counts as capacity only for those evaluations, not for work of another datacenter or pool, so it is not used to hide a shortage elsewhere. When the node is ready, the evaluations are re-run.
+
+**Where work may go: the guards.** Nodes are only ever requested in a datacenter the blocked work can use, because the scheduler would never place the work anywhere else. Three guards keep it that way:
+
+| Guard | Rule |
+| --- | --- |
+| **Check on join** | A node that registers with a datacenter, pool or class different from its node group (a wrong bootstrap template) is **not counted** as capacity. The scaler raises an event and deletes the instance after the join deadline. Otherwise the group would look full of capacity that the work cannot use. |
+| **Request bound to the work** | See step 5 above. |
+| **No spill by default** | If the group of the work's datacenter cannot grow (maximum reached, quota, provider failure), the work **waits** as a blocked evaluation and an event says why (`workers-dc-b at max`, `provider refused: quota`). The scaler does not pick a group in another datacenter just because the first is full. For a job with `node_pool = "all"` this means the groups of the other pools are not used either. A node group may allow it explicitly with `spill = true`: the groups of other pools that the work can use (same datacenter, matching class) are then candidates. |
+
+**Moving work to another datacenter without forcing it.** The scaler never moves work between datacenters, and it does not need to: the job says where it may run. A datacenter that is full is left by the job's own rules:
+
+- list several datacenters in the job (`datacenters = ["dc-a", "dc-b"]`). The list is a set, not an order, so put the preference in an `affinity` (or a `spread`) on `${node.datacenter}`. The scheduler then fills dc-a and places the rest in dc-b by itself; no node is forced and nothing is rescheduled.
+- the usable groups of such a job are both datacenters, so the expander can grow either. With `expander = "priority"` and the order `workers-dc-a`, `workers-dc-b`, the scaler adds nodes in dc-a first and falls to dc-b only when dc-a is at its maximum or refused.
+- a job fixed to one datacenter stays blocked until the person changes the job (`datacenters`) or the group is raised. That is a decision of the owner of the job, and the plan keeps it so.
 
 **Scale down.**
 
@@ -481,4 +498,5 @@ The **policy decides**, not an automatic detection: `engine = "external"` leaves
 8. **Renewal of the node certificate** of a scaled node: short-lived nodes replaced by the scaler (proposed for the first version), or renewal by the servers at run time.
 9. **DNS of an edge.** A load balancer that follows the catalog works with no extra step; round-robin DNS records for new edge nodes have no owner yet (the provider contract, or a separate component).
 10. **Scale-down simulation.** Resource headroom only (proposed for the first version), or a check that the allocations of the candidate fit elsewhere with their constraints.
-11. **Spot and preemptible machines** (a platform removes a node on its own): treat as a node loss, or let the provider tell the scaler in advance so it drains first.
+11. **Spill.** `spill = false` (proposed default) keeps work waiting when its datacenter's group is full. Is a per-group switch enough, or is a per-job way to allow another datacenter needed (the job already can, with several `datacenters`)?
+12. **Spot and preemptible machines** (a platform removes a node on its own): treat as a node loss, or let the provider tell the scaler in advance so it drains first.
