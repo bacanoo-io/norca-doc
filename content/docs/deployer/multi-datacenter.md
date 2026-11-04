@@ -1,12 +1,12 @@
 ---
-title: "One Region over Several Datacenters with NATS"
-linkTitle: "Several datacenters with NATS"
-description: "A region can span several datacenters: availability zones of a cloud region, or buildings of a campus."
+title: "One Region over Several Datacenters"
+linkTitle: "Several datacenters"
+description: "A region can span several datacenters: availability zones of a cloud region, or buildings of a campus. Raft, job placement, service discovery that prefers the local datacenter, the event stream, and NATS as an example of a spread service."
 weight: 11
 origin: "norca-deployer/doc/multi-datacenter.md"
 ---
 
-A region can span several datacenters: availability zones of a cloud region, or buildings of a campus. The servers form one Raft cluster across them, the clients of every datacenter run jobs, and the system bus of the servers keeps the event stream of the region on every server. The example also runs a NATS cluster with one server per datacenter for the applications. Example: [multi-datacenter.yaml](/docs/deployer/examples/multi-datacenter).
+A region can span several datacenters: availability zones of a cloud region, or buildings of a campus. The servers form one Raft cluster across them, the clients of every datacenter run jobs, the native service catalog knows the datacenter of every instance and can prefer the caller's own, and the system bus of the servers keeps the event stream of the region on every server. The example plan also runs a NATS cluster with one server per datacenter, as an example of a stateful service spread over the datacenters. Example: [multi-datacenter.yaml](/docs/deployer/examples/multi-datacenter).
 
 ```mermaid
 flowchart LR
@@ -42,6 +42,7 @@ flowchart LR
 | Servers | One Raft cluster over all datacenters | One Raft cluster per region |
 | Jobs | One job places over the datacenters (`datacenters = [...]`, `spread`) | A job per region, or a multiregion job |
 | Failure of a site | The region keeps running while a majority of the servers is up | Only that region stops |
+| Service discovery | One catalog; lookups can prefer the caller's datacenter | One catalog per region; lookups fall back to other regions in a given order |
 | NATS | One cluster, routes between the datacenters | One cluster per region, gateways (supercluster) |
 
 Raft needs a majority of the servers to answer quickly; across long distances use [regions](/docs/deployer/multi-region).
@@ -85,9 +86,33 @@ separate {
 }
 ```
 
-## NATS across the datacenters
+## Service discovery across the datacenters
 
-The `nats` pack of the Norca pack registry runs one NATS server per datacenter:
+The datacenter is the failure domain: model every availability zone, rack or site as one datacenter. Every service registration carries the datacenter of the node that made it, and the native service catalog works without Consul, so the instances of a service that run in several datacenters are found through one catalog.
+
+A consumer should not send every request to any instance. A `discovery` block on the service tells the catalog to answer with the healthy instances of the caller's datacenter first:
+
+```hcl
+service {
+  name     = "api"
+  port     = "http"
+  provider = "nomad"
+
+  discovery {
+    prefer            = "datacenter"   # the caller's datacenter first, then the rest of the region
+    min_local         = 2              # take the rest of the region while fewer than 2 are local
+    overflow_fraction = 0.2            # ... or fewer than 20% of all instances are local
+  }
+}
+```
+
+The built-in DNS, the templates and the Task API of a workload, `GET /v1/service/:name?near=self`, the Consul-compatible API with `?near=_agent`, and the sidecar upstreams of native mTLS apply it. Tools that read the whole catalog (the Traefik `nomad` provider, Prometheus service discovery) receive every instance; run one Traefik per datacenter, with `datacenters` set to that datacenter. [Topology-aware routing](/docs/features/service-discovery/topology) has the rules, the regional failover, and the default of the overflow fraction.
+
+[External services](/docs/features/service-discovery/external-services) declared in a file can choose the node that runs their health checks by datacenter: `checked_by { datacenters = ["eu-a*"] }` picks a client of a matching datacenter (and node pool), and another one takes over when it fails.
+
+## NATS across the datacenters (an example)
+
+NATS is an example of a stateful service with one instance per datacenter, and the one the example plan runs. The `nats` pack of the Norca pack registry runs one NATS server per datacenter:
 
 | Pack value | Meaning |
 | --- | --- |
@@ -134,6 +159,7 @@ norca operator bus status               # streams, routes and JetStream state of
 | Norca servers | Two of three remain: leader election and scheduling continue. If the lost server was the leader, the new one waits up to 5 minutes (failover heartbeat TTL) before it marks the nodes of eu-b down |
 | Clients in eu-a, eu-c | Those connected to the lost server switch to another one; `heartbeat_grace` keeps them from being marked down meanwhile |
 | Jobs | Allocations of eu-b are rescheduled to eu-a and eu-c (within the limits of `datacenters`, `spread` and `separate`) |
+| Service lookups | The instances of eu-b stop being returned when their health checks fail or their nodes are marked down; consumers in eu-a and eu-c with `prefer = "datacenter"` keep using the instances of their own datacenter, and the others are served from the rest of the region |
 | NATS | Two servers remain; JetStream streams with 3 replicas keep their majority |
 | Event stream | Two of three replicas remain; the leader (or a new one) keeps publishing |
 
@@ -144,3 +170,7 @@ norca operator bus status               # streams, routes and JetStream state of
 - **Rollouts:** servers restart one at a time, so every datacenter keeps its quorum share; `upgrade.max_parallel_clients` limits the clients restarted together across all datacenters.
 - **Adding a datacenter:** add its nodes with their `datacenter`, extend `cluster_cidrs` if needed, and add it to the `datacenters` of the jobs and packs. Keep the number of servers odd (3 or 5).
 - **Removing nodes:** move them to `inventory.decommission` ([adding and removing nodes](/docs/deployer/adding-and-removing-nodes)).
+
+## Tested in the lab
+
+The `multidc` case of the `norca-lab` repository runs this plan on three VMs, one per datacenter: three Raft peers, NATS with one server per datacenter, the system bus clustered over the three servers with the event stream in three replicas; then one datacenter is powered off, and a leader remains, a job is scheduled, and its events reach the stream on the other two servers; it is started again and everything is back.

@@ -53,5 +53,5 @@ The [Deployer](/docs/deployer) chapter is the full documentation:
 [how apply works](/docs/deployer/how-apply-works),
 the [configuration reference](/docs/deployer/configuration), [GitOps](/docs/deployer/gitops) and complete
 [example plans](/docs/deployer/examples/), among them
-[one region over several datacenters with NATS](/docs/deployer/multi-datacenter)
+[one region over several datacenters](/docs/deployer/multi-datacenter)
 and [multi-region](/docs/deployer/multi-region).
