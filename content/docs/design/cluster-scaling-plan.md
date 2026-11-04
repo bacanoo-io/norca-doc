@@ -21,6 +21,7 @@ The built-in autoscaler scales the task groups of jobs. This plan lets it scale 
 - [The life of a node](#the-life-of-a-node)
 - [Scale down and drain](#scale-down-and-drain)
 - [Example: an edge pool with Traefik, and mTLS](#example-an-edge-pool-with-traefik-and-mtls)
+- [Example: game servers, a fixed base and steps](#example-game-servers-a-fixed-base-and-steps)
 - [Engines: the external autoscaler and the built-in one](#engines-the-external-autoscaler-and-the-built-in-one)
 - [Security, observability, failures](#security-observability-failures)
 - [Licensing and provenance](#licensing-and-provenance)
@@ -39,7 +40,7 @@ The built-in autoscaler scales the task groups of jobs. This plan lets it scale 
 | Metrics | Decided 2026-11-04: the decisions are built on the internal metrics (the [metrics store](/docs/configuration/metrics_store)), not on an external APM. |
 | Scaling unit | **Proposed:** the **node group**: the nodes of one node pool in one datacenter of one region (optionally of one node class), backed by one group of the platform. It is a management concept; the scheduler does not know it. |
 | Where it lives | **Proposed:** `node_group` is a **region-local** object. Node pools are replicated between regions; the groups of the platform are not the same in every region. |
-| Triggers | **Proposed:** two, with different scopes: *work that cannot be placed* is a decision over the groups that work can use; the *allocated share* is a decision of one group. |
+| Triggers | **Proposed:** two, with different scopes: *work that cannot be placed* is a decision over the groups that work can use; the *allocated share* (with the optional **headroom**) is a decision of one group. |
 | Naming | **Proposed:** `node group` (the term of the cluster autoscalers and the clouds) for the unit, and `NodeProvider` for the registration of a provider application, so that it does not clash with the `node_class` of a node. |
 
 ## Goals and non-goals
@@ -48,7 +49,7 @@ The built-in autoscaler scales the task groups of jobs. This plan lets it scale 
 
 - Add nodes when work cannot be placed or a group is nearly full, and remove nodes that are not needed, without a person in the loop.
 - The unit is a datacenter of a node pool, so the spread over availability zones is a property of the scaler, not an accident.
-- A removed node is always drained first; no node with unfinished work is deleted.
+- A removed node is always emptied first (drained, or found empty); no node with unfinished work is deleted.
 - Providers are applications outside the core, one per platform, written against a small HTTP contract; credentials stay with them.
 - The decisions use what the servers already measure.
 
@@ -192,7 +193,8 @@ node_group "workers-dc-a" {              # a capacity group of this region
 
   min = 1
   max = 20
-  headroom_nodes = 0                     # keep this many empty nodes' worth of free capacity ahead of demand
+  priority = 0                           # only for expander = "priority": lower is tried first
+  headroom_nodes = 0                     # keep free capacity worth this many nodes of the group ahead of demand
   # headroom_percent = 10                # alternative: a share of the group; the larger of the two applies
 
   node {                                 # what a new node looks like
@@ -226,11 +228,12 @@ node_pool_scaling "workers" {            # optional: rules over the groups of th
     on_blocked = true                    # work that cannot be placed
     max_step   = 5                       # nodes per decision
     expander   = "spread"                # which group: spread | fill | priority | weighted
+                                         # priority uses `priority` of the groups, weighted a `weight` on each group
   }
 }
 ```
 
-Validation: the pool and the datacenter exist (the pool definition may arrive later by replication; the object waits and reports it); `min <= max`; the network range is a valid CIDR and not shared with another group; one `engine` for all groups of a pool; a `provider` for `builtin`; the sum of the maxima is not below the `max_nodes` of the pool rule. The setting is turned into the typed scaling policy the autoscaler already evaluates (`Type = "cluster"`, target `{pool, datacenter}`), so the checks, the strategies, the cooldown, the rate limit and the oscillation guard are the ones task groups use.
+Validation: the pool and the datacenter exist (the pool definition may arrive later by replication; the object waits and reports it); `min <= max`; the network range is a valid CIDR and not shared with another group; one `engine` for all groups of a pool; a `provider` for `builtin`; the sum of the minima is not above the `max_nodes` of the pool rule. The setting is turned into the typed scaling policy the autoscaler already evaluates (`Type = "cluster"`, target `{pool, datacenter}`), so the checks, the strategies, the cooldown, the rate limit and the oscillation guard are the ones task groups use.
 
 ## Decisions of the scaler
 
@@ -249,7 +252,9 @@ flowchart TB
   X --> UP["Scale up that group"]
   B -- "no" --> A{"Allocated share of a group<br/>above its target?"}
   A -- "yes" --> UP
-  A -- "no" --> D{"A group unneeded for a while,<br/>no recent scale up?"}
+  A -- "no" --> H{"Free capacity of a group<br/>below its headroom?"}
+  H -- "yes" --> UP
+  H -- "no" --> D{"A group unneeded for a while,<br/>no recent scale up?"}
   D -- "yes" --> S["Scale down: choose, drain, delete"]
   D -- "no" --> N["Nothing"]
 ```
@@ -262,7 +267,7 @@ flowchart TB
    - *Constraints that need a node of their own* (`distinct_hosts`, a static port already taken on every node): **one node per unplaced allocation**, however small the allocation is. A proxy like Traefik with static ports 80 and 443 is blocked this way, and dividing resources would ask for too little.
    - *Ahead of time*, the **strategy** of the check decides the size: `target-value` is proportional (4 nodes at 85% with a target of 70 gives 5 nodes), `threshold` is a **fixed step** (above `upper_bound`, add `delta` nodes). Use `threshold` when load arrives in waves and a fixed number of nodes is known to be needed next (see the [game server example](#example-game-servers-a-fixed-base-and-steps)); `target-value` when load grows smoothly.
    - Then limit by `max_step`, the maximum of the group and of the pool, and the rate limit of the autoscaler.
-3. *Group.* From the usable groups, the **expander** chooses: `spread` (the group with the fewest nodes, the default: the same intent as `spread` on `${node.datacenter}`), `fill` (the fullest group below its maximum), `priority` (an ordered list), `weighted`. A group whose provider refused the last request (quota, no capacity in the zone) is skipped for a back-off time, and the next one is tried.
+3. *Group.* The ahead-of-time triggers act on **their own group**; no choice is needed. For work that cannot be placed, the **expander** chooses among the usable groups: `spread` (the group with the fewest nodes, the default: the same intent as `spread` on `${node.datacenter}`), `fill` (the fullest group below its maximum), `priority` (by the `priority` of the groups), `weighted` (by their `weight`). A group whose provider refused the last request (quota, no capacity in the zone) is skipped for a back-off time, and the next one is tried.
 4. *Do not double count.* Nodes that were requested and have not joined yet count as capacity, so a second decision does not ask for them again.
 5. *Bind the request to the work.* Every request records the blocked evaluations it was made for. A node that is still joining counts as capacity only for those evaluations, not for work of another datacenter or pool, so it is not used to hide a shortage elsewhere. When the node is ready, the evaluations are re-run.
 
@@ -277,13 +282,13 @@ flowchart TB
 **Moving work to another datacenter without forcing it.** The scaler never moves work between datacenters, and it does not need to: the job says where it may run. A datacenter that is full is left by the job's own rules:
 
 - list several datacenters in the job (`datacenters = ["dc-a", "dc-b"]`). The list is a set, not an order, so put the preference in an `affinity` (or a `spread`) on `${node.datacenter}`. The scheduler then fills dc-a and places the rest in dc-b by itself; no node is forced and nothing is rescheduled.
-- the usable groups of such a job are both datacenters, so the expander can grow either. With `expander = "priority"` and the order `workers-dc-a`, `workers-dc-b`, the scaler adds nodes in dc-a first and falls to dc-b only when dc-a is at its maximum or refused.
+- the usable groups of such a job are both datacenters, so the expander can grow either. With `expander = "priority"` and `priority = 0` on `workers-dc-a`, `priority = 1` on `workers-dc-b`, the scaler adds nodes in dc-a first and falls to dc-b only when dc-a is at its maximum or refused.
 - a job fixed to one datacenter stays blocked until the person changes the job (`datacenters`) or the group is raised. That is a decision of the owner of the job, and the plan keeps it so.
 
 **Scale down.**
 
 1. *Condition.* No blocked work; the allocated share of the group, **without the candidate node**, stays below `utilization_below` plus a margin; the free capacity **without the candidate** still covers the headroom; this holds for `unneeded_for`; and `delay_after_add` has passed since the last scale up of the group.
-2. *Candidates.* Only nodes that carry the provider's id in their meta (a node added by hand is never removed), in a group above its minimum, not protected (meta `norca.scale.protect = "true"`), and chosen by `selector` (`empty` first, then `least_busy`: the logic of the Nomad Autoscaler, adapted). With `selector = "empty"` only a node with **no running allocation** is a candidate and **no drain is started on a node with work**: the node is removed after it has emptied by itself. This is for work that must not be interrupted (game matches, long sessions); `least_busy` drains a busy node and is for work that can be rescheduled.
+2. *Candidates.* Only nodes that carry the provider's id in their meta (a node added by hand is never removed), in a group above its minimum, not protected (meta `norca.scale.protect = "true"`), and chosen by `selector` (the logic of the Nomad Autoscaler, adapted): `empty` or `least_busy`. With `selector = "empty"` only a node with **no running allocation** is a candidate and **nothing is drained**: the node is made ineligible, checked once more, and removed if it is still empty (if work arrived in between, it is made eligible again). This is for work that must not be interrupted (game matches, long sessions). `least_busy` takes the node with the least work and drains it; it is for work that can be rescheduled.
 3. *Keep the spread.* Among groups of a pool, the one with the most nodes above its share is preferred; the minimum of a group keeps at least that many nodes in every datacenter.
 4. *Execute* as described [below](#scale-down-and-drain). One node at a time per pool by default.
 
@@ -298,6 +303,8 @@ flowchart TB
 | `norca.cluster.nodes_ready` (`dc`, `pool`) | Exists | Counts the nodes of a group. |
 | `norca.cluster.blocked_cpu_mhz`, `blocked_memory_mb`, `blocked_evals`, `blocked_allocs_exclusive` (`dc`, `pool`) | **New** | The demand that cannot be placed, from the blocked evaluations of the leader; the scale-up trigger. The last one counts allocations blocked by constraints that need a node of their own. |
 | `norca.nodescaler.requested`, `joining`, `failed` (`dc`, `pool`) | **New** | The nodes asked for and not joined yet, and the failures; what the double counting rule and the status command use. |
+
+The **headroom** is computed from the allocated shares: the free capacity of a group is the unallocated part of its nodes, and `headroom_nodes = n` means free capacity worth `n` nodes of the group's machine kind (the capacity reported by the provider). Ineligible nodes are not part of the allocatable capacity. *To be checked in the existing sampler, which may still count them.*
 
 The new metrics are sampled by the leader from its state, into the same store and with the same retention, so the decisions can be inspected after the fact. An *allocated* share, not the usage, drives the scaler (the way the Kubernetes cluster autoscaler looks at requests): it is what the scheduler cannot place against.
 
@@ -348,15 +355,15 @@ flowchart LR
 - **Bootstrap.** A new machine needs what the deployer installs on a node: the agent binary, the TLS material (the CA and a client certificate), the gossip key, the addresses of the servers, and the agent configuration with datacenter, pool, class and meta. This plan proposes that the provider hands the machine a **bootstrap bundle** (cloud-init or the platform's user data) rendered from a template with those values, and that the deployer gains a command to render it (`norca-deployer render-node`), so the PKI and the configuration stay in one place. The bundle carries short-lived secrets and is passed only to the provider. *How the joining credentials are issued is an open question.*
 - **Network.** The node must reach the RPC and Serf ports of the servers, and the servers' firewall must let it in. A node group has a network range for its nodes; the ranges are part of `cluster_cidrs` and `api_cidrs`, and the template of the provider puts the instance into that network. A range that the firewall does not cover is a validation warning of the node group.
 - **Renewal of the node certificate.** The deployer renews a node certificate during `apply` (a certificate with less than 30 days left is replaced). **A node the scaler created is never visited by the deployer**, so nothing renews its certificate. Either such nodes are **short-lived** (the scaler replaces them well before the certificate expires: the lifetime of the node certificate is then a limit on the age of a scaled node), or the servers **renew the node certificate** at run time, as they do for workloads. *Open question.*
-- **Public address and DNS.** An edge node needs a public address (the provider's sablon sets the host network on the public interface). A load balancer that follows the catalog needs nothing more; **DNS records** for a round-robin edge are not handled by this plan (see the [open questions](#open-questions)).
+- **Public address and DNS.** An edge node needs a public address (the provider's template sets the host network on the public interface). A load balancer that follows the catalog needs nothing more; **DNS records** for a round-robin edge are not handled by this plan (see the [open questions](#open-questions)).
 - **Counting.** A requested node counts as capacity while it joins (so it is not requested twice) and as `failed` when it does not.
 
 ## Scale down and drain
 
 1. Choose the candidate as above.
 2. Mark the node **ineligible** (no new allocations).
-3. **Drain** it with the built-in drainer, with the deadline of the policy; [disruption budgets](/docs/features/disruption-budget) apply, and system jobs follow the usual `ignore_system_jobs` rule.
-4. When the drain is **complete**, ask the provider to delete the instance, then wait for the node to go down and be garbage collected.
+3. **Drain** it with the built-in drainer, with the deadline of the policy; [disruption budgets](/docs/features/disruption-budget) apply, and system jobs follow the usual `ignore_system_jobs` rule. With `selector = "empty"` there is nothing to drain: the scaler checks that the node is still empty.
+4. When the drain is **complete** (or the node is confirmed empty), ask the provider to delete the instance, then wait for the node to go down and be garbage collected.
 5. Record the decision (the `Scaling` event topic and the scaling history), with the node, the node group and the reason.
 
 If the drain does not finish by its deadline, or fails, the scaler **does not delete the instance**: it makes the node eligible again, backs the candidate off and raises an event. This is the acceptance criterion of the development plan: no node is removed with an unfinished drain.
@@ -414,7 +421,7 @@ sequenceDiagram
   L->>N: target added, traffic flows
 ```
 
-### mTLS: two layers {#mtls-two-layers}
+### mTLS: two layers
 
 Norca has two identities, and scaling touches them differently.
 
@@ -436,7 +443,7 @@ flowchart TB
 - **Traefik and mTLS to the backends.** The `traefik` pack does not use mTLS to its backends today. With the means Norca has, Traefik can have an `mtls` block in app mode: it gets `secrets/mtls/{cert,key,bundle}.pem` and the SPIFFE ID of its job and group, uses them as the client certificate and the trust roots of its servers transport, and a service intention allows `traefik` to reach the backend. Every Traefik that starts on a new edge node receives its certificate automatically and keeps the same SPIFFE ID, so the intentions are the same whatever the number of nodes. The renewal is done by the client; Traefik has to reload the files. This is a change of the pack, not of the scaler.
 - **Across regions** the traffic goes through the Envoy `mtls-gateway` job (SNI passthrough), which is a job on some pool's nodes. If the gateway shares the edge pool with Traefik, its capacity follows the scaling of that pool; a pool or a node group of its own keeps the two apart.
 
-## Example: game servers, a fixed base and steps {#example-game-servers-a-fixed-base-and-steps}
+## Example: game servers, a fixed base and steps
 
 A game hosting operator keeps a base of servers ready so that arriving players always find a free one, and knows how many more are needed when the base is used up: *when utilization reaches a level, y more nodes are needed.* Every game server is an allocation of a fixed size; a match must not be interrupted.
 
@@ -525,9 +532,9 @@ The **policy decides**, not an automatic detection: `engine = "external"` leaves
 | Phase | Content | Acceptance |
 | --- | --- | --- |
 | 0 | The built-in source `norca` (the cluster gauges as policy metrics), and the blocked-demand metrics, with the reason of the block. A **read-only advice mode**: the scaler only raises events ("would add 2 nodes to dc-a"). | Metrics are readable by a check; advice events match the blocked work in a lab test, including a blocked proxy with a static port (one node per instance). No provider needed. |
-| 1 | The region-local `node_group` object and the optional `node_pool_scaling`, validation (the network range against the firewall ranges), the typed policy, CLI `apply`/`status`/`delete`, events, dry run. | Invalid settings are rejected; a pool with two groups shows the expected decisions in dry run; the setting is not replicated between regions. |
+| 1 | The region-local `node_group` object and the optional `node_pool_scaling`, validation (the network range against the firewall ranges), the typed policy with `headroom_*`, the `priority` and `weight` of the expanders, CLI `apply`/`status`/`delete`, events, dry run. | Invalid settings are rejected; a pool with two groups shows the expected decisions in dry run; the setting is not replicated between regions. |
 | 2 | The `NodeProvider` registry, the HTTP contract, a mock provider, the scale-up path, join tracking, the join deadline, orphan cleanup. | Blocked work makes the scaler request nodes in the right group; a request repeated after a leader change creates no extra node; a node that never joins is cleaned up. |
-| 3 | Scale down: candidate selection (the adapted `scaleutils`), protections, drain with the edge order, delete, the failure paths. | No instance is deleted with an unfinished drain; a stuck drain makes the node eligible again; the minimum of a group keeps an edge in every datacenter; a load balancer following the catalog drops the target before the proxy stops. |
+| 3 | Scale down: candidate selection (the adapted `scaleutils`, `least_busy` and `empty`), protections, drain with the edge order, delete, the failure paths. | No instance is deleted with an unfinished drain; with `empty`, a node that received work is never deleted and a match is never cut; a stuck drain makes the node eligible again; the minimum of a group keeps an edge in every datacenter; a load balancer following the catalog drops the target before the proxy stops. |
 | 4 | The first real provider (Hetzner Cloud), then Scaleway, AWS and GCP; the bootstrap bundle and `render-node` in the deployer; the renewal of the node certificate. | The lab case with the real provider (below). |
 | 5 | Web UI page, scheduled windows, spot and preemption handling, DNS records of an edge, an `mtls` block for the Traefik pack. | – |
 
