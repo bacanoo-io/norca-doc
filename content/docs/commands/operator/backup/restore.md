@@ -165,6 +165,17 @@ restore requires a management token, and ACLs must be enabled.
   intention of the namespace, named as in the `service-intentions` content
   type. Can be given several times.
 
+- `-external-service=<id>`: Restore an external service of the namespace,
+  named as in the `external-services` content type. It is registered again
+  through the endpoint of external services, so its permissions apply
+  (`register-external-service`, and `operator` write for a service without
+  checks). The servers choose the node that runs the checks of a service with
+  `checked_by`; a service that belonged to a client node goes back to that
+  node, which must exist (and `node` write is needed). A service that an
+  application registered through the Consul-compatible API is not restored:
+  its application registers it again. The states of the checks start again
+  from their initial status. Can be given several times.
+
 - `-custom-object=<group>/<kind>/<name>`: Restore a custom object of the
   namespace: its spec, labels and owners; the status is left to its controller.
   Its type definition must exist. The objects of `packs.norca.io` (pack

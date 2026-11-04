@@ -98,6 +98,38 @@ curl -X PUT http://127.0.0.1:4646/v1/service/external/legacy-api -d '{
 }'
 ```
 
+### Declared in a file
+
+Services that belong in version control are declared in an HCL file and applied. The command is
+idempotent and never removes anything:
+
+```shell
+norca service apply -f services.hcl
+```
+
+```hcl
+external_service "orders-db" {
+  namespace = "prod"
+  address   = "10.20.0.5"
+  port      = 5432
+
+  check {
+    type = "tcp"
+    tcp  = "10.20.0.5:5432"
+  }
+
+  checked_by {
+    node_pool = "edge"
+  }
+}
+```
+
+A declared service has no registrant to renew a TTL and no client agent that owns it, so the servers choose
+the client node that runs its `http` and `tcp` checks among the nodes of `checked_by`. They give the checks
+to another node when it goes down, becomes ineligible or stops reporting; a service without a node to run
+its checks is critical (`no node to run the checks`). A declared service stays until it is deregistered.
+The same text can be edited in the web UI. See [`service apply`](/docs/commands/service/apply).
+
 ## Configuration reference
 
 External services need no agent configuration. The fields of a registration:
@@ -114,13 +146,16 @@ External services need no agent configuration. The fields of a registration:
 | `Datacenter` | string | the owning node's | Datacenter the service is reported in |
 | `NodeID` | string | the client agent of the request | Client node that owns the service and runs its HTTP and TCP checks; needs `node` write |
 | `Checks` | list | – | `ttl`, `http` or `tcp` checks; see the [API](/docs/api/external-services) |
-| `DeregisterCriticalAfter` | duration | `1h` | Time critical before deregistration; `0` keeps the service |
+| `DeregisterCriticalAfter` | duration | `1h` (`0` if `Declared`) | Time critical before deregistration; `0` keeps the service |
+| `Declared` | bool | `false` | Marks a service declared in a file or edited as HCL (source `apply`); its `http` and `tcp` checks need `CheckedBy` |
+| `CheckedBy` | object | � | `NodePool` and `Datacenters` (patterns) of the nodes that may run the checks; the servers choose one. Excludes `NodeID` |
 
 ## CLI and API
 
 | Task | CLI | HTTP API |
 | --- | --- | --- |
 | Register or update | [`norca service register`](/docs/commands/service/register) | [`PUT /v1/service/external/:name`](/docs/api/external-services#register-external-service) |
+| Apply a file | [`norca service apply`](/docs/commands/service/apply) | [`POST /v1/service/external/parse`](/docs/api/external-services#parse-and-format) and the registration above |
 | Renew or set TTL checks | [`norca service ttl`](/docs/commands/service/ttl) | [`PUT /v1/service/external/:id/ttl`](/docs/api/external-services#update-ttl-checks) |
 | Deregister | [`norca service deregister`](/docs/commands/service/deregister) | [`DELETE /v1/service/external/:id`](/docs/api/external-services#deregister-external-service) |
 | List the external services | – | [`GET /v1/services/external`](/docs/api/external-services#list-external-services) |
@@ -134,11 +169,14 @@ checks with the client node that runs them, and the deregistration time. Creatin
 choosing the node of the checks needs `node` write. Services registered through the Consul agent API
 are listed but changed by their application.
 
+The editor has two views of the same service: the **Form**, and **HCL**, the text of `norca service apply` (or its JSON form) checked by the servers with the line of every error before it is saved. In the form, *Checks run on* chooses between a client node (as before) and a node chosen by the servers (`checked_by`: node pool and datacenters), and *Declared* keeps the service until it is deleted. A service saved from the HCL view is declared; its HTTP and TCP checks need `checked_by`. Services declared with the CLI are marked *declared* in the list and can be changed in either view.
+
 ## Limits and status
 
 - Check types: `ttl`, `http` and `tcp`. Script, gRPC and TLS TCP checks are not supported.
 - HTTP and TCP checks run on a client node: register them through a client agent, or name the node
-  with `NodeID` (`-node`); a server-only agent rejects them otherwise.
+  with `NodeID` (`-node`), or let the servers choose it with `CheckedBy`; a server-only agent rejects them
+  otherwise.
 - A registration with Connect settings, or a `Kind` other than a typical service, is rejected by the
   Consul agent endpoints.
 
