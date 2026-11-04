@@ -161,6 +161,76 @@ an error and is retried.
 answers `2xx`, or `404` if there is nothing to delete. If it fails, the
 finalizer keeps the `LoadBalancer` object, and the operator tries again.
 
+## Running a provider
+
+A provider is an ordinary application. Three things matter in a real
+deployment, and the example provider shows each of them.
+
+**The registered port is not the port it listens on.** A provider that runs in
+a container, behind a port mapping or behind a proxy listens on one address and
+is reached on another. The operator calls what the provider **registered**
+(`spec.endpoint`); the provider has to answer on what it listens on and to
+register the address and port of the **host**. In a task of a Norca job these
+are in the environment: `NORCA_PORT_<label>` is the port inside the container
+(the `to` of a mapped port), `NORCA_HOST_IP_<label>` and
+`NORCA_HOST_PORT_<label>` the address and port of the host. The example
+provider expands them in its configuration file
+(`"listen": "0.0.0.0:${NORCA_PORT_api}"`,
+`"advertise_url": "http://${NORCA_HOST_IP_api}:${NORCA_HOST_PORT_api}"`), and a
+class can have its own full `endpoint`. In the `template` block of a job file
+the dollar sign is doubled (`$${NORCA_PORT_api}`), because HCL would interpolate
+it.
+
+**The provider reaches the Norca API over the network, or on the task API
+socket.** The usual way is a container in bridge mode that opens its own ports
+(Norca publishes them) and talks to the API over HTTPS with the CA of the
+cluster (`NORCA_CACERT`) and the workload identity of the job as its token
+(`identity { env = true }` sets `NORCA_TOKEN`), with the ACL policy bound to the
+job. Use the address of a server other than the node the container runs on,
+unless the firewall of that node lets the bridge in. A job can also use the
+task API socket (`NORCA_ADDR=unix://${NORCA_SECRETS_DIR}/api.sock`), which needs
+no address, CA or token handling.
+
+**The firewall must allow the ports.** The provider API port, and for a provider
+that serves the traffic itself the frontend ports of the load balancers.
+
+### The example provider
+
+[`norca-loadbalancer`](https://github.com/bacanoo-io/norca-loadbalancer) is an
+example of such an application: provider types that register themselves behind
+one interface, each in its own package with its own ID; declared parameters
+with defaults, secrets (`env:NAME`, `file:/path`) and **dynamic** parameters
+that can be changed in the `LoadBalancerClass` object without a restart; one
+process serving any number of classes; and a registrar that writes the
+`LoadBalancerClass` objects, keeps their heartbeat, registers a class again if
+its object disappears, and works on the task API socket as well as over the
+network. It has three types:
+
+| Type | What it does |
+| --- | --- |
+| `tcpproxy` | TCP load balancers inside the process: round robin, failover to the next target. Needs no other software. |
+| `nginx` | TCP load balancers as nginx stream servers on the machine, with a rollback when nginx rejects a change. |
+| `mock` | Keeps the load balancers in memory; its `ready` and `latency` parameters are dynamic, to simulate an outage. |
+
+It also has a `Dockerfile` (a static binary on `FROM scratch`). A cloud
+provider is a new package next to these; the README of the repository describes
+the interface.
+
+The whole chain is tested in the lab (`norca-lab`, `.\run-tests.ps1 -Cases ...`)
+with ACLs on, as jobs with their workload identity:
+
+| Case | The provider runs as |
+| --- | --- |
+| `loadbalancer` | a raw_exec job; it listens on 18444 and registers 18443 (an `iptables` redirect stands in for a port mapping) |
+| `loadbalancer-docker` | a Docker container in bridge mode with a real port mapping (host 18443, container 8443), on the task API socket |
+| `loadbalancer-docker-net` | the same container without the socket: over HTTPS with the CA and the workload identity token |
+
+They check a wrong token that is retried, traffic through the load balancer from
+another node with round robin, targets that follow the service, an unknown and
+an unsupported class, a dynamic parameter changed in the registration, a
+provider that stops (the heartbeat) and comes back, and the removal of a
+service.
+
 ## Permissions
 
 - The **operator** reads the registrations: `read` on `norca.io/LoadBalancerClass`
@@ -188,4 +258,9 @@ finalizer keeps the `LoadBalancer` object, and the operator tries again.
   the operator calls it again periodically. Two providers for one class are not
   supported; the name of the object is unique.
 - A MetalLB-like provider for bare metal and the cloud providers (Hetzner,
-  Scaleway, AWS, Google) are separate applications and are not part of Norca.
+  Scaleway, AWS, Google) are separate applications and are not part of Norca;
+  the example provider above has none of them.
+- The operator's example job runs with `-class-allow-http` in the lab: the
+  providers there are plain http. An https provider whose certificate is signed
+  by a private CA is not covered yet (the operator has no CA option for the
+  calls to providers).
