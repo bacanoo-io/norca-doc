@@ -219,6 +219,31 @@ Connect][connect] integration.
   available where `provider = "nomad"`; `sidecar` and `gateway` only on group
   services. See [native mTLS](/docs/features/native-mtls).
 
+- `expose` `(block: nil)` - (Norca) Asks for the service to be reachable from
+  outside the cluster. It has one `load_balancer` block:
+
+  ```hcl
+  service {
+    name = "api-public"
+    port = "https"
+
+    expose {
+      load_balancer {
+        class    = "nomad"   # which load balancer operator handles it
+        port     = 443       # the port of the load balancer
+        internal = false     # true: not reachable from the internet
+      }
+    }
+  }
+  ```
+
+  Norca does not create the load balancer. The servers write the block to the
+  service meta keys `norca_lb_class`, `norca_lb_port` and `norca_lb_internal`
+  (the block wins over the same keys set by hand), and a load balancer operator
+  (an external application, such as the sample
+  [`loadbalancer-operator`](/docs/features/operator-framework)) reads them and
+  creates the load balancer of its `class`. `class` and `port` are required.
+
 With `provider = "nomad"`, Norca also stores the `meta` (or `canary_meta` for
 canaries) of the service in its registrations, records the
 health of every instance (see the
