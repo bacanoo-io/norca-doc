@@ -199,6 +199,7 @@ node_group "workers-dc-a" {              # a capacity group of this region
 
   node {                                 # what a new node looks like
     meta       = { tier = "general" }
+    attributes = { "unique.storage" = "ssd" }   # what the node will have, for checking constraints ahead of time
     parameters = { size = "cx32", image = "norca-worker-3" }   # for the provider
   }
 
@@ -284,6 +285,18 @@ flowchart TB
 - list several datacenters in the job (`datacenters = ["dc-a", "dc-b"]`). The list is a set, not an order, so put the preference in an `affinity` (or a `spread`) on `${node.datacenter}`. The scheduler then fills dc-a and places the rest in dc-b by itself; no node is forced and nothing is rescheduled.
 - the usable groups of such a job are both datacenters, so the expander can grow either. With `expander = "priority"` and `priority = 0` on `workers-dc-a`, `priority = 1` on `workers-dc-b`, the scaler adds nodes in dc-a first and falls to dc-b only when dc-a is at its maximum or refused.
 - a job fixed to one datacenter stays blocked until the person changes the job (`datacenters`) or the group is raised. That is a decision of the owner of the job, and the plan keeps it so.
+
+**Placement rules that need a node of their own.** Some jobs say that parts of them must not run together. They block when no node satisfies them, and they decide *where* a new node must be, not only how many.
+
+| Rule | What it means for the scaler |
+| --- | --- |
+| `distinct_hosts` (on the job or on a group) | Every allocation it covers needs a node of its own. On the **job** it covers all groups of the job, so the number of nodes is that of all its allocations together, not per group. Sized as *one node per unplaced allocation* (see above). |
+| `distinct_property` (for example on `${node.datacenter}` or a meta key) | The missing node must have **another value** of the property than the nodes that already hold an allocation (up to the allowed count per value). The expander may choose only a group whose new node would have such a value. If the allocation is blocked because dc-a already has one, the node must go to a group of another datacenter, whatever the expander would otherwise prefer. |
+| `spread`, `affinity`, `job_anti_affinity` (soft) | Never block, so never trigger scaling by themselves: the work is placed on the nodes that exist, only less evenly. The spread over datacenters is kept by the expander and the headroom. |
+
+*Checking a new node ahead of time.* Before a group is chosen, the scaler checks the constraints of the blocked work against the node the group would add. Known without the node: its datacenter, pool, class, the group's `meta` and the `attributes` the node template declares (these are what the provider's image is expected to report). A constraint on anything else (kernel, CPU, drivers) cannot be checked: it **does not trigger scaling**, and an event says `unverifiable constraint` with the constraint, so the work waits instead of nodes being bought on a guess. A group whose node would fail a constraint is not a usable group for that work.
+
+*Do not scale down into the same block.* A node is not a scale-down candidate when it holds an allocation under `distinct_hosts` or `distinct_property` and the nodes that remain would not let that allocation be placed again (fewer usable nodes than allocations, or no node with another property value). Otherwise the drained allocation would block, the scaler would add the node back, and the cycle would repeat.
 
 **Scale down.**
 
@@ -517,6 +530,7 @@ The **policy decides**, not an automatic detection: `engine = "external"` leaves
 | A group refuses (quota, no capacity) | The group is backed off, the next group of the expander is tried; if none, the demand stays and an event says why. |
 | Leader change | Requests are recorded in Raft with their `request_id`; the new leader lists the instances of each group and reconciles, and idempotent requests are repeated safely. |
 | Node does not join | The join deadline deletes the instance and backs the group off. |
+| Constraint that cannot be checked ahead of time | No scaling; an event `unverifiable constraint` names it. The work waits. |
 | Drain stuck | No deletion; the node becomes eligible again. |
 | Runaway scaling | Pool maximum, nodes per hour, `enforce = false` (events only), `enabled = false` (a switch). |
 
@@ -531,10 +545,10 @@ The **policy decides**, not an automatic detection: `engine = "external"` leaves
 
 | Phase | Content | Acceptance |
 | --- | --- | --- |
-| 0 | The built-in source `norca` (the cluster gauges as policy metrics), and the blocked-demand metrics, with the reason of the block. A **read-only advice mode**: the scaler only raises events ("would add 2 nodes to dc-a"). | Metrics are readable by a check; advice events match the blocked work in a lab test, including a blocked proxy with a static port (one node per instance). No provider needed. |
+| 0 | The built-in source `norca` (the cluster gauges as policy metrics), and the blocked-demand metrics, with the reason of the block. A **read-only advice mode**: the scaler only raises events ("would add 2 nodes to dc-a"). | Metrics are readable by a check; advice events match the blocked work in a lab test, including a blocked proxy with a static port (one node per instance) and a `distinct_property` on the datacenter (the node is advised in the other datacenter). No provider needed. |
 | 1 | The region-local `node_group` object and the optional `node_pool_scaling`, validation (the network range against the firewall ranges), the typed policy with `headroom_*`, the `priority` and `weight` of the expanders, CLI `apply`/`status`/`delete`, events, dry run. | Invalid settings are rejected; a pool with two groups shows the expected decisions in dry run; the setting is not replicated between regions. |
 | 2 | The `NodeProvider` registry, the HTTP contract, a mock provider, the scale-up path, join tracking, the join deadline, orphan cleanup. | Blocked work makes the scaler request nodes in the right group; a request repeated after a leader change creates no extra node; a node that never joins is cleaned up. |
-| 3 | Scale down: candidate selection (the adapted `scaleutils`, `least_busy` and `empty`), protections, drain with the edge order, delete, the failure paths. | No instance is deleted with an unfinished drain; with `empty`, a node that received work is never deleted and a match is never cut; a stuck drain makes the node eligible again; the minimum of a group keeps an edge in every datacenter; a load balancer following the catalog drops the target before the proxy stops. |
+| 3 | Scale down: candidate selection (the adapted `scaleutils`, `least_busy` and `empty`), protections, drain with the edge order, delete, the failure paths. | No instance is deleted with an unfinished drain; a job with `distinct_hosts` on all its nodes does not make the scaler remove and add the same node again; with `empty`, a node that received work is never deleted and a match is never cut; a stuck drain makes the node eligible again; the minimum of a group keeps an edge in every datacenter; a load balancer following the catalog drops the target before the proxy stops. |
 | 4 | The first real provider (Hetzner Cloud), then Scaleway, AWS and GCP; the bootstrap bundle and `render-node` in the deployer; the renewal of the node certificate. | The lab case with the real provider (below). |
 | 5 | Web UI page, scheduled windows, spot and preemption handling, DNS records of an edge, an `mtls` block for the Traefik pack. | – |
 
@@ -551,7 +565,7 @@ The **policy decides**, not an automatic detection: `engine = "external"` leaves
 7. **Joining credentials.** How a machine that comes up by itself gets its TLS client certificate: a bundle signed in advance, a one-time token exchanged for a certificate, or a certificate issued by the servers at registration (as the native mTLS issues workload certificates).
 8. **Renewal of the node certificate** of a scaled node: short-lived nodes replaced by the scaler (proposed for the first version), or renewal by the servers at run time.
 9. **DNS of an edge.** A load balancer that follows the catalog works with no extra step; round-robin DNS records for new edge nodes have no owner yet (the provider contract, or a separate component).
-10. **Scale-down simulation.** Resource headroom only (proposed for the first version), or a check that the allocations of the candidate fit elsewhere with their constraints.
+10. **Scale-down simulation.** Resource headroom plus the rule for `distinct_hosts` and `distinct_property` (see [placement rules](#decisions-of-the-scaler)) in the first version; a full check that every allocation of the candidate fits elsewhere with all its constraints is not planned.
 11. **Spill.** `spill = false` (proposed default) keeps work waiting when its datacenter's group is full. Is a per-group switch enough, or is a per-job way to allow another datacenter needed (the job already can, with several `datacenters`)?
 12. **Spot and preemptible machines** (a platform removes a node on its own): treat as a node loss, or let the provider tell the scaler in advance so it drains first.
 13. **Slots as a metric.** The allocated share is the first-version basis. A metric of free slots or sessions from the application (a `check` with an external APM source, which the built-in autoscaler can already load) is possible; is a first-class source for it wanted?
