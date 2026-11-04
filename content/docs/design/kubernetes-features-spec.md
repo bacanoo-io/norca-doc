@@ -890,7 +890,7 @@ service {
 
 **Operation:**
 
-- One controller per region (as a Nomad job, `count = 2`, with leader election), and one provider plugin per cloud. Target providers (decided 2026-10-25): Hetzner Cloud Load Balancer, Scaleway Load Balancer, AWS Network Load Balancer and Google Cloud Load Balancing. They are external operators that handle a `class`, not part of the Norca core. Implemented so far: the provider interface and the self-hosted `nomad` provider (a TCP proxy job).
+- One controller per region (as a Nomad job, `count = 2`, with leader election), and one provider plugin per cloud. Target providers (decided 2026-10-25): Hetzner Cloud Load Balancer, Scaleway Load Balancer, AWS Network Load Balancer and Google Cloud Load Balancing. They are external applications that register a `LoadBalancerClass` object (endpoint, capabilities, heartbeat) and implement the provider HTTP API (`PUT` and `DELETE /v1/loadbalancers/{namespace}/{name}`); they are not part of the Norca core. Implemented so far: the provider interface and the self-hosted `nomad` provider (a TCP proxy job).
 - The controller watches the healthy instances of the marked service (or the nodes of the Traefik running at the edge), and updates the load balancer's targets and health check accordingly.
 - The status of the `LoadBalancer` object contains the address and state of the load balancer (`Ready`, `Progressing`, `Degraded`); the address can also be entered into the native DNS.
 - The object gets a finalizer: on deletion the controller first removes the cloud load balancer.

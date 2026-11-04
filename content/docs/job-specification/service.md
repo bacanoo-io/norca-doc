@@ -242,7 +242,9 @@ Connect][connect] integration.
   (the block wins over the same keys set by hand), and a load balancer operator
   (an external application, such as the sample
   [`loadbalancer-operator`](/docs/features/operator-framework)) reads them and
-  creates the load balancer of its `class`. `class` and `port` are required.
+  creates the load balancer of its `class` through the provider registered for
+  it (see [load balancer providers](/docs/features/operator-framework/loadbalancer-providers)).
+  `class` and `port` are required.
 
 With `provider = "nomad"`, Norca also stores the `meta` (or `canary_meta` for
 canaries) of the service in its registrations, records the
