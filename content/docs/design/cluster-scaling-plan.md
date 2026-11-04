@@ -21,6 +21,7 @@ The built-in autoscaler scales the task groups of jobs. This plan lets it scale 
 - [The provider contract](#the-provider-contract)
 - [The life of a node](#the-life-of-a-node)
 - [Scale down and drain](#scale-down-and-drain)
+- [Rolling replacement of nodes](#rolling-replacement-of-nodes)
 - [Where the operator and the providers run](#where-the-operator-and-the-providers-run)
 - [Example: an edge pool with Traefik, and mTLS](#example-an-edge-pool-with-traefik-and-mtls)
 - [Example: game servers, a fixed base and steps](#example-game-servers-a-fixed-base-and-steps)
@@ -234,13 +235,20 @@ spec {
   replicas = 3                             # the desired number of nodes (the scale): written by the autoscaler, or by hand
   min      = 1
   max      = 20
-  max_node_age = "60d"                     # replace nodes older than this (before their certificate expires)
   priority = 0                             # only for expander = "priority": lower is tried first
   weight   = 1                             # only for expander = "weighted"
   headroom_nodes = 0                       # keep free capacity worth this many nodes of the group ahead of demand
   # headroom_percent = 10                  # alternative: a share of the group; the larger of the two applies
 
   spill = false                            # true: work that cannot be placed here may grow groups of other pools
+
+  rolling {                                # replacing nodes; see "Rolling replacement of nodes"
+    mode            = "auto"               # auto | paused
+    generation      = 1                    # raise it to replace every older node
+    max_node_age    = "45d"                # soft limit: older nodes are replaced (no new work, replaced when empty)
+    max_unavailable = 1                    # nodes of the group being replaced at the same time
+    max_surge       = 1                    # nodes above `replicas` while replacing (0: remove first)
+  }
 
   provider = "hetzner-eu"                  # a NodeProvider registered by a provider application
   group    = "fsn1"                        # the provider's name of the zone or group
@@ -280,7 +288,8 @@ What the object holds and who writes it:
 | `spec` (except `replicas`) | A person or a GitOps tool | The description of the group above. |
 | `spec.replicas` | The autoscaler (the scale), an external autoscaler, or a person | The desired number of nodes of the group. |
 | `status.replicas`, `status.joining`, `status.failed` | The operator | Nodes of the group that are ready, requested and not joined yet, and failed. |
-| `status.conditions` | The operator | `ProviderAvailable`, `OperatorReady`, `ScaleDownBlocked`, `Synced`, each with a reason. |
+| `status.rollout` | The operator | Nodes that are outdated, being replaced and up to date, and the node in progress. |
+| `status.conditions` | The operator | `ProviderAvailable`, `OperatorReady`, `ScaleDownBlocked`, `Rolling`, `Synced`, each with a reason. |
 | Event log | The autoscaler and the operator | `Scaled` with the trigger and the reason; instances created and deleted; join deadline; drain results. |
 
 CEL rules of the kind: `min <= max`; `min <= replicas <= max`; the network is a valid CIDR; `provider` is set when `engine` is `builtin`. The other checks need more than one object and are made by the operator and shown as conditions: the network range is not shared with another group and lies within the firewall ranges, the pool and the datacenter exist (the pool definition may arrive later by replication), and one `engine` for all groups of a pool.
@@ -465,7 +474,7 @@ flowchart LR
 
 **Two steps, one mechanism.**
 
-1. **First version: the operator generates the pair and delivers it in the bundle.** The operator creates the key and the certificate of a new node, writes the leaf and the intermediate into the cert file of the bundle, and passes the bundle to the provider. The key travels through the provider and the user data of the machine, so the bundle is handed only to the provider and the validity of the certificate is short. A node is **replaced before its certificate expires**: the group's `max_node_age` makes the operator add a node and drain the old one (this also renews the image).
+1. **First version: the operator generates the pair and delivers it in the bundle.** The operator creates the key and the certificate of a new node, writes the leaf and the intermediate into the cert file of the bundle, and passes the bundle to the provider. The key travels through the provider and the user data of the machine, so the bundle is handed only to the provider and the validity of the certificate is short. A node is **replaced before its certificate expires** by the [rolling replacement](#rolling-replacement-of-nodes): the certificate lives 60 days, the soft limit `max_node_age` is 45 days and the hard limit 55 days (this also renews the image).
 2. **Hardening: the key never travels.** A small helper on the node (`norca-join`) makes the key, sends a signing request and a **one-time token** (the only secret left in the user data) to a signing endpoint of the operator, receives the certificate (and the gossip key), and renews it later with the current certificate before it expires, followed by SIGHUP. Nodes then have no age limit. The same intermediate and the same issuing code are used, so step 1 is not thrown away.
 
 ## Scale down and drain
@@ -483,6 +492,49 @@ If the drain does not finish by its deadline, or fails, the operator **does not 
 **Deleting a node group.** A finalizer of the object keeps it until its nodes are dealt with: the operator drains and deletes the nodes it created (or, if the person asks for it, leaves them and drops only the object). Nodes added by hand are not touched.
 
 **Edge nodes.** A node that runs an ingress proxy must leave the traffic first. The order during the drain is: the service is deregistered from the native catalog (a load balancer that follows the catalog drops the target at once); the task's `shutdown_delay` lets running requests finish; then the task stops. A disruption budget on the proxy job keeps enough instances up, and the `min` of the node groups keeps at least one edge node in every datacenter.
+
+## Rolling replacement of nodes
+
+Nodes are replaced one by one for three reasons: they have reached their age limit (the certificate of a node that lives on a key that travelled, see [node identity](#node-identity-and-certificates)), the template of the group has changed (a new image), or a person asked for it. The operator does it with the machinery of scale down, but **the new node comes first** and the scale does not change: it is not scaling.
+
+```
+t0  the old node becomes ineligible   no new allocations
+t0  one more node is asked for        surge: the capacity does not shrink
+t1  the new node has joined           ready, it gets work
+t2  the old node is empty             drained, or (selector = empty) it emptied by itself
+t3  the old instance is deleted       the node goes away
+```
+
+**What makes a node outdated.** Any of: its age is above `max_node_age`; its revision differs from the one of the template (a hash of `node` and `provider`, written into the node meta as `norca.node_group_revision` when it is created); its generation is below `rolling.generation`; or it carries the meta `norca.scale.replace = "true"`. Only nodes the operator created are candidates; a node added by hand, a protected node (`norca.scale.protect`) and a node of a group with `rolling.mode = "paused"` are not.
+
+**The rules of the replacement.**
+
+- At most `max_unavailable` nodes of a group are replaced at the same time (1 by default); the oldest goes first.
+- **Surge first.** With `max_surge >= 1` the new node is asked for before the old one leaves, so the group briefly has more than `replicas` nodes. That is allowed above `max` by `max_surge` only, and never above the maximum of the pool. With `max_surge = 0` (for example `min = max = 1` and no room) the old node is removed first and the capacity dips.
+- **`replicas` and the autoscaler do not see it.** `status.replicas` counts the nodes that stay; a node that is being replaced and the surge node do not make the autoscaler scale up or down.
+- **The protections of scale down hold**: disruption budgets, the `min` of a datacenter, `distinct_hosts` and `distinct_property` (a node is not replaced when its allocations could not be placed again), and the edge order (deregister, `shutdown_delay`, stop).
+- **A refused surge does not start the replacement.** When the provider refuses the new node (quota, no capacity), the old node stays eligible, the group is backed off and an event says why.
+- **The state is in the cluster.** The age, the revision, the ineligibility and the provider ids of the instances are on the nodes, the objects and at the provider; an operator that restarts, or a leader change, goes on from there.
+
+**Two limits for the age.**
+
+| Limit | What happens |
+| --- | --- |
+| **Soft** (`max_node_age`, proposed 45 days) | The node becomes ineligible and is replaced as soon as it is empty. With `selector = "empty"` a game server node is not drained: it gets no new matches and goes when the last one has ended. |
+| **Hard** (the certificate expiry minus a margin, proposed 55 days of 60) | A node that is not empty yet is drained with the deadline of the policy, because a node with an expired certificate cannot reconnect and would be lost. This overrides `mode = "paused"` and the `empty` selector, and it raises a `Rolling` event a week before. |
+
+**Doing it by hand.**
+
+| What | How |
+| --- | --- |
+| Replace the nodes after a change of the template (a new image) | Change `spec.node` and `norca object apply`; the nodes of the old revision are outdated and are replaced by the rules above. |
+| Replace every node, with the same template (patches, a new node CA) | Raise `rolling.generation`. A node gets the current generation when it is created. |
+| Replace one node | `norca node meta apply -node-id <id> norca.scale.replace=true`; the meta key is removed with `-unset` as long as the node has not started to empty. |
+| Stop and continue | `rolling.mode = "paused"`: the replacement in progress finishes, no new one starts (except the hard limit). |
+| See where it is | `norca object get norca.io/NodeGroup/<name>`: `status.rollout` and the condition `Rolling`. |
+| Try it | `enforce = false`: the operator only raises events ("would replace node X"). |
+
+After the [hardening step](#node-identity-and-certificates), when the node renews its own certificate, the age no longer forces a replacement; the rolling replacement then stays for new images and for patches.
 
 ## Where the operator and the providers run
 
@@ -657,6 +709,7 @@ The **policy decides**, not an automatic detection: `engine = "external"` leaves
 | Leader change | The autoscaler restores the cooldown from the `Scaled` events. The operator is not affected: it reconciles the objects and lists the instances of each group, and its idempotent requests are repeated safely. |
 | Operator restart | The same: the state is in the objects and at the provider. |
 | Node does not join | The join deadline deletes the instance and backs the group off. |
+| Node too old and not empty | The soft limit stops new work on it; the hard limit drains it before its certificate expires. |
 | Drain stuck | No deletion; the node becomes eligible again. |
 | Scale down with no candidate | `ScaleDownBlocked`; the scale goes back to the count of nodes. |
 | Constraint that cannot be checked ahead of time | No scaling; an event `unverifiable constraint` names it. The work waits. |
@@ -675,8 +728,8 @@ The **policy decides**, not an automatic detection: `engine = "external"` leaves
 | --- | --- | --- |
 | 0 | The built-in source `norca` (the cluster gauges as policy metrics), and the blocked-demand metrics, with the reason of the block. A **read-only advice mode**: the autoscaler only raises events ("would add 2 nodes to dc-a"). | Metrics are readable by a check; advice events match the blocked work in a lab test, including a blocked proxy with a static port (one node per instance) and a `distinct_property` on the datacenter (the node is advised in the other datacenter). No provider and no operator needed. |
 | 1 | The kinds `NodeGroup` (with the `scale` block and the CEL rules) and `NodeProvider`; the cluster policy derived from the objects, the expander settings of the server, the headroom, `threshold` and `target-value`; the decision writes the scale. Dry run (`enforce = false`). | Invalid objects are rejected; a pool with two groups shows the expected scale decisions with `enforce = false`; the objects are not replicated between regions; the cooldown survives a leader change. |
-| 2 | The operator `norca-nodescaler` (controller SDK) with the mock provider: the `NodeProvider` registry, the HTTP contract, the scale-up path, join tracking, the join deadline, orphan cleanup, the conditions, the checks of [where it runs](#where-the-operator-and-the-providers-run), the operator pack; the issue of node certificates with the node CA (the first version of [node identity](#node-identity-and-certificates)) and `max_node_age`. | Blocked work makes the scaler raise the scale and the operator request nodes in the right group; a request repeated after a restart creates no extra node; a node that never joins is cleaned up; the operator refuses to run on a scaled node; a node with a certificate of the operator joins the servers in a test (leaf and intermediate in the cert file), and a certificate for a server name, another region or a foreign name is refused. |
-| 3 | Scale down in the operator: candidate selection (the adapted `scaleutils`, `least_busy` and `empty`), protections, the veto and `ScaleDownBlocked`, drain with the edge order, delete, the finalizer, the failure paths. | No instance is deleted with an unfinished drain; a stuck drain makes the node eligible again; a job with `distinct_hosts` on all its nodes does not make the scaler remove and add the same node again; with `empty`, a node that received work is never deleted and a match is never cut; the `min` of a group keeps an edge in every datacenter; a load balancer following the catalog drops the target before the proxy stops. |
+| 2 | The operator `norca-nodescaler` (controller SDK) with the mock provider: the `NodeProvider` registry, the HTTP contract, the scale-up path, join tracking, the join deadline, orphan cleanup, the conditions, the checks of [where it runs](#where-the-operator-and-the-providers-run), the operator pack; the issue of node certificates with the node CA (the first version of [node identity](#node-identity-and-certificates)). | Blocked work makes the scaler raise the scale and the operator request nodes in the right group; a request repeated after a restart creates no extra node; a node that never joins is cleaned up; the operator refuses to run on a scaled node; a node with a certificate of the operator joins the servers in a test (leaf and intermediate in the cert file), and a certificate for a server name, another region or a foreign name is refused. |
+| 3 | Scale down in the operator: candidate selection (the adapted `scaleutils`, `least_busy` and `empty`), protections, the veto and `ScaleDownBlocked`, drain with the edge order, delete, the finalizer, the failure paths; the [rolling replacement](#rolling-replacement-of-nodes) (age, revision, generation, node mark, soft and hard limit, surge). | A node past the soft limit is replaced when empty and one past the hard limit is drained before its certificate expires; a replacement does not change `replicas` and does not make the autoscaler act; a refused surge leaves the old node eligible; no instance is deleted with an unfinished drain; a stuck drain makes the node eligible again; a job with `distinct_hosts` on all its nodes does not make the scaler remove and add the same node again; with `empty`, a node that received work is never deleted and a match is never cut; the `min` of a group keeps an edge in every datacenter; a load balancer following the catalog drops the target before the proxy stops. |
 | 4 | The first real provider (Hetzner Cloud), then Scaleway, AWS and GCP; in the deployer, the static bundle parts (the name-constrained node CA, `pki issue-node-ca`, is done); the hardening of node identity (`norca-join`, the token and the signing endpoint, renewal with SIGHUP). | The lab case with the real provider (below); a node renews its certificate without a restart and keeps its connections. |
 | 5 | Web UI page, scheduled windows, spot and preemption handling, DNS records of an edge, an `mtls` block for the Traefik pack. | – |
 
@@ -684,7 +737,7 @@ The **policy decides**, not an automatic detection: `engine = "external"` leaves
 
 ## Open questions
 
-1. **Validity and node age.** How long a certificate issued by the operator lives, and so the `max_node_age` that replaces a node before it expires. A short validity (for example 90 days, nodes replaced after 60) limits what a stolen bundle is worth, but every node is rolled that often, which game servers with long sessions feel; a long validity (the deployer's 3 years) rolls nodes only for image updates. Until the hardening step makes the key stay on the node, shorter is safer.
+1. **Validity and node age.** Proposed for the first version, while the key travels: a certificate of **60 days**, the soft limit `max_node_age` at **45 days** and the hard limit at **55 days**. The Norca TLS has no revocation, so the validity is the only way to end the use of a stolen bundle; a longer one (the 3 years of the deployer) would make that window too long, and a shorter one would roll every node more often than game servers with long sessions like. After the hardening step, when the key stays on the node and the operator renews the certificate, the proposal is **7 days**, renewed at two thirds, and no replacement by age. The leaf never outlives the node CA (its `NotAfter` is cut at the end of the node CA, less a margin), and a new node CA is introduced with an overlap.
 2. **The gossip key.** It is a shared secret that the bundle carries in the first version; the hardening step delivers it after the token check instead. Should it be rotated with the node CA, and how?
 3. **The code for issuing.** The operator needs the issuing code of the deployer (`pkg/pki`: identity, names, signing): import the package of the deployer, or move it to a small shared module.
 4. **The demand binding.** Where the blocked evaluations a decision was made for are kept: in the `Scaled` event (proposed), or in a field of the object.
