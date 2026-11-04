@@ -67,7 +67,15 @@ it.
   instead of the client agent the request is sent to. Requires `node:write`.
 
 - `DeregisterCriticalAfter` `(int: 3600000000000)` - How long the service may stay critical before it is
-  deregistered (default 1 hour); `0` keeps it.
+  deregistered (default 1 hour; `0` if `Declared`); `0` keeps it.
+
+- `Declared` `(bool: false)` - Marks a service declared in a file or edited as HCL (source `apply`). Its
+  `http` and `tcp` checks need `CheckedBy`, and it cannot be bound to a `NodeID`.
+
+- `CheckedBy` `(object: nil)` - Lets the servers choose the client node that runs the `http` and `tcp`
+  checks: `NodePool` (`string: ""`, every pool) and `Datacenters` (`array<string>`, patterns such as
+  `eu-*`; every datacenter if empty). The node is the ready, eligible match with the highest rendezvous hash
+  of the service ID and the node ID; it changes when that node goes away. Excludes `NodeID`.
 
 - `Checks` `(array<Check>: nil)` - The checks of the service:
 
@@ -169,6 +177,34 @@ A `DELETE` of `/v1/service/external/:id` whose ID is not an external service is 
 $ curl \
     --request DELETE \
     https://localhost:4646/v1/service/external/legacy-pg
+```
+
+## Parse and Format
+
+These endpoints convert between the file form of external services (HCL, or the JSON form) and the API
+form. They do not change any state; the web UI uses them for its HCL editor.
+
+| Method | Path                               | Produces           |
+| ------ | ---------------------------------- | ------------------ |
+| `POST` | `/v1/service/external/parse`       | `application/json` |
+| `POST` | `/v1/service/external/format`      | `application/json` |
+
+| Blocking Queries | ACL Required                                                  |
+| ---------------- | ------------------------------------------------------------- |
+| `NO`             | `namespace:register-external-service` or `namespace:read-job` |
+
+`parse` takes `Text` (the HCL, or with `JSON: true` the JSON form) and returns `Items` (each with a
+`Namespace` and a `Service` in the payload form above, marked `Declared`) and `Problems` (each with a
+`Message` and the `Line` of an HCL error). A file with errors is answered with `200` and its `Problems`.
+`format` takes `Items` and returns the HCL `Text`.
+
+### Sample Request
+
+```shell
+$ curl \
+    --request POST \
+    --data '{"Text": "external_service \"cache\" {\n  address = \"10.0.0.9\"\n}\n"}' \
+    https://localhost:4646/v1/service/external/parse
 ```
 
 ## List External Services

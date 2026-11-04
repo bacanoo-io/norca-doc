@@ -22,6 +22,7 @@ subcommands are available:
 Norca adds the following subcommands:
 
 - [`service register`](/docs/commands/service/register) - Register an external service
+- [`service apply`](/docs/commands/service/apply) - Register the external services declared in a file
 - [`service deregister`](/docs/commands/service/deregister) - Deregister an external service
 - [`service ttl`](/docs/commands/service/ttl) - Renew the TTL checks of an external service
 - [`service intention`](/docs/commands/service/intention) - Interact with service intentions
