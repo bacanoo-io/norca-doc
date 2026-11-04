@@ -216,9 +216,11 @@ Managing kinds needs `operator` write. See the
 - The sizes are bounded: a schema and an object (JSON) at most 256 KiB each,
   at most 64 rules and 16 columns per kind, 64 labels, 16 owners and 32
   finalizers per object, and the last 20 events in the event log.
-- The jobspec has no `load_balancer` block yet: the LoadBalancer sample creates
-  objects from services marked with the `norca_lb_class`, `norca_lb_port` and
-  `norca_lb_internal` service meta keys. Its only provider is the self-hosted
+- The jobspec `expose { load_balancer { ... } }` block of a service is written
+  to the `norca_lb_class`, `norca_lb_port` and `norca_lb_internal` service meta
+  keys, and the LoadBalancer sample creates objects from services marked with
+  them (by hand or by the block). Norca creates no load balancers itself: that
+  is the job of external operators. The sample's only provider is the self-hosted
   `nomad` class; cloud providers are pending.
 
 ## Design

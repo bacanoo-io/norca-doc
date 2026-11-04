@@ -872,7 +872,7 @@ Phase 4 is implemented, the UI included (see the UI note below). Everything live
 
 The first operator of our own is the equivalent of the Kubernetes `LoadBalancer` service type: automatic creation and maintenance of cloud (and self-hosted) load balancers based on the healthy instances of Nomad services. In a multi-cloud environment this has the greatest practical benefit, because a different tool per cloud would otherwise have to be maintained by hand, and it is also a good model, because it uses all the elements of the framework (object, status, finalizer, owner reference, per-region controller). In Kubernetes as well, this is done by a separate component (the cloud controller manager), not by the API server.
 
-**Marking in the jobspec** (the controller creates the `LoadBalancer` object from this):
+**Marking in the jobspec** (implemented: the servers write the block to the `norca_lb_class`, `norca_lb_port` and `norca_lb_internal` meta keys of the service, the controller creates the `LoadBalancer` object from them; the load balancers themselves are created by external operators, not by Norca):
 
 ```hcl
 service {
@@ -890,7 +890,7 @@ service {
 
 **Operation:**
 
-- One controller per region (as a Nomad job, `count = 2`, with leader election), and one provider plugin per cloud. Target providers (decided 2026-10-25): Hetzner Cloud Load Balancer, Scaleway Load Balancer, AWS Network Load Balancer and Google Cloud Load Balancing. Implemented so far: the provider interface and the self-hosted `nomad` provider (a TCP proxy job); the cloud providers are pending.
+- One controller per region (as a Nomad job, `count = 2`, with leader election), and one provider plugin per cloud. Target providers (decided 2026-10-25): Hetzner Cloud Load Balancer, Scaleway Load Balancer, AWS Network Load Balancer and Google Cloud Load Balancing. They are external operators that handle a `class`, not part of the Norca core. Implemented so far: the provider interface and the self-hosted `nomad` provider (a TCP proxy job).
 - The controller watches the healthy instances of the marked service (or the nodes of the Traefik running at the edge), and updates the load balancer's targets and health check accordingly.
 - The status of the `LoadBalancer` object contains the address and state of the load balancer (`Ready`, `Progressing`, `Degraded`); the address can also be entered into the native DNS.
 - The object gets a finalizer: on deletion the controller first removes the cloud load balancer.
