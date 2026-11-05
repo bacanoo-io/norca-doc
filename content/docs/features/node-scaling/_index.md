@@ -63,7 +63,8 @@ it, **without waiting for the cooldown of the group**:
 5. **Nodes that were asked for and have not joined yet** (`status.joining`) are empty room for the
    work, filled first. The same work is therefore not asked for twice, however the expander
    splits it at the next look.
-6. `spec.replicas` is raised by what is left, within the `max` of the group and the `max_nodes` and
+6. A job of a node pool uses the groups of that pool. A job that may run in **any** pool (`node_pool = "all"`) grows no group by default; the groups with `spill = true` are the ones it may grow, in the datacenters it names. An event says so when no group allows it.
+7. `spec.replicas` is raised by what is left, within the `max` of the group and the `max_nodes` and
    `max_step` of the pool.
 
 When the nodes the group has are not known (an operator does not report them and the cluster gauges
@@ -181,5 +182,4 @@ autoscaler {
   the scaler never moves work between datacenters.
 - Work that is blocked by a constraint on the node class is not checked against the class of a
   group yet.
-- Work does not use the groups of other pools (`spill`) yet.
 - The blocked work and the headroom only raise the scale. A check on the group (for example `target-value`) can also lower it, but choosing, draining and deleting a node is the work of the operator, which is not available yet; the scale-down settings of the spec are stored and not used.

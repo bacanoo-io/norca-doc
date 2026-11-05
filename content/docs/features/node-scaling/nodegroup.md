@@ -34,7 +34,7 @@ the machines, which is not available yet.
 | `weight` | integer, at least 1 | `1` | For the `weighted` expander. |
 | `headroom_nodes` | integer | `0` | Keep free capacity worth this many nodes ahead of the work. |
 | `headroom_percent` | number, 0 to 100 | | Keep free capacity worth this share of the nodes of the group. The larger of the two applies. |
-| `spill` | bool | `false` | Reserved: use groups of other pools. Not used yet. |
+| `spill` | bool | `false` | Let work of a job that may run in any node pool (`node_pool = "all"`) grow this group, whatever its pool is. |
 | `provider` | string | | The `NodeProvider` that creates the nodes. Required unless `engine` is `external`. *operator* |
 | `group` | string | | The provider's name of the zone or group. *operator* |
 | `network` | CIDR | | The range of the nodes. *operator* |
