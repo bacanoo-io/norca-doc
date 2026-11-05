@@ -52,7 +52,7 @@ The built-in autoscaler scales the task groups of jobs. This plan lets it scale 
 | Certificate validity | Decided 2026-11-04: while the key travels in the bundle, a node certificate lives **60 days**, with a soft limit `max_node_age` at 45 days and a hard limit at 55 days ([rolling replacement](#rolling-replacement-of-nodes)). After the hardening step (the key stays on the node) it is 7 days, renewed at two thirds, with no replacement by age. The leaf never outlives the node CA. The Norca TLS has no revocation, so the validity is the only way to end the use of a stolen bundle. |
 | Where it runs | Decided 2026-11-04: the operator and the providers run **outside the pools they scale**; see [the rules](#where-the-operator-and-the-providers-run). The same rules hold for every operator, the load balancer operator included. |
 | Operator place | Decided 2026-11-05: the operator `norca-nodescaler` lives in the repository **`norca-platform`**, the home of the platform operators; the load balancer operator moves there later, so nothing in the operator may assume that it is the only one in the repository. |
-| Issuing code | Decided 2026-11-05: a small **shared PKI module** (identity, names, signing) that the deployer and the operator both use, with no dependency on the rest of the deployer, versioned apart from both. |
+| Issuing code | Decided 2026-11-05: a small **shared PKI module** (identity, names, signing) that the deployer and the operator both use, with no dependency on the rest of the deployer, versioned apart from both: the repository **`norca-pki`** (created 2026-11-05 from `pkg/pki` of the deployer, with its history). |
 | Gossip key | Decided 2026-11-05: the first version puts the current key in the bundle (the operator reads it from a Variable); the hardening step delivers it over HTTPS after the check of the one-time token. It is not tied to the rotation of the node CA; the deployer rotates it with the keyring. |
 | Demand binding | Decided 2026-11-05: the autoscaler writes the blocked evaluations a decision was made for to `status.decision` of the group, until the nodes are ready; the `Scaled` event keeps a copy for the history. |
 | Scale-down veto | Decided 2026-11-05: the operator sets the condition `ScaleDownBlocked` with a `retryAfter` time; the autoscaler decides no scale down for the group before it. |
@@ -789,7 +789,7 @@ The badge and the filter are made from `status.nodes`; the meta only tells the U
 The ten questions left open after the review of 2026-11-05 are decided; each is a row of the [summary](#summary-and-decisions):
 
 1. **The gossip key:** in the bundle first, over HTTPS after the one-time token in the hardening step; rotated with the keyring, not with the node CA.
-2. **The issuing code:** a small shared PKI module used by the deployer and the operator.
+2. **The issuing code:** a small shared PKI module used by the deployer and the operator, the repository `norca-pki`.
 3. **The demand binding:** `status.decision` of the group, written by the autoscaler; a copy in the `Scaled` event.
 4. **The scale-down veto:** `ScaleDownBlocked` with `retryAfter`.
 5. **The place of the operator:** `norca-nodescaler` in the repository `norca-platform`, where the load balancer operator moves later.
