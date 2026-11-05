@@ -126,6 +126,53 @@ does not need a block.
 - `config` `(map<string|string>: nil)` - The configuration passed to the plugin.
   Values are converted to strings.
 
+## `advice` Block
+
+The advice mode is read-only. It looks at the work that cannot be placed for
+want of capacity (the blocked evaluations on the leader), packs it into nodes
+of the size you give, and raises an event with the number of nodes that
+would be needed. It adds and removes nothing. It runs while at least one
+`advice` block is set.
+
+- `advice_interval` `(string: "30s")` - How often the blocked work is looked
+  at. Set it in the `autoscaler` block.
+
+```hcl
+autoscaler {
+  enabled = true
+
+  advice "workers-a" {
+    pool       = "workers"
+    datacenter = "dc-a"
+    cpu        = 4000   # MHz, after the reserved resources
+    memory     = 8192   # MB
+    disk       = 20000  # MB
+  }
+}
+```
+
+The label names the node group in the events. The parameters are `pool` and
+`datacenter` (required: the group the nodes would belong to) and `cpu`,
+`memory` and `disk`, the allocatable size of one node.
+
+The allocations are packed largest first, each into the first node where it
+fits on CPU, memory and disk. Four allocations of 6 GB on nodes of 8 GB need
+four nodes, not three. An allocation under `distinct_hosts` needs a node of
+its own. An allocation that does not fit an empty node cannot be helped by
+this group.
+
+Events of the `Scaling` topic, raised when the picture changes (not at every
+look):
+
+| Event | Meaning |
+| --- | --- |
+| `ScalingNodeAdvice` | `Group` is `pool/datacenter`, `Count` the nodes the work would need, `PreviousCount` the number advised before. `Count` 0 withdraws the advice. `DryRun` is set. |
+| `ScalingNodeAllocationTooLarge` | A task group (`JobID`, `Group`) has an allocation that does not fit an empty node of the configured size. |
+
+The demand of a job that can use several datacenters is counted in each of
+them. Work blocked by the quota of its namespace is not counted: more nodes
+would not help it.
+
 ## `strategy` Block
 
 ```hcl
