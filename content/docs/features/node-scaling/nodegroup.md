@@ -72,7 +72,8 @@ Durations are written as numbers with `s`, `m`, `h` or `d`: `30s`, `15m`, `1h30m
 | `status.replicas` | operator | Nodes of the group that are ready. Without it the autoscaler reads the ready nodes from the cluster gauges. |
 | `status.joining`, `status.failed` | operator | Nodes asked for and not joined yet, and failed. Joining nodes count as capacity for the blocked work. |
 | `status.allocatable`, `status.capacity` | operator | The size of one node (`cpu`, `memory`, `disk`). Without `allocatable` the size comes from `spec.node`. |
-| `status.nodes`, `status.rollout`, `status.decision` | operator, autoscaler | Reserved for the operator. |
+| `status.decision` | autoscaler | What the last raise of the scale was made for, kept until the group has that many ready nodes (or its scale is set below it): `time`, `replicas`, `previous`, `check` (`blocked-demand` or `headroom`), `reason`, `evaluations` (the IDs of the blocked evaluations, at most 50) and `work` (`namespace`, `job`, `group` and `count` of the blocked work, at most 20). Not written for a dry run. |
+| `status.nodes`, `status.rollout` | operator | Reserved for the operator. |
 | `status.conditions` | operator | Conditions with a reason. |
 
 ## Rules
@@ -85,6 +86,10 @@ The kind refuses an object when:
 - `pool`, `datacenter` or `node_class` is changed;
 - a duration, a CIDR, a share or an enum value is not in the form above, a nested block has an
   unknown field, or a check has no strategy or more than one.
+
+The status is written by the operator and by the autoscaler, and a status write replaces the
+whole status: a writer reads the object, changes its own fields and writes it back with the index
+it read (the `CAS` of the status write), so neither removes the fields of the other.
 
 ## Events
 
