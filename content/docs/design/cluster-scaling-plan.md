@@ -436,20 +436,24 @@ POST   {endpoint}/v1/groups/{group}/instances               create instances
 DELETE {endpoint}/v1/groups/{group}/instances/{id}          delete one instance
 ```
 
-`POST` is idempotent by a `request_id` the operator gives, so a repeated request after a failure or a restart does not create more nodes:
+`POST` is idempotent by a `request_id` the operator gives, so a repeated request after a failure or a restart does not create more nodes. It lists the instances: each has a **name the operator gives it** (the machine and node name) and a **bootstrap of its own**, because the bootstrap holds the key of its node, and because the provider's ID of an instance is known only after the machine is created, while its node must be described before:
 
 ```json
 {
-  "request_id": "eu/workers-dc-a/00184",
-  "count": 2,
+  "request_id": "eu/workers-dc-a/184",
+  "instances": [
+    { "name": "workers-dc-a-184-1", "bootstrap": { "user_data": "#cloud-config ..." } },
+    { "name": "workers-dc-a-184-2", "bootstrap": { "user_data": "#cloud-config ..." } }
+  ],
   "parameters": { "size": "cx32", "image": "norca-worker-3" },
   "labels": {
     "norca.region": "eu", "norca.pool": "workers", "norca.datacenter": "dc-a",
-    "norca.class": "worker", "norca.node_group": "workers-dc-a"
-  },
-  "bootstrap": { "...": "see the life of a node" }
+    "norca.class": "worker", "norca.node_group": "workers-dc-a", "norca.request": "eu/workers-dc-a/184"
+  }
 }
 ```
+
+(Changed 2026-11-05 from a `count` and one bootstrap for all, when the bootstrap was built.)
 
 `GET` returns, per instance, its `id`, `state` (`creating`, `running`, `deleting`, `failed`), the reason of a failure (`quota`, `no_capacity`, `invalid`, `error`), its addresses and labels, and, for the group, the `capacity` of the machine kind (CPU in MHz, memory and disk in MB), **also when the group has no instance**: it is a property of the kind named in `parameters`, not of a running machine. The operator copies it to `status.capacity` of the `NodeGroup`; this is how a request is sized. A provider that cannot create an instance says so with a reason, and does not retry for ever.
 
@@ -461,13 +465,13 @@ The `NodeProvider` object has the endpoint (https; a private CA with an option l
 flowchart LR
   R["Replicas raised<br/>(request_id, node group)"] --> I["Instance created<br/>by the provider"]
   I --> B["Bootstrap:<br/>agent installed and configured"]
-  B --> J["Node registers:<br/>datacenter, pool, class,<br/>meta norca.provider_id"]
+  B --> J["Node registers:<br/>datacenter, pool, class,<br/>meta norca.instance"]
   J --> OK["Ready: counted<br/>as capacity"]
   I -. "join deadline" .-> X["Delete the instance,<br/>back off the group"]
   B -. "join deadline" .-> X
 ```
 
-- **Identity.** The provider labels the instance with the region, pool, datacenter, class, node group and the request; the node, when it registers, carries `datacenter`, `node_pool`, `node_class` and a meta key with the **provider's instance id**. That key is how a node is matched with its instance, and the only nodes the operator may remove. The bundle writes the node's **marks** into its meta, so that the nodes the operator created can be told from the others in the API, in `norca node status` and in the web UI: `norca.created_by = "nodescaler"`, `norca.node_group`, `norca.provider_id`, `norca.node_group_revision`, `norca.created_at` (RFC 3339, for the age). The meta is what the node says about itself; the operator's own record is `status.nodes` of the object.
+- **Identity.** The provider labels the instance with the region, pool, datacenter, class, node group and the request, and gives the machine the **name the operator chose**; the node, when it registers, carries `datacenter`, `node_pool`, `node_class` and that name in the meta key `norca.instance`. That key is how a node is matched with its instance, and the only nodes the operator may remove. (The provider's instance ID can not be used: it is assigned when the machine is created, after its bootstrap was written.) The bundle writes the node's **marks** into its meta, so that the nodes the operator created can be told from the others in the API, in `norca node status` and in the web UI: `norca.created_by = "nodescaler"`, `norca.node_group`, `norca.instance`, `norca.request`, `norca.created_at` (RFC 3339, for the age). The meta is what the node says about itself; the operator's own record is `status.nodes` of the object.
 - **A template that does not work must not loop.** Nodes that do not join, or that register with another datacenter, pool or class than their group, count as join failures. After `join.max_failures` in a row (3 by default) the group is set to the condition `JoinFailing` with the reason of the last failure, and **no further instance is asked for** until the template changes (its revision) or `join.resume_generation` is raised. This stops a wrong template, a broken image or a firewall that blocks the nodes from creating and deleting machines for ever and from running up the bill; the nodes per hour cap of the pool is the second limit.
 - **Join deadline** (`join.deadline`, default 15 minutes). An instance that exists but whose node has not registered by then is deleted, and the group is backed off. Instances with the labels of this operator and no node, after the deadline, are orphans and are deleted; a node whose instance is gone is reported.
 - **Two identities.** A node needs its **own identity** to join, and its tasks get **workload identities** afterwards; the scaler only has to deliver the first (see [the mTLS section](#mtls-two-layers)).
@@ -578,7 +582,7 @@ The operator creates and deletes the nodes that jobs run on. If it ran on one of
 
 | # | Rule |
 | --- | --- |
-| 1 | **Run outside the pools the operator scales.** The job of the operator and of the providers go to a pool that has no `NodeGroup`, or are kept off scaled nodes with a constraint on the meta key the operator sets: `${meta.norca.provider_id}` `is_not_set`. A node without the provider id is never removed by the operator, so an operator on such a node cannot delete itself. |
+| 1 | **Run outside the pools the operator scales.** The job of the operator and of the providers go to a pool that has no `NodeGroup`, or are kept off scaled nodes with a constraint on the meta key the operator sets: `${meta.norca.instance}` `is_not_set`. A node without the instance name is never removed by the operator, so an operator on such a node cannot delete itself. |
 | 2 | **That pool has its own capacity.** It is not a node group of the operator; its nodes are added by hand or by the deployer. It holds at least as many nodes as the instances of the operator and the providers need. |
 | 3 | **Two instances on different nodes.** `count = 2` with `distinct_hosts` (and a `spread` on the datacenter, if the pool has several), so that a node lost does not stop the actuation; the controller SDK elects the leader. |
 | 4 | **One operator per region.** Node groups belong to a region, so the operator runs in it (its `-region`), and so does every provider that serves it. |
