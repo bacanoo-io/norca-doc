@@ -167,7 +167,19 @@ look):
 | Event | Meaning |
 | --- | --- |
 | `ScalingNodeAdvice` | `Group` is `pool/datacenter`, `Count` the nodes the work would need, `PreviousCount` the number advised before. `Count` 0 withdraws the advice. `DryRun` is set. |
+| `ScalingNodeUnverifiable` | A task group (`JobID`, `Group`) is blocked by a constraint that cannot be checked ahead of time; `Reason` names it. |
 | `ScalingNodeAllocationTooLarge` | A task group (`JobID`, `Group`) has an allocation that does not fit an empty node of the configured size. |
+
+A `distinct_property` on `${node.datacenter}` or `${node.pool}` is checked
+against the group: the live allocations of the job (of the group, when the
+constraint is on the group) are counted by the value of their node, and a
+group whose value has no room left is not advised, so the node is advised in
+the group of another datacenter. When there is room for fewer allocations than
+are waiting, the count is capped at what is left. A `distinct_property` on
+anything else (a `meta` key, an attribute) cannot be checked against a node
+that does not exist yet: no node is advised, a `ScalingNodeUnverifiable` event
+names the job and the constraint, and the allocations are counted by
+`norca.cluster.blocked_unverifiable`. The fix is in the job.
 
 The demand of a job that can use several datacenters is counted in each of
 them. Work blocked by the quota of its namespace is not counted: more nodes
