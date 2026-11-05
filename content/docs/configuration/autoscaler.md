@@ -180,6 +180,22 @@ group:
    a dry run: it is recorded once in the event log of the object and
    `spec.replicas` is not changed.
 
+### Headroom
+
+A node takes minutes to start, so work that arrives after the capacity ran out
+waits that long. `headroom_nodes` (or `headroom_percent`, a share of the nodes
+the group has; the larger of the two applies) in the spec of a node group asks
+the autoscaler to keep free capacity worth that many nodes ahead of the work.
+
+The free capacity is read from the cluster gauges of the group's datacenter,
+pool and class: the ready, eligible nodes and the share of CPU and memory
+allocated (the scarcer of the two). Nodes that were asked for and have not
+joined yet count as free capacity, so the same headroom is not asked for twice.
+The nodes that blocked work needs are not free capacity: the headroom comes
+on top of them. When the gauges can't be read, nothing is added. Unlike blocked
+work, the headroom is an ahead-of-time trigger and waits for the cooldown of the
+group.
+
 When work is not helped by more nodes, a `ScalingNodeBlocked` event says why
 (every group is at its maximum, a limit of the pool, the size of a node is not
 known, no group fits it); a constraint that cannot be checked against a node that
