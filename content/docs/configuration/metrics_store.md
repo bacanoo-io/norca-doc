@@ -91,18 +91,20 @@ series counts 2 towards `max_series`.
 
 | Metric | Labels | Value |
 | --- | --- | --- |
-| `norca.cluster.cpu_allocated` | `dc`, `pool` | CPU of the running allocations, in percent of the CPU of the ready, eligible nodes after their reserved CPU |
-| `norca.cluster.cpu_used` | `dc`, `pool` | CPU the allocations actually use, in percent of the same capacity |
-| `norca.cluster.memory_allocated` | `dc`, `pool` | memory of the running allocations, in percent |
-| `norca.cluster.memory_used` | `dc`, `pool` | memory the allocations actually use, in percent |
-| `norca.cluster.disk_allocated` | `dc`, `pool` | ephemeral disk of the running allocations, in percent |
-| `norca.cluster.nodes_ready` | `dc`, `pool` | ready, eligible nodes |
+| `norca.cluster.cpu_allocated` | `dc`, `pool`, `class` | CPU of the running allocations, in percent of the CPU of the ready, eligible nodes after their reserved CPU |
+| `norca.cluster.cpu_used` | `dc`, `pool`, `class` | CPU the allocations actually use, in percent of the same capacity |
+| `norca.cluster.memory_allocated` | `dc`, `pool`, `class` | memory of the running allocations, in percent |
+| `norca.cluster.memory_used` | `dc`, `pool`, `class` | memory the allocations actually use, in percent |
+| `norca.cluster.disk_allocated` | `dc`, `pool`, `class` | ephemeral disk of the running allocations, in percent |
+| `norca.cluster.nodes_ready` | `dc`, `pool`, `class` | ready, eligible nodes |
 | `norca.cluster.autopilot_healthy` | | 1 when the servers are healthy, else 0; stored by the leader only |
 | `norca.cluster.autopilot_failure_tolerance` | | servers that can fail without losing the quorum; stored by the leader only |
 | `norca.quota.cpu_mhz_allocated` | `quota` | MHz of the allocations of the namespaces of the quota in the region |
 | `norca.quota.cpu_mhz_used` | `quota` | MHz they actually use |
 | `norca.quota.memory_mb_allocated` | `quota` | MiB of the allocations |
 | `norca.quota.memory_mb_used` | `quota` | MiB they actually use |
+
+The label `class` is the node class. The series with `class` empty covers all the nodes of the datacenter and node pool, whatever their class; every node class that is set has a series of its own with the nodes of that class only. A series counts 2 towards `max_series`, so a node class adds six series per datacenter and pool.
 
 The `used` values come from the clients' usage reports: a node whose latest
 report is older than two report intervals counts as using nothing.
