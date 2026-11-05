@@ -129,7 +129,7 @@ does not need a block.
 ## `node_scaling` Block
 
 Settings of node scaling that concern the groups of a node pool together, or
-the whole region. A node group is a [`norca.io/NodeGroup`](/docs/design/cluster-scaling-plan)
+the whole region. A node group is a [`norca.io/NodeGroup`](/docs/features/node-scaling/nodegroup)
 object; the built-in autoscaler derives its scaling policy from the object and
 writes the scale to `spec.replicas`.
 

@@ -16,6 +16,7 @@ Only features marked *Available* can be used; the others are being built.
 | Nomad v1.6.5 core features | Available | [Concepts](/docs/concepts) |
 | Dependency updates (Go 1.27, gRPC 1.84, security fixes) | Available | [Development plan](/docs/design/nomad-fork-development-plan) |
 | Built-in autoscaler: leader subsystem, built-in strategies, `nomad` metrics pushed by clients and Prometheus, external APM and strategy plugins, typed and validated `scaling` policies, quota and deployment aware, `Scaling` events, off by default | Available | [Autoscaler](/docs/features/autoscaler) |
+| Node scaling: `NodeGroup` and `NodeProvider` objects, the decision of the scale (blocked work, headroom, expanders, checks, dry run); the operator and the providers that create the machines are being built | In progress | [Node scaling](/docs/features/node-scaling) |
 | Built-in autoscaler: node pool scaling with cloud providers (Hetzner Cloud, Scaleway, AWS, GCP) | Postponed | [Development plan](/docs/design/nomad-fork-development-plan) |
 | Namespace quotas | Available | [Quotas](/docs/features/quotas) |
 | Dynamic admission control (CEL policies, webhooks) | Available | [Admission control](/docs/features/admission-control) |
