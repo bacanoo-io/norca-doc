@@ -70,7 +70,7 @@ it, **without waiting for the cooldown of the group**:
 
 When the nodes the group has are not known (an operator does not report them and the cluster gauges
 cannot be read), the group is left alone: without that number the nodes on their way cannot be told
-from the ready ones, and the work would be asked for again at every look.
+from the ready ones, and the work would be asked for again at every look. A group whose datacenter, pool and class have no node at all (a new class, or every node down) is known to have none: it grows from nothing.
 
 ### Headroom
 
@@ -181,5 +181,5 @@ autoscaler {
   or groups with different classes.
 - A job fixed to one datacenter stays blocked until its owner changes the job or raises the group;
   the scaler never moves work between datacenters.
-- A constraint of a job on `${node.class}` (`=`, `!=`, `regexp`, `set_contains_any`, `is_set`, `is_not_set`) is checked against the `node_class` of each group: only groups whose class passes it grow. A group without `node_class` has nodes of no class. Other operators cannot be checked and are reported like an unverifiable constraint.
+- A constraint of a job on `${node.class}` is checked against the `node_class` of each group, the way the scheduler checks it, with `=`, `!=`, `regexp`, `set_contains`, `set_contains_all`, `set_contains_any`, `is_set` and `is_not_set` (the class of a node is always set, even when it is empty). The nodes of a group without `node_class` have no class. Other operators, and a value that is itself a property of a node (`${meta.class}`), cannot be checked ahead of time and are reported like an unverifiable constraint.
 - The blocked work and the headroom only raise the scale. A check on the group (for example `target-value`) can also lower it, but choosing, draining and deleting a node is the work of the operator, which is not available yet; the scale-down settings of the spec are stored and not used.
