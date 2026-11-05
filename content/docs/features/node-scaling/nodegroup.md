@@ -73,10 +73,24 @@ Durations are written as numbers with `s`, `m`, `h` or `d`: `30s`, `15m`, `1h30m
 | `status.joining`, `status.failed` | operator | Nodes asked for and not joined yet, and failed. Joining nodes count as capacity for the blocked work. |
 | `status.allocatable`, `status.capacity` | operator | The size of one node (`cpu`, `memory`, `disk`). Without `allocatable` the size comes from `spec.node`. |
 | `status.decision` | autoscaler | What the last raise of the scale was made for, kept until the group has that many ready nodes (or its scale is set below it): `time`, `replicas`, `previous`, `check` (`blocked-demand` or `headroom`), `reason`, `evaluations` (the IDs of the blocked evaluations, at most 50) and `work` (`namespace`, `job`, `group` and `count` of the blocked work, at most 20). Not written for a dry run. |
-| `status.nodes` | operator | One entry per instance of the provider: `instance`, `state` (`creating`, `running`, `deleting`, `failed`), `request`, `created`, a `reason` when it failed, and `node` and `ready` once its node joined. |
+| `status.nodes` | operator | One entry per instance of the provider: `instance`, `state` (`creating`, `running`, `deleting`, `failed`), `request`, `created`, a `reason` when it failed, `node` and `ready` once its node joined, and `slow` while it joins after `join.slow_after`. |
 | `status.lastRequest` | operator | The number of the last request to the provider. A request ID is `<region>/<group>/<number>`; the provider creates nothing more for an ID it has seen. |
+| `status.join` | operator | The join failures in a row: `failures`, `lastFailure`, and the template (`revision`) and resume generation (`resumed`) they count for. |
 | `status.rollout` | operator | Reserved for the operator. |
-| `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`) and `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances). |
+| `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`) `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, or `JoinFailing`) and `JoinFailing` (`True` with `TooManyFailures`). |
+
+## The join of the nodes
+
+An instance whose node has not joined by `join.deadline` (15 minutes by default), or that the
+provider reports as failed, is deleted, and counts as a join failure. After `join.max_failures`
+(3) failures in a row the group stops asking for instances (`JoinFailing`), so a template that
+does not work does not create and delete machines for ever. It asks again when the template
+changes (`spec.node`, `provider` or `group`) or `join.resume_generation` is raised; a node that
+joins ends the row. A node still joining after `join.slow_after` (5 minutes) stays in
+`status.nodes` but no longer counts in `status.joining`, so the autoscaler may ask for another.
+
+The events of the operator in the log of the group: `InstancesRequested`, `CreateFailed`,
+`NodeJoined`, `JoinSlow`, `JoinTimeout`, `InstanceFailed` and `JoinFailing`.
 
 ## Rules
 
