@@ -123,6 +123,8 @@ minutes by default) from its store, so the built-in metrics do not wait one
 window after a leader change. Checks whose `query_window` is longer than
 `metrics_window` read the built-in metrics from the store.
 
+The cluster gauges are the data of the [`norca`](/docs/features/autoscaler/reference/plugins/apm/norca) source: a check with `source = "norca"` scales a job on the allocated or used share of a datacenter and node pool (and node class).
+
 ## High availability
 
 Every server stores every report: the telemetry stream of the bus keeps the
