@@ -157,8 +157,9 @@ The label names the node group in the events. The parameters are `pool` and
 
 The allocations are packed largest first, each into the first node where it
 fits on CPU, memory and disk. Four allocations of 6 GB on nodes of 8 GB need
-four nodes, not three. An allocation under `distinct_hosts` needs a node of
-its own. An allocation that does not fit an empty node cannot be helped by
+four nodes, not three. An allocation under `distinct_hosts`, or one that asks for a port by number
+on the host (a proxy on ports 80 and 443), needs a node of its own, however
+small it is; the room left on that node is used by the other work. An allocation that does not fit an empty node cannot be helped by
 this group.
 
 Events of the `Scaling` topic, raised when the picture changes (not at every

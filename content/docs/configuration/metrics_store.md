@@ -100,7 +100,7 @@ series counts 2 towards `max_series`.
 | `norca.cluster.blocked_cpu_mhz` | `dc`, `pool` | MHz of the allocations that could not be placed for want of capacity; stored by the leader only |
 | `norca.cluster.blocked_memory_mb` | `dc`, `pool` | memory of those allocations, in MiB |
 | `norca.cluster.blocked_evals` | `dc`, `pool` | blocked evaluations that wait for capacity |
-| `norca.cluster.blocked_allocs_exclusive` | `dc`, `pool` | unplaced allocations that need a node of their own (`distinct_hosts`) |
+| `norca.cluster.blocked_allocs_exclusive` | `dc`, `pool` | unplaced allocations that need a node of their own (`distinct_hosts`, or a port by number on the host) |
 | `norca.cluster.blocked_unverifiable` | `dc`, `pool` | unplaced allocations blocked by a `distinct_property` on a property other than the datacenter or the node pool: what a node that does not exist yet would have is not known, so no node is advised for them |
 | `norca.cluster.autopilot_healthy` | | 1 when the servers are healthy, else 0; stored by the leader only |
 | `norca.cluster.autopilot_failure_tolerance` | | servers that can fail without losing the quorum; stored by the leader only |
