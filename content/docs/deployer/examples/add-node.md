@@ -20,8 +20,8 @@ A client added to a running cluster: only the new node is installed.
 #   - existing nodes are only checked; nothing changed on them, so they are
 #     not restarted ("unchanged, not restarted").
 #
-#   norca-deployer plan  -c examples/add-node.yaml   # shows norca-worker-03 as "new"
-#   norca-deployer apply -c examples/add-node.yaml
+#   norca-deployer plan  -c examples/nodes/add-node.yaml   # shows norca-worker-03 as "new"
+#   norca-deployer apply -c examples/nodes/add-node.yaml
 #
 # After a successful apply the node is in the list of installed nodes
 # (.norca-deployer/nodes-<region>.json). That list is how a later apply
