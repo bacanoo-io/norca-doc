@@ -76,8 +76,9 @@ Durations are written as numbers with `s`, `m`, `h` or `d`: `30s`, `15m`, `1h30m
 | `status.nodes` | operator | One entry per instance of the provider: `instance`, `state` (`creating`, `running`, `deleting`, `failed`), `request`, `created`, a `reason` when it failed, `node` and `ready` once its node joined, and `slow` while it joins after `join.slow_after`. |
 | `status.lastRequest` | operator | The number of the last request to the provider. A request ID is `<region>/<group>/<number>`; the provider creates nothing more for an ID it has seen. |
 | `status.join` | operator | The join failures in a row: `failures`, `lastFailure`, and the template (`revision`) and resume generation (`resumed`) they count for. |
+| `status.strayNodes` | operator | Nodes of the group without an instance: `node`, `name`, `instance` and `kind`: `gone` (down, what is left of a deleted instance) or `foreign` (ready, without a machine the operator asked for; made ineligible). |
 | `status.rollout` | operator | Reserved for the operator. |
-| `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`) `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, or `JoinFailing`) and `JoinFailing` (`True` with `TooManyFailures`). |
+| `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`) `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, or `JoinFailing`) `JoinFailing` (`True` with `TooManyFailures`) and `ForeignNode` (`True` while a ready node of the group runs without an instance). |
 
 ## The join of the nodes
 
@@ -90,7 +91,14 @@ joins ends the row. A node still joining after `join.slow_after` (5 minutes) sta
 `status.nodes` but no longer counts in `status.joining`, so the autoscaler may ask for another.
 
 The events of the operator in the log of the group: `InstancesRequested`, `CreateFailed`,
-`NodeJoined`, `JoinSlow`, `JoinTimeout`, `InstanceFailed` and `JoinFailing`.
+`NodeJoined`, `JoinSlow`, `JoinTimeout`, `InstanceFailed`, `JoinFailing`, `NodeWithoutInstance`,
+`ForeignNode` and `NodeIneligible`.
+
+A node with the marks of the group (`norca.node_group`, `norca.instance`) whose instance the provider
+does not have is reported once: down, it is what is left of a deleted instance; ready, it is
+**foreign** (a bootstrap that left through the user data, for example) and is made ineligible for
+new work. A second ready node with the name of an instance that has one is foreign too. Nodes without
+the marks, installed by hand, are left alone.
 
 ## Rules
 
