@@ -78,7 +78,7 @@ Durations are written as numbers with `s`, `m`, `h` or `d`: `30s`, `15m`, `1h30m
 | `status.join` | operator | The join failures in a row: `failures`, `lastFailure`, and the template (`revision`) and resume generation (`resumed`) they count for. |
 | `status.strayNodes` | operator | Nodes of the group without an instance: `node`, `name`, `instance` and `kind`: `gone` (down, what is left of a deleted instance) or `foreign` (ready, without a machine the operator asked for; made ineligible). |
 | `status.rollout` | operator | Reserved for the operator. |
-| `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`) `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, or `JoinFailing`) `JoinFailing` (`True` with `TooManyFailures`) and `ForeignNode` (`True` while a ready node of the group runs without an instance). |
+| `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`) `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, or `JoinFailing`) `JoinFailing` (`True` with `TooManyFailures`) `ForeignNode` (`True` while a ready node of the group runs without an instance) and `NetworkCovered` (`True` when `network` is inside the cluster ranges the deployer publishes, `False` when the firewall of the servers would not let the nodes in, `Unknown` with `NetworkUnchecked` when the ranges are not published or `NoNetwork` when the group names none). |
 
 ## The join of the nodes
 
@@ -92,7 +92,7 @@ joins ends the row. A node still joining after `join.slow_after` (5 minutes) sta
 
 The events of the operator in the log of the group: `InstancesRequested`, `CreateFailed`,
 `NodeJoined`, `JoinSlow`, `JoinTimeout`, `InstanceFailed`, `JoinFailing`, `NodeWithoutInstance`,
-`ForeignNode` and `NodeIneligible`.
+`ForeignNode`, `NodeIneligible` and `NetworkNotCovered`.
 
 A node with the marks of the group (`norca.node_group`, `norca.instance`) whose instance the provider
 does not have is reported once: down, it is what is left of a deleted instance; ready, it is
