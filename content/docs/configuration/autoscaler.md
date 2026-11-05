@@ -170,12 +170,21 @@ group:
    nodes of 8 GB need four nodes. An allocation under `distinct_hosts`, or one
    that asks for a port by number, needs a node of its own.
 2. Work that can go to several groups (the datacenters of the job) is split
-   between them by the expander. A `distinct_property` on the datacenter is
-   respected: a group whose datacenter is used up for the job does not get the
-   work.
-3. The nodes that were asked for and have not joined yet (`status.joining`)
+   between them by the expander; it is counted once, not once per datacenter.
+3. A `distinct_property` on `${node.datacenter}` or `${node.pool}` is checked
+   against the group: the live allocations of the job (of the task group, when
+   the constraint is on the group) are counted by the value of their node, a
+   group whose value has no room left does not get the work, and the work is
+   capped at the room that is left. A constraint on `${node.class}` is checked
+   against the `node_class` of the group. A constraint on anything else (a
+   `meta` key, an attribute) cannot be checked against a node that does not
+   exist yet: no node is added for it, and the allocations are counted by
+   `norca.cluster.blocked_unverifiable`.
+4. A job of a node pool grows the groups of that pool; a job of any pool
+   (`node_pool = "all"`) grows only the groups with `spill = true`.
+5. The nodes that were asked for and have not joined yet (`status.joining`)
    count as capacity, so the same work is not asked for twice.
-4. `spec.replicas` is raised by what is left, within `max` of the group and
+6. `spec.replicas` is raised by what is left, within `max` of the group and
    `max_nodes` and `max_step` of the pool. Without `spec.enforce` the decision is
    a dry run: it is recorded once in the event log of the object and
    `spec.replicas` is not changed.
@@ -196,72 +205,15 @@ on top of them. When the gauges can't be read, nothing is added. Unlike blocked
 work, the headroom is an ahead-of-time trigger and waits for the cooldown of the
 group.
 
+Work blocked by the quota of its namespace is not counted: more nodes would
+not help it.
+
 When work is not helped by more nodes, a `ScalingNodeBlocked` event says why
 (every group is at its maximum, a limit of the pool, the size of a node is not
 known, no group fits it); a constraint that cannot be checked against a node that
 does not exist yet gives `ScalingNodeUnverifiable`, and an allocation that does
 not fit an empty node `ScalingNodeAllocationTooLarge`. Each is raised when
 the reason appears or changes, not at every look.
-
-## `advice` Block
-
-The advice mode is read-only. It looks at the work that cannot be placed for
-want of capacity (the blocked evaluations on the leader), packs it into nodes
-of the size you give, and raises an event with the number of nodes that
-would be needed. It adds and removes nothing. It runs while at least one
-`advice` block is set.
-
-- `advice_interval` `(string: "30s")` - How often the blocked work is looked
-  at. Set it in the `autoscaler` block.
-
-```hcl
-autoscaler {
-  enabled = true
-
-  advice "workers-a" {
-    pool       = "workers"
-    datacenter = "dc-a"
-    cpu        = 4000   # MHz, after the reserved resources
-    memory     = 8192   # MB
-    disk       = 20000  # MB
-  }
-}
-```
-
-The label names the node group in the events. The parameters are `pool` and
-`datacenter` (required: the group the nodes would belong to) and `cpu`,
-`memory` and `disk`, the allocatable size of one node.
-
-The allocations are packed largest first, each into the first node where it
-fits on CPU, memory and disk. Four allocations of 6 GB on nodes of 8 GB need
-four nodes, not three. An allocation under `distinct_hosts`, or one that asks for a port by number
-on the host (a proxy on ports 80 and 443), needs a node of its own, however
-small it is; the room left on that node is used by the other work. An allocation that does not fit an empty node cannot be helped by
-this group.
-
-Events of the `Scaling` topic, raised when the picture changes (not at every
-look):
-
-| Event | Meaning |
-| --- | --- |
-| `ScalingNodeAdvice` | `Group` is `pool/datacenter`, `Count` the nodes the work would need, `PreviousCount` the number advised before. `Count` 0 withdraws the advice. `DryRun` is set. |
-| `ScalingNodeUnverifiable` | A task group (`JobID`, `Group`) is blocked by a constraint that cannot be checked ahead of time; `Reason` names it. |
-| `ScalingNodeAllocationTooLarge` | A task group (`JobID`, `Group`) has an allocation that does not fit an empty node of the configured size. |
-
-A `distinct_property` on `${node.datacenter}` or `${node.pool}` is checked
-against the group: the live allocations of the job (of the group, when the
-constraint is on the group) are counted by the value of their node, and a
-group whose value has no room left is not advised, so the node is advised in
-the group of another datacenter. When there is room for fewer allocations than
-are waiting, the count is capped at what is left. A `distinct_property` on
-anything else (a `meta` key, an attribute) cannot be checked against a node
-that does not exist yet: no node is advised, a `ScalingNodeUnverifiable` event
-names the job and the constraint, and the allocations are counted by
-`norca.cluster.blocked_unverifiable`. The fix is in the job.
-
-The demand of a job that can use several datacenters is counted in each of
-them. Work blocked by the quota of its namespace is not counted: more nodes
-would not help it.
 
 ## `strategy` Block
 
