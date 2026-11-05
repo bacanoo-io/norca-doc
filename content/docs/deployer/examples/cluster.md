@@ -20,9 +20,9 @@ Three servers, Linux clients with Docker, a Windows client; firewall, PKI and SP
 #   - 1 Windows client for native .exe workloads (raw_exec)
 #   - mTLS, gossip encryption, ACLs, packs and backups
 #
-#   norca-deployer validate -c examples/cluster.yaml
-#   norca-deployer plan     -c examples/cluster.yaml
-#   norca-deployer apply    -c examples/cluster.yaml
+#   norca-deployer validate -c examples/nodes/cluster.yaml
+#   norca-deployer plan     -c examples/nodes/cluster.yaml
+#   norca-deployer apply    -c examples/nodes/cluster.yaml
 #
 # Re-running apply is safe: only nodes whose binary, certificate, configuration
 # or service unit changed are restarted, servers one at a time.
@@ -435,7 +435,7 @@ inventory:
 # objects is a repeated block (one "masters" block per server, one "install"
 # block per package). Windows paths need doubled backslashes in HCL strings.
 #
-#   norca-deployer apply -c examples/cluster.hcl
+#   norca-deployer apply -c examples/nodes/cluster.hcl
 
 version = "norca.io/v1alpha1"
 kind    = "DeploymentPlan"

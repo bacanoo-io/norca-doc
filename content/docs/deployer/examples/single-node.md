@@ -19,9 +19,9 @@ One machine running the Norca server and client: TLS, gossip encryption, ACLs, h
 # can schedule jobs on itself. Good for development, demos and small edge
 # sites. Run it with:
 #
-#   norca-deployer validate -c examples/single-node.yaml
-#   norca-deployer plan     -c examples/single-node.yaml
-#   norca-deployer apply    -c examples/single-node.yaml
+#   norca-deployer validate -c examples/nodes/single-node.yaml
+#   norca-deployer plan     -c examples/nodes/single-node.yaml
+#   norca-deployer apply    -c examples/nodes/single-node.yaml
 #
 # Relative paths in this file (keys, scripts, .deb files) are resolved
 # against the directory of this file. The deployer keeps its local state
@@ -147,7 +147,7 @@ inventory:
 # (metadata { ... }), and list entries of objects are repeated blocks
 # (one "masters" block per server, one "install" block per package).
 #
-#   norca-deployer apply -c examples/single-node.hcl
+#   norca-deployer apply -c examples/nodes/single-node.hcl
 
 version = "norca.io/v1alpha1"          # Plan format version (default; may be omitted).
 kind    = "DeploymentPlan"             # Document kind (default; may be omitted).
