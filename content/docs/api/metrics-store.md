@@ -36,6 +36,9 @@ The table below shows this endpoint's support for
 - `namespace` `(string: "default")` - The namespace of the job.
 - `dc`, `pool` `(string: "")` - The datacenter and node pool of a cluster
   metric.
+- `class` `(string: "")` - The node class of a cluster metric. Without it
+  the series covers all the nodes of the datacenter and pool; with a node
+  class, only the nodes of that class.
 - `quota` `(string: "")` - The quota of a quota metric.
 - `from` `(string: "1h")` - The start of the history: an RFC 3339 time, Unix
   seconds, or a duration before now.
@@ -96,7 +99,7 @@ may read.
     { "Namespace": "default", "JobID": "api", "Group": "web" }
   ],
   "Gauges": [
-    { "Metric": "norca.cluster.cpu_used", "Labels": { "dc": "dc1", "pool": "default" } }
+    { "Metric": "norca.cluster.cpu_used", "Labels": { "dc": "dc1", "pool": "default", "class": "" } }
   ]
 }
 ```
