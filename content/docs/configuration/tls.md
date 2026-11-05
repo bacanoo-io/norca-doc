@@ -41,6 +41,18 @@ agent certificates.
 - `key_file` `(string: "")` - Specifies the path to the key file to use for
   Norca's TLS communication.
 
+- `distrusted_ca_file` `(string: "")` - Specifies the path to a PEM file of CA
+  certificates that are no longer trusted, such as a node CA whose key was
+  stolen. An incoming connection whose client certificate chains through a
+  certificate with the public key of one of them is refused, on RPC, on the
+  event bus and on the HTTPS API with `verify_https_client`. The match is on the
+  public key, so a CA issued again with the same key is refused too. Set it on
+  the servers. The list is checked when a connection is made, and the file is
+  read again when it changes; when it can't be read any more, the last list
+  that could be read stays in force. A missing or empty file at start is an
+  error. Connections that are open already stay open until a `SIGHUP`: the file
+  is part of the TLS configuration, so the reload closes them.
+
 - `http` `(bool: false)` - Specifies if TLS should be enabled on the HTTP
   endpoints on the Norca agent, including the API. By default this is non-mutual
   TLS. You can upgrade this to mTLS by setting
@@ -110,6 +122,26 @@ tls {
   key_file  = "/etc/certs/nomad.key"
 }
 ```
+
+### Shutting out a node CA
+
+Norca's TLS has no revocation list, and a CA that chains up to the cluster CA
+stays valid until it expires. When the key of an intermediate CA that signs the
+certificates of nodes is lost, list it on the servers:
+
+```hcl
+tls {
+  rpc     = true
+  ca_file = "/etc/norca/tls/ca.pem"
+  # ...
+  distrusted_ca_file = "/etc/norca/tls/distrusted.pem"
+}
+```
+
+`distrusted.pem` holds the certificate of the lost CA (more can follow, one PEM
+block each), then send the servers a `SIGHUP` to close the connections that are
+open. The nodes it signed can no longer connect; issue a new node CA for the
+nodes that stay and replace their certificates.
 
 ### `tls` Configuration Reloads
 
