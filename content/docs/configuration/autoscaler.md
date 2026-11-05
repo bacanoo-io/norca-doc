@@ -126,6 +126,67 @@ does not need a block.
 - `config` `(map<string|string>: nil)` - The configuration passed to the plugin.
   Values are converted to strings.
 
+## `node_scaling` Block
+
+Settings of node scaling that concern the groups of a node pool together, or
+the whole region. A node group is a [`norca.io/NodeGroup`](/docs/design/cluster-scaling-plan)
+object; the built-in autoscaler derives its scaling policy from the object and
+writes the scale to `spec.replicas`.
+
+```hcl
+autoscaler {
+  enabled = true
+
+  node_scaling {
+    expander = "spread"        # the default of the region
+    interval = "30s"           # how often the blocked work is looked at
+
+    pool "edge" {
+      expander  = "priority"   # overrides the region
+      max_nodes = 12           # the sum of spec.replicas over the groups of the pool
+      max_step  = 3            # nodes added to the pool by one decision
+    }
+  }
+}
+```
+
+- `expander` `(string: "spread")` - Which group of a pool grows for work that
+  can go to several: `spread` (the group with the fewest nodes), `fill` (the
+  fullest group below its `max`), `priority` (the lowest `priority` of the
+  group) or `weighted` (by the `weight` of the group).
+- `interval` `(string: "30s")` - How often the blocked work is looked at.
+- `pool` - Overrides `expander` for a pool and limits it with `max_nodes` and
+  `max_step` (0: no limit).
+
+### Blocked work
+
+Work that cannot be placed for want of capacity raises the scale of the groups
+that could take it, without waiting for a check or for the cooldown of the
+group:
+
+1. The unplaced allocations are packed into virtual nodes of the size of a
+   node of the group (`status.allocatable` of the object, or `spec.node.capacity`
+   less `spec.node.reserved`), the largest first. Four allocations of 6 GB on
+   nodes of 8 GB need four nodes. An allocation under `distinct_hosts`, or one
+   that asks for a port by number, needs a node of its own.
+2. Work that can go to several groups (the datacenters of the job) is split
+   between them by the expander. A `distinct_property` on the datacenter is
+   respected: a group whose datacenter is used up for the job does not get the
+   work.
+3. The nodes that were asked for and have not joined yet (`status.joining`)
+   count as capacity, so the same work is not asked for twice.
+4. `spec.replicas` is raised by what is left, within `max` of the group and
+   `max_nodes` and `max_step` of the pool. Without `spec.enforce` the decision is
+   a dry run: it is recorded once in the event log of the object and
+   `spec.replicas` is not changed.
+
+When work is not helped by more nodes, a `ScalingNodeBlocked` event says why
+(every group is at its maximum, a limit of the pool, the size of a node is not
+known, no group fits it); a constraint that cannot be checked against a node that
+does not exist yet gives `ScalingNodeUnverifiable`, and an allocation that does
+not fit an empty node `ScalingNodeAllocationTooLarge`. Each is raised when
+the reason appears or changes, not at every look.
+
 ## `advice` Block
 
 The advice mode is read-only. It looks at the work that cannot be placed for
