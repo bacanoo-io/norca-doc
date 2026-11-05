@@ -13,5 +13,6 @@ to determine if scaling should occur.
 
 A check selects its APM with `source`. The built-in autoscaler provides the
 [`nomad-apm`](/docs/features/autoscaler/reference/plugins/apm/nomad) source (the
-default) and the [`prometheus`](/docs/features/autoscaler/reference/plugins/apm/prometheus)
+default), the [`norca`](/docs/features/autoscaler/reference/plugins/apm/norca) source
+(the capacity of the cluster) and the [`prometheus`](/docs/features/autoscaler/reference/plugins/apm/prometheus)
 driver; other APMs can be added as external plugins.
