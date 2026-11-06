@@ -256,8 +256,8 @@ pack is registered by the release of its first region; see
 
 ## Design
 
-[Multi-cloud connectivity](/docs/design/nomad-fork-development-plan#multi-cloud-connectivity)
-and [Multiregion deployment: communication and protocol](/docs/design/nomad-fork-development-plan#multiregion-deployment-communication-and-protocol)
+[Multi-cloud connectivity](/docs/design/development-plan#multi-cloud-connectivity)
+and [Multiregion deployment: communication and protocol](/docs/design/development-plan#multiregion-deployment-communication-and-protocol)
 in the development plan. The implementation differs from the sketch there in
 one point: all regions start in `pending`, and the first `max_parallel`
 regions start once every region has accepted the job version.

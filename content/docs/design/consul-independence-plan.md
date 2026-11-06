@@ -2,10 +2,9 @@
 title: "Consul independence – plan"
 weight: 3
 status: "In progress"
-origin: "norca/docs/design/consul-independence-plan.md"
 ---
 
-**Status:** In progress · 2026-10-25 (phases 1–4 and 6 implemented; phase 5, native mTLS: steps 1–3 implemented, tested against Envoy 1.39 and 1.40) · Starting point: Nomad v1.6.5 (MPL 2.0) · Related documents: [nomad-fork-development-plan.md](/docs/design/nomad-fork-development-plan), [kubernetes-features-spec.md](/docs/design/kubernetes-features-spec)
+**Status:** In progress · 2026-10-25 (phases 1–4 and 6 implemented; phase 5, native mTLS: steps 1–3 implemented, tested against Envoy 1.39 and 1.40) · Starting point: Nomad v1.6.5 (MPL 2.0) · Related documents: [development plan](/docs/design/development-plan), [kubernetes-features-spec.md](/docs/design/kubernetes-features-spec)
 
 One of Nomad's biggest practical drawbacks is that service discovery, DNS and the service mesh require Consul to be installed and operated separately. The goal is that most users no longer need Consul, while external tools built on the Consul API (Traefik, Prometheus and many others) keep working unchanged or through a native Nomad integration. Anyone who needs a full service mesh can still use Consul, but Nomad installs and manages it.
 
@@ -423,26 +422,17 @@ Whatever is left out of the above still requires a real Consul:
 
 ### Why not Consul v1.16.4?
 
-Since Consul's last MPL release, v1.16.4 (December 2023), nine BSL release branches have appeared (the latest being 2.1.0, October 2026). Among the bugs affecting 1.16.4 that have since been fixed only in BSL releases, the most important ones (based on the open-source CHANGELOG entries) are:
-
-| Fixed in | Bug | Impact on 1.16.4 |
-| --- | --- | --- |
-| 1.21.5 | Authentication bypass through URL parameters; non-constant-time comparison for sensitive values | Exploitable when the HTTP API is reachable |
-| 1.16.6 → 2.x | Envoy support: 1.16.4 supports Envoy 1.23–1.26, which have not received fixes for a long time; today's Consul supports Envoy 1.36–1.39 | The service mesh data plane is outdated |
-| 1.20.1 | CVE-2024-10005, CVE-2024-10006: bypass of L7 intentions (path and header normalization) | L7 controls can be circumvented |
-| 1.22.0 | CVE-2025-11374, CVE-2025-11375: DoS on the KV and event endpoints; path traversal on KV keys when ACLs are missing | Exploitable when the HTTP API is reachable |
-| 1.22.5 | HTTP timeouts against Slowloris; arbitrary file read through the Vault CA provider | DoS; file read when the Vault CA is used |
-| 1.16.5, 1.16.7 | At least 2048-bit RSA keys; xDS deadlock and goroutine leak | Weak keys; mesh stability |
+Consul's last MPL release is v1.16.4 (December 2023); it gets no more fixes. Public security advisories published since affect it, among them CVE-2024-10005 and CVE-2024-10006 (bypass of L7 intentions), CVE-2025-11374 and CVE-2025-11375 (denial of service on the KV and event endpoints, path traversal on KV keys), and the Envoy versions it supports no longer receive fixes.
 
 For this reason 1.16.4 is not recommended for a production service mesh.
 
 ### The recommended path: the official Consul, through the API
 
-- If a full Consul is needed, the user installs **the current version of the official Consul** (the binary or container image released by HashiCorp). The fork connects to it only through the MPL-licensed `github.com/hashicorp/consul/api` client and the documented HTTP API.
+- If a full Consul is needed, the user installs **the current version of the official Consul** (the binary or container image released by HashiCorp). Norca connects to it only through the MPL-licensed `github.com/hashicorp/consul/api` client and the documented HTTP API.
 - The project **does not distribute, include or modify** Consul. Consul's BSL 1.1 license permits internal production use; the restriction applies to products competing with HashiCorp, and it is worth confirming this legally for your own use case.
 - If the package manager offers a Consul package, it only refers to the official HashiCorp image or download, and the user accepts its license themselves at installation; there is no Consul binary in the project's registry.
-- Nomad can install and manage Consul (clients as a system job, servers as a service job with a host volume; Nomad does not require Consul to start, so there is no circular dependency), and in the longer term the configuration (gossip key, CA, ACL bootstrap) can be automated with a Consul operator (item 8 of [kubernetes-features-spec.md](/docs/design/kubernetes-features-spec)).
-- The fork's integration tests run against the current version of the official Consul; this is testing of behavior, and we do not take over any code from it.
+- Norca can install and manage Consul (clients as a system job, servers as a service job with a host volume; Norca does not require Consul to start, so there is no circular dependency), and in the longer term the configuration (gossip key, CA, ACL bootstrap) can be automated with a Consul operator (item 8 of [kubernetes-features-spec.md](/docs/design/kubernetes-features-spec)).
+- Norca's integration tests run against the current version of the official Consul; this is testing of behavior, and we do not take over any code from it.
 
 **Rejected alternative: a self-maintained MPL Consul 1.16.4.** The fixes above would have to be re-implemented with a clean-room method, and Envoy compatibility would also have to be raised to newer Envoy branches. This is a permanent, large burden and does not serve the project's main goal (Consul independence).
 
@@ -463,7 +453,7 @@ The importance of native mTLS (phase 5) grows: it is the only path to a service 
 
 The `consul` pack of the pack registry (`packs/consul/` of the [Norca pack registry](https://github.com/bacanoo-io/norca-registry), a separate repository since 2026-10-26; rendered and run with `norca pack`) installs the official release; the project ships no Consul code, binary or image. The pack references the official `hashicorp/consul` image by registry, repository, tag and optional digest (`image_registry` defaults to `docker.io`; air-gapped installs mirror the unmodified image into the internal OCI registry), or the official release archive by URL and checksum for `exec`/`raw_exec`. It does not render until `consul_license_accepted = true`: the user accepts the BSL 1.1 at install time, and the README states the license.
 
-- **Servers** (`consul`, service job): 3 or 5 servers, one per node marked with node meta `consul_server = "true"`, spread over the datacenters of the nodes (optionally one per datacenter with the fork's `separate` block), Raft data on a client host volume, static ports on the host network. **Clients** (`consul-clients`, system job): on every other node. Agents find each other through Norca native service discovery (`nomadService "consul-serf"` in a `retry_join` template), so Nomad does not depend on Consul.
+- **Servers** (`consul`, service job): 3 or 5 servers, one per node marked with node meta `consul_server = "true"`, spread over the datacenters of the nodes (optionally one per datacenter with Norca's `separate` block), Raft data on a client host volume, static ports on the host network. **Clients** (`consul-clients`, system job): on every other node. Agents find each other through Norca native service discovery (`nomadService "consul-serf"` in a `retry_join` template), so Nomad does not depend on Consul.
 - **Bootstrap without manual steps:** a prestart task runs the `norca` CLI through the task API socket with its workload identity (`norca` now accepts `unix://` agent addresses, `command/meta_unix_socket.go`): it generates the gossip key (`operator gossip keyring generate`), a CA and a server certificate for `server.<dc>.<domain>` (`tls ca/cert create`) and the ACL tokens once, stores them in the Variable `nomad/jobs/<job>/servers/bootstrap` with check-and-set (concurrent servers converge on one set) and derives the Variables of the server group, the client job and the snapshot job from it. The servers bootstrap ACLs through `acl.tokens.initial_management`; a poststart task creates the agent policy and token (and the snapshot token) with pre-generated IDs, idempotently. With Norca ACLs, one policy bound to the bootstrap task is the only manual step (printed by the pack, which cannot create policies).
 - **Interim security minimum on every install:** ACLs mandatory with `default_policy = "deny"` and no anonymous token, gossip encryption, TLS with verified server names and `auto_encrypt` for the clients, plain HTTP/gRPC on localhost only, HTTPS/gRPC-TLS on localhost and the private network (`host_network`), DNS on localhost, no update check.
 - **Operations:** rolling upgrades one server at a time (`update`, `migrate`, `disruption { max_unavailable = 1 }`, servers do not leave on stop), the documented order servers first, then clients; certificate renewal and gossip key rotation are documented manual steps. Optional periodic `consul-snapshot` batch job: `consul snapshot save` on a server node, uploaded with the AWS CLI image (Apache 2.0) to the S3-compatible store of the Norca backups.
@@ -521,12 +511,12 @@ After phases 1–3, most users no longer need Consul. Phase 6 can proceed at any
 - The developments build on the code of Nomad v1.6.5 (MPL 2.0); `miekg/dns` (BSD-3) and `consul-template` (MPL 2.0) are already dependencies.
 - `hashicorp/consul/api`, used for the conformance tests, is MPL 2.0.
 - The Consul-compatible layer implements the public, documented behavior of Consul's API; it takes over no Consul code. If parts were nevertheless taken over, only from Consul v1.16.4 (MPL), following the file-level MPL rules.
-- "Consul" is a trademark: in the documentation it may be used to describe compatibility, but not as the fork's product name or feature name.
+- "Consul" is a trademark: in the documentation it may be used to describe compatibility, but not as Norca's product name or feature name.
 
 ## Open questions
 
 - [x] Which Consul-based tools are in use today? These determine which endpoints of the compatibility layer are needed in the first version. Decided 2026-10-24: Traefik, Prometheus and consul-template (service and health functions; Consul KV stays a non-goal).
-- [x] Should filtering for healthy instances be the default in the new fork version (a behavior change), or remain opt-in? Decided 2026-10-24: opt-in (`default_healthy_only = false`).
+- [x] Should filtering for healthy instances be the default in the new Norca version (a behavior change), or remain opt-in? Decided 2026-10-24: opt-in (`default_healthy_only = false`).
 - [x] For native mTLS, do we use Envoy as the sidecar proxy, or our own lighter proxy? Decided 2026-10-24: Envoy.
 - [x] Is handling the Consul Enterprise namespace parameter needed in the compatibility layer? Decided 2026-10-24: no.
 - [x] What should the default of topology ordering be (`prefer = "datacenter"` or `"none"`), and what is the default overflow fraction? Decided 2026-10-24: `prefer = "none"` by default, the datacenter preference is opt-in; the overflow fraction keeps the default proposed in this plan.

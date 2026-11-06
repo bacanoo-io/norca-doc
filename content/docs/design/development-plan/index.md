@@ -1,8 +1,9 @@
 ---
-title: "Nomad fork development plan: built-in autoscaler and Kubernetes features"
+title: "Norca development plan: built-in autoscaler and Kubernetes features"
+aliases:
+  - /docs/design/nomad-fork-development-plan/
 weight: 1
 status: "In progress"
-origin: "norca/docs/design/nomad-fork-development-plan.md"
 ---
 
 **Status:** In progress · 2026-10-25
@@ -17,22 +18,22 @@ The plan starts from Nomad v1.6.5 (the last release under MPL 2.0) and Nomad Aut
 
 The plan also schedules seven features that can be adopted from Kubernetes (quotas, dynamic admission, event notification, cross-job affinity, disruption budget, health check roles, network rules). Two of them, quotas and dynamic admission, are prerequisites for phase 2 of the autoscaler. An operator framework (custom object types and controllers, following the Kubernetes operator pattern) is built on top of these seven items.
 
-For multi-cloud operation the plan proposes one federated region per cloud with a WireGuard mesh, native mTLS gateways (the official Consul if a full mesh is needed) and a NATS supercluster, plus two fork developments: an own implementation of multiregion deployment and an event stream → NATS bridge. Multiregion deployment is controlled over Nomad's own cross-region RPC; NATS only carries events, notifications and application messages and is not in the control path.
+For multi-cloud operation the plan proposes one federated region per cloud with a WireGuard mesh, native mTLS gateways (the official Consul if a full mesh is needed) and a NATS supercluster, plus two Norca developments: an own implementation of multiregion deployment and an event stream → NATS bridge. Multiregion deployment is controlled over Nomad's own cross-region RPC; NATS only carries events, notifications and application messages and is not in the control path.
 
 The plan also includes S3-based, per-region scheduled backup and restore (encrypted backups copied to multiple clouds, with selective and full restore managed from the UI); its detailed plan is in a separate document: [backup-restore-plan.md](/docs/design/backup-restore-plan).
 
 The plan also aims at Consul independence: a native catalog driven by health, built-in DNS, a Consul-compatible read layer for tools built on the Consul API (for example Traefik, Prometheus), external service registration and native mTLS. Discovery is topology-aware (same datacenter and region preferred, with regional failover), and a DNS alias can also be given for external services. Consul remains optional only for the full service mesh, installed by Nomad. Details: [consul-independence-plan.md](/docs/design/consul-independence-plan).
 
-Package management builds on Nomad Pack: the package format and the command-line tool stay, while Helm-level capabilities (a release object with revisions, rollback, non-job resources, atomic installation, hooks, tests, OCI registry, signing) are provided by the server side of the fork. Details: [package-management-plan.md](/docs/design/package-management-plan).
+Package management builds on Nomad Pack: the package format and the command-line tool stay, while Helm-level capabilities (a release object with revisions, rollback, non-job resources, atomic installation, hooks, tests, OCI registry, signing) are provided by the server side of Norca. Details: [package-management-plan.md](/docs/design/package-management-plan).
 
 The web UI gets a new information architecture, a federation dashboard and pages for the planned features, on a Tabler base (MIT) with its own Ember component layer. Details: [ui-plan.md](/docs/design/ui-plan), clickable mockup: [mockups/ui-mockup.html](/design/mockups/ui-mockup.html).
 
-Licensing: wherever possible everything is MPL 2.0 (the fork, Nomad Pack, the standalone components and the documentation as well); there is no separate control plane. Details, starting commits, dependency rules and the base files of the repository: [licensing.md](/docs/introduction/license).
+Licensing: wherever possible everything is MPL 2.0 (Norca, Nomad Pack, the standalone components and the documentation as well); there is no separate control plane. Details, starting commits, dependency rules and the base files of the repository: [licensing.md](/docs/introduction/license).
 
 **Goals:**
 
 - A single component to install and operate, without separate HA, ACL tokens and monitoring.
-- A faulty scaling policy is rejected already at the moment of `nomad job run` / `nomad job plan`.
+- A faulty scaling policy is rejected already at the moment of `norca job run` / `norca job plan`.
 - Built-in CPU and memory metrics, without per-allocation RPC calls.
 - Scaling coordinated with deployments, quotas, the drainer and the event stream.
 
@@ -202,7 +203,7 @@ server {
 
 1.  Upgrade the servers to the new version, `enabled = true`, `default_engine = "external"`.
 2.  Upgrade the external autoscaler to the engine-filtering version.
-3.  Set `engine = "builtin"` job by job and run `nomad job plan`; the validator reports faulty or unsupported policies.
+3.  Set `engine = "builtin"` job by job and run `norca job plan`; the validator reports faulty or unsupported policies.
 4.  After all jobs are switched, set `default_engine = "builtin"`, then stop the external autoscaler.
 
 **Rollback:** setting the `engine` field of a job back to `external` immediately returns that job to the external autoscaler, without a server restart.
@@ -237,9 +238,9 @@ The detailed specification of the eight items (semantics, jobspec, API, data mod
 
 ## Multi-cloud connectivity
 
-Proposed setup: one federated Nomad region per cloud, a WireGuard mesh underneath, service-to-service traffic over native mTLS and mTLS gateways (over the official Consul mesh gateways if a full mesh is needed), and application messages over a NATS supercluster. NATS does not replace Nomad's internal communication (Raft, Serf, RPC), because that is tightly interwoven with consensus and failure detection.
+Proposed setup: one federated Norca region per cloud, a WireGuard mesh underneath, service-to-service traffic over native mTLS and mTLS gateways (over the official Consul mesh gateways if a full mesh is needed), and application messages over a NATS supercluster. NATS does not replace Nomad's internal communication (Raft, Serf, RPC), because that is tightly interwoven with consensus and failure detection.
 
-**The role of NATS:** events (per-region forwarding of the event stream), notifications and application-to-application messages. The control of Nomad's own operations, including multiregion deployment, does not run over NATS but over Nomad's TLS-protected cross-region RPC, so a NATS outage affects only observation, not deployments.
+**The role of NATS:** events (per-region forwarding of the event stream), notifications and application-to-application messages. The control of Norca's own operations, including multiregion deployment, does not run over NATS but over Nomad's TLS-protected cross-region RPC, so a NATS outage affects only observation, not deployments.
 
 ![multi-cloud topology · 3 regions, 4 layers](images/03-multi-cloud-topology.svg)
 
@@ -251,9 +252,9 @@ The outage of one cloud affects only its own region, because every region has it
 
 | Layer                           | Solution                                                                                              | License                 |
 |---------------------------------|-------------------------------------------------------------------------------------------------------|-------------------------|
-| Control plane                   | One Nomad region per cloud, federated (Serf WAN 4648, RPC 4647); ACL replication from a designated region | MPL 2.0 (fork)     |
+| Control plane                   | One Norca region per cloud, federated (Serf WAN 4648, RPC 4647); ACL replication from a designated region | MPL 2.0 (Norca)    |
 | Machine-to-machine network      | WireGuard mesh with Headscale or Nebula                                                               | BSD / MIT               |
-| Service-to-service traffic      | Native mTLS and a native mTLS gateway between regions (Consul independence plan, phase 5); for a full mesh, the current official Consul version, installed by the user and not distributed by the project (Consul v1.16.4 is not recommended for a production mesh) | MPL 2.0 (fork); Consul: BSL 1.1, installed separately |
+| Service-to-service traffic      | Native mTLS and a native mTLS gateway between regions (Consul independence plan, phase 5); for a full mesh, the current official Consul version, installed by the user and not distributed by the project (Consul v1.16.4 is not recommended for a production mesh) | MPL 2.0 (Norca); Consul: BSL 1.1, installed separately |
 | Application messages            | NATS supercluster with gateways, leaf nodes for edge, JetStream for durable streams                   | Apache 2.0              |
 | Events, audit                   | Event stream → NATS bridge → history and audit service                                                | own                     |
 
@@ -263,13 +264,13 @@ The outage of one cloud affects only its own region, because every region has it
 
 **Alternative (one region, clients in several clouds):** simpler, and with the `spread` block jobs can be distributed across clouds, but the control plane is tied to one cloud. If it fails, running allocations keep running, but no new scheduling takes place.
 
-**Security minimum:** TLS on the Nomad RPC and HTTP API (4647, 4646), an encryption key on the Serf gossip (4648), ACL enabled in every region, ports reachable only on the mesh interface.
+**Security minimum:** TLS on the Norca RPC and HTTP API (4647, 4646), an encryption key on the Serf gossip (4648), ACL enabled in every region, ports reachable only on the mesh interface.
 
-**Fork developments:**
+**Norca developments:**
 
 | Development              | Starting point in Nomad 1.6.5                                                                                                                                                                                   | Implementation                                                                                                                                                                                       | Relation                                                                                                               |
 |-------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| Multiregion deployment | The skeleton is largely ready: `multiregion` jobspec structures, `pending` / `blocked` / `unblocking` deployment states, the scheduler already creates multiregion deployments with them today (`scheduler/reconcile.go`), `Deployment.Run / Unblock / Cancel / Fail` RPCs, region forwarding (`forwardRegion`). Empty stubs: `multiregionRegister`, `multiregionStart`, `multiregionDrop`, `multiregionStop`, `interpolateMultiregionFields` (`norca/job_endpoint_oss.go`) and the watcher steps: `nextRegion`, `RunDeployment`, `UnblockDeployment`, `CancelDeployment` (`norca/deploymentwatcher/multiregion_oss.go`); in 1.6.5 a `multiregion` block without regions is silently ignored (with regions the job is rejected as unlicensed); the fork rejects every `multiregion` block with "multiregion deployments are not supported yet" | Implementing the stubs according to the protocol below, over Nomad's cross-region RPC; with independent design, because the Enterprise code is not public | As part of the Enterprise cleanup, the silent ignoring has become a validation error until the implementation exists (done); deployment events reach the central UI and the audit through the NATS bridge |
+| Multiregion deployment | The skeleton is largely ready: `multiregion` jobspec structures, `pending` / `blocked` / `unblocking` deployment states, the scheduler already creates multiregion deployments with them today (`scheduler/reconcile.go`), `Deployment.Run / Unblock / Cancel / Fail` RPCs, region forwarding (`forwardRegion`). Empty stubs: `multiregionRegister`, `multiregionStart`, `multiregionDrop`, `multiregionStop`, `interpolateMultiregionFields` (`norca/job_endpoint_oss.go`) and the watcher steps: `nextRegion`, `RunDeployment`, `UnblockDeployment`, `CancelDeployment` (`norca/deploymentwatcher/multiregion_oss.go`); in 1.6.5 a `multiregion` block without regions is silently ignored (with regions the job is rejected as unlicensed); Norca rejects every `multiregion` block with "multiregion deployments are not supported yet" | Implementing the stubs according to the protocol below, over Nomad's cross-region RPC; with independent design, because the Enterprise code is not public | As part of the Enterprise cleanup, the silent ignoring has become a validation error until the implementation exists (done); deployment events reach the central UI and the audit through the NATS bridge |
 | Event stream → NATS bridge | `/v1/event/stream` HTTP endpoint (`command/agent/event_endpoint.go`)                                                                                                                                         | First as a separate Nomad job per region (Go, `nats.go` client, Apache 2.0), onto `nomad.<region>.<topic>` subjects; later an optional built-in output                                               | The `Scaling` topic and the events of the Kubernetes features (quota, admission) also reach the history service through it |
 
 
@@ -306,7 +307,7 @@ sequenceDiagram
 
 **Authorization:** the forwarded request carries the ACL token of the original caller, so a multiregion deployment requires a global token (replicated from the authoritative region).
 
-**Why not NATS for control:** the state of the deployments is in the Raft of the regions, and the RPC uses the same authentication, ACL checks and error handling as every other Nomad operation; the skeleton of the protocol already exists; and this way NATS does not end up on the critical path of deployments.
+**Why not NATS for control:** the state of the deployments is in the Raft of the regions, and the RPC uses the same authentication, ACL checks and error handling as every other Norca operation; the skeleton of the protocol already exists; and this way NATS does not end up on the critical path of deployments.
 
 **Acceptance criteria:** with `max_parallel = 1` in three regions, the regions deploy one after another in order; with `fail_all`, a failure in one region results in a `failed` state in all three regions; the loss of the leader of the submitting region in the middle of the process causes no duplicated or lost step; when one region is network-partitioned, the other regions stay `blocked` and continue after the connection is restored.
 
@@ -318,7 +319,7 @@ The four phases of the work (scheduled backup; API, CLI and selective restore; w
 
 ## Package management
 
-The official package manager of the fork is Nomad Pack (MPL 2.0; the executable uses only MPL-licensed Nomad modules, the BSL main module appears only in the test helper, which must be switched to the fork's own build). Rendering stays on the client; the server keeps track of the revisions in a `Release` object (building on the framework of Kubernetes item 8), and a `Release.Apply` RPC applies the rendered resources in a fixed order: namespace, quota, ACL, Variables, type definitions, policies, objects, jobs. This provides rollback, atomic installation, hooks and tests, and diffing, and the same format serves as an operator package.
+The official package manager of Norca is Nomad Pack (MPL 2.0; the executable uses only MPL-licensed Nomad modules, the BSL main module appears only in the test helper, which must be switched to Norca's own build). Rendering stays on the client; the server keeps track of the revisions in a `Release` object (building on the framework of Kubernetes item 8), and a `Release.Apply` RPC applies the rendered resources in a fixed order: namespace, quota, ACL, Variables, type definitions, policies, objects, jobs. This provides rollback, atomic installation, hooks and tests, and diffing, and the same format serves as an operator package.
 
 Four phases: adoption (can start immediately), release registry, server-side apply, supply chain and multi-region. Details: [package-management-plan.md](/docs/design/package-management-plan).
 
@@ -336,7 +337,7 @@ The work proceeds in four phases that build on each other, and every phase can b
 
 roadmap · 4 phases, 3 gates
 
-| Phase               | Affected Nomad files                                                                                                                                                                                   | Adopted or modified autoscaler parts                                                                                                                   | Acceptance criteria (proposed)                                                                                                                                                  |
+| Phase               | Affected Norca files                                                                                                                                                                                   | Adopted or modified autoscaler parts                                                                                                                   | Acceptance criteria (proposed)                                                                                                                                                  |
 |---------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 1\. Embedding       | new `norca/autoscaler/`; `norca/leader.go`; `norca/scaling_endpoint.go` (Engine filter); `norca/structs/structs.go` (`Engine` field); `norca/config.go` and `command/agent/config.go` (`autoscaler` block) | `policy/`, `plugins/builtin/strategy/*`, `plugins/builtin/apm/{nomad,prometheus}`, `sdk/`; `policy/nomad/source.go` (Engine filter for the external version) | Extra leader CPU ≤ 10% at 3,000 task groups (the target size per region) with a 30 s interval; number of Raft writes = number of scaling decisions; scheduling p99 latency does not degrade by more than 10% |
 | 2\. Typed jobspec   | `norca/structs/structs.go` (`ScalingCheck`); `jobspec2/`; `norca/job_endpoint_hooks.go` (`jobScalingValidate`); `norca/structs/event.go`, `norca/state/events.go` (`Scaling` topic); `api/scaling.go`   | logic of `policy/nomad/parser.go` and `validate*.go` into the validator                                                                                | All existing jobspec tests green; a faulty policy gives a `job plan` error; no scaling during an active deployment                                                              |
@@ -366,15 +367,15 @@ The biggest risk is that the scaler loads the leader's resources and Raft, so ev
 
 ## License and legal aspects
 
-Every source in the plan is MPL 2.0 or under a compatible license, so the autoscaler code can be taken directly into the Nomad fork. This is not legal advice; a legal review is recommended before commercial distribution.
+Every source in the plan is MPL 2.0 or under a compatible license, so the autoscaler code can be taken directly into Norca. This is not legal advice; a legal review is recommended before commercial distribution.
 
 - **Nomad v1.6.5:** MPL 2.0, this is the last MPL release. Nothing can be taken from Nomad code after v1.6.6 (BSL 1.1).
 - **Nomad Autoscaler v0.6.0:** MPL 2.0 across the whole history, there was no switch to BSL. All 253 Go files of the main branch have an `SPDX-License-Identifier: MPL-2.0` header.
 - **File-level copyleft:** adopted autoscaler files keep their MPL header and copyright line. When distributing after modification, the source of the modified files must be made available.
 - **Enterprise parts:** we do not implement the autoscaler's vertical scaling (the `policy/handler_oss.go` stub) and Nomad's recommendation endpoints based on HashiCorp's Enterprise code (which is not public anyway). If such a feature is built later, it is done with independent design.
-- **Trademarks:** the names "Nomad" and "HashiCorp" cannot be used as a product name in the public distribution of the fork; this plan uses internal code names (the `norca/autoscaler` package), and the product-level renaming is a separate task.
+- **Trademarks:** the names "Nomad" and "HashiCorp" are not used as a product name: the product is Norca, and Nomad is named only to describe its origin and its compatibility.
 
-**Kubernetes features:** Kubernetes is Apache 2.0 licensed, which is compatible with MPL 2.0. Adopted Kubernetes code may enter the fork in a separate file, keeping the Apache license header and the NOTICE content. From similar features implemented later by HashiCorp under BSL (for example the dynamic host volumes of v1.10 or the `secret` block of v1.11), nothing can be adopted; for these, an independent implementation can only be made from public descriptions.
+**Kubernetes features:** Kubernetes is Apache 2.0 licensed, which is compatible with MPL 2.0. Adopted Kubernetes code may enter Norca in a separate file, keeping the Apache license header and the NOTICE content. From similar features implemented later by HashiCorp under BSL (for example the dynamic host volumes of v1.10 or the `secret` block of v1.11), nothing can be adopted; for these, an independent implementation can only be made from public descriptions.
 
 **Multi-cloud components:** NATS and the `nats.go` client are Apache 2.0, Headscale is BSD, Nebula is MIT, all compatible with MPL 2.0. The NATS license was a matter of dispute in 2025 (a planned switch to BSL); verified on 2026-10-24 from the LICENSE files of the adopted versions (nats.go v1.54.0, nats-server/v2 v2.15.0 for tests, nkeys, nuid, jwt/v2): all are unmodified Apache 2.0. The Enterprise equivalent of multiregion deployment is not public, so the implementation is done with independent design.
 
