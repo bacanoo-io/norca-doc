@@ -80,8 +80,8 @@ Durations are written as numbers with `s`, `m`, `h` or `d`: `30s`, `15m`, `1h30m
 | `status.removal` | operator | The instance a scale down removes: `instance`, `name`, `node`, `selector`, `phase` (`draining`, `settling`, `deleting`, `deleted`), `started`, and `settleUntil` for an empty node. Another operator instance goes on with it. |
 | `status.scaleDown` | operator | The vetoes of the scale down in a row: `vetoes`, `retryAfter`, `reason` (`NoCandidate` or `DrainStuck`), `message`. Gone after a scale down that worked. |
 | `status.deletion` | operator | While a deleted group is kept by the finalizer of the operator: the `policy` being applied, `deleted` (when each instance was deleted, by its name) and `waiting` (what the deletion waits for). |
-| `status.rollout` | operator | Reserved for the operator. |
-| `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`) `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, or `JoinFailing`) `JoinFailing` (`True` with `TooManyFailures`) `ForeignNode` (`True` while a ready node of the group runs without an instance) `ScaleDownBlocked` (`True` when no node of the group may go; `retryAfter` is the time, RFC 3339, before which the autoscaler does not lower the scale again) `DeletionBlocked` (`True` with `DrainTimeout` when the deletion of the group has waited longer than `deletion.drain_timeout`) and `NetworkCovered` (`True` when `network` is inside the cluster ranges the deployer publishes, `False` when the firewall of the servers would not let the nodes in, `Unknown` with `NetworkUnchecked` when the ranges are not published or `NoNetwork` when the group names none). |
+| `status.rollout` | operator | The rolling replacement: `replacing` (per node being replaced: `instance`, `name`, `node`, `nodeName`, `reason` (`marked`, `revision`, `generation`, `age`, `expiry`), `surge`, `drain`, `phase` (`surging`, `emptying`, `draining`, `deleted`), `since`, `started`, and `expires`, its hard limit), `outdated` (the names of the outdated nodes not replaced yet) and `backoff` (`vetoes`, `retryAfter`, `reason`, `message`). |
+| `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`) `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, or `JoinFailing`) `JoinFailing` (`True` with `TooManyFailures`) `ForeignNode` (`True` while a ready node of the group runs without an instance) `ScaleDownBlocked` (`True` when no node of the group may go; `retryAfter` is the time, RFC 3339, before which the autoscaler does not lower the scale again) `DeletionBlocked` (`True` with `DrainTimeout` when the deletion of the group has waited longer than `deletion.drain_timeout`) `Rolling` (`True` with `Replacing` while nodes are replaced; `False` with `UpToDate`, or with `Waiting`, `BackedOff`, `Paused` or `DryRun` when outdated nodes are not replaced) `RollBlocked` (`True` while a backed off replacement has a node close to its hard age limit, with the reason of the backoff and `retryAfter`) and `NetworkCovered` (`True` when `network` is inside the cluster ranges the deployer publishes, `False` when the firewall of the servers would not let the nodes in, `Unknown` with `NetworkUnchecked` when the ranges are not published or `NoNetwork` when the group names none). |
 
 ## The join of the nodes
 
@@ -96,8 +96,9 @@ joins ends the row. A node still joining after `join.slow_after` (5 minutes) sta
 The events of the operator in the log of the group: `InstancesRequested`, `CreateFailed`,
 `NodeJoined`, `JoinSlow`, `JoinTimeout`, `InstanceFailed`, `JoinFailing`, `NodeWithoutInstance`,
 `ForeignNode`, `NodeIneligible`, `NetworkNotCovered`, and of the scale down `ScaleDown`,
-`InstanceDeleted`, `ScaleDownBlocked`, `DrainStuck`, `NodeNotEmpty` and `ScaleDownCanceled`, and of
-the deletion of the group `Deleting`, `DrainStarted`, `InstanceDeleted`, `DeletionFailed` and
+`InstanceDeleted`, `ScaleDownBlocked`, `DrainStuck`, `NodeNotEmpty` and `ScaleDownCanceled`, of the
+rolling replacement `Replacing`, `InstanceDeleted`, `Replaced`, `ReplacementCanceled`,
+`ReplacementFailed`, `DrainStuck` and `WouldReplace`, and of the deletion of the group `Deleting`, `DrainStarted`, `InstanceDeleted`, `DeletionFailed` and
 `DeletionBlocked`.
 
 A node with the marks of the group (`norca.node_group`, `norca.instance`) whose instance the provider
@@ -133,6 +134,41 @@ scale before the instance is deleted keeps the node (`ScaleDownCanceled`).
 The operator reads the jobs of the allocations on a node, so its ACL policy needs `read-job` in
 every namespace (the `nodescaler-operator` pack has it). The wait for a load balancer to drop an
 edge node before its proxy stops is not done yet.
+
+## The rolling replacement of nodes
+
+A node the operator created is replaced when it is **outdated**:
+
+| Reason | When |
+| --- | --- |
+| `marked` | It has the meta `norca.scale.replace = "true"` (`norca node meta apply -node-id <id> norca.scale.replace=true`). |
+| `revision` | Its revision (the meta `norca.node_group_revision`) is not the one of the template: `provider`, `group` and `spec.node`. Changing `spec.node` (a new image, for example) replaces every node. |
+| `generation` | Its generation (the meta `norca.node_group_generation`) is below `rolling.generation`. Raising it replaces every node with the same template. |
+| `age` | It is older than its soft limit: `rolling.max_node_age` less a fixed jitter of up to `rolling.jitter` (15%) from a hash of its name, so nodes created together are not all due on one day. Without `max_node_age` the limit is three quarters of the life of its certificate (45 of 60 days). |
+| `expiry` | Its certificate expires within a twelfth of its life (55 of 60 days): the hard limit. The expiry is in the meta `norca.cert_expires`. |
+
+A node with `norca.scale.protect = "true"` is not replaced. At most `rolling.max_unavailable` nodes
+(1) are replaced at a time, those at their hard limit first, then the oldest, and none while the
+group grows, shrinks or its nodes fail to join.
+
+With `rolling.max_surge` at 1 or more (the default), **the new node comes first**: the old node gets
+no new work and no longer counts in the scale, so the operator asks for one more instance. When the
+new node is ready, the old one is emptied, its instance deleted and the node purged once down. With
+`max_surge = 0` the old node is emptied first and replaced once its instance is deleted, and the
+capacity dips meanwhile. Emptied means drained with `policy.scale_down.drain_deadline`, except for a
+node outdated only by its age, or of a group with the selector `empty`: it gets no new work and goes
+when its work has ended. A node at its hard limit is always drained.
+
+A replacement is not scaling: `spec.replicas` does not change, `status.replicas` counts the nodes that
+stay, and no scale down starts during it. When the provider refuses the new node (quota, capacity),
+or the new node has not joined by `join.deadline` and 5 minutes, the old node is made eligible again
+and the replacements are backed off (10 minutes, doubled each time, at most 6 hours); a node at its
+hard limit is then replaced remove first. When a node of a backed off rollout is a week (or an
+eighth of its life) from its hard limit, the condition `RollBlocked` says why.
+
+`rolling.mode = "paused"` starts no replacement except at the hard limit, and lets the one in
+progress finish. With `enforce = false` nothing is replaced: the outdated nodes are listed in
+`status.rollout.outdated` and in a `WouldReplace` event.
 
 ## The deletion of a group
 
