@@ -166,6 +166,23 @@ changed for 20 seconds, measured with their own clock, so clock skew does not
 matter. `ReleaseOnCancel` releases the lease on shutdown so the other instance
 takes over at once.
 
+What happens when the leader is in trouble (checked in the lab with the node
+scaling operator):
+
+- **The identity of a candidate is its allocation ID** (`NORCA_ALLOC_ID`). A
+  leader whose task crashes and is restarted in the same allocation takes its
+  own lease back at once: there is no handover to the other instance, and none
+  is needed.
+- **A leader that stops without exiting** (a long pause, a frozen VM, a
+  partition) stops renewing; the other instance takes the lease 20 seconds after
+  the last renewal and goes on from the state in the cluster. When the old
+  leader comes back it reads the lease, sees another holder and does not lead
+  again; only one instance reconciles.
+- **Which instance leads:** the item `holder` of the lease Variable is the
+  allocation ID of the leader
+  (`norca var get -namespace <ns> controller-lease/<controller name>`), and
+  `norca_controller_leader` is `1` on the leader and `0` on the others.
+
 ### Metrics
 
 `controller.NewTextMetrics()` serves Prometheus text metrics (for example on

@@ -143,6 +143,10 @@ block each), then send the servers a `SIGHUP` to close the connections that are
 open. The nodes it signed can no longer connect; issue a new node CA for the
 nodes that stay and replace their certificates.
 
+To see that it works, watch the nodes, not the logs: the nodes of the CA go
+down once their heartbeats run out. A refused connection is not always in the log of a
+server; whether it is depends on where the connection fails.
+
 ### `tls` Configuration Reloads
 
 Norca supports dynamically reloading both client and server TLS
