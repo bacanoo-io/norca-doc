@@ -2,10 +2,9 @@
 title: "Scheduled backup and restore to S3 and directories – plan"
 weight: 4
 status: "In progress"
-origin: "norca/docs/design/backup-restore-plan.md"
 ---
 
-**Status:** In progress · 2026-10-29 (phases 1–4 implemented, the web UI in the new UI; destinations of the types `s3` and `directory`; `age` is the only encryption mode, the `kms` mode is reserved) · Feature page: [backup and restore](/docs/features/backup-restore) · Starting point: Nomad v1.6.5 (MPL 2.0) · Related document: [nomad-fork-development-plan.md](/docs/design/nomad-fork-development-plan)
+**Status:** In progress · 2026-10-29 (phases 1–4 implemented, the web UI in the new UI; destinations of the types `s3` and `directory`; `age` is the only encryption mode, the `kms` mode is reserved) · Feature page: [backup and restore](/docs/features/backup-restore) · Starting point: Nomad v1.6.5 (MPL 2.0) · Related document: [development plan](/docs/design/development-plan)
 
 In every region, Norca automatically backs up the cluster state on a schedule to one or more S3-compatible stores or shared directories. Backups can be browsed, compared and restored in the web UI. A restore can be selective (a single job, a single Variables path), full (an entire region returned to an earlier state), or the building of a new cluster from a backup. The schedule and the stores live in the server configuration; manual backup, versioning and restore live in the UI.
 
@@ -34,7 +33,7 @@ In every region, Norca automatically backs up the cluster state on a schedule to
 
 | Item | Status | Location |
 | --- | --- | --- |
-| Manual snapshot save, restore, inspect | Open source: `nomad operator snapshot save / restore / inspect / state`, HTTP: `/v1/operator/snapshot` | `command/operator_snapshot_*.go`, `norca/operator_endpoint.go` (`snapshotSave`, `snapshotRestore`) |
+| Manual snapshot save, restore, inspect | Open source: `norca operator snapshot save / restore / inspect / state`, HTTP: `/v1/operator/snapshot` | `command/operator_snapshot_*.go`, `norca/operator_endpoint.go` (`snapshotSave`, `snapshotRestore`) |
 | Snapshot archive format | Open source: Raft snapshot, metadata and checksum in a single archive | `helper/snapshot/` |
 | Loading a backup into a separate state store | Open source: `RestoreFromArchive`, with filtering support | `helper/raftutil/snapshot.go` |
 | Scheduled backup (snapshot agent) | **Enterprise-only**, as the OSS help text also indicates | `command/operator_snapshot.go` |
@@ -56,7 +55,7 @@ Two consequences:
 | Keystore (the keys of Variables and workload identity) | Yes | In a separate object, with mandatory client-side encryption |
 | Server configuration | No | The job of configuration management (Terraform, Ansible); the manifest records the running version and the region |
 | Local client state, allocation data directories | No | This is the data of running workloads; the applications need their own backup |
-| Contents of CSI volumes | No | The job of the storage system or of CSI snapshots (`nomad volume snapshot`) |
+| Contents of CSI volumes | No | The job of the storage system or of CSI snapshots (`norca volume snapshot`) |
 | State of Consul and Vault | No | They have their own backup mechanisms |
 
 ## Architecture
@@ -174,7 +173,8 @@ server {
   "authoritative_region": "eu-aws",
   "created_at": "2026-10-24T14:00:03Z",
   "trigger": "schedule",
-  "nomad_version": "1.6.5+fork.3",
+  "norca_version": "0.3.0",
+  "nomad_version": "1.6.5",
   "raft_index": 1834567,
   "raft_term": 42,
   "leader_id": "srv-eu-1",
@@ -260,7 +260,7 @@ There are three kinds of restore, from the gentlest to the most drastic. Before 
 This is the most common in day-to-day use, and it provides the "versioning":
 
 - **Job versions from backups.** By default Nomad keeps only the last 6 versions of a job (`job_tracked_versions`). Much older versions can be brought back from the backups. The UI extends the existing version history of the job with the versions found in the backups, and they can be compared with the existing diff view.
-- **Restore as a new version.** The selected version is re-registered through the normal `Job.Register` path, like `nomad job revert`, except that the source is the backup. It therefore goes through the admission chain, the quota and all checks, and the restore itself becomes a new, traceable version.
+- **Restore as a new version.** The selected version is re-registered through the normal `Job.Register` path, like `norca job revert`, except that the source is the backup. It therefore goes through the admission chain, the quota and all checks, and the restore itself becomes a new, traceable version.
 - **Variables.** The server decrypts the backed-up Variables entries with the backup's own keystore and re-encrypts them with the current keys, using the existing check-and-set write, so an entry modified in the meantime is not silently overwritten.
 - **Secrets** of the built-in store: the value of one version of the secret in the backup is written as a new version of the secret with the normal secret write (`write-secret`, check-and-set, audit), never replacing its history; see "Backup and restore" in `secrets-plan.md`.
 - **Namespaces and ACL policies** can be restored the same way, one by one, as normal writes.
@@ -279,7 +279,7 @@ This is the most common in day-to-day use, and it provides the "versioning":
 This is done from the CLI, because there is no running cluster whose UI would be available:
 
 ```
-nomad operator backup restore-bootstrap \
+norca operator backup restore-bootstrap \
   -from s3://nomad-backup-dr/nomad/eu-aws/2026/10/24/20261024T140000Z-1834567/ \
   -age-identity ./dr-secret-key.txt
 ```
@@ -319,17 +319,17 @@ The UI gains a new **Backups** menu item in the existing Ember application (`ui/
 
 | Operation | HTTP | CLI |
 | --- | --- | --- |
-| List backups | `GET /v1/operator/backups` | `nomad operator backup list` |
-| Backup details | `GET /v1/operator/backup/:id` | `nomad operator backup inspect <id>` |
-| Browse content | `GET /v1/operator/backup/:id/contents?type=jobs&namespace=prod` | `nomad operator backup contents <id>` |
-| Compare | `GET /v1/operator/backup/:id/diff?against=current\|<id>` | `nomad operator backup diff <id> [<id>]` |
-| Manual backup | `POST /v1/operator/backups` | `nomad operator backup save [-label ...] [-pin]` |
-| Pin, label | `PUT /v1/operator/backup/:id` | `nomad operator backup pin <id>` |
-| Delete | `DELETE /v1/operator/backup/:id` | `nomad operator backup delete <id>` |
-| Restore (selective or full, with preview) | `POST /v1/operator/backup/:id/restore` (`mode`, `items`, `dry_run`, `confirm`) | `nomad operator backup restore <id> [-job ...] [-dry-run]` |
-| Approval (two-person) | `POST /v1/operator/backup/restore/:request_id/approve` | `nomad operator backup approve <request_id>` |
-| Download link | `GET /v1/operator/backup/:id/download-url` | `nomad operator backup download <id>` |
-| Build a new cluster | – | `nomad operator backup restore-bootstrap` |
+| List backups | `GET /v1/operator/backups` | `norca operator backup list` |
+| Backup details | `GET /v1/operator/backup/:id` | `norca operator backup inspect <id>` |
+| Browse content | `GET /v1/operator/backup/:id/contents?type=jobs&namespace=prod` | `norca operator backup contents <id>` |
+| Compare | `GET /v1/operator/backup/:id/diff?against=current\|<id>` | `norca operator backup diff <id> [<id>]` |
+| Manual backup | `POST /v1/operator/backups` | `norca operator backup save [-label ...] [-pin]` |
+| Pin, label | `PUT /v1/operator/backup/:id` | `norca operator backup pin <id>` |
+| Delete | `DELETE /v1/operator/backup/:id` | `norca operator backup delete <id>` |
+| Restore (selective or full, with preview) | `POST /v1/operator/backup/:id/restore` (`mode`, `items`, `dry_run`, `confirm`) | `norca operator backup restore <id> [-job ...] [-dry-run]` |
+| Approval (two-person) | `POST /v1/operator/backup/restore/:request_id/approve` | `norca operator backup approve <request_id>` |
+| Download link | `GET /v1/operator/backup/:id/download-url` | `norca operator backup download <id>` |
+| Build a new cluster | – | `norca operator backup restore-bootstrap` |
 
 Every endpoint accepts the usual `region` parameter and forwards the request to the leader of that region.
 
@@ -361,7 +361,7 @@ The `backup` block of the server configuration can make two-person approval mand
 | 3. Web UI | Backup list, details, comparison, extension of the job version history, selective restore wizard | `ui/app/routes/backups/`, `ui/app/templates/backups/`, `ui/app/components/backups/`, `ui/app/components/jobs/backup-versions`, `ui/app/utils/backups.js` (implemented in the new web UI) |
 | 4. Full restore and bootstrap | `Keyring.Restore` RPC, full restore with preview and two-person approval, automatic pre-restore backup, `restore-bootstrap` CLI | `norca/encrypter.go`, `norca/keyring_endpoint.go`; `norca/operator_endpoint.go`; the full mode of the UI wizard |
 
-The phases build on each other, but after phase 1 there is already an automatic, encrypted backup copied to several clouds, and a restore can already be done at that point with the existing `nomad operator snapshot restore` command (and by manually copying the keystore back).
+The phases build on each other, but after phase 1 there is already an automatic, encrypted backup copied to several clouds, and a restore can already be done at that point with the existing `norca operator snapshot restore` command (and by manually copying the keystore back).
 
 ## Testing and acceptance
 
@@ -382,7 +382,7 @@ The phases build on each other, but after phase 1 there is already an automatic,
 | Restoring the authoritative region rolls back the global ACL in every region | Separate warning and approval; prefer selective ACL restore |
 | A large snapshot loads the leader | Streamed processing, multipart upload, `jitter`, timeout |
 | A compromised server could delete the backups | S3 Object Lock or a versioned store; on the DR destination the server gets write permission only, not delete, and retention there is handled by the store's lifecycle rules |
-| Version mismatch: restoring a backup from a newer fork version onto an older server | The manifest records the version; an older server does not restore a backup of a newer version |
+| Version mismatch: restoring a backup from a newer Norca version onto an older server | The manifest records the version; an older server does not restore a backup of a newer version |
 
 ## License
 

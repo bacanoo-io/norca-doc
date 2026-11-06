@@ -1,11 +1,10 @@
 ---
-title: "Kubernetes features in the Norca fork – detailed specification"
+title: "Kubernetes features in Norca – detailed specification"
 weight: 2
 status: "In progress"
-origin: "norca/docs/design/kubernetes-features-spec.md"
 ---
 
-**Status:** In progress · 2026-10-25 (items 1–7 implemented; item 8: phases 1–4 implemented, the UI of phase 4 included (2026-10-26)) · Starting point: Nomad v1.6.5 (MPL 2.0) · Related document: [nomad-fork-development-plan.md](/docs/design/nomad-fork-development-plan)
+**Status:** In progress · 2026-10-25 (items 1–7 implemented; item 8: phases 1–4 implemented, the UI of phase 4 included (2026-10-26)) · Starting point: Nomad v1.6.5 (MPL 2.0) · Related document: [development plan](/docs/design/development-plan)
 
 Status per item:
 
@@ -70,7 +69,7 @@ A significant part of the elements needed for quotas already exists:
 | Element | State | Location |
 | --- | --- | --- |
 | Go API client | Complete: `QuotaSpec`, `QuotaLimit`, `QuotaUsage`, `List`, `Info`, `Usage`, `Register`, `Delete` | `api/quota.go` |
-| CLI | Complete: `nomad quota apply / delete / init / inspect / list / status` | `command/quota_*.go` |
+| CLI | Complete: `norca quota apply / delete / init / inspect / list / status` | `command/quota_*.go` |
 | HTTP endpoints | Registered, but return 501 (`entOnly`) | `command/agent/http_oss.go` |
 | Namespace reference | The `Namespace` struct has a `Quota` field | `norca/structs/structs.go` |
 | ACL | There is a `quota` rule block (`QuotaPolicy`) | `acl/policy.go` |
@@ -85,7 +84,7 @@ According to the existing API, a quota consists of per-region limits (`QuotaLimi
 
 - One quota can be assigned to several namespaces (via the namespace's `quota` field). Usage is the sum over all assigned namespaces.
 - **What counts:** the reserved resources of every non-terminal allocation: `cpu` (MHz), `cores` (converted to MHz based on the node's CPU data), `memory` (MB) and optionally `memory_max` (with memory oversubscription). The stored size of Variables follows the existing `VariablesLimit`.
-- **New limit in the fork:** `allocations`, that is, the maximum number of non-terminal allocations.
+- **New limit in Norca:** `allocations`, that is, the maximum number of non-terminal allocations.
 - **When exceeded:** the job submission succeeds, but the scheduler places allocations only up to the limit. The remaining evaluations become blocked, marked with `QuotaLimitReached`, and are restarted automatically when quota is freed (an allocation stops, the quota is raised) using the existing `UnblockQuota` mechanism.
 - **Strict mode (optional):** with `enforce = "submit"`, `job run` / `job plan` rejects a job already at submission if its total demand (`count × resources`) would by itself exceed the limit.
 - **Task-level defaults and limits (LimitRange equivalent):** the new `task_defaults` and `task_max` blocks of the quota specification. Missing resource values are filled in by the system during admission, and a value above the maximum is rejected.
@@ -103,10 +102,10 @@ limit {
     memory    = 81920   # MB
   }
   variables_limit = 50   # MB
-  allocations     = 200  # new field in the fork
+  allocations     = 200  # new field in Norca
 }
 
-# New blocks in the fork (LimitRange equivalent)
+# New blocks in Norca (LimitRange equivalent)
 task_defaults {
   cpu    = 200
   memory = 256
@@ -119,7 +118,7 @@ task_max {
 enforce = "schedule"   # or "submit"
 ```
 
-Assignment: `nomad namespace apply -quota team-a prod` (using the existing CLI flag).
+Assignment: `norca namespace apply -quota team-a prod` (using the existing CLI flag).
 
 ### API and CLI
 
@@ -127,7 +126,7 @@ The existing endpoints and commands start working in unchanged form: `GET /v1/qu
 
 ### Data model
 
-- New server-side types under `norca/structs/`: `QuotaSpec`, `QuotaLimit`, `QuotaUsage` (the fields match those of the `api` package, extended with the fork's new fields).
+- New server-side types under `norca/structs/`: `QuotaSpec`, `QuotaLimit`, `QuotaUsage` (the fields match those of the `api` package, extended with Norca's new fields).
 - New memdb tables: `quota_specs` (index by name) and `quota_usage` (index by name). Usage is updated in the state store in the same transaction as the allocation writes, so it is always consistent for the plan applier.
 - New Raft messages: `QuotaSpecUpsertRequestType`, `QuotaSpecDeleteRequestType`.
 - New event topic: `Quota` (quota creation, modification and deletion, plus "quota exhausted" and "quota freed" events).
@@ -210,7 +209,7 @@ server {
 }
 ```
 
-A CEL rule as a cluster object (`nomad admission-policy apply rule.hcl`):
+A CEL rule as a cluster object (`norca admission-policy apply rule.hcl`):
 
 ```hcl
 name        = "no-privileged-container"
@@ -236,7 +235,7 @@ The request and response follow the structure of the Kubernetes AdmissionReview,
 
 ### API and CLI
 
-- `nomad admission-policy apply / list / inspect / delete`, HTTP: `/v1/admission-policies`, `/v1/admission-policy/:name`.
+- `norca admission-policy apply / list / inspect / delete`, HTTP: `/v1/admission-policies`, `/v1/admission-policy/:name`.
 - Webhooks can be specified only in the server configuration, not through the API. This is intentional: this way a compromised token cannot register its own webhook that could see every job.
 
 ### Data model
@@ -272,7 +271,7 @@ The request and response follow the structure of the Kubernetes AdmissionReview,
 
 ### Summary
 
-The event stream is extended with Variables changes and the fork's new object types, and with a reliable "resume or resync" signal. This makes it possible to write external controllers following the Kubernetes list + watch pattern, and to use Variables as a lightweight equivalent of CRDs.
+The event stream is extended with Variables changes and Norca's new object types, and with a reliable "resume or resync" signal. This makes it possible to write external controllers following the Kubernetes list + watch pattern, and to use Variables as a lightweight equivalent of CRDs.
 
 ### How does Kubernetes work?
 
@@ -291,7 +290,7 @@ Every resource can be listed and watched. The client receives the current state 
 
 **Variables topic:** only metadata about the changes goes into the event (namespace, path, `CreateIndex`, `ModifyIndex`, the type of modification), never the encrypted content. Subscribing requires the Variables `list` capability for the given path pattern, so the ACL rules also apply to events.
 
-**New topics for the fork's other features:** `Quota`, `AdmissionPolicy`, `NetworkPolicy`, `Scaling`, and event types such as `JobAdmissionDenied` or `QuotaExhausted`.
+**New topics for Norca's other features:** `Quota`, `AdmissionPolicy`, `NetworkPolicy`, `Scaling`, and event types such as `JobAdmissionDenied` or `QuotaExhausted`.
 
 **Larger buffer:** the new default is 1,000 events. The memory requirement per event depends on the payload size, which must be verified with a load test.
 
@@ -313,7 +312,7 @@ Variables paths allow only `a-z A-Z 0-9 - _ ~ /`; dots are excluded because they
 ### API and CLI
 
 - `GET /v1/event/stream?topic=Variables:crd/db-example-com/*&index=1234&exact=true`
-- `nomad operator api` and the existing `nomad event` command do not change, they only get new topics.
+- `norca operator api` and the existing `norca event` command do not change, they only get new topics.
 
 ### Implementation
 
@@ -393,7 +392,7 @@ job "cache" {
 1. **Jobspec and structs:** new `colocate` and `separate` blocks (`jobspec2/`, `norca/structs/structs.go`: new `AllocAffinity` type under `TaskGroup`), validation (`scope` can be interpolated, `weight` range, selector not empty).
 2. **Data collection once per evaluation:** in the stack's `SetJob` step, collect the jobs matching the selector from the namespace, then group their non-terminal allocations by domain (domain value → count). This is done once, from the snapshot, not per node.
 3. **New iterators:** `AllocAffinityFeasibilityIterator` for the mandatory rules (`scheduler/feasible.go`), `AllocAffinityRankIterator` for the preferences (`scheduler/rank.go`), inserted into the chains of `GenericStack` and `SystemStack` (`scheduler/stack.go`).
-4. **Explanation:** in the `AllocMetric` data of blocked or failed placements, the number of filtered nodes and the name of the rule, so that `nomad job status` and `job plan` show why the placement failed.
+4. **Explanation:** in the `AllocMetric` data of blocked or failed placements, the number of filtered nodes and the name of the rule, so that `norca job status` and `job plan` show why the placement failed.
 
 ### Performance
 
@@ -411,7 +410,7 @@ The cost is proportional to the number of matching allocations, not of nodes, be
 
 ### Summary
 
-For a task group it can be specified, for voluntary disruptions (node drain, node pool scale-down, explicit eviction), how many instances must remain healthy at least, or how many may be unavailable at most at the same time. The existing `migrate` block can already do part of this; the fork generalizes and extends it.
+For a task group it can be specified, for voluntary disruptions (node drain, node pool scale-down, explicit eviction), how many instances must remain healthy at least, or how many may be unavailable at most at the same time. The existing `migrate` block can already do part of this; Norca generalizes and extends it.
 
 ### How does Kubernetes work?
 
@@ -423,7 +422,7 @@ The drainer already limits at the job level: `handleTaskGroup` (`norca/drainer/w
 
 What is missing compared with the Kubernetes PDB:
 
-- The limit applies **only to drain**. `nomad alloc stop`, a future node pool scale-down or other voluntary disruptions do not take it into account.
+- The limit applies **only to drain**. `norca alloc stop`, a future node pool scale-down or other voluntary disruptions do not take it into account.
 - It can be specified only in the form **"at most N migrations at a time"**, relative to `count`. An absolute minimum (`min_healthy`) or a percentage cannot.
 - There is **no eviction API** that would signal to an external tool that no allocation may be stopped right now.
 
@@ -450,8 +449,8 @@ group "api" {
 ### Eviction API
 
 - `POST /v1/allocation/:id/evict`: if the budget allows, the allocation stops and is rescheduled (as in a migration); if not, a `429` response with a `Retry-After` header.
-- `nomad alloc stop` with the new `-respect-disruption` flag uses the same path. By default today's behavior remains, so that existing scripts do not break.
-- `nomad job status` shows the current state of the budget: how many allocations are healthy, and how many can be disrupted now.
+- `norca alloc stop` with the new `-respect-disruption` flag uses the same path. By default today's behavior remains, so that existing scripts do not break.
+- `norca job status` shows the current state of the budget: how many allocations are healthy, and how many can be disrupted now.
 
 ### Implementation
 
@@ -766,12 +765,12 @@ The structure of the stored object:
 
 | Operation | HTTP | CLI |
 | --- | --- | --- |
-| Managing types | `/v1/object-kinds`, `/v1/object-kind/:group/:kind` | `nomad object-kind apply / list / inspect / delete` |
-| Listing objects (label and field filtering, pagination) | `GET /v1/objects/:group/:kind?namespace=&filter=&per_page=&next_token=` | `nomad object list <kind> [-label ...]` |
-| Reading, writing, deleting an object | `GET / PUT / DELETE /v1/object/:group/:kind/:name` (`cas`, `dry_run`, `propagation`) | `nomad object get / apply / delete` |
+| Managing types | `/v1/object-kinds`, `/v1/object-kind/:group/:kind` | `norca object-kind apply / list / inspect / delete` |
+| Listing objects (label and field filtering, pagination) | `GET /v1/objects/:group/:kind?namespace=&filter=&per_page=&next_token=` | `norca object list <kind> [-label ...]` |
+| Reading, writing, deleting an object | `GET / PUT / DELETE /v1/object/:group/:kind/:name` (`cas`, `dry_run`, `propagation`) | `norca object get / apply / delete` |
 | Status and events | `PUT /v1/object/:group/:kind/:name/status`, `/events` | (written by the controller SDK) |
-| Scaling | `GET / PUT /v1/object/:group/:kind/:name/scale` | `nomad object scale <kind>/<name> <count>` |
-| Watching changes | `GET /v1/event/stream?topic=CustomObject:db.example.com/PostgresCluster&exact=true` | `nomad event ...` |
+| Scaling | `GET / PUT /v1/object/:group/:kind/:name/scale` | `norca object scale <kind>/<name> <count>` |
+| Watching changes | `GET /v1/event/stream?topic=CustomObject:db.example.com/PostgresCluster&exact=true` | `norca event ...` |
 
 Listing works with server-side indexes (type, namespace, labels) and pagination, so that it does not overload the server and the client even with a large number of objects. Filtering uses Nomad's existing `filter` expression language.
 
@@ -819,7 +818,7 @@ The controller receives these capabilities through the ACL rule bound to its job
 
 ### Ecosystem
 
-- **Operator package:** there is no separate format: operators can be distributed as extended Nomad Pack packages with the fork's package manager, which installs, updates and rolls back the type definitions, the controller's job, the ACL rules and the CEL rules as one versioned release (with a fixed application order: type definitions first, then the controller). Details: [package-management-plan.md](/docs/design/package-management-plan).
+- **Operator package:** there is no separate format: operators can be distributed as extended Nomad Pack packages with Norca's package manager, which installs, updates and rolls back the type definitions, the controller's job, the ACL rules and the CEL rules as one versioned release (with a fixed application order: type definitions first, then the controller). Details: [package-management-plan.md](/docs/design/package-management-plan).
 - **Type-bound webhooks:** the general registration of webhooks is intentionally possible only in the server configuration (item 2). For operators, an administrator-approved webhook registration restricted to a single type can be allowed, with the certificate provided by the package.
 - **Developer tools:** a code generator for the types and the controller skeleton, and a test environment that starts an embedded Nomad dev server, so that the controllers' tests run against a real API.
 - **GitOps:** objects can be applied from git; the drift and the health state can be determined uniformly from `generation`, `observedGeneration` and the `Ready` condition.
@@ -864,7 +863,7 @@ Phase 4 is implemented, the UI included (see the UI note below). Everything live
 3. Schema compatibility: stored objects that would be invalid reject the kind write (no force flag); violations of new CEL rules are only warnings.
 4. Migration expressions return the whole new spec/status (with `merge`/`omit` helpers) rather than patches; one stored version per kind (no served versions or conversion webhooks).
 5. Load management rejects with 429 instead of queueing per identity; no limits without a `limits` block (no server-wide defaults); watch limits count blocking queries per server, not event stream subscriptions.
-6. `norca operator init` lives under `operator` (the cluster operator command group) as the brief suggested; the generated `go.mod` needs replace directives to a Norca checkout, as the SDK is not published as a separate module.
+6. `norca operator init` lives under `operator` (the cluster operator command group); the generated `go.mod` needs replace directives to a Norca checkout, as the SDK is not published as a separate module.
 
 **Not done:** event stream subscription limits and server-wide default limits, served versions with conversion, mutating CEL, a Kubernetes-style code generator for Go types from the schema (the scaffold writes example types to adapt), and webhook client certificates.
 

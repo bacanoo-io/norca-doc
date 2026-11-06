@@ -227,9 +227,9 @@ Telemetry of the autoscaler is described in
 
 ## Design
 
-[Development plan: built-in autoscaler](/docs/design/nomad-fork-development-plan#target-architecture),
-with the [jobspec and data model](/docs/design/nomad-fork-development-plan#jobspec-and-data-model),
-[metrics](/docs/design/nomad-fork-development-plan#metrics),
-[coordination](/docs/design/nomad-fork-development-plan#coordination-with-other-subsystems)
-and [migration](/docs/design/nomad-fork-development-plan#compatibility-and-migration)
+[Development plan: built-in autoscaler](/docs/design/development-plan#target-architecture),
+with the [jobspec and data model](/docs/design/development-plan#jobspec-and-data-model),
+[metrics](/docs/design/development-plan#metrics),
+[coordination](/docs/design/development-plan#coordination-with-other-subsystems)
+and [migration](/docs/design/development-plan#compatibility-and-migration)
 sections.

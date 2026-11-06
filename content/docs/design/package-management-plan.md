@@ -2,10 +2,9 @@
 title: "Package management: Nomad Pack integration – plan"
 weight: 5
 status: "In progress"
-origin: "norca/docs/design/package-management-plan.md"
 ---
 
-**Status:** In progress · 2026-10-29 (phases 1–3 implemented, the UI with the cluster registries, catalog and install form ([catalog and install form](/docs/features/packages/catalog)); phase 4 implemented: OCI registries, signing, admission check, `pack.lock`, variable schemas, multi-region install) · Starting point: Nomad v1.6.5 (MPL 2.0), Nomad Pack v0.4.2 (MPL 2.0) · Related documents: [nomad-fork-development-plan.md](/docs/design/nomad-fork-development-plan), [kubernetes-features-spec.md](/docs/design/kubernetes-features-spec), [backup-restore-plan.md](/docs/design/backup-restore-plan)
+**Status:** In progress · 2026-10-29 (phases 1–3 implemented, the UI with the cluster registries, catalog and install form ([catalog and install form](/docs/features/packages/catalog)); phase 4 implemented: OCI registries, signing, admission check, `pack.lock`, variable schemas, multi-region install) · Starting point: Nomad v1.6.5 (MPL 2.0), Nomad Pack v0.4.2 (MPL 2.0) · Related documents: [development plan](/docs/design/development-plan), [kubernetes-features-spec.md](/docs/design/kubernetes-features-spec), [backup-restore-plan.md](/docs/design/backup-restore-plan)
 
 Norca's package manager will be Nomad Pack: the package format and the command-line tool remain, while the capabilities missing compared to Helm (a release object with revisions, rollback, non-job resources, atomic install, hooks, tests, OCI registry, signing) are provided by Norca's server side, building on the features already planned. The same format also serves as the operator package for Kubernetes item 8, so there is a single package format.
 
@@ -102,7 +101,7 @@ The existing pack structure (`metadata.hcl`, `variables.hcl`, `templates/`, `out
 | `*.object.hcl.tpl` | Custom object (K8s item 8) | 7 |
 | `*.nomad.tpl` | Job (the current format) | 8 |
 
-On deletion the order is reversed. The pack states the required fork version and the features it uses in `metadata.hcl`, so that on an older server `plan` already reports an error:
+On deletion the order is reversed. The pack states the required Norca version and the features it uses in `metadata.hcl`, so that on an older server `plan` already reports an error:
 
 ```hcl
 pack {
@@ -111,7 +110,7 @@ pack {
   version     = "1.4.0"
 
   requires {
-    nomad_fork = ">= 1.6.5+fork.8"
+    norca      = ">= 0.3.0"
     features   = ["custom-objects", "admission-cel"]
   }
 }
@@ -143,7 +142,7 @@ variables_schema = file("values.schema.json")   # optional JSON Schema for the v
 
 **`Release.Apply` RPC** (on the leader):
 
-1. **Validation:** the pack's requirements (fork version, features), the schema of the variables, the signature, and whether the affected resources already belong to another release (an error on conflict; they can be taken over with the `-take-ownership` flag).
+1. **Validation:** the pack's requirements (Norca version, features), the schema of the variables, the signature, and whether the affected resources already belong to another release (an error on conflict; they can be taken over with the `-take-ownership` flag).
 2. **Preview (`plan`):** per resource, what is created, what changes (for jobs, using the diff of the existing `Job.Plan`), what is deleted; without writing.
 3. **`pre-install` or `pre-upgrade` hooks.**
 4. **Apply** in the fixed order, every resource through the normal write path (admission, quota, ACL), with optimistic concurrency.
@@ -259,7 +258,7 @@ Phases 2 and 3 (release objects, server-side apply, hooks, drift) and the supply
 
 | Risk | Mitigation |
 | --- | --- |
-| Diverging from upstream Nomad Pack | Client-side extensions submitted upstream; the fork-specific part kept well separated; regular synchronization |
+| Diverging from upstream Nomad Pack | Client-side extensions submitted upstream; the Norca-specific part kept well separated; regular synchronization |
 | A secret value ends up in the release or in the backups | The format does not allow secret values; secret items appear only as Variables references; admission check |
 | A release takes over resources belonging to another release | Owner reference and conflict check; only with the `-take-ownership` flag |
 | A faulty hook blocks the install | Per-hook timeout; `atomic` mode; hook jobs are kept for debugging (`never` deletion policy) |

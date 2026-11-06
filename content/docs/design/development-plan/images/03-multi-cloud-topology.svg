@@ -30,10 +30,10 @@
     <rect class="col" x="42" y="170" width="397" height="558" rx="14"/>
     <text class="c" x="71" y="211">Cloud A · region a</text>
     <rect class="hi" x="71" y="241" width="339" height="98" rx="14"/>
-    <text class="b" x="92" y="282">Nomad servers</text>
+    <text class="b" x="92" y="282">Norca servers</text>
     <text class="s" x="92" y="312">own Raft, 3 or 5</text>
     <rect class="box" x="71" y="361" width="339" height="98" rx="14"/>
-    <text class="b" x="92" y="402">Nomad clients</text>
+    <text class="b" x="92" y="402">Norca clients</text>
     <text class="s" x="92" y="432">workloads, NATS bridge job</text>
     <rect class="box" x="71" y="481" width="339" height="98" rx="14"/>
     <text class="b" x="92" y="522">Consul</text>
@@ -46,10 +46,10 @@
     <rect class="col" x="474" y="170" width="396" height="558" rx="14"/>
     <text class="c" x="502" y="211">Cloud B · region b</text>
     <rect class="hi" x="502" y="241" width="340" height="98" rx="14"/>
-    <text class="b" x="523" y="282">Nomad servers</text>
+    <text class="b" x="523" y="282">Norca servers</text>
     <text class="s" x="523" y="312">own Raft, 3 or 5</text>
     <rect class="box" x="502" y="361" width="340" height="98" rx="14"/>
-    <text class="b" x="523" y="402">Nomad clients</text>
+    <text class="b" x="523" y="402">Norca clients</text>
     <text class="s" x="523" y="432">workloads, NATS bridge job</text>
     <rect class="box" x="502" y="481" width="340" height="98" rx="14"/>
     <text class="b" x="523" y="522">Consul</text>
@@ -62,10 +62,10 @@
     <rect class="col" x="905" y="170" width="397" height="558" rx="14"/>
     <text class="c" x="934" y="211">Cloud C · region c</text>
     <rect class="hi" x="934" y="241" width="339" height="98" rx="14"/>
-    <text class="b" x="955" y="282">Nomad servers</text>
+    <text class="b" x="955" y="282">Norca servers</text>
     <text class="s" x="955" y="312">own Raft, 3 or 5</text>
     <rect class="box" x="934" y="361" width="339" height="98" rx="14"/>
-    <text class="b" x="955" y="402">Nomad clients</text>
+    <text class="b" x="955" y="402">Norca clients</text>
     <text class="s" x="955" y="432">workloads, NATS bridge job</text>
     <rect class="box" x="934" y="481" width="339" height="98" rx="14"/>
     <text class="b" x="955" y="522">Consul</text>

@@ -2,12 +2,11 @@
 title: "Web UI and Tabler migration – plan"
 weight: 7
 status: "In progress"
-origin: "norca/docs/design/ui-plan.md"
 ---
 
-**Status:** In progress · 2026-10-25 (phase 1, foundation, done; phase 2, existing areas, in progress) · Starting point: the Nomad v1.6.5 web UI · Visual mockup: [mockups/ui-mockup.html](/design/mockups/ui-mockup.html) · Related documents: [nomad-fork-development-plan.md](/docs/design/nomad-fork-development-plan) and the other design documents
+**Status:** In progress · 2026-10-25 (phase 1, foundation, done; phase 2, existing areas, in progress) · Starting point: the Nomad v1.6.5 web UI · Visual mockup: [mockups/ui-mockup.html](/design/mockups/ui-mockup.html) · Related documents: [development plan](/docs/design/development-plan) and the other design documents
 
-The fork's UI gets a new information architecture, an overview dashboard, cross-region views, and pages for the planned features (backup, packages, objects, quotas, admission, networking, scaling, multiregion deployment). The visual base is Tabler (MIT), through our own Ember component layer. The visual mockup is the clickable realization of this plan, with real Tabler CSS.
+Norca's UI gets a new information architecture, an overview dashboard, cross-region views, and pages for the planned features (backup, packages, objects, quotas, admission, networking, scaling, multiregion deployment). The visual base is Tabler (MIT), through our own Ember component layer. The visual mockup is the clickable realization of this plan, with real Tabler CSS.
 
 In the mockup, the UI's working name is **Norca**. The "Nomad" name is a trademark; for public distribution the product name must be finalized together with the rebranding.
 
@@ -95,7 +94,7 @@ The content of the existing pages (clients, node pools, topology, storage, Varia
 
 ## Visual direction and design tokens
 
-**Core idea:** the fork's distinctive trait is federated operation spanning multiple clouds, so the dashboard's single emphasized element is the **federation strip**: one column per region, in the cloud's color, with the leader, the capacity and the last backup. Everything else is restrained: Tabler's neutral surfaces, with status colors used for status only.
+**Core idea:** Norca's distinctive trait is federated operation spanning multiple clouds, so the dashboard's single emphasized element is the **federation strip**: one column per region, in the cloud's color, with the leader, the capacity and the last backup. Everything else is restrained: Tabler's neutral surfaces, with status colors used for status only.
 
 | Token | Value | Role |
 | --- | --- | --- |
@@ -176,7 +175,7 @@ Bulma and Bootstrap partly use the same class names (`table`, `modal`, `dropdown
 
 ## Open questions
 
-- [x] What should the fork's final product name and branding be ("Norca")? Decided 2026-10-24: the name is Norca; the visual identity stays the neutral Tabler base (no custom logo or palette for now).
+- [x] What should the final product name and branding be? Decided 2026-10-24: the name is Norca; the visual identity stays the neutral Tabler base (no custom logo or palette for now).
 - [x] ECharts or Chart.js for the new charts? Decided 2026-10-24: ECharts.
 - [x] Should the old UI remain available in parallel for a transition period (for example `/ui/legacy`)? Decided 2026-10-24: yes, at `/ui/legacy` for one release.
 - [x] Which languages are needed beyond English and Hungarian? Decided 2026-10-24: English only; no translation layer (`ember-intl` is dropped from phase 1).

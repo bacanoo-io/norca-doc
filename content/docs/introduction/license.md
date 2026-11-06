@@ -5,7 +5,7 @@ status: "Accepted direction"
 origin: "norca/docs/licensing.md"
 ---
 
-**Status:** Accepted direction · 2026-10-24 · Related documents: [nomad-fork-development-plan.md](/docs/design/nomad-fork-development-plan) and the other design documents
+**Status:** Accepted direction · 2026-10-24 · Related documents: [development plan](/docs/design/development-plan) and the other design documents
 
 This page records under which license each part of the project falls, where the starting code comes from, which dependencies are allowed, and what must be observed in the public repository, in binary releases and in contributions. It is not legal advice; before the first public release it is worth having it reviewed by a lawyer experienced in open source licenses.
 
