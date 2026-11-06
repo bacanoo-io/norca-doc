@@ -98,6 +98,23 @@ Complete plans with a comment on every setting are in the [examples](/docs/deplo
 
 On the nodes the deployer keeps its markers under `/var/lib/norca-deployer/`.
 
+## The plan as a library
+
+The model of a deployment plan is the public package
+[`pkg/plan`](https://github.com/bacanoo-io/norca-deployer/tree/main/pkg/plan): its types, loading from a file or from memory (YAML,
+HCL, JSON), the defaults and the validation. Other programs (an operator, a
+user interface, another tool) embed it to read, check and write plans
+without the deployer; it makes no connection and has no state.
+
+```go
+import "github.com/bacanoo-io/norca-deployer/pkg/plan"
+
+p, err := plan.Parse(data, plan.FormatYAML, "")
+```
+
+The rest of the deployer (the installation over SSH, the state, the
+commands) stays internal.
+
 ## Testing
 
 ```sh
@@ -108,7 +125,7 @@ The end-to-end test runs against a real Debian node over SSH (needs `openssh-ser
 
 ```sh
 NORCA_E2E_SSH=127.0.0.1:2222 NORCA_E2E_USER=deploy NORCA_E2E_PASSWORD=... \
-  go test -tags e2e ./pkg/e2e/
+  go test -tags e2e ./internal/e2e/
 ```
 
 ## Documentation
@@ -124,7 +141,7 @@ NORCA_E2E_SSH=127.0.0.1:2222 NORCA_E2E_USER=deploy NORCA_E2E_PASSWORD=... \
   {{< card link="adding-and-removing-nodes" title="Adding and removing nodes" icon="switch-horizontal" >}}
   {{< card link="secrets-and-policies" title="Secrets and ACL policies" icon="key" >}}
   {{< card link="packs" title="Packs" icon="archive" >}}
-  {{< card link="gitops" title="GitOps" icon="refresh" >}}
+  {{< card link="gitops" title="GitOps" icon="code" >}}
   {{< card link="multi-datacenter" title="Several datacenters" icon="server" >}}
   {{< card link="multi-region" title="Multi-region" icon="globe" >}}
   {{< card link="windows" title="Windows nodes" icon="desktop-computer" >}}

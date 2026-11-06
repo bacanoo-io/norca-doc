@@ -2,7 +2,7 @@
 title: "Multi-Region"
 linkTitle: "Multi-region"
 description: "A Norca cluster can span several regions."
-weight: 12
+weight: 13
 origin: "norca-deployer/doc/multi-region.md"
 ---
 

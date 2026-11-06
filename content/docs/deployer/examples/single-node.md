@@ -2,7 +2,7 @@
 title: "Single node"
 description: "One machine running the Norca server and client: TLS, gossip encryption, ACLs, host packages, a script."
 weight: 1
-origin: "norca-deployer/examples/single-node.yaml"
+origin: "norca-deployer/examples/nodes/single-node.yaml"
 ---
 
 One machine running the Norca server and client: TLS, gossip encryption, ACLs, host packages, a script.

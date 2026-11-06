@@ -43,6 +43,7 @@ An unknown key or a block repeated where only one is allowed is an error.
 | `scripts` | | Bash scripts |
 | `client_defaults` | | Client settings merged into every node that runs a client |
 | `node_pools` | | Node pool descriptions |
+| `node_scaling` | | The bootstrap and the network ranges for the node scaling operator |
 | `secrets` | | Secrets and Variables written after the cluster is up |
 | `packs` | | Pack registries and releases; `packs.gitops` holds GitOps bindings |
 | `gitops` | | GitOps bindings, the same as `packs.gitops` |
@@ -137,6 +138,7 @@ See [Networking and tuning](/docs/deployer/networking-and-tuning#firewall) for t
 | `pki.server_additional_ip_sans` | | Extra IP addresses in server certificates |
 | `pki.spiffe.enabled` | `false` | SPIFFE IDs (URI SANs) in all certificates |
 | `pki.spiffe.trust_domain` | `<metadata.name>.norca` | SPIFFE trust domain |
+| `pki.distrusted_ca_files` | | PEM files of CA certificates the servers no longer trust (a node CA whose key was lost); see [security](/docs/deployer/security#shutting-out-a-node-ca) |
 | `acl.enabled` | `false` | Enable ACLs |
 | `acl.auto_bootstrap` | `false` | Bootstrap once and store the token |
 | `acl.management_token_output` | `.norca-deployer/management-token` | Token file |
@@ -230,6 +232,48 @@ See [Host packages and scripts](/docs/deployer/host-packages-and-scripts).
 | `deploy[].values` | | Pack variables |
 
 See [Packs](/docs/deployer/packs).
+
+## node_scaling
+
+Nodes that a node scaling operator (`norca-nodescaler` of `norca-platform`) creates by itself are
+not installed by the deployer: the operator signs the certificate of each new node with the
+**node CA** of the region and hands the machine a bootstrap. With `node_scaling.enabled` the
+deployer writes, after `apply`, what the operator needs:
+
+- the Variable `nodescaler/bootstrap/<region>`: the cluster CA (`ca`), the node CA and its key
+  (`node_ca`, `node_ca_key`, from `pki issue-node-ca`), the agent configuration template of a
+  scaled node (`agent_config`), the trust domain, the validity and the paths of the files;
+- the Variable `nodescaler/network/<region>`: `cluster_cidrs` and `api_cidrs` of
+  `tuning.firewall`, against which the operator checks the network of a node group.
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `enabled` | `false` | Write the Variables |
+| `namespace` | `default` | Namespace of the Variables. The bootstrap holds the key of the node CA: give read access to the operator only |
+| `validity` | `60d` | Validity of a node certificate, in days (`60d`) or hours (`720h`); the node CA ends it at the latest |
+| `client` | | Client settings of a scaled node (drivers, `enable_raw_exec`, `extra_hcl`, reserved resources, host networks), over `client_defaults` |
+
+The template is the configuration of a client of the plan without what belongs to one node: the
+name, datacenter, pool, class and meta come from the node group, and the agent takes its own
+private address (the address of a machine that does not exist yet is not known). The meta of
+`client_defaults` is not used: a scaled node gets its meta from its node group. Consul is not
+set up on a scaled node. It needs `security.tls_enabled` and `metadata.region`. Without a node
+CA the bootstrap is not written and `apply` says so:
+
+```shell
+norca-deployer pki issue-node-ca -c cluster.yaml --region eu
+norca-deployer apply -c cluster.yaml
+```
+
+```yaml
+node_scaling:
+  enabled: true
+  validity: 60d
+  client:
+    drivers: [docker, exec]
+```
+
+A Variable is written again only when its items changed since the last `apply`.
 
 ## inventory
 

@@ -1,7 +1,7 @@
 ---
 title: "How `apply` Works"
 linkTitle: "How apply works"
-description: "On every server, in this order:."
+description: "`apply` brings every node to the state the plan describes."
 weight: 2
 origin: "norca-deployer/doc/how-apply-works.md"
 ---

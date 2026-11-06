@@ -2,8 +2,8 @@
 title: "Deployer examples"
 linkTitle: "Examples"
 description: "Complete deployment plans with a comment on every setting."
-weight: 14
-origin: "norca-deployer/examples"
+weight: 15
+origin: "norca-deployer/examples/nodes"
 ---
 
 Complete plans with a comment on every setting. YAML and HCL plans use the same keys, and the YAML and HCL versions of an example load to the same plan. Paths in a plan (keys, `.deb` files, scripts, policies) are relative to the plan file.

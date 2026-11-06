@@ -31,38 +31,47 @@ PAGES = [
     ('adding-and-removing-nodes.md', 'adding-and-removing-nodes', 8, 'Adding and removing nodes'),
     ('secrets-and-policies.md', 'secrets-and-policies', 9, 'Secrets and ACL policies'),
     ('packs.md', 'packs', 10, 'Packs'),
-    ('multi-datacenter.md', 'multi-datacenter', 11, 'Several datacenters with NATS'),
-    ('multi-region.md', 'multi-region', 12, 'Multi-region'),
-    ('windows.md', 'windows', 13, 'Windows nodes'),
+    ('gitops.md', 'gitops', 11, 'GitOps'),
+    ('multi-datacenter.md', 'multi-datacenter', 12, 'Several datacenters'),
+    ('multi-region.md', 'multi-region', 13, 'Multi-region'),
+    ('windows.md', 'windows', 14, 'Windows nodes'),
 ]
 PAGE_OF = {src: slug for src, slug, _, _ in PAGES}
 
-# Example plans: slug, title, description, files (label, path, language)
+# Example plans: slug, title, description, files (label, path, language). The
+# plans are in examples/nodes/ of the deployer; examples/platform/ describes a
+# feature that is not built yet and is not published.
 EXAMPLES = [
     ('single-node', 'Single node', 'One machine running the Norca server and client: TLS, gossip encryption, ACLs, host packages, a script.',
-     [('YAML', 'examples/single-node.yaml', 'yaml'), ('HCL', 'examples/single-node.hcl', 'hcl')]),
+     [('YAML', 'examples/nodes/single-node.yaml', 'yaml'), ('HCL', 'examples/nodes/single-node.hcl', 'hcl')]),
     ('cluster', 'Cluster', 'Three servers, Linux clients with Docker, a Windows client; firewall, PKI and SPIFFE, node labels and pools, secrets, NATS for the applications, an ACL policy for event stream readers.',
-     [('YAML', 'examples/cluster.yaml', 'yaml'), ('HCL', 'examples/cluster.hcl', 'hcl'),
-      ('policies/events-reader.hcl', 'examples/policies/events-reader.hcl', 'hcl'),
-      ('scripts/prepare-data-disk.sh', 'examples/scripts/prepare-data-disk.sh', 'bash')]),
+     [('YAML', 'examples/nodes/cluster.yaml', 'yaml'), ('HCL', 'examples/nodes/cluster.hcl', 'hcl'),
+      ('policies/events-reader.hcl', 'examples/nodes/policies/events-reader.hcl', 'hcl'),
+      ('scripts/prepare-data-disk.sh', 'examples/nodes/scripts/prepare-data-disk.sh', 'bash')]),
     ('multi-datacenter', 'Several datacenters with NATS', 'One region over three datacenters: a server per datacenter, the event stream on the system bus with 3 replicas, a NATS cluster with one server per datacenter for the applications.',
-     [('YAML', 'examples/multi-datacenter.yaml', 'yaml'), ('policies/events-reader.hcl', 'examples/policies/events-reader.hcl', 'hcl')]),
+     [('YAML', 'examples/nodes/multi-datacenter.yaml', 'yaml'), ('policies/events-reader.hcl', 'examples/nodes/policies/events-reader.hcl', 'hcl')]),
     ('local-dev', 'Local development node', 'Norca on the machine the deployer runs on, without SSH, on loopback only.',
-     [('YAML', 'examples/local-dev.yaml', 'yaml')]),
+     [('YAML', 'examples/nodes/local-dev.yaml', 'yaml')]),
     ('add-node', 'Adding a node', 'A client added to a running cluster: only the new node is installed.',
-     [('YAML', 'examples/add-node.yaml', 'yaml')]),
+     [('YAML', 'examples/nodes/add-node.yaml', 'yaml')]),
     ('decommission-node', 'Removing nodes', 'Clients and servers taken out of a running cluster: drain, Raft removal, uninstall.',
-     [('YAML', 'examples/decommission-node.yaml', 'yaml')]),
+     [('YAML', 'examples/nodes/decommission-node.yaml', 'yaml')]),
 ]
 EXAMPLE_FILES = {}
 for slug, _, _, files in EXAMPLES:
     for _, path, _ in files:
-        EXAMPLE_FILES.setdefault(path.replace('examples/', ''), slug)
+        EXAMPLE_FILES.setdefault(path.replace('examples/', '', 1), slug)
 
 LINK_RE = re.compile(r'\]\(([^)\s]+)\)')
 
 
+SITE = 'https://bacanoo-io.github.io/norca-doc/'
+
+
 def rewrite_link(target):
+    if target.startswith(SITE):
+        # A page of this site: a link within it.
+        return '/' + target[len(SITE):].rstrip('/')
     if re.match(r'^[a-z]+://', target) or target.startswith('#') or target.startswith('/'):
         return target
     path, _, anchor = target.partition('#')
@@ -80,6 +89,9 @@ def rewrite_link(target):
         if rel in EXAMPLE_FILES:
             return BASE + '/examples/' + EXAMPLE_FILES[rel] + anchor
         return BASE + '/examples/' + anchor
+    if not path.endswith('.md'):
+        # Source code (a package or a file of the repository): its page on GitHub.
+        return 'https://github.com/bacanoo-io/norca-deployer/tree/main/' + path + anchor
     raise SystemExit('unmapped link: ' + target)
 
 
@@ -96,7 +108,8 @@ def split_title(text):
 def first_sentence(body):
     for para in body.split('\n\n'):
         p = para.strip()
-        if p and not p.startswith(('#', '|', '`', '-', '>', '{{', '!', '1.')):
+        # A paragraph may start with inline code; a code block is skipped.
+        if p and not p.startswith(('#', '|', '```', '-', '>', '{{', '!', '1.')):
             s = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', p.replace('\n', ' '))
             s = s.split('. ')[0].rstrip('.') + '.'
             return s.replace('"', "'")
@@ -144,7 +157,8 @@ def main():
 
     cards = ['{{< cards >}}']
     icons = ['play', 'refresh', 'adjustments', 'shield-check', 'cube', 'globe-alt', 'tag', 'switch-horizontal',
-             'key', 'archive', 'server', 'globe', 'desktop-computer']
+             'key', 'archive', 'code', 'server', 'globe', 'desktop-computer']
+    assert len(icons) == len(PAGES), 'one icon per page'
     descs = {}
     for src, slug, weight, link_title in PAGES:
         t, b = split_title(read('doc/' + src))
@@ -171,7 +185,7 @@ def main():
     rows = ['| Example | Content |', '| --- | --- |']
     for slug, title, desc, _ in EXAMPLES:
         rows.append(f'| [{title}]({BASE}/examples/{slug}) | {desc} |')
-    ex_index = front_matter('Deployer examples', 'Examples', 14, 'norca-deployer/examples',
+    ex_index = front_matter('Deployer examples', 'Examples', len(PAGES) + 1, 'norca-deployer/examples/nodes',
                             'Complete deployment plans with a comment on every setting.')
     ex_index += ('Complete plans with a comment on every setting. YAML and HCL plans use the same keys, and the '
                  'YAML and HCL versions of an example load to the same plan. Paths in a plan (keys, `.deb` files, '
