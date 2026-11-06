@@ -73,10 +73,12 @@ Durations are written as numbers with `s`, `m`, `h` or `d`: `30s`, `15m`, `1h30m
 | `status.joining`, `status.failed` | operator | Nodes asked for and not joined yet, and failed. Joining nodes count as capacity for the blocked work. |
 | `status.allocatable`, `status.capacity` | operator | The size of one node (`cpu`, `memory`, `disk`). Without `allocatable` the size comes from `spec.node`. |
 | `status.decision` | autoscaler | What the last raise of the scale was made for, kept until the group has that many ready nodes (or its scale is set below it): `time`, `replicas`, `previous`, `check` (`blocked-demand` or `headroom`), `reason`, `evaluations` (the IDs of the blocked evaluations, at most 50) and `work` (`namespace`, `job`, `group` and `count` of the blocked work, at most 20). Not written for a dry run. |
-| `status.nodes` | operator | One entry per instance of the provider: `instance`, `state` (`creating`, `running`, `deleting`, `failed`), `request`, `created`, a `reason` when it failed, `node` and `ready` once its node joined, and `slow` while it joins after `join.slow_after`. |
+| `status.nodes` | operator | One entry per instance of the provider: `instance`, `state` (`creating`, `running`, `deleting`, `failed`), `request`, `created`, a `reason` when it failed, `node` and `ready` once its node joined, `slow` while it joins after `join.slow_after`, and `removing` (the phase) for the instance a scale down removes. |
 | `status.lastRequest` | operator | The number of the last request to the provider. A request ID is `<region>/<group>/<number>`; the provider creates nothing more for an ID it has seen. |
 | `status.join` | operator | The join failures in a row: `failures`, `lastFailure`, and the template (`revision`) and resume generation (`resumed`) they count for. |
 | `status.strayNodes` | operator | Nodes of the group without an instance: `node`, `name`, `instance` and `kind`: `gone` (down, what is left of a deleted instance) or `foreign` (ready, without a machine the operator asked for; made ineligible). |
+| `status.removal` | operator | The instance a scale down removes: `instance`, `name`, `node`, `selector`, `phase` (`draining`, `settling`, `deleting`, `deleted`), `started`, and `settleUntil` for an empty node. Another operator instance goes on with it. |
+| `status.scaleDown` | operator | The vetoes of the scale down in a row: `vetoes`, `retryAfter`, `reason` (`NoCandidate` or `DrainStuck`), `message`. Gone after a scale down that worked. |
 | `status.rollout` | operator | Reserved for the operator. |
 | `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`) `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, or `JoinFailing`) `JoinFailing` (`True` with `TooManyFailures`) `ForeignNode` (`True` while a ready node of the group runs without an instance) `ScaleDownBlocked` (`True` when no node of the group may go; `retryAfter` is the time, RFC 3339, before which the autoscaler does not lower the scale again) and `NetworkCovered` (`True` when `network` is inside the cluster ranges the deployer publishes, `False` when the firewall of the servers would not let the nodes in, `Unknown` with `NetworkUnchecked` when the ranges are not published or `NoNetwork` when the group names none). |
 
@@ -92,13 +94,42 @@ joins ends the row. A node still joining after `join.slow_after` (5 minutes) sta
 
 The events of the operator in the log of the group: `InstancesRequested`, `CreateFailed`,
 `NodeJoined`, `JoinSlow`, `JoinTimeout`, `InstanceFailed`, `JoinFailing`, `NodeWithoutInstance`,
-`ForeignNode`, `NodeIneligible` and `NetworkNotCovered`.
+`ForeignNode`, `NodeIneligible`, `NetworkNotCovered`, and of the scale down `ScaleDown`,
+`InstanceDeleted`, `ScaleDownBlocked`, `DrainStuck`, `NodeNotEmpty` and `ScaleDownCanceled`.
 
 A node with the marks of the group (`norca.node_group`, `norca.instance`) whose instance the provider
 does not have is reported once: down, it is what is left of a deleted instance; ready, it is
 **foreign** (a bootstrap that left through the user data, for example) and is made ineligible for
 new work. A second ready node with the name of an instance that has one is foreign too. Nodes without
 the marks, installed by hand, are left alone.
+
+## The removal of nodes
+
+When the group has more instances than `spec.replicas`, the operator removes one at a time:
+
+1. An instance whose node has not joined goes first, at once: nothing runs on it.
+2. Otherwise a node is chosen by `policy.scale_down.selector`:
+   - `least_busy` (the default): the node with the fewest allocations (the oldest of them on a tie)
+     is drained with `drain_deadline` (15 minutes by default), with the built-in drainer, so the
+     [disruption budgets](/docs/features/disruption-budget) apply. It does not choose a node that
+     holds an allocation under `distinct_hosts` that no other node of the job's datacenters and pool
+     could take; other constraints of the job are not checked.
+   - `empty`: only a node without allocations (system jobs aside). It is made ineligible, looked at
+     again after 10 seconds, and removed only if it is still empty; work that arrived meanwhile
+     keeps it (`NodeNotEmpty`). Nothing is ever drained, for work that must not be interrupted.
+3. A node with the meta `norca.scale.protect = "true"` is never chosen.
+4. When the drain is complete, or the node still empty, the instance is deleted; its node, once
+   down, is purged.
+
+When no node may go, the condition `ScaleDownBlocked` is set with a `retryAfter` time (10 minutes,
+doubled with each veto in a row, at most 6 hours), and the autoscaler sets the scale back. A drain
+that has not finished 5 minutes after its deadline is stopped and the node made eligible again
+(`DrainStuck`), with the same wait: no instance is deleted with an unfinished drain. A raise of the
+scale before the instance is deleted keeps the node (`ScaleDownCanceled`).
+
+The operator reads the jobs of the allocations on a node, so its ACL policy needs `read-job` in
+every namespace (the `nodescaler-operator` pack has it). The wait for a load balancer to drop an
+edge node before its proxy stops is not done yet.
 
 ## Rules
 
