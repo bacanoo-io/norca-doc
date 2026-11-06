@@ -100,14 +100,47 @@ The events of the operator in the log of the group: `InstancesRequested`, `Creat
 `InstanceDeleted`, `ScaleDownBlocked`, `DrainStuck`, `NodeNotEmpty` and `ScaleDownCanceled`, of the
 rolling replacement `Replacing`, `InstanceDeleted`, `Replaced`, `ReplacementCanceled`,
 `ReplacementFailed`, `DrainStuck` and `WouldReplace`, of an edge node `LeavingTraffic`, `TrafficLeft`,
-`LeaveTimeout` and `ShortShutdownDelay`, and of the deletion of the group `Deleting`, `DrainStarted`, `InstanceDeleted`, `DeletionFailed` and
-`DeletionBlocked`.
+`LeaveTimeout` and `ShortShutdownDelay`, of the deletion of the group `Deleting`, `DrainStarted`, `InstanceDeleted`, `DeletionFailed` and
+`DeletionBlocked`, and of the [node certificates](#nodes-that-make-their-own-keys)
+`CertificateIssued`, `CertificateRenewed` and `RenewalRefused`.
 
 A node with the marks of the group (`norca.node_group`, `norca.instance`) whose instance the provider
 does not have is reported once: down, it is what is left of a deleted instance; ready, it is
 **foreign** (a bootstrap that left through the user data, for example) and is made ineligible for
 new work. A second ready node with the name of an instance that has one is foreign too. Nodes without
 the marks, installed by hand, are left alone.
+
+## Nodes that make their own keys
+
+By default the bootstrap of a node carries its key and its certificate (60 days), signed by the
+node CA of the region: the key travels through the provider and the user data of the machine, and
+the node is replaced before the certificate expires. When the operator serves its **join endpoint**
+(`join_enabled` of the `nodescaler-operator` pack, or `-join-listen`), the key never leaves the
+node:
+
+1. The bootstrap carries the cluster CA, the agent configuration, the join endpoints and a
+   **one-time token**, no key and no certificate. The machines need `norca-join` (the item
+   `join_binary` of the bootstrap, `/usr/local/bin/norca-join` by default).
+2. On the machine, `norca-join` makes the key, sends a certificate request with the token to the
+   endpoint, and receives its certificate (7 days by default, `join_validity`). Then it starts the
+   agent.
+3. At two thirds of its life it renews the certificate, with the current one as its client
+   certificate, and sends the agent `SIGHUP`: the agent loads the new pair and keeps its
+   connections.
+
+The endpoint proves itself with a certificate of the node CA whose only name is a URI no node
+certificate carries, so a node cannot pose as the endpoint. A token is used once, and only the
+latest certificate of an instance renews it: a copy of an older one is refused, with a
+`RenewalRefused` warning in the log of the group. Every join and renewal is an event
+(`CertificateIssued`, `CertificateRenewed`).
+
+Such a node has the meta `norca.identity = "join"` and no `norca.cert_expires`: it is **not
+replaced for its age** (an explicit `rolling.max_node_age` still applies), and the other reasons of
+a rolling replacement are unchanged. Without a known endpoint the operator asks for no instance
+(`Provisioned` is `False` with `NoBootstrap`). The endpoints are the stable URLs of `join_urls`
+(a DNS name or a load balancer), or the instances of the service `<job>-join`; a node learns the
+endpoints of the moment at each renewal, so give stable URLs where the operator moves often. The
+nodes must reach the port of the endpoint (`join_port`, 8490).
 
 ## The removal of nodes
 
@@ -168,8 +201,8 @@ A node the operator created is replaced when it is **outdated**:
 | `marked` | It has the meta `norca.scale.replace = "true"` (`norca node meta apply -node-id <id> norca.scale.replace=true`). |
 | `revision` | Its revision (the meta `norca.node_group_revision`) is not the one of the template: `provider`, `group` and `spec.node`. Changing `spec.node` (a new image, for example) replaces every node. |
 | `generation` | Its generation (the meta `norca.node_group_generation`) is below `rolling.generation`. Raising it replaces every node with the same template. |
-| `age` | It is older than its soft limit: `rolling.max_node_age` less a fixed jitter of up to `rolling.jitter` (15%) from a hash of its name, so nodes created together are not all due on one day. Without `max_node_age` the limit is three quarters of the life of its certificate (45 of 60 days). |
-| `expiry` | Its certificate expires within a twelfth of its life (55 of 60 days): the hard limit. The expiry is in the meta `norca.cert_expires`. |
+| `age` | It is older than its soft limit: `rolling.max_node_age` less a fixed jitter of up to `rolling.jitter` (15%) from a hash of its name, so nodes created together are not all due on one day. Without `max_node_age` the limit is three quarters of the life of its certificate (45 of 60 days); a node that [renews its own certificate](#nodes-that-make-their-own-keys) has no such limit. |
+| `expiry` | Its certificate expires within a twelfth of its life (55 of 60 days): the hard limit. The expiry is in the meta `norca.cert_expires`, which a node that renews its own certificate does not have. |
 
 A node with `norca.scale.protect = "true"` is not replaced. At most `rolling.max_unavailable` nodes
 (1) are replaced at a time, those at their hard limit first, then the oldest, and none while the
