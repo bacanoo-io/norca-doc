@@ -208,6 +208,12 @@ A node with `norca.scale.protect = "true"` is not replaced. At most `rolling.max
 (1) are replaced at a time, those at their hard limit first, then the oldest, and none while the
 group grows, shrinks or its nodes fail to join.
 
+The meta of a node is written on the node itself: `norca node meta apply` goes to the server that
+holds the connection of the node, and that server writes it. When that server cannot be reached for
+a moment (around a restart of the servers, for example), the command fails with an RPC error and
+nothing is changed; a script that marks nodes tries again. `norca node meta read -node-id <id>` shows
+whether the mark is there.
+
 With `rolling.max_surge` at 1 or more (the default), **the new node comes first**: the old node gets
 no new work and no longer counts in the scale, so the operator asks for one more instance. When the
 new node is ready, the old one is emptied, its instance deleted and the node purged once down. At
@@ -239,6 +245,10 @@ warning names the first one, early enough to raise `max_unavailable`.
 `rolling.mode = "paused"` starts no replacement except at the hard limit, and lets the one in
 progress finish. With `enforce = false` nothing is replaced: the outdated nodes are listed in
 `status.rollout.outdated` and in a `WouldReplace` event.
+
+`status.rollout` stays after a rollout: it keeps `took` and `warned`. A tool that waits for a rollout
+to end waits until `status.rollout.replacing` and `status.rollout.outdated` are empty (and the
+condition `Rolling` is `False`), not until `status.rollout` is gone.
 
 ## The deletion of a group
 
