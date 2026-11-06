@@ -79,8 +79,9 @@ Durations are written as numbers with `s`, `m`, `h` or `d`: `30s`, `15m`, `1h30m
 | `status.strayNodes` | operator | Nodes of the group without an instance: `node`, `name`, `instance` and `kind`: `gone` (down, what is left of a deleted instance) or `foreign` (ready, without a machine the operator asked for; made ineligible). |
 | `status.removal` | operator | The instance a scale down removes: `instance`, `name`, `node`, `selector`, `phase` (`draining`, `settling`, `deleting`, `deleted`), `started`, and `settleUntil` for an empty node. Another operator instance goes on with it. |
 | `status.scaleDown` | operator | The vetoes of the scale down in a row: `vetoes`, `retryAfter`, `reason` (`NoCandidate` or `DrainStuck`), `message`. Gone after a scale down that worked. |
+| `status.deletion` | operator | While a deleted group is kept by the finalizer of the operator: the `policy` being applied, `deleted` (when each instance was deleted, by its name) and `waiting` (what the deletion waits for). |
 | `status.rollout` | operator | Reserved for the operator. |
-| `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`) `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, or `JoinFailing`) `JoinFailing` (`True` with `TooManyFailures`) `ForeignNode` (`True` while a ready node of the group runs without an instance) `ScaleDownBlocked` (`True` when no node of the group may go; `retryAfter` is the time, RFC 3339, before which the autoscaler does not lower the scale again) and `NetworkCovered` (`True` when `network` is inside the cluster ranges the deployer publishes, `False` when the firewall of the servers would not let the nodes in, `Unknown` with `NetworkUnchecked` when the ranges are not published or `NoNetwork` when the group names none). |
+| `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`) `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, or `JoinFailing`) `JoinFailing` (`True` with `TooManyFailures`) `ForeignNode` (`True` while a ready node of the group runs without an instance) `ScaleDownBlocked` (`True` when no node of the group may go; `retryAfter` is the time, RFC 3339, before which the autoscaler does not lower the scale again) `DeletionBlocked` (`True` with `DrainTimeout` when the deletion of the group has waited longer than `deletion.drain_timeout`) and `NetworkCovered` (`True` when `network` is inside the cluster ranges the deployer publishes, `False` when the firewall of the servers would not let the nodes in, `Unknown` with `NetworkUnchecked` when the ranges are not published or `NoNetwork` when the group names none). |
 
 ## The join of the nodes
 
@@ -95,7 +96,9 @@ joins ends the row. A node still joining after `join.slow_after` (5 minutes) sta
 The events of the operator in the log of the group: `InstancesRequested`, `CreateFailed`,
 `NodeJoined`, `JoinSlow`, `JoinTimeout`, `InstanceFailed`, `JoinFailing`, `NodeWithoutInstance`,
 `ForeignNode`, `NodeIneligible`, `NetworkNotCovered`, and of the scale down `ScaleDown`,
-`InstanceDeleted`, `ScaleDownBlocked`, `DrainStuck`, `NodeNotEmpty` and `ScaleDownCanceled`.
+`InstanceDeleted`, `ScaleDownBlocked`, `DrainStuck`, `NodeNotEmpty` and `ScaleDownCanceled`, and of
+the deletion of the group `Deleting`, `DrainStarted`, `InstanceDeleted`, `DeletionFailed` and
+`DeletionBlocked`.
 
 A node with the marks of the group (`norca.node_group`, `norca.instance`) whose instance the provider
 does not have is reported once: down, it is what is left of a deleted instance; ready, it is
@@ -130,6 +133,34 @@ scale before the instance is deleted keeps the node (`ScaleDownCanceled`).
 The operator reads the jobs of the allocations on a node, so its ACL policy needs `read-job` in
 every namespace (the `nodescaler-operator` pack has it). The wait for a load balancer to drop an
 edge node before its proxy stops is not done yet.
+
+## The deletion of a group
+
+The operator puts its finalizer, `norca.io/nodescaler`, on a group before it asks for its first
+instance, so `norca object delete` only marks the group, and the autoscaler leaves it alone. The
+instances are then dealt with by `deletion.policy`:
+
+- `drain` (the default): the node of every instance is drained with `policy.scale_down.drain_deadline`,
+  and the instance is deleted once the drain is complete. An instance whose node has not joined,
+  or is down, is deleted at once.
+- `terminate`: every instance is deleted at once; the allocations of its node are placed again
+  when the node goes down.
+- `orphan`: the instances stay, with the labels of the group, and only the object goes.
+
+The node of a deleted instance is purged once it is down (if it stays up for 15 minutes, it is left
+as it is), and then the finalizer is removed and the object goes. What the deletion waits for is in
+`status.deletion`. When it has waited longer than `deletion.drain_timeout` (1 hour by default), the
+condition `DeletionBlocked` names it; the deletion goes on waiting until a person sets
+`deletion.policy` to `terminate` or `orphan` (the spec of a group being deleted can still be
+changed), which the operator applies at once.
+
+An instance of a group that is gone (deleted with `orphan`, or whose finalizer was removed by force)
+is an **orphan**. The operator deletes an orphan without a node once it is older than
+`-orphan-after` (15 minutes). An orphan that runs a node is left as it is and reported with an
+`OrphanedInstance` event in the log of its `NodeProvider`; it is deleted only when the operator runs
+with `-delete-orphans` (the variable `delete_orphans` of the pack). Adding the finalizer and
+writing the events of a provider need `manage-finalizers` on `NodeGroup` and `write-events` on
+`NodeProvider`; the `nodescaler-operator` pack grants both since version 0.3.0.
 
 ## Rules
 

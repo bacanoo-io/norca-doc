@@ -13,8 +13,8 @@ Credentials of the platform stay with the provider application and never enter a
 
 The core registers the kind when a server becomes leader, like [`NodeGroup`](/docs/features/node-scaling/nodegroup).
 
-> The operator that calls providers is not available yet, so a `NodeProvider` is only validated and
-> stored today. The `provider` of a `NodeGroup` names one of these objects.
+The node scaling operator (`norca-nodescaler`, the `nodescaler-operator` pack) reads these objects
+and calls the providers. The `provider` of a `NodeGroup` names one of them.
 
 ## Spec
 
@@ -32,6 +32,12 @@ The core registers the kind when a server becomes leader, like [`NodeGroup`](/do
 | `status.heartbeat` | Written by the provider; an old heartbeat marks the provider as unavailable. |
 | `status.version` | The version of the provider. |
 | `status.conditions` | Conditions with a reason. |
+
+## Events
+
+`norca object events norca.io/NodeProvider <name>` shows the log of a provider. The operator writes
+`OrphanedInstance` there for an instance of a node group that is gone and that still runs a node: it
+is left as it is (see [the deletion of a group](/docs/features/node-scaling/nodegroup#the-deletion-of-a-group)).
 
 ## Example
 
