@@ -39,7 +39,11 @@ cooldown, the rate limit and the oscillation guard are the ones described on the
 written to `spec.replicas` through the scale subresource, and the cooldown is read from the event
 log of the object, so a new leader keeps it.
 
-Besides the checks, two triggers act on the groups. Both run every `interval` of the
+The checks of a group only **raise** its scale; a check that would lower it is ignored. A group is
+lowered by its `scale_down` block alone (see [Scale down](#scale-down)), which keeps the protections
+a scale down of nodes needs.
+
+Besides the checks, three triggers act on the groups. They run every `interval` of the
 [`node_scaling`](/docs/configuration/autoscaler#node_scaling-block) block (30 seconds by default).
 
 ### Blocked work
@@ -82,6 +86,28 @@ on their way count as free; the nodes that blocked work needs do not. The headro
 ahead-of-time trigger, so it waits for the cooldown of the group. When the gauges cannot be read,
 nothing is added.
 
+### Scale down
+
+A group with a `policy.scale_down` block loses one node at a time; a group without it is never
+lowered by the autoscaler. The scale is lowered by one when, for `unneeded_for` (10 minutes by
+default) without a break:
+
+- no blocked work could use the group;
+- the group has all its nodes (none joining, none being removed) and is above its `min`;
+- its allocated share **without one node of the group** is below `utilization_below` (40% by
+  default): three nodes at 20% are 30% on two nodes, so one may go; three nodes at 30% are 45%;
+- the free capacity without that node still covers the headroom;
+- `delay_after_add` (10 minutes by default) has passed since the scale was last raised, and the
+  group is not in its cooldown;
+- the operator does not hold it (the condition `ScaleDownBlocked`, until its `retryAfter`).
+
+One group of a node pool is lowered at a time, the one with the most nodes first (which keeps the
+spread over the datacenters), and the pool waits while a node of it is being removed. The decision
+is only the number: the operator chooses the node, drains it and deletes its instance. When no node
+of the group may go, the operator sets `ScaleDownBlocked` with a `retryAfter` time, and the
+autoscaler sets the scale back to the nodes the group has, so the two do not pull the number up and
+down. A new leader starts the wait of `unneeded_for` again.
+
 ## Dry run
 
 A group is a **dry run** until you set `enforce = true`. A decision is then recorded in the event
@@ -96,7 +122,7 @@ Decisions and the reasons for not deciding are events of the `Scaling` topic of 
 
 | Event | Meaning |
 | --- | --- |
-| `ScalingDecision` | The scale of a group was raised (`Check` is `blocked-demand`, `headroom` or the name of a check). |
+| `ScalingDecision` | The scale of a group was changed (`Check` is `blocked-demand`, `headroom`, the name of a check, `scale-down`, or `scale-down-veto` when a vetoed scale down is set back). |
 | `ScalingNodeBlocked` | Work is not helped by more nodes: every group that could take it is at its maximum, a limit of the pool, the size of a node is unknown, or no group fits. `Reason` says which. |
 | `ScalingNodeAllocationTooLarge` | An allocation does not fit an empty node of a group; the job and the group are named. |
 | `ScalingNodeUnverifiable` | The work is blocked by a constraint that cannot be checked against a node that does not exist yet (a `distinct_property` on a `meta` key, for example). No node is added for it; the fix is in the job. |
@@ -182,4 +208,6 @@ autoscaler {
 - A job fixed to one datacenter stays blocked until its owner changes the job or raises the group;
   the scaler never moves work between datacenters.
 - A constraint of a job on `${node.class}` is checked against the `node_class` of each group, the way the scheduler checks it, with `=`, `!=`, `regexp`, `set_contains`, `set_contains_all`, `set_contains_any`, `is_set` and `is_not_set` (the class of a node is always set, even when it is empty). The nodes of a group without `node_class` have no class. Other operators, and a value that is itself a property of a node (`${meta.class}`), cannot be checked ahead of time and are reported like an unverifiable constraint.
-- The blocked work and the headroom only raise the scale. A check on the group (for example `target-value`) can also lower it, but choosing, draining and deleting a node is the work of the operator, which is not available yet; the scale-down settings of the spec are stored and not used.
+- The autoscaler lowers the scale of a group, but choosing, draining and deleting the node is the
+  work of the operator; until the operator does it, `spec.replicas` stays below the nodes the group
+  has and the pool waits.
