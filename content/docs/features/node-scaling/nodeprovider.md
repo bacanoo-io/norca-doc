@@ -14,7 +14,8 @@ Credentials of the platform stay with the provider application and never enter a
 The core registers the kind when a server becomes leader, like [`NodeGroup`](/docs/features/node-scaling/nodegroup).
 
 The node scaling operator (`norca-nodescaler`, the `nodescaler-operator` pack) reads these objects
-and calls the providers. The `provider` of a `NodeGroup` names one of them.
+and calls the providers. The `provider` of a `NodeGroup` names one of them. How to write a provider,
+and what the operator relies on, is in [Writing a node provider](/docs/features/node-scaling/writing-a-provider).
 
 ## Spec
 
