@@ -20,8 +20,8 @@ With `security.tls_enabled: true`, HTTP and RPC use mutual TLS.
 
 | Role | Common name | DNS SANs | IP SANs |
 | --- | --- | --- | --- |
-| Server | `server.<region>.norca` | `server.<region>.norca`, `server.<region>.norca`, `*.server.<region>.norca`, `*.<region>.norca`, `localhost`, `*.norca.internal`, `pki.server_additional_dns_sans` | `host`, `cluster_address`, `127.0.0.1`, `pki.server_additional_ip_sans` |
-| Client | `client.<region>.norca` | `client.<region>.norca`, `client.<region>.norca`, `*.client.<region>.norca`, `localhost` | `127.0.0.1` |
+| Server | `server.<region>.norca` | `server.<region>.norca`, `*.server.<region>.norca`, `*.<region>.norca`, `localhost`, `*.norca.internal`, `pki.server_additional_dns_sans` | `host`, `cluster_address`, `127.0.0.1`, `pki.server_additional_ip_sans` |
+| Client | `client.<region>.norca` | `client.<region>.norca`, `*.client.<region>.norca`, `localhost` | `127.0.0.1` |
 
 Node certificates are valid for 3 years.
 
@@ -82,6 +82,23 @@ The node CA is valid for **180 days** by default (`--days`, or `--years` for who
 The node CA signs leaf certificates only (path length 0), for server and client authentication, and **name constraints** limit what it can sign to what a node certificate carries: the DNS names `client.<region>.norca` (and subdomains) and `localhost`, the address `127.0.0.1`, and with SPIFFE the URIs of the trust domain (without SPIFFE, no URI at all). A certificate for a server (`server.<region>.norca`), for another region or with a foreign name, address or trust domain fails verification, so the key of a node CA cannot be used to join the Raft cluster or to impersonate a server. It can still make client certificates of its region, so keep the key where only the operator can read it.
 
 An agent presents the chain it loads from its certificate file: the file of a node signed by a node CA holds the **leaf followed by the node CA**, and without the node CA the servers cannot verify it. The agents keep the cluster CA as their only trusted CA; nothing changes on the servers. After a renewal, send the agent a SIGHUP: it reloads the certificate without a restart and keeps its connections.
+
+### Shutting out a node CA
+
+When the key of a node CA is lost, list its certificate on the servers: a client whose chain has a
+certificate with its public key is refused, also a node CA issued again with the same key.
+
+```yaml
+security:
+  pki:
+    distrusted_ca_files: [certs/node-ca-eu.pem]
+```
+
+`apply` joins the files into `distrusted-ca.pem` in the TLS directory of every server and sets
+`distrusted_ca_file` in their `tls` block; the servers restart, which closes the connections of the
+nodes of that CA. Each file must hold at least one certificate. Then issue a new node CA (`--force`)
+for the operator and replace the certificates of the nodes that stay. Remove the entry once the
+listed CA has expired.
 
 ## Gossip encryption
 

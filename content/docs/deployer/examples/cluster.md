@@ -2,7 +2,7 @@
 title: "Cluster"
 description: "Three servers, Linux clients with Docker, a Windows client; firewall, PKI and SPIFFE, node labels and pools, secrets, NATS for the applications, an ACL policy for event stream readers."
 weight: 2
-origin: "norca-deployer/examples/cluster.yaml"
+origin: "norca-deployer/examples/nodes/cluster.yaml"
 ---
 
 Three servers, Linux clients with Docker, a Windows client; firewall, PKI and SPIFFE, node labels and pools, secrets, NATS for the applications, an ACL policy for event stream readers.

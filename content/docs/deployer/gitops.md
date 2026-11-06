@@ -1,7 +1,7 @@
 ---
 title: "GitOps"
-description: "Deploy packs straight from Git repositories, read into memory: with gitops run, on every apply, and on every push with a webhook daemon. Signed commits and tags can be required."
-weight: 10
+description: "`norca-deployer` deploys packs straight from Git repositories: once with `gitops run`, on every `apply`, and on every push with the `gitops daemon` webhook listener."
+weight: 11
 origin: "norca-deployer/doc/gitops.md"
 ---
 

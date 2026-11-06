@@ -2,7 +2,7 @@
 title: "Several datacenters with NATS"
 description: "One region over three datacenters: a server per datacenter, the event stream on the system bus with 3 replicas, a NATS cluster with one server per datacenter for the applications."
 weight: 3
-origin: "norca-deployer/examples/multi-datacenter.yaml"
+origin: "norca-deployer/examples/nodes/multi-datacenter.yaml"
 ---
 
 One region over three datacenters: a server per datacenter, the event stream on the system bus with 3 replicas, a NATS cluster with one server per datacenter for the applications.

@@ -1,8 +1,8 @@
 ---
 title: "One Region over Several Datacenters"
 linkTitle: "Several datacenters"
-description: "A region can span several datacenters: availability zones of a cloud region, or buildings of a campus. Raft, job placement, service discovery that prefers the local datacenter, the event stream, and NATS as an example of a spread service."
-weight: 11
+description: "A region can span several datacenters: availability zones of a cloud region, or buildings of a campus."
+weight: 12
 origin: "norca-deployer/doc/multi-datacenter.md"
 ---
 
