@@ -258,8 +258,8 @@ calls:
 - **Run it on nodes that nothing scales or drains for its sake.** Put the job in
   a node pool whose nodes are added by hand or by the deployer, not by a node
   scaling operator and not by an autoscaler policy. If the pool is shared,
-  keep the job off scaled nodes with a constraint on the marker of the scaler,
-  `${meta.norca.provider_id}` `is_not_set`. A controller on a node that its own
+  keep the job off scaled nodes with a constraint on the marker of the node
+  scaling operator, `${meta.norca.instance}` `is_not_set`. A controller on a node that its own
   operator removes would delete itself.
 - **Keep two instances on different nodes.** Use `count = 2` with
   `distinct_hosts`, and a `spread` on the datacenter if the pool has several;

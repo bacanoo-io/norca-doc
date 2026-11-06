@@ -16,8 +16,8 @@ See [Node scaling](/docs/features/node-scaling) for how the groups are used.
 
 ## Spec
 
-Fields marked *operator* are stored and validated now but used only by the operator that creates
-the machines, which is not available yet.
+Fields marked *operator* are used by the operator that creates the machines
+([how it runs](/docs/features/node-scaling#how-the-operator-runs)); the autoscaler does not read them.
 
 | Field | Type | Default | Meaning |
 | --- | --- | --- | --- |

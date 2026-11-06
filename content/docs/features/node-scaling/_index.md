@@ -23,11 +23,13 @@ Node scaling is built from three parts:
 - an **operator** creates and deletes the machines to match the scale, through a
   **provider** application for a platform ([`norca.io/NodeProvider`](/docs/features/node-scaling/nodeprovider)).
 
-> **What is available today.** The decisions are: the kinds, the policy derived from the objects,
-> the trigger on blocked work, the headroom, the expanders and the dry run. The operator and the
-> providers that turn the scale into machines are **not available yet**. Until they are, the scale
-> is a recommendation: use it with `enforce = false` and read the events, or let your own tooling
-> (or a person, with `norca object scale`) act on `spec.replicas`.
+> **What is available today.** The decisions (the kinds, the policy derived from the objects, the
+> trigger on blocked work, the headroom, the expanders, the dry run) and the operator,
+> `norca-nodescaler` (the `nodescaler-operator` pack), with its provider contract. There is no
+> provider for a cloud yet: the providers that exist are the mock and a docker provider for tests.
+> Without a provider for your platform the scale is a recommendation: use it with
+> `enforce = false` and read the events, or let your own tooling (or a person, with
+> `norca object scale`) act on `spec.replicas`.
 
 ## How the scale is decided
 
@@ -200,6 +202,38 @@ autoscaler {
   }
 }
 ```
+
+## How the operator runs
+
+The operator is a [controller](/docs/features/operator-framework/controllers) of the operator
+framework, run as a job (the `nodescaler-operator` pack), and it follows the
+[rules for where a controller runs](/docs/features/operator-framework/controllers#where-to-run-a-controller):
+
+- **One operator per region.** Node groups belong to a region, and so does the operator that
+  serves them (`-region`). Another region has an operator of its own.
+- **Two instances, one at work.** The pack runs 2 instances on different nodes
+  (`count`, with `distinct_hosts`). With leader election (`-leader-election`, on by default) only
+  the leader reconciles the groups and sweeps the orphans; the other keeps its cache current and
+  takes over when the leader is gone. A third instance is one more standby, not more throughput.
+- **What is shared out:** the [join endpoint](/docs/features/node-scaling/nodegroup#nodes-that-make-their-own-keys)
+  runs on every instance, so the joins and the renewals of the certificates of the nodes are served
+  by any of them; the one-time tokens are written check-and-set, so it does not matter which one a
+  node reaches.
+- **More work on the leader:** `-workers` (2 by default) is how many groups the leader reconciles at
+  the same time. One group is never reconciled by two workers at once, so raise it when there are
+  many groups. The pack does not set it: add the flag to the arguments of the job to change it.
+
+**Limits that follow from it:**
+
+- The reconciling of a region does not scale out: it is one process, and adding instances does not
+  divide it. What helps a region with many groups is more `-workers` on the leader.
+- Do not run two operators for one region without leader election (`-leader-election=false`). The
+  status writes are check-and-set and the requests to a provider can be repeated, so nothing breaks
+  at once, but both would act on the same groups: their writes would conflict and be retried, and
+  two of them could decide about the same node during a replacement or a drain.
+- When the leader is lost, nothing is reconciled until the standby has the lease (20 seconds by
+  default); the state is in the objects, the nodes and the provider, so the new leader goes on
+  from there.
 
 ## Limits
 
