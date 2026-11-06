@@ -261,8 +261,9 @@ condition `DeletionBlocked` names it; the deletion goes on waiting until a perso
 changed), which the operator applies at once.
 
 An instance of a group that is gone (deleted with `orphan`, or whose finalizer was removed by force)
-is an **orphan**. The operator deletes an orphan without a node once it is older than
-`-orphan-after` (15 minutes). An orphan that runs a node is left as it is and reported with an
+is an **orphan**. The leader of the operator looks for them every `-orphan-sweep` (5 minutes; the
+variable `orphan_sweep` of the pack, since version 0.6.0) and deletes an orphan without a node once
+it is older than `-orphan-after` (15 minutes; `orphan_after`). An orphan that runs a node is left as it is and reported with an
 `OrphanedInstance` event in the log of its `NodeProvider`; it is deleted only when the operator runs
 with `-delete-orphans` (the variable `delete_orphans` of the pack). The metrics endpoint of the
 operator counts them by provider: `norca_nodescaler_orphaned_instances` (the orphans the last sweep
