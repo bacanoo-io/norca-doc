@@ -225,6 +225,12 @@ namespace "default" {
     capabilities = ["read", "write", "write-status", "write-events", "manage-finalizers"]
   }
 }
+
+# The nodes of the instances: an instance on a node marked as leaving is not
+# a target, and node events reconcile the load balancers.
+node {
+  policy = "read"
+}
 ```
 
 ```shell
