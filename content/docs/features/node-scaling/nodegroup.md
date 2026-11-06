@@ -44,6 +44,7 @@ the machines, which is not available yet.
 | `node.parameters` | object | | Parameters for the provider (machine size, image). *operator* |
 | `rolling` | object | | Replacement of nodes: `mode` (`auto` or `paused`), `generation`, `max_node_age`, `max_unavailable` (at least 1), `max_surge`, `jitter`. *operator* |
 | `deletion` | object | | `policy` (`drain`, `orphan` or `terminate`) and `drain_timeout`. *operator* |
+| `edge` | object | | `min_shutdown_delay` (30 seconds by default): an instance behind a load balancer with a shorter `shutdown_delay` raises `ShortShutdownDelay` when its node leaves. *operator* |
 | `join` | object | | `deadline`, `slow_after`, `max_failures`, `resume_generation`. *operator* |
 | `policy.evaluation_interval` | duration | server default | How often the checks run. |
 | `policy.cooldown` | duration | server default | The wait after a change, for the checks. |
@@ -77,10 +78,10 @@ Durations are written as numbers with `s`, `m`, `h` or `d`: `30s`, `15m`, `1h30m
 | `status.lastRequest` | operator | The number of the last request to the provider. A request ID is `<region>/<group>/<number>`; the provider creates nothing more for an ID it has seen. |
 | `status.join` | operator | The join failures in a row: `failures`, `lastFailure`, and the template (`revision`) and resume generation (`resumed`) they count for. |
 | `status.strayNodes` | operator | Nodes of the group without an instance: `node`, `name`, `instance` and `kind`: `gone` (down, what is left of a deleted instance) or `foreign` (ready, without a machine the operator asked for; made ineligible). |
-| `status.removal` | operator | The instance a scale down removes: `instance`, `name`, `node`, `selector`, `phase` (`draining`, `settling`, `deleting`, `deleted`), `started`, and `settleUntil` for an empty node. Another operator instance goes on with it. |
+| `status.removal` | operator | The instance a scale down removes: `instance`, `name`, `node`, `selector`, `phase` (`leaving`, `draining`, `settling`, `deleting`, `deleted`), `started`, and `settleUntil` for an empty node. Another operator instance goes on with it. |
 | `status.scaleDown` | operator | The vetoes of the scale down in a row: `vetoes`, `retryAfter`, `reason` (`NoCandidate` or `DrainStuck`), `message`. Gone after a scale down that worked. |
 | `status.deletion` | operator | While a deleted group is kept by the finalizer of the operator: the `policy` being applied, `deleted` (when each instance was deleted, by its name) and `waiting` (what the deletion waits for). |
-| `status.rollout` | operator | The rolling replacement: `replacing` (per node being replaced: `instance`, `name`, `node`, `nodeName`, `reason` (`marked`, `revision`, `generation`, `age`, `expiry`), `surge`, `drain`, `phase` (`surging`, `emptying`, `draining`, `deleted`), `since`, `started`, and `expires`, its hard limit), `outdated` (the names of the outdated nodes not replaced yet) and `backoff` (`vetoes`, `retryAfter`, `reason`, `message`). |
+| `status.rollout` | operator | The rolling replacement: `replacing` (per node being replaced: `instance`, `name`, `node`, `nodeName`, `reason` (`marked`, `revision`, `generation`, `age`, `expiry`), `surge`, `drain`, `phase` (`surging`, `leaving`, `emptying`, `draining`, `deleted`), `since`, `started`, and `expires`, its hard limit), `outdated` (the names of the outdated nodes not replaced yet) and `backoff` (`vetoes`, `retryAfter`, `reason`, `message`). |
 | `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`) `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, or `JoinFailing`) `JoinFailing` (`True` with `TooManyFailures`) `ForeignNode` (`True` while a ready node of the group runs without an instance) `ScaleDownBlocked` (`True` when no node of the group may go; `retryAfter` is the time, RFC 3339, before which the autoscaler does not lower the scale again) `DeletionBlocked` (`True` with `DrainTimeout` when the deletion of the group has waited longer than `deletion.drain_timeout`) `Rolling` (`True` with `Replacing` while nodes are replaced; `False` with `UpToDate`, or with `Waiting`, `BackedOff`, `Paused` or `DryRun` when outdated nodes are not replaced) `RollBlocked` (`True` while a backed off replacement has a node close to its hard age limit, with the reason of the backoff and `retryAfter`) and `NetworkCovered` (`True` when `network` is inside the cluster ranges the deployer publishes, `False` when the firewall of the servers would not let the nodes in, `Unknown` with `NetworkUnchecked` when the ranges are not published or `NoNetwork` when the group names none). |
 
 ## The join of the nodes
@@ -98,7 +99,8 @@ The events of the operator in the log of the group: `InstancesRequested`, `Creat
 `ForeignNode`, `NodeIneligible`, `NetworkNotCovered`, and of the scale down `ScaleDown`,
 `InstanceDeleted`, `ScaleDownBlocked`, `DrainStuck`, `NodeNotEmpty` and `ScaleDownCanceled`, of the
 rolling replacement `Replacing`, `InstanceDeleted`, `Replaced`, `ReplacementCanceled`,
-`ReplacementFailed`, `DrainStuck` and `WouldReplace`, and of the deletion of the group `Deleting`, `DrainStarted`, `InstanceDeleted`, `DeletionFailed` and
+`ReplacementFailed`, `DrainStuck` and `WouldReplace`, of an edge node `LeavingTraffic`, `TrafficLeft`,
+`LeaveTimeout` and `ShortShutdownDelay`, and of the deletion of the group `Deleting`, `DrainStarted`, `InstanceDeleted`, `DeletionFailed` and
 `DeletionBlocked`.
 
 A node with the marks of the group (`norca.node_group`, `norca.instance`) whose instance the provider
@@ -132,8 +134,30 @@ that has not finished 5 minutes after its deadline is stopped and the node made 
 scale before the instance is deleted keeps the node (`ScaleDownCanceled`).
 
 The operator reads the jobs of the allocations on a node, so its ACL policy needs `read-job` in
-every namespace (the `nodescaler-operator` pack has it). The wait for a load balancer to drop an
-edge node before its proxy stops is not done yet.
+every namespace (the `nodescaler-operator` pack has it). A node behind a load balancer leaves it
+before its drain: see [edge nodes](#edge-nodes).
+
+## Edge nodes
+
+A node that runs an instance of a service exposed through a load balancer (a `norca.io/LoadBalancer`
+object whose `spec.service` the instance registers) leaves the traffic before it is drained, in a
+scale down, a rolling replacement and the deletion of a group:
+
+1. The node gets no new work and is marked with the meta `norca.lb.leaving = "true"` (phase `leaving`).
+2. The [LoadBalancer operator](/docs/features/operator-framework/loadbalancer-providers) drops the
+   instances on a marked node from the targets, and lists the node in `status.leavingNodes` once
+   its provider applied that.
+3. When every such load balancer lists the node, the node is drained; the `shutdown_delay` of the
+   task covers what the platform of the load balancer still needs (its health checks). A load
+   balancer that has not dropped the node by the drain deadline does not hold it up
+   (`LeaveTimeout`).
+
+A node that stays after all (a scale down cancelled by a raise of the scale, a stuck drain, a
+cancelled replacement) loses the mark and gets the traffic back. An instance behind a load balancer
+whose `shutdown_delay` is below `edge.min_shutdown_delay` raises `ShortShutdownDelay`: its proxy
+may stop before the platform stops sending to it. The operator needs read on `norca.io/LoadBalancer`
+in every namespace (the `nodescaler-operator` pack has it since version 0.4.0); without the kind, or
+without the right to read it, nodes are drained without waiting.
 
 ## The rolling replacement of nodes
 

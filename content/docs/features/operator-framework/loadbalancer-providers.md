@@ -49,6 +49,13 @@ provider application → the cloud API
    `LoadBalancer` is deleted, it calls `DELETE` before its finalizer is
    removed, so the cloud load balancer is gone before the object is.
 
+An instance on a node marked with the meta `norca.lb.leaving = "true"` is not a
+target: the [node scaling operator](/docs/features/node-scaling/nodegroup#edge-nodes)
+marks an edge node before its drain. Once the provider has applied the targets
+without it, the operator lists the node in `status.leavingNodes`, and the node
+scaling operator drains it. The operator reconciles the load balancers on node
+events, so it needs node read in its policy.
+
 Registered providers need `-objects=native` (the `LoadBalancer` objects must
 have the cleanup finalizer); the Variables storage knows only the built-in
 classes.
