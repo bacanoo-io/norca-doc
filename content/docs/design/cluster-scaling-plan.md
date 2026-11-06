@@ -515,7 +515,7 @@ flowchart LR
 
 The first version is for networks that are trusted and for platforms where the user data can be limited: the template of a provider has to use what the platform offers (the metadata service with a token and a hop limit of one, the user data not written to logs, the bundle removed from the disk after the first boot), and the validity is short. Where that cannot be done, the hardening step comes first.
 
-**The hardening as built (2026-11-06, phase 4; to be reviewed).** The choices the plan left open:
+**The hardening as built (2026-11-06, phase 4; reviewed and accepted 2026-11-06).** The choices the plan left open:
 
 | Question | As built |
 | --- | --- |
@@ -529,7 +529,7 @@ The first version is for networks that are trusted and for platforms where the u
 | On the node | `norca-join run`: the join (with retries; a refused token ends it, and the instance is replaced after the join deadline), the start of the agent (`systemctl enable --now`, or the agent as its child in a container), the renewal at two thirds of the life, `SIGHUP` to the agent. The bootstrap writes its configuration and its systemd unit. |
 | Validity and age | 7 days by default (`-join-validity`). The node has the meta `norca.identity = "join"` and no `norca.cert_expires`, so the soft and hard age limits do not apply; an explicit `rolling.max_node_age` does. |
 
-Tested in unit and integration tests over real TLS (Linux) and in the lab step `nodescaler-join` (certificates of 3 minutes: the join, two renewals, the agent reloads without a restart and serves the renewed certificate on a new connection, the node and its allocation stay).
+Tested in unit and integration tests over real TLS (Linux) and in the lab step `nodescaler-join` (certificates of 3 minutes: the join, two renewals, the agent reloads without a restart and serves the renewed certificate on a new connection, the node and its allocation stay); the lab case passed on 2026-11-06.
 
 ## Scale down and drain
 
