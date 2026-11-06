@@ -222,6 +222,23 @@ with `-delete-orphans` (the variable `delete_orphans` of the pack). Adding the f
 writing the events of a provider need `manage-finalizers` on `NodeGroup` and `write-events` on
 `NodeProvider`; the `nodescaler-operator` pack grants both since version 0.3.0.
 
+## In the web UI
+
+- **Clients:** a node the operator created has the badge **Autoscaled**, and its state from its
+  group: **Removing** (a scale down), **Replacing**, **Outdated** (the rollout will replace it),
+  **Slow join**, and **Unverified** for a node with the marks of a group that does not list it.
+  The filter **Node Group** shows the nodes of a group, with the number of instances still joining.
+- **A client:** the card **Node group** links the group, and shows the instance, the template
+  revision and the rolling generation the node was created with, the expiry of its certificate, and
+  when it is replaced by its age (the soft limit with the jitter of the node, and the hard limit).
+- **The object of a group** (Objects, `norca.io/NodeGroup`): the scale and the counts, the instances
+  of the provider with their nodes (an instance that is still joining is listed before its node is
+  in the client list), the scale down in progress, the rolling replacement, the deletion and the
+  nodes without an instance.
+
+The badges and the filter come from the status of the groups; a token that can't read the
+`NodeGroup` objects sees none.
+
 ## Rules
 
 The kind refuses an object when:
