@@ -47,8 +47,8 @@ the machines, which is not available yet.
 | `join` | object | | `deadline`, `slow_after`, `max_failures`, `resume_generation`. *operator* |
 | `policy.evaluation_interval` | duration | server default | How often the checks run. |
 | `policy.cooldown` | duration | server default | The wait after a change, for the checks. |
-| `policy.check` | map of checks | | Checks on the group, see below. |
-| `policy.scale_down` | object | | `unneeded_for`, `delay_after_add`, `utilization_below`, `selector` (`least_busy` or `empty`), `drain_deadline`. *operator* |
+| `policy.check` | map of checks | | Checks on the group, see below. They only raise the scale. |
+| `policy.scale_down` | object | | Lowers the scale; without it the autoscaler never does. `unneeded_for` (`10m`), `delay_after_add` (`10m`), `utilization_below` (percent, `40`), see [scale down](/docs/features/node-scaling#scale-down); `selector` (`least_busy` or `empty`) and `drain_deadline` *operator*. |
 
 Durations are written as numbers with `s`, `m`, `h` or `d`: `30s`, `15m`, `1h30m`, `45d`.
 
@@ -78,7 +78,7 @@ Durations are written as numbers with `s`, `m`, `h` or `d`: `30s`, `15m`, `1h30m
 | `status.join` | operator | The join failures in a row: `failures`, `lastFailure`, and the template (`revision`) and resume generation (`resumed`) they count for. |
 | `status.strayNodes` | operator | Nodes of the group without an instance: `node`, `name`, `instance` and `kind`: `gone` (down, what is left of a deleted instance) or `foreign` (ready, without a machine the operator asked for; made ineligible). |
 | `status.rollout` | operator | Reserved for the operator. |
-| `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`) `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, or `JoinFailing`) `JoinFailing` (`True` with `TooManyFailures`) `ForeignNode` (`True` while a ready node of the group runs without an instance) and `NetworkCovered` (`True` when `network` is inside the cluster ranges the deployer publishes, `False` when the firewall of the servers would not let the nodes in, `Unknown` with `NetworkUnchecked` when the ranges are not published or `NoNetwork` when the group names none). |
+| `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`) `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, or `JoinFailing`) `JoinFailing` (`True` with `TooManyFailures`) `ForeignNode` (`True` while a ready node of the group runs without an instance) `ScaleDownBlocked` (`True` when no node of the group may go; `retryAfter` is the time, RFC 3339, before which the autoscaler does not lower the scale again) and `NetworkCovered` (`True` when `network` is inside the cluster ranges the deployer publishes, `False` when the firewall of the servers would not let the nodes in, `Unknown` with `NetworkUnchecked` when the ranges are not published or `NoNetwork` when the group names none). |
 
 ## The join of the nodes
 
