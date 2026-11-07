@@ -23,7 +23,7 @@ The table below shows this endpoint's support for
 
 | Blocking Queries | ACL Required |
 | ---------------- | ------------ |
-| `NO`             | `namespace:read-job` for a metric of a task group, `node:read` for a cluster metric, `quota:read` for a quota metric, `operator:read` for the autopilot metrics |
+| `NO`             | `namespace:read-job` for a metric of a task group, `node:read` for a cluster metric, `quota:read` for a quota metric, `operator:read` for the autopilot, scheduler, secrets, security, autoscaler, store and object count metrics, `namespace:list-jobs` in the namespace `ns` for the job metrics, `backup:read` for the backup metrics, `read` on the objects of the kind for the node group and load balancer metrics; see [Access](/docs/configuration/metrics_store#access) |
 
 ### Parameters
 
@@ -40,6 +40,12 @@ The table below shows this endpoint's support for
   the series covers all the nodes of the datacenter and pool; with a node
   class, only the nodes of that class.
 - `quota` `(string: "")` - The quota of a quota metric.
+- The labels of the other metrics are parameters of the same name: `ns` for
+  `norca.jobs.*` and `norca.lb.*`, `name` for `norca.lb.*`, `destination`
+  for `norca.backup.size_bytes` and `duration_seconds`, `webhook` for
+  `norca.security.webhook_*`, `group` for `norca.nodegroup.*` and `type`
+  for `norca.nodegroup.condition`, `kind` for `norca.objects.*`. A metric
+  without labels (`norca.sched.*`, for example) takes none.
 - `from` `(string: "1h")` - The start of the history: an RFC 3339 time, Unix
   seconds, or a duration before now.
 - `to` `(string: "")` - The end of the history (exclusive), in the same
@@ -79,8 +85,8 @@ $ curl -H "X-Nomad-Token: $NORCA_TOKEN" \
 ## List Series
 
 This endpoint lists the task groups with series in the namespaces the token
-may read jobs of, and the series of the cluster and quota metrics the token
-may read.
+may read jobs of, and the series of the other metrics (cluster, quota,
+scheduler and control plane, objects) the token may read.
 
 | Method | Path                 | Produces           |
 | ------ | -------------------- | ------------------ |
@@ -166,7 +172,11 @@ answers the request, or of the server named by `server_id`.
 
 ### Sample Response
 
-Durations are in nanoseconds.
+Durations are in nanoseconds. `Retention`, `MaxDiskSize` and `MaxSeries` are
+the effective values, which a [reload](/docs/configuration/metrics_store#reload)
+of the server changes. An `Oldest` point younger than the retention, on a
+store that has run for longer, means that `max_disk_size` removed partitions
+before their time.
 
 ```json
 {
