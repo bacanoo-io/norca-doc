@@ -78,10 +78,10 @@ Durations are written as numbers with `s`, `m`, `h` or `d`: `30s`, `15m`, `1h30m
 | `status.lastRequest` | operator | The number of the last request to the provider. A request ID is `<region>/<group>/<number>`; the provider creates nothing more for an ID it has seen. |
 | `status.join` | operator | The join failures in a row: `failures`, `lastFailure`, and the template (`revision`) and resume generation (`resumed`) they count for. |
 | `status.strayNodes` | operator | Nodes of the group without an instance: `node`, `name`, `instance` and `kind`: `gone` (down, what is left of a deleted instance) or `foreign` (ready, without a machine the operator asked for; made ineligible). |
-| `status.removal` | operator | The instance a scale down removes: `instance`, `name`, `node`, `selector`, `phase` (`leaving`, `draining`, `settling`, `deleting`, `deleted`), `started`, and `settleUntil` for an empty node. Another operator instance goes on with it. |
+| `status.removal` | operator | The instance a scale down removes: `instance`, `name`, `node`, `selector`, `phase` (`leaving`, `draining`, `settling`, `deleting`, `deleted`), `started`, `settleUntil` for an empty node, and `held` for a node that was out of service by hand when it was taken ([a node drained by hand](#a-node-drained-by-hand)). Another operator instance goes on with it. |
 | `status.scaleDown` | operator | The vetoes of the scale down in a row: `vetoes`, `retryAfter`, `reason` (`NoCandidate` or `DrainStuck`), `message`. Gone after a scale down that worked. |
 | `status.deletion` | operator | While a deleted group is kept by the finalizer of the operator: the `policy` being applied, `deleted` (when each instance was deleted, by its name) and `waiting` (what the deletion waits for). |
-| `status.rollout` | operator | The rolling replacement: `replacing` (per node being replaced: `instance`, `name`, `node`, `nodeName`, `reason` (`marked`, `revision`, `generation`, `age`, `expiry`), `surge`, `drain`, `phase` (`surging`, `leaving`, `emptying`, `draining`, `deleted`), `since`, `started`, and `expires`, its hard limit), `outdated` (the names of the outdated nodes not replaced yet), `backoff` (`vetoes`, `retryAfter`, `reason`, `message`), `warned` (the nodes that raised the warning of their hard limit) and `took` (how long the last replacement took). |
+| `status.rollout` | operator | The rolling replacement: `replacing` (per node being replaced: `instance`, `name`, `node`, `nodeName`, `reason` (`marked`, `revision`, `generation`, `age`, `expiry`), `surge`, `drain`, `phase` (`surging`, `leaving`, `emptying`, `draining`, `deleted`), `since`, `started`, `expires`, its hard limit, and `held` as in `status.removal`), `outdated` (the names of the outdated nodes not replaced yet), `backoff` (`vetoes`, `retryAfter`, `reason`, `message`), `warned` (the nodes that raised the warning of their hard limit) and `took` (how long the last replacement took). |
 | `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`) `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, or `JoinFailing`) `JoinFailing` (`True` with `TooManyFailures`) `ForeignNode` (`True` while a ready node of the group runs without an instance) `ScaleDownBlocked` (`True` when no node of the group may go; `retryAfter` is the time, RFC 3339, before which the autoscaler does not lower the scale again) `DeletionBlocked` (`True` with `DrainTimeout` when the deletion of the group has waited longer than `deletion.drain_timeout`) `Rolling` (`True` with `Replacing` while nodes are replaced; `False` with `UpToDate`, or with `Waiting`, `BackedOff`, `Paused` or `DryRun` when outdated nodes are not replaced) `RollBlocked` (`True` while a backed off replacement has a node close to its hard age limit, with the reason of the backoff and `retryAfter`) `RollBehind` (`True` with `Behind` when the replacements, `max_unavailable` at a time, would not reach every node before its hard age limit; `False` with `OnTime`, or `NotRolling` with `enforce = false` or `rolling.mode = "paused"`) and `NetworkCovered` (`True` when `network` is inside the cluster ranges the deployer publishes, `False` when the firewall of the servers would not let the nodes in, `Unknown` with `NetworkUnchecked` when the ranges are not published or `NoNetwork` when the group names none). |
 
 ## The join of the nodes
@@ -165,8 +165,8 @@ When the group has more instances than `spec.replicas`, the operator removes one
 
 When no node may go, the condition `ScaleDownBlocked` is set with a `retryAfter` time (10 minutes,
 doubled with each veto in a row, at most 6 hours), and the autoscaler sets the scale back. A drain
-that has not finished 5 minutes after its deadline is stopped and the node made eligible again
-(`DrainStuck`), with the same wait: no instance is deleted with an unfinished drain. A raise of the
+that has not finished 5 minutes after its deadline is stopped and the node made eligible again,
+unless it was [drained by hand](#a-node-drained-by-hand) before (`DrainStuck`), with the same wait: no instance is deleted with an unfinished drain. A raise of the
 scale before the instance is deleted keeps the node (`ScaleDownCanceled`).
 
 The operator reads the jobs of the allocations on a node, so its ACL policy needs `read-job` in
@@ -193,11 +193,14 @@ To keep a node through maintenance, put `norca.scale.protect = "true"` on it bef
 (`norca node meta apply -node-id <id> norca.scale.protect=true`), and remove the mark when it is
 back in service; a protected node is never chosen for a scale down or a replacement.
 
-One case to know: a scale down that chooses a node drained by hand takes it over as its own (with
-`least_busy` it drains it again, with `empty` it keeps it ineligible). If the scale is raised again
-before the instance is deleted, the operator makes the node eligible again (`ScaleDownCanceled`),
-as it does for a node it emptied itself, and the drain by hand is undone. Protect the node if it
-must stay out of service.
+A scale down or a rolling replacement may still choose a node drained by hand (with `least_busy`
+it drains it again, with `empty` it keeps it ineligible). It records that the node was out of
+service when it took it (`held` in `status.removal` or `status.rollout.replacing`). If it stops
+before the instance is deleted (the scale raised again, a refused or late new node, a stuck or
+stopped drain), it gives the node back as it found it: it stops only its own drain and leaves the
+node ineligible, and its event says so (`... stays ineligible, as it was out of service by hand
+when it was taken`). Make the node eligible again by hand when the maintenance is over. A node the
+operator took while it was in service is made eligible again, as before.
 
 ## Edge nodes
 
@@ -257,7 +260,7 @@ when its work has ended. A node at its hard limit is always drained.
 A replacement is not scaling: `spec.replicas` does not change, `status.replicas` counts the nodes that
 stay, and no scale down starts during it. When the provider refuses the new node (quota, capacity),
 or the new node has not joined by `join.deadline` and 5 minutes, the old node is made eligible again
-and the replacements are backed off (10 minutes, doubled each time, at most 6 hours); a node at its
+(one [drained by hand](#a-node-drained-by-hand) before stays ineligible) and the replacements are backed off (10 minutes, doubled each time, at most 6 hours); a node at its
 hard limit is then replaced remove first, and so is a node at its soft age limit when the group
 keeps a headroom of a node or more (`headroom_nodes`, or `headroom_percent` of the scale rounded
 down): the spare capacity takes its work while it empties. At most as many nodes are removed first
