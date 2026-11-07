@@ -140,7 +140,10 @@ a rolling replacement are unchanged. Without a known endpoint the operator asks 
 (`Provisioned` is `False` with `NoBootstrap`). The endpoints are the stable URLs of `join_urls`
 (a DNS name or a load balancer), or the instances of the service `<job>-join`; a node learns the
 endpoints of the moment at each renewal, so give stable URLs where the operator moves often. The
-nodes must reach the port of the endpoint (`join_port`, 8490).
+nodes must reach the port of the endpoint (`join_port`, 8490). The pack checks the service with
+`GET /v1/health` over https: `200` while the endpoint can issue certificates (the node CA is
+readable), `503` with the reason otherwise. The node CA issued the certificate of the endpoint, so
+the check does not verify it (`tls_skip_verify`).
 
 ## The removal of nodes
 
@@ -257,7 +260,10 @@ or the new node has not joined by `join.deadline` and 5 minutes, the old node is
 and the replacements are backed off (10 minutes, doubled each time, at most 6 hours); a node at its
 hard limit is then replaced remove first, and so is a node at its soft age limit when the group
 keeps a headroom of a node or more (`headroom_nodes`, or `headroom_percent` of the scale rounded
-down): the spare capacity takes its work while it empties. When a node of a backed off rollout is a
+down): the spare capacity takes its work while it empties. At most as many nodes are removed first
+at a time as the headroom holds, those removed first already counted, whatever `max_unavailable`:
+while the provider refuses, their new instances may not come, and the group stays that many nodes
+short until it accepts again. When a node of a backed off rollout is a
 week (or an eighth of its life) from its hard limit, the condition `RollBlocked` says why.
 
 A node not being replaced a week (or an eighth of its life) before its hard limit raises a
