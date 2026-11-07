@@ -74,7 +74,10 @@ $ curl -H "X-Nomad-Token: $NORCA_TOKEN" \
 
 `Enabled` is `false`, with no points, when the server keeps no history.
 `Step` is in nanoseconds. `Retention` (nanoseconds) is the retention of the
-server that answers: the longest range it holds.
+server that answers for the store that keeps the metric: `host_retention`
+for the node and server metrics (`norca.node.*`, `norca.server.*`,
+`norca.bus.*`), which the hosts store keeps, `retention` for the others. It
+is the longest range the server holds of the metric.
 
 ```json
 {
@@ -106,12 +109,15 @@ scheduler and control plane, objects) the token may read.
 
 ### Sample Response
 
-`Retention` is as in [Read History](#read-history).
+`Retention` is the retention of the main store of the server that answers,
+`HostRetention` that of its hosts store (the node and server metrics), in
+nanoseconds.
 
 ```json
 {
   "Enabled": true,
   "Retention": 2592000000000000,
+  "HostRetention": 604800000000000,
   "Groups": [
     { "Namespace": "default", "JobID": "api", "Group": "web" }
   ],
@@ -184,11 +190,16 @@ answers the request, or of the server named by `server_id`.
 
 ### Sample Response
 
-Durations are in nanoseconds. `Retention`, `MaxDiskSize` and `MaxSeries` are
-the effective values, which a [reload](/docs/configuration/metrics_store#reload)
-of the server changes. An `Oldest` point younger than the retention, on a
-store that has run for longer, means that `max_disk_size` removed partitions
-before their time.
+Durations are in nanoseconds. The fields at the top are those of the main
+store; `Hosts` is the state of the hosts store, which keeps the node and
+server metrics (`null` when the store is disabled). `Series` counts the
+series of both stores, which `MaxSeries` limits; `Hosts.Series` the part in
+the hosts store. `Retention`, `MaxDiskSize`, `Hosts.Retention`,
+`Hosts.MaxDiskSize` and `MaxSeries` are the effective values, which a
+[reload](/docs/configuration/metrics_store#reload) of the server changes. An
+`Oldest` point younger than the retention of its store, on a store that has
+run for longer, means that its disk cap (`max_disk_size` or
+`host_max_disk_size`) removed partitions before their time.
 
 ```json
 {
@@ -197,7 +208,7 @@ before their time.
   "Partitions": 14,
   "DiskPartitions": 12,
   "DiskBytes": 48211968,
-  "MaxDiskSize": 5368709120,
+  "MaxDiskSize": 4294967296,
   "Series": 960,
   "MaxSeries": 50000,
   "Oldest": "2026-10-28T08:00:00Z",
@@ -206,6 +217,16 @@ before their time.
   "DroppedGroups": 0,
   "ForgottenSeries": 0,
   "Retention": 2592000000000000,
-  "SampleInterval": 30000000000
+  "SampleInterval": 30000000000,
+  "Hosts": {
+    "Partitions": 6,
+    "DiskPartitions": 4,
+    "DiskBytes": 9437184,
+    "MaxDiskSize": 1073741824,
+    "Series": 240,
+    "Oldest": "2026-10-28T08:00:00Z",
+    "Newest": "2026-10-31T08:41:30Z",
+    "Retention": 604800000000000
+  }
 }
 ```
