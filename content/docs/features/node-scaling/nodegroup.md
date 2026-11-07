@@ -170,6 +170,32 @@ The operator reads the jobs of the allocations on a node, so its ACL policy need
 every namespace (the `nodescaler-operator` pack has it). A node behind a load balancer leaves it
 before its drain: see [edge nodes](#edge-nodes).
 
+### A node drained by hand
+
+A node of a group can be drained like any other (`norca node drain -enable`, or made ineligible
+with `norca node eligibility -disable`). The operator and the autoscaler see it differently:
+
+- **The operator still counts it.** It goes by the status of the node (`ready`), not by its
+  eligibility: the node stays in `status.replicas`, its instance is not replaced, and no instance is
+  asked for in its place.
+- **The autoscaler does not count its capacity.** The cluster gauges leave ineligible nodes out
+  (`nodes_ready`, allocated and used capacity), and the nodes on their way are taken from
+  `status.joining`, so the drained node is neither capacity nor a node on its way. When its work
+  cannot be placed elsewhere, or the headroom of the group is used up, the autoscaler raises the
+  scale and the operator adds a node; otherwise nothing happens.
+- **A scale down takes it first.** It is empty, so it is the least busy node (and an empty one for
+  the selector `empty`): when the scale goes down, its instance is the one deleted.
+
+To keep a node through maintenance, put `norca.scale.protect = "true"` on it before the drain
+(`norca node meta apply -node-id <id> norca.scale.protect=true`), and remove the mark when it is
+back in service; a protected node is never chosen for a scale down or a replacement.
+
+One case to know: a scale down that chooses a node drained by hand takes it over as its own (with
+`least_busy` it drains it again, with `empty` it keeps it ineligible). If the scale is raised again
+before the instance is deleted, the operator makes the node eligible again (`ScaleDownCanceled`),
+as it does for a node it emptied itself, and the drain by hand is undone. Protect the node if it
+must stay out of service.
+
 ## Edge nodes
 
 A node that runs an instance of a service exposed through a load balancer (a `norca.io/LoadBalancer`
