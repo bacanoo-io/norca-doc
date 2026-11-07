@@ -26,7 +26,7 @@ each page is reviewed in detail against the real API (fields, endpoints, ACLs) w
 | Area | Today | v2 |
 | --- | --- | --- |
 | Links | Many lists and cards show a short UUID as the link text | The name is the link text; the short ID is muted next to it |
-| Conditions | Coloured by value: `X=False` is red, so `RollBlocked=True` looks healthy | Coloured by meaning: each condition knows whether True is good or bad |
+| Conditions | Coloured by meaning since 2026-11-06 (`RollBlocked=True` is a warning, `Rolling=True` is in progress), from a list of the known condition types; the health of an object shows its worst condition | The kind of an object declares what its conditions mean, so the conditions of a new operator are coloured right without a change of the UI |
 | Menu | Grouped by task; node groups and load balancers hidden behind "Objects" | Grouped by relationship: cluster, workloads, networking, governance, security, platform, operations |
 | Dashboard | Counts and one capacity chart for one datacenter and pool at a time | Capacity and pressure for every datacenter and pool from the internal metrics store |
 | Detail pages | Related objects partly shown, often as text, not links | A **Related** card on every detail page, one row per relation |
