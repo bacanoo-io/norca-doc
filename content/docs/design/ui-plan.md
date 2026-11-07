@@ -6,6 +6,8 @@ status: "In progress"
 
 **Status:** In progress · 2026-10-25 (phase 1, foundation, done; phase 2, existing areas, in progress) · Starting point: the Nomad v1.6.5 web UI · Visual mockup: [mockups/ui-mockup.html](/design/mockups/ui-mockup.html) · Related documents: [development plan](/docs/design/development-plan) and the other design documents
 
+**Next step:** the [Web UI v2 plan](/docs/features/web-ui/plan) and its [preview](/docs/features/web-ui/preview).
+
 Norca's UI gets a new information architecture, an overview dashboard, cross-region views, and pages for the planned features (backup, packages, objects, quotas, admission, networking, scaling, multiregion deployment). The visual base is Tabler (MIT), through our own Ember component layer. The visual mockup is the clickable realization of this plan, with real Tabler CSS.
 
 In the mockup, the UI's working name is **Norca**. The "Nomad" name is a trademark; for public distribution the product name must be finalized together with the rebranding.

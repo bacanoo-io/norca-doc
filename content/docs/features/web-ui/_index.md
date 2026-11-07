@@ -114,3 +114,8 @@ The UI uses the public [HTTP API](/docs/api) only.
 
 [Web UI and Tabler migration – plan](/docs/design/ui-plan): information architecture, global frame, pages,
 UX patterns, visual direction and the migration method.
+
+The next step is the [Web UI v2 plan](/docs/features/web-ui/plan): names instead of raw IDs, conditions
+coloured by meaning, a menu grouped by relationship, a dashboard and a region map on the internal
+metrics, and a Related card on every detail page. Its [preview](/docs/features/web-ui/preview) is a
+clickable mockup with example data.
