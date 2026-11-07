@@ -253,13 +253,19 @@ sample interval on that server (the sum over a step of the history).
 
 ### Server metrics
 
-Every sample interval each server also samples its own Raft log and its own
+Every sample interval each server also samples its own Raft log and
+replication, its RPC requests and its own
 [system bus](/docs/configuration/bus) into its own store. The series have no
 `server` label: the store of a server holds the values of that server only.
 To see the history of one server, send the
 [history request](/docs/api/metrics-store#read-history) to it, or to any
-server with `server_id` set to it. These are 8 series per server, which count
-16 towards `max_series` (a series counts 2).
+server with `server_id` set to it. Only `raft_append_entries_seconds` has a
+label, `peer`: the Raft server ID of the follower the leader sent the
+requests to. A server has 11 series of its own and, while it is the leader,
+one more for every other server: with 3 servers up to 13 series, which count
+26 towards `max_series` (a series counts 2). The `peer` series of a server
+that left, or that the server no longer leads, are
+[forgotten](#forgotten-series) after the retention.
 
 | Metric | Value |
 | --- | --- |
@@ -268,6 +274,10 @@ server with `server_id` set to it. These are 8 series per server, which count
 | `norca.server.raft_commit_lag` | committed Raft entries the server has not applied yet (commit index minus applied index); 0 when the applied index is ahead, as right after a restart |
 | `norca.server.raft_fsm_pending` | batches of entries waiting for the state machine |
 | `norca.server.raft_term` | the current Raft term; it rises with every election |
+| `norca.server.raft_commit_seconds` | mean seconds from the moment the leader appends an entry until a quorum of servers stored it (committed), over the sample interval; only on the leader, and no point in an interval without a commit |
+| `norca.server.raft_append_entries_seconds` (label `peer`) | mean seconds of the AppendEntries requests of the leader to the follower `peer` (log replication; the heartbeats are not counted), over the sample interval; only on the leader |
+| `norca.server.rpc_requests` | RPC requests the server handled in the sample interval: from clients, other servers and the CLI over its RPC port, and in process from the HTTP API of its own agent and from the server itself |
+| `norca.server.rpc_errors` | those of them answered with an error (permission denied and invalid requests included), or that failed on the connection, in the sample interval |
 | `norca.bus.jetstream_bytes` | bytes of the JetStream streams the server stores a replica of; no point while JetStream does not run |
 | `norca.bus.jetstream_messages` | messages of those streams |
 | `norca.bus.routes` | other servers of the region the bus has a route to (counted by server, not by connection); 0 for a single server |
@@ -275,9 +285,24 @@ server with `server_id` set to it. These are 8 series per server, which count
 On a follower `raft_last_contact_seconds` grows between the heartbeats of the
 leader and is usually well below a second; a value that keeps rising means the
 server lost the leader. A `raft_commit_lag` or `raft_fsm_pending` that stays
-above zero means the state machine of the server falls behind. The bus values
-are totals over the streams, not per stream: a token with full rights on the
-bus can create streams of its own, so their number has no bound.
+above zero means the state machine of the server falls behind. A
+`raft_commit_seconds` that rises with one `raft_append_entries_seconds` points
+at a slow follower or the network to it; one that rises with all of them at
+the disk or the load of the leader. The bus values are totals over the
+streams, not per stream: a token with full rights on the bus can create
+streams of its own, so their number has no bound.
+
+The two Raft times come from the agent's own
+[telemetry](/docs/configuration/telemetry), the same values the
+[metrics API](/docs/api/metrics) shows as `nomad.raft.commitTime` and
+`nomad.raft.replication.appendEntries.rpc` (in milliseconds there): a
+[`prefix_filter`](/docs/configuration/telemetry) that blocks them leaves these
+series without points. The telemetry keeps the last minute, so with a
+`sample_interval` above 50 seconds the mean covers the last 50 seconds of the
+interval. The RPC counts are kept by the server itself, whatever the
+telemetry; unlike `nomad.rpc.request`, which counts the requests over the RPC
+port only, they include the requests in process, and they count a request
+answered with an error as an error.
 
 ### Object metrics
 
@@ -295,6 +320,7 @@ Every sample interval each server samples the
 | `norca.nodegroup.rollout_replacing` | `group` | nodes being replaced in a rollout |
 | `norca.nodegroup.rollout_outdated` | `group` | nodes a rollout still has to replace |
 | `norca.nodegroup.condition` | `group`, `type` | 1 while the condition of the type (`RollBlocked`, `JoinFailing`, `ScaleDownBlocked`, `ProviderAvailable`, ...) is `True`, else 0; a series for every condition type the status has |
+| `norca.nodegroup.cert_expires_min_hours` | `group` | hours until the earliest node certificate of the group expires: of the nodes that are not down and name the group in their meta `norca.node_group`, from their meta `norca.cert_expires`; 0 once a certificate has expired. No point for a group without such nodes, as one whose nodes renew their certificate themselves (`norca-join`) |
 | `norca.lb.targets` | `ns`, `name` | healthy targets of the load balancer (`norca.io/LoadBalancer`, from the LoadBalancer operator) |
 | `norca.lb.ready` | `ns`, `name` | 1 while its `Ready` condition is `True`, else 0 |
 

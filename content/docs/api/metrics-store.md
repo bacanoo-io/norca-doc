@@ -47,8 +47,9 @@ The table below shows this endpoint's support for
   `norca.jobs.*` and `norca.lb.*`, `name` for `norca.lb.*`, `destination`
   for `norca.backup.size_bytes` and `duration_seconds`, `webhook` for
   `norca.security.webhook_*`, `group` for `norca.nodegroup.*` and `type`
-  for `norca.nodegroup.condition`, `kind` for `norca.objects.*`. A metric
-  without labels (`norca.sched.*`, for example) takes none.
+  for `norca.nodegroup.condition`, `kind` for `norca.objects.*`, `peer` for
+  `norca.server.raft_append_entries_seconds`. A metric without labels
+  (`norca.sched.*`, for example) takes none.
 - `from` `(string: "1h")` - The start of the history: an RFC 3339 time, Unix
   seconds, or a duration before now.
 - `to` `(string: "")` - The end of the history (exclusive), in the same
