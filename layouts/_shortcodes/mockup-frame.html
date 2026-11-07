@@ -1,0 +1,22 @@
+{{- /*
+SPDX-FileCopyrightText: 2026 Norca contributors
+SPDX-License-Identifier: MPL-2.0
+
+Embeds a static mockup page from static/ in an iframe, with a link that opens
+it in a full window. The path is relative to the site root and goes through
+relURL, so it works when the site is published under a sub-path.
+
+@param {string} src    Path below static/, e.g. "design/mockups/ui-preview/index.html".
+@param {string} title  Title of the iframe (accessibility).
+@param {string} height CSS height of the iframe (default "85vh").
+@param {string} link   Text of the full-window link (default: no link).
+
+@example {{< mockup-frame src="design/mockups/ui-preview/index.html" title="Preview" link="Open the preview in a full window" >}}
+*/ -}}
+{{- $src := .Get "src" | strings.TrimPrefix "/" | relURL -}}
+{{- $title := .Get "title" | default "Mockup" -}}
+{{- $height := .Get "height" | default "85vh" -}}
+{{- with .Get "link" }}
+<p><a href="{{ $src | safeURL }}" target="_blank" rel="noopener">{{ . }}</a></p>
+{{- end }}
+<iframe src="{{ $src | safeURL }}" title="{{ $title }}" loading="lazy" style="display:block;width:100%;height:{{ $height | safeCSS }};min-height:32rem;border:1px solid #9ca3af;border-radius:6px;margin-top:1rem"></iframe>

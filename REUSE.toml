@@ -484,6 +484,15 @@ precedence = "override"
 SPDX-FileCopyrightText = ["2026 Norca contributors", "codecalm.net Paweł Kuna (Tabler)"]
 SPDX-License-Identifier = "MPL-2.0 AND MIT"
 
+# Web UI v2 preview mockup: own code only (no Tabler, no CDN). It comes after
+# the static/design/mockups/** annotation, because the last matching
+# annotation wins.
+[[annotations]]
+path = "static/design/mockups/ui-preview/**"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Norca contributors"
+SPDX-License-Identifier = "MPL-2.0"
+
 # Theme file copied from Hextra v0.13.0 and modified (MIT)
 [[annotations]]
 path = "layouts/_partials/shortcodes/card.html"
