@@ -73,13 +73,15 @@ $ curl -H "X-Nomad-Token: $NORCA_TOKEN" \
 ### Sample Response
 
 `Enabled` is `false`, with no points, when the server keeps no history.
-`Step` is in nanoseconds.
+`Step` is in nanoseconds. `Retention` (nanoseconds) is the retention of the
+server that answers: the longest range it holds.
 
 ```json
 {
   "Enabled": true,
   "Metric": "norca.group.cpu",
   "Step": 7200000000000,
+  "Retention": 2592000000000000,
   "Points": [
     { "Time": "2026-10-31T04:00:00Z", "Avg": 21.4, "Max": 63.0 },
     { "Time": "2026-10-31T06:00:00Z", "Avg": 24.9, "Max": 71.5 },
@@ -104,9 +106,12 @@ scheduler and control plane, objects) the token may read.
 
 ### Sample Response
 
+`Retention` is as in [Read History](#read-history).
+
 ```json
 {
   "Enabled": true,
+  "Retention": 2592000000000000,
   "Groups": [
     { "Namespace": "default", "JobID": "api", "Group": "web" }
   ],
