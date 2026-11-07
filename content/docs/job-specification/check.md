@@ -185,8 +185,12 @@ job "example" {
   This field is only supported in the Consul service provider. 
 
 - `tls_skip_verify` `(bool: false)` - Skip verification of certificates for
-  `https` and `grpc` with `grpc_use_tls` checks . Only supported in the Consul
-  service provider.
+  `https` and `grpc` with `grpc_use_tls` checks. With the `nomad` service
+  provider it applies to an `http` check with `protocol = "https"` and is
+  refused on any other check: the client runs the check without verifying the
+  certificate of the service, for a service whose certificate comes from a
+  private CA the client does not know (Norca). `tls_server_name` stays a
+  Consul option.
 
 - `on_update` `(string: "require_healthy")` - Specifies how checks should be
   evaluated when determining deployment health (including a job's initial
