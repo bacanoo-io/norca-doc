@@ -40,7 +40,11 @@ Nomad v1.6.5 goes into the repository together with the upstream git history up 
 
 **Clean room rule for BSL fixes:** if a fix already exists in HashiCorp's BSL releases, the analyst hands it over as a description of the problem, based on the public issue and the CHANGELOG; the developer writes their own solution without looking at the BSL diff. The pull request must state which public issue it is based on.
 
+<!-- REUSE-IgnoreStart -->
+
 **BUSL-marked files inside v1.6.5:** 45 files of the Nomad v1.6.5 tag carried an `SPDX-License-Identifier: BUSL-1.1` header. They entered the 1.6.x release branch through backports between 2023-08 and 2023-12 and never existed under MPL 2.0 (the ACL roles/tokens UI, `helper/backoff.go`, two test doubles, a few tests and the rescheduling e2e suite). They were left out of the import (the import commit lists them) and reimplemented clean room on 2026-10-24: the analyst wrote functional specifications from exported signatures, MPL call sites, the public API and public changelog/PR titles only, without reading the files; the developers worked in worktrees without the files and were forbidden to read them or the commits that introduced them. The rescheduling e2e suite was restored from its earlier, MPL-licensed upstream version instead. `reuse lint` must not report `BUSL-1.1` anywhere.
+
+<!-- REUSE-IgnoreEnd -->
 
 **Licenses becoming free:** four years after their release, the BSL versions move to MPL 2.0 (Nomad v1.6.6: 2028-01-15, Nomad v1.6.10: 2028-04-16, Nomad v1.7.0: 2027-12-07, Consul v1.17.0: 2027-11-03). After that, the code of the given version can be freely adopted; until then it cannot.
 
@@ -50,6 +54,8 @@ The repository follows the REUSE specification (reuse.software). The license tex
 
 **Headers:**
 
+<!-- REUSE-IgnoreStart -->
+
 | File | Header |
 | --- | --- |
 | An original HashiCorp file, unmodified | Unchanged (`Copyright (c) HashiCorp, Inc.`, `SPDX-License-Identifier: MPL-2.0`) |
@@ -58,6 +64,8 @@ The repository follows the REUSE specification (reuse.software). The license tex
 | File taken from a third party (for example Kubernetes, Apache 2.0) | The original header unchanged; if modified, a prominent comment about the modification (mandatory under section 4.b of Apache 2.0) |
 | Documentation (the [norca-doc](https://github.com/bacanoo-io/norca-doc) repository) | MPL 2.0, given in its `REUSE.toml`; pages adapted from the Nomad v1.6.5 documentation keep the HashiCorp copyright notice (see [below](#this-documentation)) |
 | UI mockup (`static/design/mockups/` of the documentation repository) | Own part: MPL 2.0; the embedded Tabler CSS and Tabler icons: MIT, marked in the file |
+
+<!-- REUSE-IgnoreEnd -->
 
 We do not mix licenses within one file: code from a third party goes into a separate file, with its own license.
 
@@ -159,6 +167,8 @@ norca/scripts/compliance-audit.sh
 
 The script needs git, bash and (for the last check) Go. It fetches the upstream Nomad v1.6.5 tag into `refs/audit/nomad-v1.6.5` to compare the import against it; only the release/1.6.x commits after the history boundary are downloaded, because the earlier ones are already in the clone. Those objects include the 45 BUSL-1.1 files of the tag, of which the script reads only the license headers; remove the ref afterwards with `git update-ref -d refs/audit/nomad-v1.6.5`. A ref that already holds the tag can be given as the first argument instead.
 
+<!-- REUSE-IgnoreStart -->
+
 | Check | What it verifies |
 | --- | --- |
 | History boundary | The `nomad` import commit has the upstream parent `8495495badaa` (release/1.6.x, 2023-08-09); no upstream Nomad commit in the history has an author or commit date of 2023-08-10 or later; the v1.6.5 tag commit is not part of the history |
@@ -166,6 +176,8 @@ The script needs git, bash and (for the last check) Go. It fetches the upstream 
 | BUSL-1.1 | No upstream commit in the history (Nomad, Nomad Pack, uBixVault) adds a BUSL-1.1 header, and no file at `HEAD` carries one; Norca's own commits mention BUSL only in documentation, notices and the license tooling |
 | Headers | Every file under `norca/` that differs from Nomad v1.6.5 or Nomad Pack v0.4.2 and has a HashiCorp or IBM copyright line also has a Norca copyright line (`Modifications Copyright` or `SPDX-FileCopyrightText`) |
 | Go modules | In the `nomad`, `api`, `controller` and `tools` modules `go list -m all` lists no `github.com/hashicorp/nomad` module; the Norca modules and the upstream API stand-in (`norca/compat/upstreamapi`) are local `replace` directives |
+
+<!-- REUSE-IgnoreEnd -->
 
 Result on 2026-11-01 (`main`): every check passes; 45 BUSL-1.1 files left out of the import, 3577 modified upstream files, each with a Norca copyright line.
 

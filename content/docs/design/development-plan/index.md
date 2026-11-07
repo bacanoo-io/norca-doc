@@ -369,11 +369,15 @@ The biggest risk is that the scaler loads the leader's resources and Raft, so ev
 
 Every source in the plan is MPL 2.0 or under a compatible license, so the autoscaler code can be taken directly into Norca. This is not legal advice; a legal review is recommended before commercial distribution.
 
+<!-- REUSE-IgnoreStart -->
+
 - **Nomad v1.6.5:** MPL 2.0, this is the last MPL release. Nothing can be taken from Nomad code after v1.6.6 (BSL 1.1).
 - **Nomad Autoscaler v0.6.0:** MPL 2.0 across the whole history, there was no switch to BSL. All 253 Go files of the main branch have an `SPDX-License-Identifier: MPL-2.0` header.
 - **File-level copyleft:** adopted autoscaler files keep their MPL header and copyright line. When distributing after modification, the source of the modified files must be made available.
 - **Enterprise parts:** we do not implement the autoscaler's vertical scaling (the `policy/handler_oss.go` stub) and Nomad's recommendation endpoints based on HashiCorp's Enterprise code (which is not public anyway). If such a feature is built later, it is done with independent design.
 - **Trademarks:** the names "Nomad" and "HashiCorp" are not used as a product name: the product is Norca, and Nomad is named only to describe its origin and its compatibility.
+
+<!-- REUSE-IgnoreEnd -->
 
 **Kubernetes features:** Kubernetes is Apache 2.0 licensed, which is compatible with MPL 2.0. Adopted Kubernetes code may enter Norca in a separate file, keeping the Apache license header and the NOTICE content. From similar features implemented later by HashiCorp under BSL (for example the dynamic host volumes of v1.10 or the `secret` block of v1.11), nothing can be adopted; for these, an independent implementation can only be made from public descriptions.
 
