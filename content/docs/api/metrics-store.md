@@ -23,7 +23,7 @@ The table below shows this endpoint's support for
 
 | Blocking Queries | ACL Required |
 | ---------------- | ------------ |
-| `NO`             | `namespace:read-job` for a metric of a task group, `node:read` for a cluster, nodes or node metric, `quota:read` for a quota metric, `operator:read` for the autopilot, scheduler, secrets, security, autoscaler, store and object count metrics, `namespace:list-jobs` in the namespace `ns` for the job metrics, `backup:read` for the backup metrics, `read` on the objects of the kind for the node group and load balancer metrics; see [Access](/docs/configuration/metrics_store#access) |
+| `NO`             | `namespace:read-job` for a metric of a task group, `node:read` for a cluster, nodes or node metric, `quota:read` for a quota metric, `operator:read` for the autopilot, scheduler, secrets, security, autoscaler, store, server (`norca.server.*`, `norca.bus.*`) and object count metrics, `namespace:list-jobs` in the namespace `ns` for the job metrics, `backup:read` for the backup metrics, `read` on the objects of the kind for the node group and load balancer metrics; see [Access](/docs/configuration/metrics_store#access) |
 
 ### Parameters
 
@@ -58,7 +58,9 @@ The table below shows this endpoint's support for
   mean of the averages and the largest maximum of each step. Steps without
   points are left out.
 - `server_id` `(string: "")` - The name or ID of a server of the region to read
-  instead.
+  instead. The [server metrics](/docs/configuration/metrics_store#server-metrics)
+  (`norca.server.*`, `norca.bus.*`) are those of the server that answers, so
+  this is how to read those of another server.
 
 ### Sample Request
 

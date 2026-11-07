@@ -1,14 +1,15 @@
 ---
 title: "metrics_store Block"
 linkTitle: "metrics_store"
-description: "The \"metrics_store\" block configures the history of the task group usage, the nodes, the cluster, the control plane and the custom objects that every server keeps."
+description: "The \"metrics_store\" block configures the history of the task group usage, the nodes, the cluster, the control plane, the server internals and the custom objects that every server keeps."
 ---
 
 **Placement:** `server -> metrics_store`
 
 The `metrics_store` block configures the history of the CPU and memory usage
 of the task groups and of the nodes, of the capacity of the cluster, of the
-scheduler and the control plane, and of the custom objects. The clients
+scheduler and the control plane, of the Raft log and the system bus of each
+server, and of the custom objects. The clients
 publish their usage on
 the [system bus](/docs/features/system-bus#task-group-usage); every server
 reads every report, samples the rest itself, and keeps the history in its
@@ -250,6 +251,34 @@ sample interval on that server (the sum over a step of the history).
 | `norca.store.series` | | series of the metrics store | each server |
 | `norca.store.dropped_reports` | | usage reports dropped (too old, or late for a window written already), per interval | each server |
 
+### Server metrics
+
+Every sample interval each server also samples its own Raft log and its own
+[system bus](/docs/configuration/bus) into its own store. The series have no
+`server` label: the store of a server holds the values of that server only.
+To see the history of one server, send the
+[history request](/docs/api/metrics-store#read-history) to it, or to any
+server with `server_id` set to it. These are 8 series per server, which count
+16 towards `max_series` (a series counts 2).
+
+| Metric | Value |
+| --- | --- |
+| `norca.server.raft_db_bytes` | bytes the Raft log store takes on disk, with either [`raft_store`](/docs/configuration/server): all the files of the Badger database (`badger`), or the file `raft.db` with its free pages (`boltdb`). Where the file system reports the blocks in use (Linux and the other Unix systems), it counts those, so the space both stores reserve ahead of the data does not count until it is written; on Windows it counts the length of the files. No series for a server in dev mode, whose Raft log is in memory |
+| `norca.server.raft_last_contact_seconds` | seconds since the server last heard from the leader; 0 on the leader, no point on a server that never heard from one |
+| `norca.server.raft_commit_lag` | committed Raft entries the server has not applied yet (commit index minus applied index); 0 when the applied index is ahead, as right after a restart |
+| `norca.server.raft_fsm_pending` | batches of entries waiting for the state machine |
+| `norca.server.raft_term` | the current Raft term; it rises with every election |
+| `norca.bus.jetstream_bytes` | bytes of the JetStream streams the server stores a replica of; no point while JetStream does not run |
+| `norca.bus.jetstream_messages` | messages of those streams |
+| `norca.bus.routes` | other servers of the region the bus has a route to (counted by server, not by connection); 0 for a single server |
+
+On a follower `raft_last_contact_seconds` grows between the heartbeats of the
+leader and is usually well below a second; a value that keeps rising means the
+server lost the leader. A `raft_commit_lag` or `raft_fsm_pending` that stays
+above zero means the state machine of the server falls behind. The bus values
+are totals over the streams, not per stream: a token with full rights on the
+bus can create streams of its own, so their number has no bound.
+
 ### Object metrics
 
 Every sample interval each server samples the
@@ -283,7 +312,7 @@ The history and the series list of a metric need, when ACLs are enabled:
 | `norca.group.*` | `read-job` in the namespace of the job |
 | `norca.cluster.*`, `norca.nodes.*`, `norca.node.*` | `node:read`; `operator:read` for `norca.cluster.autopilot_*` |
 | `norca.quota.*` | `quota:read` |
-| `norca.sched.*`, `norca.secrets.*`, `norca.security.*`, `norca.autoscaler.*`, `norca.store.*`, `norca.objects.*` | `operator:read` |
+| `norca.sched.*`, `norca.secrets.*`, `norca.security.*`, `norca.autoscaler.*`, `norca.store.*`, `norca.server.*`, `norca.bus.*`, `norca.objects.*` | `operator:read` |
 | `norca.jobs.*` | `list-jobs` in the namespace of the label `ns` |
 | `norca.backup.*` | `backup:read` |
 | `norca.nodegroup.*` | `read` on the objects of `norca.io/NodeGroup` (a rule in `namespace "*"`) |
@@ -322,4 +351,5 @@ The cluster gauges are the data of the [`norca`](/docs/features/autoscaler/refer
 Every server stores every report: the telemetry stream of the bus keeps the
 reports for an hour, so a server that restarts catches up on what it missed in
 that time. A server that was down for longer has a gap; a request can read the
-history of another server with `server_id`.
+history of another server with `server_id`. The [server metrics](#server-metrics)
+are the exception: each server has only its own.
