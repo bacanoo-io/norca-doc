@@ -120,7 +120,10 @@ node:
 
 1. The bootstrap carries the cluster CA, the agent configuration, the join endpoints and a
    **one-time token**, no key and no certificate. The machines need `norca-join` (the item
-   `join_binary` of the bootstrap, `/usr/local/bin/norca-join` by default).
+   `join_binary` of the bootstrap, `/usr/local/bin/norca-join` by default). The install script of
+   the deployer puts it, the agent and its unit onto the image or onto the machine at its first
+   boot: see [Machines of the node scaling operator](/docs/deployer/node-scaling-machines), which
+   also lists what the bootstrap writes in both modes and where the keys are.
 2. On the machine, `norca-join` makes the key, sends a certificate request with the token to the
    endpoint, and receives its certificate (7 days by default, `join_validity`). Then it starts the
    agent.

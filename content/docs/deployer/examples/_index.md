@@ -2,7 +2,7 @@
 title: "Deployer examples"
 linkTitle: "Examples"
 description: "Complete deployment plans with a comment on every setting."
-weight: 15
+weight: 16
 origin: "norca-deployer/examples/nodes"
 ---
 

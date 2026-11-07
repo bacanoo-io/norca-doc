@@ -35,6 +35,7 @@ PAGES = [
     ('multi-datacenter.md', 'multi-datacenter', 12, 'Several datacenters'),
     ('multi-region.md', 'multi-region', 13, 'Multi-region'),
     ('windows.md', 'windows', 14, 'Windows nodes'),
+    ('node-scaling-machines.md', 'node-scaling-machines', 15, 'Scaled machines'),
 ]
 PAGE_OF = {src: slug for src, slug, _, _ in PAGES}
 
@@ -157,7 +158,7 @@ def main():
 
     cards = ['{{< cards >}}']
     icons = ['play', 'refresh', 'adjustments', 'shield-check', 'cube', 'globe-alt', 'tag', 'switch-horizontal',
-             'key', 'archive', 'code', 'server', 'globe', 'desktop-computer']
+             'key', 'archive', 'code', 'server', 'globe', 'desktop-computer', 'cloud-upload']
     assert len(icons) == len(PAGES), 'one icon per page'
     descs = {}
     for src, slug, weight, link_title in PAGES:
