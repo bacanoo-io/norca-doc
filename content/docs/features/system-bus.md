@@ -27,7 +27,9 @@ Norca's own traffic:
   The leader syncs the matching [cluster registries](/docs/features/packages/registry)
   at once, without waiting for their sync interval.
 - **Task group usage.** The clients publish the CPU and memory usage of their
-  task groups for the [built-in autoscaler](/docs/features/autoscaler); see
+  task groups and the statistics of their host for the
+  [built-in autoscaler](/docs/features/autoscaler) and the
+  [metrics store](/docs/configuration/metrics_store); see
   [below](#task-group-usage).
 
 The bus is not a message broker for applications. Applications keep their own
@@ -42,7 +44,9 @@ the clients in the heartbeat response for the usage of their task groups
 every `client_metrics_interval` of the autoscaler (`10s` while only the
 metrics store needs it). A client publishes the report as JSON
 on its own subject, the only subject a node may publish on; a report larger
-than one message is split into several of the same window. The reports travel
+than one message is split into several of the same window. The report also
+has the statistics of the node's host (in the first message of a split
+report), so a node without running allocations still reports. The reports travel
 on the bus only: without it the clients are not asked for usage.
 
 | Item | Value |

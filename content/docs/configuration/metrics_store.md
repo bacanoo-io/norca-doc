@@ -1,14 +1,15 @@
 ---
 title: "metrics_store Block"
 linkTitle: "metrics_store"
-description: "The \"metrics_store\" block configures the history of the task group usage, the cluster, the control plane and the custom objects that every server keeps."
+description: "The \"metrics_store\" block configures the history of the task group usage, the nodes, the cluster, the control plane and the custom objects that every server keeps."
 ---
 
 **Placement:** `server -> metrics_store`
 
 The `metrics_store` block configures the history of the CPU and memory usage
-of the task groups, of the capacity of the cluster, of the scheduler and the
-control plane, and of the custom objects. The clients publish their usage on
+of the task groups and of the nodes, of the capacity of the cluster, of the
+scheduler and the control plane, and of the custom objects. The clients
+publish their usage on
 the [system bus](/docs/features/system-bus#task-group-usage); every server
 reads every report, samples the rest itself, and keeps the history in its
 data directory (`[data_dir]/server/tsdb`), in an embedded time-series store.
@@ -63,9 +64,10 @@ server {
   applies it without a restart.
 
 - `max_series` `(int: 50000)` - The largest number of series. Every task
-  group has 18 series (the average and the maximum of 9 metrics), every
-  series of the other metrics counts 2; the series beyond the limit are not
-  stored. A [reload](#reload) applies it to new series.
+  group has 28 series (the average and the maximum of 14 metrics), every
+  series of the other metrics counts 2 (a node has up to 7, so 14); the
+  series beyond the limit are not stored. A [reload](#reload) applies it to
+  new series.
 
 - `wal_buffered_size` `(int: 4096)` - The bytes the write-ahead log buffers
   before it writes them: `0` writes every point, `-1` disables the log, so
@@ -111,13 +113,30 @@ usage values are per allocation of the task group, like those of the
 | `norca.group.memory` | percent of the allocated memory | clients |
 | `norca.group.memory_mb` | MiB | clients |
 | `norca.group.memory_cache_mb` | MiB of page cache (reclaimable) | clients |
+| `norca.group.memory_peak_mb` | MiB: the highest memory usage the tasks of an allocation reached since they started (the sum over the tasks); only from the drivers that measure it, see below | clients |
 | `norca.group.oom_kills` | tasks killed for running out of memory, of all allocations: the average is the sum in the interval or step | clients |
+| `norca.group.restarts` | task restarts of all allocations in the interval: the average is the sum in the interval or step | servers, from the task states |
 | `norca.group.allocs_running` | running allocations | servers, from the job summary |
 | `norca.group.allocs_queued` | queued allocations | servers, from the job summary |
+| `norca.group.allocs_starting` | starting allocations | servers, from the job summary |
+| `norca.group.allocs_failed` | failed allocations the servers still keep (until the garbage collection removes them) | servers, from the job summary |
+| `norca.group.allocs_lost` | lost allocations the servers still keep | servers, from the job summary |
 
 The servers sample the allocations every sample interval, also of task groups
 whose clients report no usage; a task group gets these series once it has a
-running or queued allocation.
+running, queued or starting allocation or a task restart. Failed or lost
+allocations alone, which the summary of an old job keeps, start no series.
+
+`norca.group.restarts` is the increase of the restart counts of the tasks
+(`Restarts` of the task states) between two samples of the server. The first
+sample after a server starts only takes the counts; an allocation removed by
+the garbage collection drops out without lowering the sum.
+
+`norca.group.memory_peak_mb` is the peak the driver reports (`MaxUsage` of
+the memory statistics): the `exec` and `java` drivers on cgroups v2 with
+Linux 5.19 or later (`memory.peak`), and drivers on cgroups v1. `docker`,
+`raw_exec` and `exec2` on cgroups v2 report none, and their task groups have
+no points of this metric.
 
 ### Cluster and quota metrics
 
@@ -133,6 +152,10 @@ series counts 2 towards `max_series`.
 | `norca.cluster.memory_used` | `dc`, `pool`, `class` | memory the allocations actually use, in percent |
 | `norca.cluster.disk_allocated` | `dc`, `pool`, `class` | ephemeral disk of the running allocations, in percent |
 | `norca.cluster.nodes_ready` | `dc`, `pool`, `class` | ready, eligible nodes |
+| `norca.nodes.down` | `dc`, `pool` | down nodes |
+| `norca.nodes.disconnected` | `dc`, `pool` | disconnected nodes |
+| `norca.nodes.draining` | `dc`, `pool` | ready nodes being drained |
+| `norca.nodes.ineligible` | `dc`, `pool` | ready nodes not eligible for scheduling, the draining ones included: `nodes_ready` and `ineligible` add up to the ready nodes |
 | `norca.cluster.blocked_cpu_mhz` | `dc`, `pool` | MHz of the allocations that could not be placed for want of capacity; stored by the leader only |
 | `norca.cluster.blocked_memory_mb` | `dc`, `pool` | memory of those allocations, in MiB |
 | `norca.cluster.blocked_evals` | `dc`, `pool` | blocked evaluations that wait for capacity |
@@ -149,6 +172,32 @@ The label `class` is the node class. The series with `class` empty covers all th
 
 The `used` values come from the clients' usage reports: a node whose latest
 report is older than two report intervals counts as using nothing.
+
+### Node metrics
+
+The clients report the statistics of their host with their usage, once per
+report: every server stores them per node. The value of an interval is the
+mean of the measurements of the clients (every stats collection interval,
+one second by default), its maximum the largest one.
+
+| Metric | Value |
+| --- | --- |
+| `norca.node.cpu_used` | CPU time in user and system mode, in percent of the CPU of the node (the mean over its cores) |
+| `norca.node.cpu_mhz` | the same in MHz; only when the client knows the CPU of the node |
+| `norca.node.memory_used_mb` | memory in use, in MiB |
+| `norca.node.memory_total_mb` | memory of the node, in MiB |
+| `norca.node.disk_used_mb` | space in use on the file system of the allocation directory, in MiB |
+| `norca.node.disk_total_mb` | size of that file system, in MiB |
+| `norca.node.inodes_used_percent` | inodes in use on that file system, in percent |
+
+The labels are `node` (the node ID), `dc`, `pool` and `class`. The server
+takes the datacenter, node pool and node class from the node in its state, not
+from the report; the report of a node the state does not know is not stored.
+A node has up to 14 series (7 metrics), so with many nodes and a long
+retention plan `max_disk_size` and `max_series` for them. A client with
+[`usage`](/docs/configuration/client) disabled or off the bus reports no
+statistics of its host either. The statistics of devices (GPUs) are not
+stored.
 
 ### Scheduler and control plane metrics
 
@@ -216,9 +265,9 @@ Every sample interval each server samples the
 | `norca.lb.ready` | `ns`, `name` | 1 while its `Ready` condition is `True`, else 0 |
 
 The label `group` is the name of the NodeGroup object. No series is stored per
-allocation or per node; the number of series grows with the namespaces, the
-node groups, the load balancers, the object kinds, the backup destinations and
-the admission webhooks.
+allocation; apart from the [node metrics](#node-metrics), the number of series
+grows with the namespaces, the node groups, the load balancers, the object
+kinds, the backup destinations and the admission webhooks.
 
 ### Access
 
@@ -227,7 +276,7 @@ The history and the series list of a metric need, when ACLs are enabled:
 | Metrics | ACL |
 | --- | --- |
 | `norca.group.*` | `read-job` in the namespace of the job |
-| `norca.cluster.*` | `node:read`; `operator:read` for `norca.cluster.autopilot_*` |
+| `norca.cluster.*`, `norca.nodes.*`, `norca.node.*` | `node:read`; `operator:read` for `norca.cluster.autopilot_*` |
 | `norca.quota.*` | `quota:read` |
 | `norca.sched.*`, `norca.secrets.*`, `norca.security.*`, `norca.autoscaler.*`, `norca.store.*`, `norca.objects.*` | `operator:read` |
 | `norca.jobs.*` | `list-jobs` in the namespace of the label `ns` |

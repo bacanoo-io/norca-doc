@@ -1,7 +1,7 @@
 ---
 title: "Metrics Store HTTP API"
 linkTitle: "Metrics Store"
-description: "The /metrics endpoints return the history of the task group usage, the cluster and the quotas the servers keep."
+description: "The /metrics endpoints return the history of the task group usage, the nodes, the cluster and the quotas the servers keep."
 ---
 
 The `/metrics` endpoints return the history of the
@@ -23,7 +23,7 @@ The table below shows this endpoint's support for
 
 | Blocking Queries | ACL Required |
 | ---------------- | ------------ |
-| `NO`             | `namespace:read-job` for a metric of a task group, `node:read` for a cluster metric, `quota:read` for a quota metric, `operator:read` for the autopilot, scheduler, secrets, security, autoscaler, store and object count metrics, `namespace:list-jobs` in the namespace `ns` for the job metrics, `backup:read` for the backup metrics, `read` on the objects of the kind for the node group and load balancer metrics; see [Access](/docs/configuration/metrics_store#access) |
+| `NO`             | `namespace:read-job` for a metric of a task group, `node:read` for a cluster, nodes or node metric, `quota:read` for a quota metric, `operator:read` for the autopilot, scheduler, secrets, security, autoscaler, store and object count metrics, `namespace:list-jobs` in the namespace `ns` for the job metrics, `backup:read` for the backup metrics, `read` on the objects of the kind for the node group and load balancer metrics; see [Access](/docs/configuration/metrics_store#access) |
 
 ### Parameters
 
@@ -34,11 +34,14 @@ The table below shows this endpoint's support for
 - `group` `(string: "")` - The name of the task group; required for a metric
   of a task group.
 - `namespace` `(string: "default")` - The namespace of the job.
-- `dc`, `pool` `(string: "")` - The datacenter and node pool of a cluster
-  metric.
+- `dc`, `pool` `(string: "")` - The datacenter and node pool of a cluster,
+  nodes or node metric.
 - `class` `(string: "")` - The node class of a cluster metric. Without it
   the series covers all the nodes of the datacenter and pool; with a node
   class, only the nodes of that class.
+- `node` `(string: "")` - The node ID of a node metric (`norca.node.*`). A
+  node metric needs all four labels as the series list shows them: `node`,
+  and the `dc`, `pool` and `class` of the node.
 - `quota` `(string: "")` - The quota of a quota metric.
 - The labels of the other metrics are parameters of the same name: `ns` for
   `norca.jobs.*` and `norca.lb.*`, `name` for `norca.lb.*`, `destination`
@@ -85,7 +88,7 @@ $ curl -H "X-Nomad-Token: $NORCA_TOKEN" \
 ## List Series
 
 This endpoint lists the task groups with series in the namespaces the token
-may read jobs of, and the series of the other metrics (cluster, quota,
+may read jobs of, and the series of the other metrics (cluster, nodes, quota,
 scheduler and control plane, objects) the token may read.
 
 | Method | Path                 | Produces           |
@@ -105,7 +108,8 @@ scheduler and control plane, objects) the token may read.
     { "Namespace": "default", "JobID": "api", "Group": "web" }
   ],
   "Gauges": [
-    { "Metric": "norca.cluster.cpu_used", "Labels": { "dc": "dc1", "pool": "default", "class": "" } }
+    { "Metric": "norca.cluster.cpu_used", "Labels": { "dc": "dc1", "pool": "default", "class": "" } },
+    { "Metric": "norca.node.cpu_used", "Labels": { "node": "f7476465-4d6e-c0de-26d0-e383c49be941", "dc": "dc1", "pool": "default", "class": "" } }
   ]
 }
 ```
