@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="hu">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Flotta – felületi látványterv</title>
-<!-- Tabler 1.6.1 (MIT, https://tabler.io) és Tabler Icons 3.49.0 (MIT) beágyazva -->
+<title>Norca – UI mockup</title>
+<!-- Tabler 1.6.1 (MIT, https://tabler.io) and Tabler Icons 3.49.0 (MIT), inlined -->
 <style>@charset "UTF-8";/*!
  * Tabler v1.6.1 (https://tabler.io)
  * Copyright 2018-2026 The Tabler Authors
@@ -67,7 +67,7 @@
 body { font-feature-settings: "tnum" 1; }
 :root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 
-/* Bal oldali menü: tinta háttér */
+/* Left menu: ink background */
 .navbar-vertical.fl-side { background: var(--fl-ink) !important; }
 .fl-brand { display: flex; align-items: center; gap: .6rem; color: #fff; text-decoration: none; font-weight: 600; font-size: 1.05rem; }
 .fl-brand-mark { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center;
@@ -78,17 +78,17 @@ body { font-feature-settings: "tnum" 1; }
 .navbar-vertical .nav-link.active { background: rgba(255,255,255,.08); color: #fff; box-shadow: inset 3px 0 0 var(--tblr-primary); }
 .fl-side .nav-link { padding-top: .38rem; padding-bottom: .38rem; }
 
-/* Felső sáv */
+/* Top bar */
 .fl-top .form-select { min-width: 10.5rem; }
 .fl-kbd { font-family: var(--tblr-font-monospace); font-size: .72rem; border: 1px solid var(--tblr-border-color); border-radius: 4px; padding: 0 .3rem; color: var(--tblr-secondary); }
 .fl-palette-btn { min-width: 15rem; justify-content: space-between; color: var(--tblr-secondary); }
 
-/* Régiószínek */
+/* Region colors */
 .fl-reg { display: inline-flex; align-items: center; gap: .35rem; font-size: .8rem; white-space: nowrap; }
 .fl-reg::before { content: ""; width: .6rem; height: .6rem; border-radius: 2px; background: var(--c); }
 .fl-reg-a { --c: var(--fl-reg-a); } .fl-reg-b { --c: var(--fl-reg-b); } .fl-reg-c { --c: var(--fl-reg-c); }
 
-/* Föderációs sáv – az irányítópult egyetlen hangsúlyos eleme */
+/* Federation strip: the single emphasized element of the dashboard */
 .fl-fed { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 0; }
 .fl-fed-col { padding: 1.1rem 1.25rem 1.25rem; border-top: 5px solid var(--c); position: relative; }
 .fl-fed-col + .fl-fed-col { border-left: 1px solid var(--tblr-border-color); }
@@ -104,35 +104,35 @@ body { font-feature-settings: "tnum" 1; }
   .fl-fed-col + .fl-fed-col { border-left: 0; }
 }
 
-/* Allokációs sáv */
+/* Allocation bar */
 .fl-bar { display: flex; height: .55rem; border-radius: 3px; overflow: hidden; background: var(--tblr-border-color); margin-top: .35rem; }
 .fl-bar > span { display: block; height: 100%; }
 
-/* Tervjegyzet */
+/* Design note */
 .fl-note { background: var(--fl-note-bg); border: 1px solid var(--fl-note-border); color: var(--fl-note-fg); border-radius: 6px; padding: .8rem 1rem; font-size: .86rem; }
 .fl-note h4 { font-size: .9rem; margin: 0 0 .35rem; color: inherit; display: flex; align-items: center; gap: .4rem; }
 .fl-note ul { margin: .3rem 0 0; padding-left: 1.1rem; }
 .fl-note a { color: inherit; text-decoration: underline; }
 body.fl-notes-off .fl-note { display: none; }
 
-/* Kód */
+/* Code */
 .fl-code { font-family: var(--tblr-font-monospace); font-size: .8rem; background: var(--fl-code-bg); border-radius: 6px; padding: .85rem 1rem; white-space: pre; overflow-x: auto; margin: 0; line-height: 1.55; }
 .fl-mono { font-family: var(--tblr-font-monospace); font-size: .82em; }
 .fl-diff-add { color: var(--tblr-success); } .fl-diff-del { color: var(--tblr-danger); }
 
-/* Multiregion idővonal */
+/* Multiregion timeline */
 .fl-mr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; }
 .fl-mr-step { border: 1px solid var(--tblr-border-color); border-radius: 6px; padding: .75rem .9rem; border-top: 4px solid var(--c); }
 .fl-mr-step .progress { height: .4rem; margin-top: .5rem; }
 @media (max-width: 768px) { .fl-mr { grid-template-columns: 1fr; } }
 
-/* Parancspaletta */
+/* Command palette */
 .fl-pal-back { position: fixed; inset: 0; background: rgba(9, 18, 30, .5); z-index: 1050; display: none; align-items: flex-start; justify-content: center; padding-top: 12vh; }
 .fl-pal-back.show { display: flex; }
 .fl-pal { width: min(600px, 92vw); }
 .fl-pal .list-group-item.active { background: var(--tblr-primary-lt); color: var(--tblr-body-color); border-color: var(--tblr-border-color); }
 
-/* Lenyíló menük saját kezeléssel */
+/* Dropdown menus, handled by our own code */
 .fl-dd { position: relative; }
 .fl-dd .dropdown-menu { position: absolute; right: 0; top: 100%; margin-top: .25rem; }
 .fl-dd .dropdown-menu.show { display: block; }
@@ -159,20 +159,20 @@ body.fl-notes-off .fl-note { display: none; }
 </head>
 <body>
 <div id="app"></div>
-<noscript>A látványtervhez JavaScript szükséges.</noscript>
+<noscript>The mockup needs JavaScript.</noscript>
 <script>const ICONS = {"activity": "<path d=\"M3 12h4l3 8l4 -16l3 8h4\" />", "adjustments-horizontal": "<path d=\"M12 6a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M4 6l8 0\" /> <path d=\"M16 6l4 0\" /> <path d=\"M6 12a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M4 12l2 0\" /> <path d=\"M10 12l10 0\" /> <path d=\"M15 18a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M4 18l11 0\" /> <path d=\"M19 18l1 0\" />", "alert-triangle": "<path d=\"M12 9v4\" /> <path d=\"M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0\" /> <path d=\"M12 16h.01\" />", "arrow-back-up": "<path d=\"M9 14l-4 -4l4 -4\" /> <path d=\"M5 10h11a4 4 0 1 1 0 8h-1\" />", "arrows-maximize": "<path d=\"M16 4l4 0l0 4\" /> <path d=\"M14 10l6 -6\" /> <path d=\"M8 20l-4 0l0 -4\" /> <path d=\"M4 20l6 -6\" /> <path d=\"M16 20l4 0l0 -4\" /> <path d=\"M14 14l6 6\" /> <path d=\"M8 4l-4 0l0 4\" /> <path d=\"M4 4l6 6\" />", "bell": "<path d=\"M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6\" /> <path d=\"M9 17v1a3 3 0 0 0 6 0v-1\" />", "box": "<path d=\"M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5\" /> <path d=\"M12 12l8 -4.5\" /> <path d=\"M12 12l0 9\" /> <path d=\"M12 12l-8 -4.5\" />", "briefcase": "<path d=\"M3 9a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2l0 -9\" /> <path d=\"M8 7v-2a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v2\" /> <path d=\"M12 12l0 .01\" /> <path d=\"M3 13a20 20 0 0 0 18 0\" />", "category": "<path d=\"M4 4h6v6h-6l0 -6\" /> <path d=\"M14 4h6v6h-6l0 -6\" /> <path d=\"M4 14h6v6h-6l0 -6\" /> <path d=\"M14 17a3 3 0 1 0 6 0a3 3 0 1 0 -6 0\" />", "chart-pie": "<path d=\"M10 3.2a9 9 0 1 0 10.8 10.8a1 1 0 0 0 -1 -1h-6.8a2 2 0 0 1 -2 -2v-7a.9 .9 0 0 0 -1 -.8\" /> <path d=\"M15 3.5a9 9 0 0 1 5.5 5.5h-4.5a1 1 0 0 1 -1 -1v-4.5\" />", "chevron-down": "<path d=\"M6 9l6 6l6 -6\" />", "circle-check": "<path d=\"M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0\" /> <path d=\"M9 12l2 2l4 -4\" />", "circle-x": "<path d=\"M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0\" /> <path d=\"M10 10l4 4m0 -4l-4 4\" />", "clipboard-list": "<path d=\"M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2\" /> <path d=\"M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2\" /> <path d=\"M9 12l.01 0\" /> <path d=\"M13 12l2 0\" /> <path d=\"M9 16l.01 0\" /> <path d=\"M13 16l2 0\" />", "cloud-upload": "<path d=\"M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1\" /> <path d=\"M9 15l3 -3l3 3\" /> <path d=\"M12 12l0 9\" />", "database": "<path d=\"M4 6a8 3 0 1 0 16 0a8 3 0 1 0 -16 0\" /> <path d=\"M4 6v6a8 3 0 0 0 16 0v-6\" /> <path d=\"M4 12v6a8 3 0 0 0 16 0v-6\" />", "download": "<path d=\"M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2\" /> <path d=\"M7 11l5 5l5 -5\" /> <path d=\"M12 4l0 12\" />", "external-link": "<path d=\"M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6\" /> <path d=\"M11 13l9 -9\" /> <path d=\"M15 4h5v5\" />", "eye": "<path d=\"M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0\" /> <path d=\"M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6\" />", "file-code": "<path d=\"M14 3v4a1 1 0 0 0 1 1h4\" /> <path d=\"M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2\" /> <path d=\"M10 13l-1 2l1 2\" /> <path d=\"M14 13l1 2l-1 2\" />", "flask": "<path d=\"M9 3l6 0\" /> <path d=\"M10 9l4 0\" /> <path d=\"M10 3v6l-4 11a.7 .7 0 0 0 .5 1h11a.7 .7 0 0 0 .5 -1l-4 -11v-6\" />", "git-branch": "<path d=\"M5 18a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M5 6a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M15 6a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M7 8l0 8\" /> <path d=\"M9 18h6a2 2 0 0 0 2 -2v-5\" /> <path d=\"M14 14l3 -3l3 3\" />", "hierarchy-3": "<path d=\"M10 5a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M6 12a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M10 19a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M18 19a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M2 19a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M14 12a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M5 17l2 -3\" /> <path d=\"M9 10l2 -3\" /> <path d=\"M13 7l2 3\" /> <path d=\"M17 14l2 3\" /> <path d=\"M15 14l-2 3\" /> <path d=\"M9 14l2 3\" />", "history": "<path d=\"M12 8l0 4l2 2\" /> <path d=\"M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5\" />", "info-circle": "<path d=\"M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0\" /> <path d=\"M12 9h.01\" /> <path d=\"M11 12h1v4h1\" />", "key": "<path d=\"M16.555 3.843l3.602 3.602a2.877 2.877 0 0 1 0 4.069l-2.643 2.643a2.877 2.877 0 0 1 -4.069 0l-.301 -.301l-6.558 6.558a2 2 0 0 1 -1.239 .578l-.175 .008h-1.172a1 1 0 0 1 -.993 -.883l-.007 -.117v-1.172a2 2 0 0 1 .467 -1.284l.119 -.13l.414 -.414h2v-2h2v-2l2.144 -2.144l-.301 -.301a2.877 2.877 0 0 1 0 -4.069l2.643 -2.643a2.877 2.877 0 0 1 4.069 0\" /> <path d=\"M15 9h.01\" />", "layout-dashboard": "<path d=\"M5 4h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1\" /> <path d=\"M5 16h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1\" /> <path d=\"M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1\" /> <path d=\"M15 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1\" />", "list-details": "<path d=\"M13 5h8\" /> <path d=\"M13 9h5\" /> <path d=\"M13 15h8\" /> <path d=\"M13 19h5\" /> <path d=\"M3 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4\" /> <path d=\"M3 15a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4\" />", "lock": "<path d=\"M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6\" /> <path d=\"M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0\" /> <path d=\"M8 11v-4a4 4 0 1 1 8 0v4\" />", "moon": "<path d=\"M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454l0 .008\" />", "package": "<path d=\"M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5\" /> <path d=\"M12 12l8 -4.5\" /> <path d=\"M12 12l0 9\" /> <path d=\"M12 12l-8 -4.5\" /> <path d=\"M16 5.25l-8 4.5\" />", "player-play": "<path d=\"M7 4v16l13 -8l-13 -8\" />", "plus": "<path d=\"M12 5l0 14\" /> <path d=\"M5 12l14 0\" />", "refresh": "<path d=\"M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4\" /> <path d=\"M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4\" />", "rotate-clockwise": "<path d=\"M4.05 11a8 8 0 1 1 .5 4m-.5 5v-5h5\" />", "search": "<path d=\"M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0\" /> <path d=\"M21 21l-6 -6\" />", "server": "<path d=\"M3 7a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v2a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-2\" /> <path d=\"M3 15a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v2a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3l0 -2\" /> <path d=\"M7 8l0 .01\" /> <path d=\"M7 16l0 .01\" />", "server-2": "<path d=\"M3 7a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v2a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-2\" /> <path d=\"M3 15a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v2a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3l0 -2\" /> <path d=\"M7 8l0 .01\" /> <path d=\"M7 16l0 .01\" /> <path d=\"M11 8h6\" /> <path d=\"M11 16h6\" />", "shield-check": "<path d=\"M11.46 20.846a12 12 0 0 1 -7.96 -14.846a12 12 0 0 0 8.5 -3a12 12 0 0 0 8.5 3a12 12 0 0 1 -.09 7.06\" /> <path d=\"M15 19l2 2l4 -4\" />", "shield-lock": "<path d=\"M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3\" /> <path d=\"M11 11a1 1 0 1 0 2 0a1 1 0 1 0 -2 0\" /> <path d=\"M12 12l0 2.5\" />", "stack-2": "<path d=\"M12 4l-8 4l8 4l8 -4l-8 -4\" /> <path d=\"M4 12l8 4l8 -4\" /> <path d=\"M4 16l8 4l8 -4\" />", "topology-star-3": "<path d=\"M10 19a2 2 0 1 0 -4 0a2 2 0 0 0 4 0\" /> <path d=\"M18 5a2 2 0 1 0 -4 0a2 2 0 0 0 4 0\" /> <path d=\"M10 5a2 2 0 1 0 -4 0a2 2 0 0 0 4 0\" /> <path d=\"M6 12a2 2 0 1 0 -4 0a2 2 0 0 0 4 0\" /> <path d=\"M18 19a2 2 0 1 0 -4 0a2 2 0 0 0 4 0\" /> <path d=\"M14 12a2 2 0 1 0 -4 0a2 2 0 0 0 4 0\" /> <path d=\"M22 12a2 2 0 1 0 -4 0a2 2 0 0 0 4 0\" /> <path d=\"M6 12h4\" /> <path d=\"M14 12h4\" /> <path d=\"M15 7l-2 3\" /> <path d=\"M9 7l2 3\" /> <path d=\"M11 14l-2 3\" /> <path d=\"M13 14l2 3\" />", "variable": "<path d=\"M5 4c-2.5 5 -2.5 10 0 16m14 -16c2.5 5 2.5 10 0 16m-10 -11h1c1 0 1 1 2.016 3.527c.984 2.473 .984 3.473 1.984 3.473h1\" /> <path d=\"M8 16c1.5 0 3 -2 4 -3.5s2.5 -3.5 4 -3.5\" />"};</script>
 <script>'use strict';
-/* ---------- segédfüggvények ---------- */
+/* ---------- helpers ---------- */
 const ic = (n, cls = 'icon') => `<svg xmlns="http://www.w3.org/2000/svg" class="${cls}" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const $ = s => document.querySelector(s);
 const state = { region: 'all', ns: 'prod', notes: true };
 
-/* ---------- adatok ---------- */
+/* ---------- data ---------- */
 const REGIONS = [
-  { id: 'eu-aws', cls: 'fl-reg-a', cloud: 'AWS', loc: 'eu-central-1, Frankfurt', leader: 'srv-eu-aws-2', servers: '3/3', clients: 42, down: 1, run: 318, pend: 6, fail: 3, backup: '14:00', backupAgo: '12 perce', auth: true },
-  { id: 'eu-gcp', cls: 'fl-reg-b', cloud: 'Google Cloud', loc: 'europe-west3, Frankfurt', leader: 'srv-eu-gcp-1', servers: '3/3', clients: 27, down: 0, run: 201, pend: 2, fail: 1, backup: '14:05', backupAgo: '7 perce' },
-  { id: 'us-hetzner', cls: 'fl-reg-c', cloud: 'Hetzner', loc: 'Ashburn, VA', leader: 'srv-us-hz-3', servers: '3/3', clients: 18, down: 0, run: 122, pend: 0, fail: 0, backup: '14:10', backupAgo: '2 perce' }
+  { id: 'eu-aws', cls: 'fl-reg-a', cloud: 'AWS', loc: 'eu-central-1, Frankfurt', leader: 'srv-eu-aws-2', servers: '3/3', clients: 42, down: 1, run: 318, pend: 6, fail: 3, backup: '14:00', backupAgo: '12 min ago', auth: true },
+  { id: 'eu-gcp', cls: 'fl-reg-b', cloud: 'Google Cloud', loc: 'europe-west3, Frankfurt', leader: 'srv-eu-gcp-1', servers: '3/3', clients: 27, down: 0, run: 201, pend: 2, fail: 1, backup: '14:05', backupAgo: '7 min ago' },
+  { id: 'us-hetzner', cls: 'fl-reg-c', cloud: 'Hetzner', loc: 'Ashburn, VA', leader: 'srv-us-hz-3', servers: '3/3', clients: 18, down: 0, run: 122, pend: 0, fail: 0, backup: '14:10', backupAgo: '2 min ago' }
 ];
 const R = id => REGIONS.find(r => r.id === id);
 const reg = id => `<span class="fl-reg ${R(id).cls}">${id}</span>`;
@@ -182,35 +182,35 @@ const inRegion = ids => state.region === 'all' || ids.includes(state.region);
 const JOBS = [
   { id: 'api', type: 'service', ns: 'prod', regions: ['eu-aws', 'eu-gcp', 'us-hetzner'], status: 'deploying', owner: '', ver: 42, groups: 'web: 6/6' },
   { id: 'worker', type: 'service', ns: 'prod', regions: ['eu-aws', 'eu-gcp'], status: 'running', owner: '', ver: 17, groups: 'queue: 8/8' },
-  { id: 'szamlazas-db', type: 'service', ns: 'prod', regions: ['eu-aws'], status: 'running', owner: 'obj:PostgresCluster/szamlazas', ver: 9, groups: 'postgres: 3/3' },
+  { id: 'billing-db', type: 'service', ns: 'prod', regions: ['eu-aws'], status: 'running', owner: 'obj:PostgresCluster/billing', ver: 9, groups: 'postgres: 3/3' },
   { id: 'postgres-operator', type: 'service', ns: 'platform', regions: ['eu-aws', 'eu-gcp'], status: 'running', owner: 'rel:postgres-operator', ver: 5, groups: 'controller: 2/2' },
   { id: 'traefik', type: 'system', ns: 'platform', regions: ['eu-aws', 'eu-gcp', 'us-hetzner'], status: 'running', owner: 'rel:traefik', ver: 12, groups: 'proxy: 87/87' },
   { id: 'nats', type: 'service', ns: 'platform', regions: ['eu-aws', 'eu-gcp', 'us-hetzner'], status: 'running', owner: 'rel:nats', ver: 4, groups: 'nats: 9/9' },
   { id: 'log-shipper', type: 'system', ns: 'platform', regions: ['eu-aws', 'eu-gcp', 'us-hetzner'], status: 'degraded', owner: 'rel:observability', ver: 3, groups: 'vector: 86/87' },
-  { id: 'backup-verify', type: 'batch', ns: 'platform', regions: ['eu-aws'], status: 'periodic', owner: '', ver: 2, groups: 'naponta 03:00' },
-  { id: 'riport-export', type: 'batch', ns: 'prod', regions: ['eu-gcp'], status: 'blocked', owner: '', ver: 6, groups: 'kvóta miatt blokkolva' }
+  { id: 'backup-verify', type: 'batch', ns: 'platform', regions: ['eu-aws'], status: 'periodic', owner: '', ver: 2, groups: 'daily 03:00' },
+  { id: 'report-export', type: 'batch', ns: 'prod', regions: ['eu-gcp'], status: 'blocked', owner: '', ver: 6, groups: 'blocked by quota' }
 ];
 const STATUS = {
-  running: ['Fut', 'green'], deploying: ['Telepítés folyamatban', 'blue'], degraded: ['Részlegesen hibás', 'orange'],
-  periodic: ['Időzített', 'secondary'], blocked: ['Blokkolva', 'red'], deployed: ['Telepítve', 'green'], failed: ['Sikertelen', 'red'],
-  passing: ['Egészséges', 'green'], critical: ['Hibás', 'red'], warning: ['Figyelmeztetés', 'orange'], successful: ['Sikeres', 'green'],
-  pending: ['Várakozik', 'secondary'], ready: ['Kész', 'green'], inprogress: ['Folyamatban', 'blue']
+  running: ['Running', 'green'], deploying: ['Deploying', 'blue'], degraded: ['Degraded', 'orange'],
+  periodic: ['Periodic', 'secondary'], blocked: ['Blocked', 'red'], deployed: ['Deployed', 'green'], failed: ['Failed', 'red'],
+  passing: ['Healthy', 'green'], critical: ['Critical', 'red'], warning: ['Warning', 'orange'], successful: ['Successful', 'green'],
+  pending: ['Pending', 'secondary'], ready: ['Ready', 'green'], inprogress: ['In progress', 'blue']
 };
 const badge = s => { const [t, c] = STATUS[s] || [s, 'secondary']; return `<span class="badge bg-${c}-lt"><span class="status-dot status-${c} me-1"></span>${t}</span>`; };
 const owner = o => !o ? '<span class="text-secondary">–</span>' : o.startsWith('rel:')
   ? `<a href="#/package/${o.slice(4)}">${ic('package', 'icon icon-sm me-1')}${o.slice(4)}</a>`
-  : `<a href="#/object/szamlazas">${ic('box', 'icon icon-sm me-1')}${o.slice(4)}</a>`;
+  : `<a href="#/object/billing">${ic('box', 'icon icon-sm me-1')}${o.slice(4)}</a>`;
 
-/* ---------- navigáció ---------- */
+/* ---------- navigation ---------- */
 const NAV = [
-  ['Áttekintés', [['', 'layout-dashboard', 'Irányítópult']]],
-  ['Workloadok', [['jobs', 'briefcase', 'Jobok'], ['packages', 'package', 'Csomagok'], ['objects', 'box', 'Objektumok'], ['deployments', 'git-branch', 'Deploymentek']]],
-  ['Szolgáltatások és hálózat', [['services', 'topology-star-3', 'Szolgáltatások'], ['network', 'shield-lock', 'Intentionök és szabályok']]],
-  ['Kapacitás', [['clients', 'server-2', 'Kliensek'], ['nodepools', 'stack-2', 'Node poolok'], ['topology', 'hierarchy-3', 'Topológia'], ['storage', 'database', 'Tárolók'], ['quotas', 'chart-pie', 'Kvóták'], ['scaling', 'arrows-maximize', 'Skálázás']]],
-  ['Konfiguráció', [['variables', 'variable', 'Variables'], ['admission', 'shield-check', 'Admission policyk'], ['kinds', 'category', 'Típusdefiníciók']]],
-  ['Üzemeltetés', [['events', 'activity', 'Események és audit'], ['backups', 'cloud-upload', 'Mentések'], ['servers', 'server', 'Szerverek és régiók'], ['evaluations', 'list-details', 'Evaluationök']]],
-  ['Hozzáférés', [['access', 'key', 'Tokenek és szabályok']]],
-  ['Tervezés', [['plan', 'clipboard-list', 'Felületi terv']]]
+  ['Overview', [['', 'layout-dashboard', 'Dashboard']]],
+  ['Workloads', [['jobs', 'briefcase', 'Jobs'], ['packages', 'package', 'Packages'], ['objects', 'box', 'Objects'], ['deployments', 'git-branch', 'Deployments']]],
+  ['Services and networking', [['services', 'topology-star-3', 'Services'], ['network', 'shield-lock', 'Intentions and rules']]],
+  ['Capacity', [['clients', 'server-2', 'Clients'], ['nodepools', 'stack-2', 'Node pools'], ['topology', 'hierarchy-3', 'Topology'], ['storage', 'database', 'Storage'], ['quotas', 'chart-pie', 'Quotas'], ['scaling', 'arrows-maximize', 'Scaling']]],
+  ['Configuration', [['variables', 'variable', 'Variables'], ['admission', 'shield-check', 'Admission policies'], ['kinds', 'category', 'Type definitions']]],
+  ['Operations', [['events', 'activity', 'Events and audit'], ['backups', 'cloud-upload', 'Backups'], ['servers', 'server', 'Servers and regions'], ['evaluations', 'list-details', 'Evaluations']]],
+  ['Access', [['access', 'key', 'Tokens and policies']]],
+  ['Design', [['plan', 'clipboard-list', 'UI plan']]]
 ];
 const ALLPAGES = NAV.flatMap(([g, items]) => items.map(([r, i, t]) => ({ r, i, t, g })));
 
@@ -219,424 +219,424 @@ function renderShell() {
     `<li class="nav-item"><a class="nav-link" href="#/${r}" data-route="${r}"><span class="nav-link-icon">${ic(i)}</span><span class="nav-link-title">${t}</span></a></li>`).join('')).join('');
   $('#app').innerHTML = `
 <div class="page">
-  <aside class="navbar navbar-vertical navbar-expand-lg fl-side" data-bs-theme="dark" aria-label="Fő navigáció">
+  <aside class="navbar navbar-vertical navbar-expand-lg fl-side" data-bs-theme="dark" aria-label="Main navigation">
     <div class="container-fluid">
-      <button class="navbar-toggler" type="button" id="sideToggle" aria-label="Menü megnyitása"><span class="navbar-toggler-icon"></span></button>
-      <a class="navbar-brand fl-brand py-3" href="#/"><span class="fl-brand-mark"><span></span></span><span>Flotta<small>munkanév</small></span></a>
+      <button class="navbar-toggler" type="button" id="sideToggle" aria-label="Open menu"><span class="navbar-toggler-icon"></span></button>
+      <a class="navbar-brand fl-brand py-3" href="#/"><span class="fl-brand-mark"><span></span></span><span>Norca<small>working name</small></span></a>
       <div class="collapse navbar-collapse" id="sidebar-menu"><ul class="navbar-nav pt-lg-1 pb-4">${side}</ul></div>
     </div>
   </aside>
   <div class="page-wrapper">
   <header class="navbar navbar-expand-md d-print-none fl-top">
     <div class="container-xl gap-2 flex-wrap">
-      <button class="btn fl-palette-btn" id="palBtn" type="button">${ic('search', 'icon me-2')}Keresés és parancsok<span class="fl-kbd ms-3">Ctrl K</span></button>
+      <button class="btn fl-palette-btn" id="palBtn" type="button">${ic('search', 'icon me-2')}Search and commands<span class="fl-kbd ms-3">Ctrl K</span></button>
       <div class="d-flex gap-2 ms-auto align-items-center flex-wrap">
-        <label class="visually-hidden" for="regSel">Régió</label>
+        <label class="visually-hidden" for="regSel">Region</label>
         <select class="form-select w-auto" id="regSel">
-          <option value="all">Összes régió</option>${REGIONS.map(r => `<option value="${r.id}">${r.id}</option>`).join('')}
+          <option value="all">All regions</option>${REGIONS.map(r => `<option value="${r.id}">${r.id}</option>`).join('')}
         </select>
         <label class="visually-hidden" for="nsSel">Namespace</label>
-        <select class="form-select w-auto" id="nsSel"><option>prod</option><option>platform</option><option>staging</option><option value="*">Összes namespace</option></select>
-        <button class="btn btn-icon" id="notesBtn" type="button" title="Tervjegyzetek be/ki" aria-pressed="true">${ic('info-circle')}</button>
-        <button class="btn btn-icon" id="themeBtn" type="button" title="Világos vagy sötét mód">${ic('moon')}</button>
+        <select class="form-select w-auto" id="nsSel"><option>prod</option><option>platform</option><option>staging</option><option value="*">All namespaces</option></select>
+        <button class="btn btn-icon" id="notesBtn" type="button" title="Design notes on/off" aria-pressed="true">${ic('info-circle')}</button>
+        <button class="btn btn-icon" id="themeBtn" type="button" title="Light or dark mode">${ic('moon')}</button>
         <div class="fl-dd">
-          <button class="btn btn-icon position-relative" type="button" data-dd title="Értesítések">${ic('bell')}<span class="badge bg-red badge-notification badge-blink"></span></button>
+          <button class="btn btn-icon position-relative" type="button" data-dd title="Notifications">${ic('bell')}<span class="badge bg-red badge-notification badge-blink"></span></button>
           <div class="dropdown-menu dropdown-menu-end dropdown-menu-card" style="width:22rem">
-            <div class="card"><div class="card-header"><h3 class="card-title">Értesítések</h3></div>
+            <div class="card"><div class="card-header"><h3 class="card-title">Notifications</h3></div>
             <div class="list-group list-group-flush">
-              <a class="list-group-item list-group-item-action" href="#/package/observability"><span class="status-dot status-orange me-2"></span>Az <b>observability</b> release eltér a revíziótól</a>
-              <a class="list-group-item list-group-item-action" href="#/quotas"><span class="status-dot status-red me-2"></span>A <b>csapat-b</b> kvóta 96%-on, egy evaluation blokkolva</a>
-              <a class="list-group-item list-group-item-action" href="#/job/api/deployments"><span class="status-dot status-blue me-2"></span>Az <b>api</b> v42 telepítése az eu-gcp régióban fut</a>
+              <a class="list-group-item list-group-item-action" href="#/package/observability"><span class="status-dot status-orange me-2"></span>The <b>observability</b> release drifts from its revision</a>
+              <a class="list-group-item list-group-item-action" href="#/quotas"><span class="status-dot status-red me-2"></span>The <b>team-b</b> quota is at 96%, one evaluation blocked</a>
+              <a class="list-group-item list-group-item-action" href="#/job/api/deployments"><span class="status-dot status-blue me-2"></span>The <b>api</b> v42 deployment is running in the eu-gcp region</a>
             </div></div>
           </div>
         </div>
         <div class="fl-dd">
-          <button class="btn" type="button" data-dd><span class="avatar avatar-xs me-sm-2">KB</span><span class="d-none d-sm-inline">Kovács Béla</span></button>
-          <div class="dropdown-menu dropdown-menu-end"><span class="dropdown-header">Token: platform-operator</span><a class="dropdown-item" href="#/access">Tokenek és szabályok</a><a class="dropdown-item" href="#/">Kijelentkezés</a></div>
+          <button class="btn" type="button" data-dd><span class="avatar avatar-xs me-sm-2">AM</span><span class="d-none d-sm-inline">Alex Morgan</span></button>
+          <div class="dropdown-menu dropdown-menu-end"><span class="dropdown-header">Token: platform-operator</span><a class="dropdown-item" href="#/access">Tokens and policies</a><a class="dropdown-item" href="#/">Sign out</a></div>
         </div>
       </div>
     </div>
   </header>
   <div id="view"></div>
-    <footer class="footer footer-transparent d-print-none"><div class="container-xl text-secondary small">Látványterv a felületi tervhez. Minden adat kitalált, a gombok nem hajtanak végre műveletet.</div></footer>
+    <footer class="footer footer-transparent d-print-none"><div class="container-xl text-secondary small">Mockup for the UI plan. All data is fictional; the buttons do not perform any action.</div></footer>
   </div>
 </div>
-<div class="fl-pal-back" id="pal" role="dialog" aria-modal="true" aria-label="Parancspaletta">
-  <div class="card fl-pal"><div class="card-body pb-2"><input class="form-control form-control-lg" id="palIn" placeholder="Oldal, job, csomag vagy művelet…" autocomplete="off"></div>
+<div class="fl-pal-back" id="pal" role="dialog" aria-modal="true" aria-label="Command palette">
+  <div class="card fl-pal"><div class="card-body pb-2"><input class="form-control form-control-lg" id="palIn" placeholder="Page, job, package or action…" autocomplete="off"></div>
   <div class="list-group list-group-flush" id="palList" style="max-height:50vh;overflow:auto"></div>
-  <div class="card-footer small text-secondary">Enter: megnyitás · Esc: bezárás · fel/le: kiválasztás</div></div>
+  <div class="card-footer small text-secondary">Enter: open · Esc: close · up/down: select</div></div>
 </div>`;
 }
 
-/* ---------- közös elemek ---------- */
+/* ---------- shared elements ---------- */
 const header = (pre, title, actions = '', sub = '') => `
 <div class="page-header d-print-none"><div class="container-xl"><div class="row g-2 align-items-center">
   <div class="col"><div class="page-pretitle">${pre}</div><h2 class="page-title">${title}</h2>${sub ? `<div class="text-secondary mt-1">${sub}</div>` : ''}</div>
   <div class="col-auto ms-auto d-print-none"><div class="btn-list">${actions}</div></div>
 </div></div></div>`;
-const scopeLabel = () => state.region === 'all' ? 'Összes régió' : state.region;
+const scopeLabel = () => state.region === 'all' ? 'All regions' : state.region;
 const body = inner => `<div class="page-body"><div class="container-xl">${inner}</div></div>`;
-const note = (title, items, doc) => `<div class="fl-note mt-3"><h4>${ic('info-circle', 'icon icon-sm')}Tervjegyzet: ${title}</h4><ul>${items.map(i => `<li>${i}</li>`).join('')}</ul>${doc ? `<div class="mt-2">Forrás: <a href="#/plan">${doc}</a></div>` : ''}</div>`;
+const note = (title, items, doc) => `<div class="fl-note mt-3"><h4>${ic('info-circle', 'icon icon-sm')}Design note: ${title}</h4><ul>${items.map(i => `<li>${i}</li>`).join('')}</ul>${doc ? `<div class="mt-2">Source: <a href="#/plan">${doc}</a></div>` : ''}</div>`;
 const card = (title, inner, extra = '', cls = '') => `<div class="card ${cls}">${title ? `<div class="card-header"><h3 class="card-title">${title}</h3>${extra ? `<div class="card-actions">${extra}</div>` : ''}</div>` : ''}${inner}</div>`;
 const tbl = (heads, rows) => `<div class="table-responsive"><table class="table table-vcenter card-table"><thead><tr>${heads.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
 const tr = cells => `<tr>${cells.map(c => `<td>${c}</td>`).join('')}</tr>`;
 const stat = (label, value, hint, color, href) => `<div class="col-sm-6 col-lg-3"><a class="card card-sm card-link" href="${href}"><div class="card-body"><div class="row align-items-center"><div class="col-auto"><span class="bg-${color} text-white avatar">${value}</span></div><div class="col"><div class="font-weight-medium">${label}</div><div class="text-secondary">${hint}</div></div></div></div></a></div>`;
 const tl = items => `<ul class="timeline">${items.map(([icn, color, time, title, text, href]) => `<li class="timeline-event"><div class="timeline-event-icon bg-${color}-lt">${ic(icn)}</div><div class="card timeline-event-card"><div class="card-body"><div class="text-secondary float-end">${time}</div><h4>${href ? `<a href="${href}">${title}</a>` : title}</h4><p class="text-secondary mb-0">${text}</p></div></div></li>`).join('')}</ul>`;
 
-/* ---------- irányítópult ---------- */
+/* ---------- dashboard ---------- */
 function pageDashboard() {
   const rs = REGIONS.filter(r => inRegion([r.id]));
   const fed = rs.map(r => {
     const tot = r.run + r.pend + r.fail;
     return `<div class="fl-fed-col" style="--c:var(--${r.cls.replace('fl-', 'fl-')})">
-      <div class="d-flex align-items-start justify-content-between"><div><div class="fl-fed-name">${r.id}</div><div class="fl-fed-cloud">${r.cloud}, ${r.loc}${r.auth ? '<br>Authoritative régió' : ''}</div></div>
-      <span class="status-dot status-dot-animated status-${r.down ? 'orange' : 'green'} mt-2" title="${r.down ? 'Figyelmeztetés' : 'Egészséges'}"></span></div>
+      <div class="d-flex align-items-start justify-content-between"><div><div class="fl-fed-name">${r.id}</div><div class="fl-fed-cloud">${r.cloud}, ${r.loc}${r.auth ? '<br>Authoritative region' : ''}</div></div>
+      <span class="status-dot status-dot-animated status-${r.down ? 'orange' : 'green'} mt-2" title="${r.down ? 'Warning' : 'Healthy'}"></span></div>
       <div class="fl-fed-row"><span>Leader</span><b class="fl-mono">${r.leader}</b></div>
-      <div class="fl-fed-row"><span>Szerverek</span><b>${r.servers}</b></div>
-      <div class="fl-fed-row"><span>Kliensek</span><b>${r.clients}${r.down ? ` <span class="text-warning">(${r.down} leválasztva)</span>` : ''}</b></div>
-      <div class="fl-fed-row d-block"><div class="d-flex justify-content-between"><span>Allokációk</span><b>${r.run} fut, ${r.pend} vár, ${r.fail} hibás</b></div>
-        <div class="fl-bar" role="img" aria-label="${r.run} futó, ${r.pend} várakozó, ${r.fail} hibás allokáció"><span class="bg-green" style="width:${r.run / tot * 100}%"></span><span class="bg-azure" style="width:${r.pend / tot * 100}%"></span><span class="bg-red" style="width:${Math.max(r.fail / tot * 100, r.fail ? 1.5 : 0)}%"></span></div></div>
-      <div class="fl-fed-row"><span>Utolsó mentés</span><b>${r.backup} <span class="text-secondary fw-normal">(${r.backupAgo})</span></b></div>
+      <div class="fl-fed-row"><span>Servers</span><b>${r.servers}</b></div>
+      <div class="fl-fed-row"><span>Clients</span><b>${r.clients}${r.down ? ` <span class="text-warning">(${r.down} disconnected)</span>` : ''}</b></div>
+      <div class="fl-fed-row d-block"><div class="d-flex justify-content-between"><span>Allocations</span><b>${r.run} running, ${r.pend} pending, ${r.fail} failed</b></div>
+        <div class="fl-bar" role="img" aria-label="${r.run} running, ${r.pend} pending, ${r.fail} failed allocations"><span class="bg-green" style="width:${r.run / tot * 100}%"></span><span class="bg-azure" style="width:${r.pend / tot * 100}%"></span><span class="bg-red" style="width:${Math.max(r.fail / tot * 100, r.fail ? 1.5 : 0)}%"></span></div></div>
+      <div class="fl-fed-row"><span>Last backup</span><b>${r.backup} <span class="text-secondary fw-normal">(${r.backupAgo})</span></b></div>
     </div>`;
   }).join('');
-  const links = state.region === 'all' ? `<div class="fl-fed-links"><span>Régiók közötti kapcsolat (WireGuard és mTLS):</span>
-      <span><strong>eu-aws ↔ eu-gcp</strong> 4 ms</span><span><strong>eu-aws ↔ us-hetzner</strong> 88 ms</span><span><strong>eu-gcp ↔ us-hetzner</strong> 91 ms</span><span class="text-success">mind elérhető</span></div>` : '';
-  return header('Áttekintés', 'Irányítópult', `<a class="btn" href="#/backups">${ic('cloud-upload')}Mentés most</a><a class="btn btn-primary" href="#/jobs">${ic('plus')}Job futtatása</a>`, `${scopeLabel()}, ${state.ns === '*' ? 'összes namespace' : state.ns + ' namespace'}`) + body(`
+  const links = state.region === 'all' ? `<div class="fl-fed-links"><span>Connections between regions (WireGuard and mTLS):</span>
+      <span><strong>eu-aws ↔ eu-gcp</strong> 4 ms</span><span><strong>eu-aws ↔ us-hetzner</strong> 88 ms</span><span><strong>eu-gcp ↔ us-hetzner</strong> 91 ms</span><span class="text-success">all reachable</span></div>` : '';
+  return header('Overview', 'Dashboard', `<a class="btn" href="#/backups">${ic('cloud-upload')}Back up now</a><a class="btn btn-primary" href="#/jobs">${ic('plus')}Run job</a>`, `${scopeLabel()}, ${state.ns === '*' ? 'all namespaces' : state.ns + ' namespace'}`) + body(`
   <div class="card mb-3"><div class="fl-fed" style="--n:${rs.length}">${fed}</div>${links}</div>
   <div class="row row-cards mb-3">
-    ${stat('Futó deploymentek', 3, '1 multiregion, 2 régióban fut', 'blue', '#/deployments')}
-    ${stat('Blokkolt evaluationök', 2, '1 a csapat-b kvóta miatt', 'orange', '#/quotas')}
-    ${stat('Hibás allokációk', 4, 'log-shipper, worker', 'red', '#/jobs')}
-    ${stat('Release-eltérés', 1, 'observability: kézi módosítás', 'yellow', '#/package/observability')}
+    ${stat('Running deployments', 3, '1 multiregion, running in 2 regions', 'blue', '#/deployments')}
+    ${stat('Blocked evaluations', 2, '1 due to the team-b quota', 'orange', '#/quotas')}
+    ${stat('Failed allocations', 4, 'log-shipper, worker', 'red', '#/jobs')}
+    ${stat('Release drift', 1, 'observability: manual change', 'yellow', '#/package/observability')}
   </div>
   <div class="row row-cards">
     <div class="col-lg-7">
-      ${card('Folyamatban lévő telepítés: api v42', `<div class="card-body">${mrSteps()}</div>`, `<a href="#/job/api/deployments" class="btn btn-sm">Részletek</a>`)}
-      <div class="mt-3">${card('Figyelmeztetések', `<div class="list-group list-group-flush">
-        <a class="list-group-item list-group-item-action" href="#/quotas"><div class="d-flex"><span class="status-dot status-red me-2 mt-2"></span><div><b>A csapat-b kvóta 96%-on áll.</b><div class="text-secondary">A riport-export job egy evaluationje vár. Emeld a kvótát, vagy állíts le egy jobot a namespace-ben.</div></div></div></a>
-        <a class="list-group-item list-group-item-action" href="#/package/observability"><div class="d-flex"><span class="status-dot status-orange me-2 mt-2"></span><div><b>Az observability release eltér a 3. revíziótól.</b><div class="text-secondary">A log-shipper jobot kézzel módosították 11:42-kor. Görgesd vissza, vagy telepítsd újra a csomagot.</div></div></div></a>
-        <a class="list-group-item list-group-item-action" href="#/clients"><div class="d-flex"><span class="status-dot status-orange me-2 mt-2"></span><div><b>Egy kliens leválasztva az eu-aws régióban.</b><div class="text-secondary">client-eu-aws-17 13:58 óta nem jelentkezik; 4 allokációja átkerül a disruption budget szerint.</div></div></div></a>
+      ${card('Deployment in progress: api v42', `<div class="card-body">${mrSteps()}</div>`, `<a href="#/job/api/deployments" class="btn btn-sm">Details</a>`)}
+      <div class="mt-3">${card('Warnings', `<div class="list-group list-group-flush">
+        <a class="list-group-item list-group-item-action" href="#/quotas"><div class="d-flex"><span class="status-dot status-red me-2 mt-2"></span><div><b>The team-b quota is at 96%.</b><div class="text-secondary">An evaluation of the report-export job is waiting. Raise the quota, or stop a job in the namespace.</div></div></div></a>
+        <a class="list-group-item list-group-item-action" href="#/package/observability"><div class="d-flex"><span class="status-dot status-orange me-2 mt-2"></span><div><b>The observability release drifts from revision 3.</b><div class="text-secondary">The log-shipper job was changed by hand at 11:42. Roll it back, or reinstall the package.</div></div></div></a>
+        <a class="list-group-item list-group-item-action" href="#/clients"><div class="d-flex"><span class="status-dot status-orange me-2 mt-2"></span><div><b>A client is disconnected in the eu-aws region.</b><div class="text-secondary">client-eu-aws-17 has not checked in since 13:58; its 4 allocations move as the disruption budget allows.</div></div></div></a>
       </div>`)}</div>
     </div>
-    <div class="col-lg-5">${card('Legutóbbi események', `<div class="card-body">${tl([
-      ['arrows-maximize', 'blue', '14:11', 'worker felskálázva 6 → 8', 'nomad.cpu 82% a 70% cél felett, beépített motor', '#/scaling'],
-      ['cloud-upload', 'green', '14:10', 'Mentés kész: us-hetzner', '41 MB, 2 célhelyre, ellenőrizve', '#/backups'],
-      ['shield-check', 'red', '13:52', 'Admission elutasítás', 'nincs-privilegizalt-kontener: debug-shell (prod)', '#/admission'],
-      ['package', 'green', '13:40', 'traefik release 7. revízió', 'Frissítve 3.1.2 → 3.1.4, hookok sikeresek', '#/package/traefik']
-    ])}</div>`, `<a href="#/events" class="btn btn-sm">Összes</a>`)}</div>
+    <div class="col-lg-5">${card('Latest events', `<div class="card-body">${tl([
+      ['arrows-maximize', 'blue', '14:11', 'worker scaled up 6 → 8', 'nomad.cpu 82% above the 70% target, built-in engine', '#/scaling'],
+      ['cloud-upload', 'green', '14:10', 'Backup done: us-hetzner', '41 MB, to 2 destinations, verified', '#/backups'],
+      ['shield-check', 'red', '13:52', 'Admission rejection', 'no-privileged-container: debug-shell (prod)', '#/admission'],
+      ['package', 'green', '13:40', 'traefik release revision 7', 'Upgraded 3.1.2 → 3.1.4, hooks successful', '#/package/traefik']
+    ])}</div>`, `<a href="#/events" class="btn btn-sm">All</a>`)}</div>
   </div>
-  ${note('Irányítópult', ['A föderációs sáv a fork egyetlen hangsúlyos vizuális eleme: régiónként egy oszlop a felhő színével.', 'A figyelmeztetések mindig megmondják, mi a teendő.', 'Élő frissítés régiónként egy eseményfolyam-kapcsolatból.'], 'felulet-terv.md: Oldalak, Irányítópult (1. fázis)')}`);
+  ${note('Dashboard', ['The federation strip is the single emphasized visual element of the fork: one column per region, in the color of its cloud.', 'Warnings always say what to do.', 'Live updates from one event stream connection per region.'], 'ui-plan.md: Pages, Dashboard (phase 1)')}`);
 }
 function mrSteps(withCtl) {
-  const s = [['eu-aws', 'fl-reg-a', 'successful', 100, '6/6 egészséges, 13:20 kész'], ['eu-gcp', 'fl-reg-b', 'inprogress', 60, '4/6 frissítve, canary rendben'], ['us-hetzner', 'fl-reg-c', 'pending', 0, 'Blokkolva, az eu-gcp sikerére vár']];
+  const s = [['eu-aws', 'fl-reg-a', 'successful', 100, '6/6 healthy, done at 13:20'], ['eu-gcp', 'fl-reg-b', 'inprogress', 60, '4/6 updated, canary OK'], ['us-hetzner', 'fl-reg-c', 'pending', 0, 'Blocked, waiting for eu-gcp to succeed']];
   return `<div class="fl-mr">${s.map(([r, c, st, p, t]) => `<div class="fl-mr-step" style="--c:var(--${c})"><div class="d-flex justify-content-between align-items-center"><span class="fl-reg ${c} fw-medium">${r}</span>${badge(st)}</div>
     <div class="progress"><div class="progress-bar ${st === 'successful' ? 'bg-green' : ''}" style="width:${p}%" role="progressbar" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100" aria-label="${r}: ${p}%"></div></div>
     <div class="small text-secondary mt-2">${t}</div></div>`).join('')}</div>
-    <div class="small text-secondary mt-2">Stratégia: max_parallel = 1, on_failure = fail_all. A régiók a Nomad régiók közötti RPC-jén egyeztetnek.</div>
-    ${withCtl ? `<div class="btn-list mt-3"><button class="btn" type="button">${ic('player-play')}Következő régió indítása</button><button class="btn" type="button">${ic('lock')}Feloldás (unblock)</button><button class="btn btn-outline-danger" type="button">${ic('circle-x')}Sikertelennek jelölés</button></div>` : ''}`;
+    <div class="small text-secondary mt-2">Strategy: max_parallel = 1, on_failure = fail_all. The regions coordinate over the Nomad cross-region RPC.</div>
+    ${withCtl ? `<div class="btn-list mt-3"><button class="btn" type="button">${ic('player-play')}Start next region</button><button class="btn" type="button">${ic('lock')}Unblock</button><button class="btn btn-outline-danger" type="button">${ic('circle-x')}Mark as failed</button></div>` : ''}`;
 }
 
-/* ---------- jobok ---------- */
+/* ---------- jobs ---------- */
 function pageJobs() {
   const rows = JOBS.filter(j => inRegion(j.regions) && (state.ns === '*' || j.ns === state.ns)).map(j => tr([
     `<a href="#/job/${j.id}" class="fw-medium">${j.id}</a><div class="small text-secondary">${j.groups}</div>`, j.type, j.ns, regs(j.regions), badge(j.status), owner(j.owner), `v${j.ver}`
   ]));
-  return header('Workloadok', 'Jobok', `<button class="btn" type="button">${ic('file-code')}Terv (plan)</button><button class="btn btn-primary" type="button">${ic('plus')}Job futtatása</button>`, `${scopeLabel()}, ${state.ns === '*' ? 'összes namespace' : state.ns + ' namespace'}`) + body(`
+  return header('Workloads', 'Jobs', `<button class="btn" type="button">${ic('file-code')}Plan</button><button class="btn btn-primary" type="button">${ic('plus')}Run job</button>`, `${scopeLabel()}, ${state.ns === '*' ? 'all namespaces' : state.ns + ' namespace'}`) + body(`
   <div class="card">
     <div class="card-body border-bottom py-3 d-flex flex-wrap gap-2">
-      <div class="input-icon" style="max-width:18rem"><span class="input-icon-addon">${ic('search')}</span><input class="form-control" placeholder="Szűrés név szerint" aria-label="Szűrés név szerint"></div>
-      <select class="form-select w-auto" aria-label="Típus"><option>Minden típus</option><option>service</option><option>system</option><option>batch</option></select>
-      <select class="form-select w-auto" aria-label="Állapot"><option>Minden állapot</option><option>Fut</option><option>Hibás</option><option>Blokkolva</option></select>
-      <button class="btn ms-auto" type="button">${ic('adjustments-horizontal')}Oszlopok</button><button class="btn" type="button">Mentett nézetek</button>
+      <div class="input-icon" style="max-width:18rem"><span class="input-icon-addon">${ic('search')}</span><input class="form-control" placeholder="Filter by name" aria-label="Filter by name"></div>
+      <select class="form-select w-auto" aria-label="Type"><option>All types</option><option>service</option><option>system</option><option>batch</option></select>
+      <select class="form-select w-auto" aria-label="Status"><option>All statuses</option><option>Running</option><option>Failed</option><option>Blocked</option></select>
+      <button class="btn ms-auto" type="button">${ic('adjustments-horizontal')}Columns</button><button class="btn" type="button">Saved views</button>
     </div>
-    ${rows.length ? tbl(['Név', 'Típus', 'Namespace', 'Régiók', 'Állapot', 'Tulajdonos', 'Verzió'], rows) : `<div class="empty"><p class="empty-title">Nincs job ebben a nézetben</p><p class="empty-subtitle text-secondary">Válts namespace-t vagy régiót, vagy futtass egy új jobot.</p></div>`}
+    ${rows.length ? tbl(['Name', 'Type', 'Namespace', 'Regions', 'Status', 'Owner', 'Version'], rows) : `<div class="empty"><p class="empty-title">No jobs in this view</p><p class="empty-subtitle text-secondary">Switch namespace or region, or run a new job.</p></div>`}
   </div>
-  ${note('Joblista', ['„Összes régió” módban a régióoszlop mutatja, hol fut a job.', 'A tulajdonos oszlop jelzi, ha a jobot egy release vagy egy operátor-objektum kezeli; ilyen jobot kézzel csak figyelmeztetéssel lehet módosítani.', 'Egységes listaminta: szűrés, mentett nézetek, oszlopválasztás, tömeges műveletek.'], 'felulet-terv.md: Közös UX-minták (2. fázis)')}`);
+  ${note('Job list', ['In "All regions" mode the region column shows where the job runs.', 'The owner column shows when a release or an operator object manages the job; such a job can be changed by hand only after a warning.', 'Unified list pattern: filtering, saved views, column selection, bulk actions.'], 'ui-plan.md: Common UX patterns (phase 2)')}`);
 }
 
-const JOBTABS = [['overview', 'Áttekintés'], ['allocs', 'Allokációk'], ['deployments', 'Deploymentek'], ['versions', 'Verziók'], ['scaling', 'Skálázás'], ['services', 'Szolgáltatások'], ['placement', 'Elhelyezés'], ['events', 'Események']];
+const JOBTABS = [['overview', 'Overview'], ['allocs', 'Allocations'], ['deployments', 'Deployments'], ['versions', 'Versions'], ['scaling', 'Scaling'], ['services', 'Services'], ['placement', 'Placement'], ['events', 'Events']];
 function pageJob(id, tab = 'overview') {
   const j = JOBS.find(x => x.id === id) || JOBS[0];
   const tabs = `<ul class="nav nav-tabs card-header-tabs" role="tablist">${JOBTABS.map(([k, t]) => `<li class="nav-item"><a class="nav-link ${k === tab ? 'active' : ''}" href="#/job/${j.id}/${k}" ${k === tab ? 'aria-current="page"' : ''}>${t}</a></li>`).join('')}</ul>`;
   const content = (JOBTAB[tab] || JOBTAB.overview)(j);
-  return header(`Jobok / ${j.ns}`, `${j.id} <span class="ms-2">${badge(j.status)}</span>`,
-    `<button class="btn" type="button">${ic('file-code')}Terv (plan)</button><button class="btn btn-primary" type="button">${ic('player-play')}Futtatás</button>
-     <div class="fl-dd"><button class="btn" type="button" data-dd>${ic('chevron-down')}Továbbiak</button><div class="dropdown-menu dropdown-menu-end"><a class="dropdown-item" href="#">Leállítás</a><a class="dropdown-item" href="#">Exec</a><a class="dropdown-item text-danger" href="#">Törlés</a></div></div>`,
-    `${regs(j.regions)} <span class="ms-2">Tulajdonos: ${owner(j.owner)}</span>`) + body(`<div class="card"><div class="card-header">${tabs}</div>${content}</div>${note(JOBNOTE[tab][0], JOBNOTE[tab][1], JOBNOTE[tab][2])}`);
+  return header(`Jobs / ${j.ns}`, `${j.id} <span class="ms-2">${badge(j.status)}</span>`,
+    `<button class="btn" type="button">${ic('file-code')}Plan</button><button class="btn btn-primary" type="button">${ic('player-play')}Run</button>
+     <div class="fl-dd"><button class="btn" type="button" data-dd>${ic('chevron-down')}More</button><div class="dropdown-menu dropdown-menu-end"><a class="dropdown-item" href="#">Stop</a><a class="dropdown-item" href="#">Exec</a><a class="dropdown-item text-danger" href="#">Delete</a></div></div>`,
+    `${regs(j.regions)} <span class="ms-2">Owner: ${owner(j.owner)}</span>`) + body(`<div class="card"><div class="card-header">${tabs}</div>${content}</div>${note(JOBNOTE[tab][0], JOBNOTE[tab][1], JOBNOTE[tab][2])}`);
 }
 const JOBNOTE = {
-  overview: ['Job áttekintés', ['A job-oldal fülekre bontva, a mai egyetlen hosszú oldal helyett.', 'Tulajdonos jelvény a release-hez vagy objektumhoz.'], 'felulet-terv.md: Job részletei'],
-  allocs: ['Allokációk', ['Mint ma, az egységes listamintával és régióoszloppal.'], 'felulet-terv.md: Job részletei'],
-  deployments: ['Multiregion deployment', ['Régiós idővonal a Nomad Run / Unblock / Fail műveleteivel.', 'A régiók közötti egyeztetés a Nomad RPC-jén fut, nem NATS-en.'], 'nomad-fork-fejlesztesi-terv.md: Multiregion telepítés'],
-  versions: ['Verziók a mentésekből', ['A Nomad csak az utolsó 6 verziót őrzi; a mentésekből régebbiek is visszahozhatók.', 'A visszaállítás új verzió, átmegy az admission láncon és a kvótán.'], 'backup-restore-terv.md: Szelektív visszaállítás'],
-  scaling: ['Beépített skálázás', ['Típusos szabály, a job run / plan pillanatában ellenőrizve.', 'Metrika–cél grafikon és döntési idővonal a Scaling eseménytopicból.'], 'nomad-fork-fejlesztesi-terv.md: Jobspec és metrikák'],
-  services: ['Egészség szerinti katalógus', ['Példányonkénti egészség a natív katalógusban (Consul nélkül).', 'Startup, readiness és liveness checkek külön.'], 'consul-fuggetlenseg-terv.md: 1. fázis; 6. K8s-tétel'],
-  placement: ['Elhelyezés', ['Jobok közötti anti-affinity (separate) és disruption budget aktuális állapota.'], 'kubernetes-funkciok-reszletes.md: 4. és 5. tétel'],
-  events: ['Job eseményei', ['Az egységes eseményfolyam erre a jobra szűrve.'], 'felulet-terv.md: Események és audit']
+  overview: ['Job overview', ['The job page split into tabs, instead of the single long page of today.', 'Owner badge linking to the release or the object.'], 'ui-plan.md: Job details'],
+  allocs: ['Allocations', ['As today, with the unified list pattern and a region column.'], 'ui-plan.md: Job details'],
+  deployments: ['Multiregion deployment', ['Per-region timeline with the Nomad Run / Unblock / Fail operations.', 'The regions coordinate over the Nomad RPC, not over NATS.'], 'development-plan.md: Multiregion deployment'],
+  versions: ['Versions from backups', ['Nomad keeps only the last 6 versions; older ones can be brought back from backups.', 'A restore is a new version; it goes through the admission chain and the quota.'], 'backup-restore-plan.md: Selective restore'],
+  scaling: ['Built-in scaling', ['Typed policy, checked at job run / plan time.', 'Metric–target chart and decision timeline from the Scaling event topic.'], 'development-plan.md: Jobspec and metrics'],
+  services: ['Health-based catalog', ['Per-instance health in the native catalog (without Consul).', 'Startup, readiness and liveness checks shown separately.'], 'consul-independence-plan.md: phase 1; K8s item 6'],
+  placement: ['Placement', ['Cross-job anti-affinity (separate) and the current state of the disruption budget.'], 'kubernetes-features-spec.md: items 4 and 5'],
+  events: ['Job events', ['The unified event stream, filtered to this job.'], 'ui-plan.md: Events and audit']
 };
 const JOBTAB = {
   overview: j => `<div class="card-body"><div class="datagrid">
-      ${[['Típus', j.type], ['Namespace', j.ns], ['Verzió', 'v' + j.ver], ['Prioritás', '60'], ['Node pool', 'default'], ['Régiók', regs(j.regions)], ['Skálázás', 'beépített motor, 3–20'], ['Disruption budget', 'min_healthy = 4']]
+      ${[['Type', j.type], ['Namespace', j.ns], ['Version', 'v' + j.ver], ['Priority', '60'], ['Node pool', 'default'], ['Regions', regs(j.regions)], ['Scaling', 'built-in engine, 3–20'], ['Disruption budget', 'min_healthy = 4']]
         .map(([a, b]) => `<div class="datagrid-item"><div class="datagrid-title">${a}</div><div class="datagrid-content">${b}</div></div>`).join('')}</div></div>
-    ${tbl(['Taskcsoport', 'Régió', 'Kívánt', 'Fut', 'Egészséges', 'Hibás'], [tr(['web', reg('eu-aws'), 6, 6, 6, 0]), tr(['web', reg('eu-gcp'), 6, 6, 4, 0]), tr(['web', reg('us-hetzner'), 4, 4, 4, 0])])}`,
-  allocs: () => tbl(['ID', 'Régió', 'Kliens', 'Verzió', 'Állapot', 'Indult'], [
+    ${tbl(['Task group', 'Region', 'Desired', 'Running', 'Healthy', 'Failed'], [tr(['web', reg('eu-aws'), 6, 6, 6, 0]), tr(['web', reg('eu-gcp'), 6, 6, 4, 0]), tr(['web', reg('us-hetzner'), 4, 4, 4, 0])])}`,
+  allocs: () => tbl(['ID', 'Region', 'Client', 'Version', 'Status', 'Started'], [
     tr(['<span class="fl-mono">a3f9c2e1</span>', reg('eu-aws'), 'client-eu-aws-04', 'v42', badge('running'), '13:12']),
     tr(['<span class="fl-mono">7b21d004</span>', reg('eu-gcp'), 'client-eu-gcp-11', 'v42', badge('running'), '14:02']),
-    tr(['<span class="fl-mono">c09e77ab</span>', reg('eu-gcp'), 'client-eu-gcp-03', 'v41', badge('running'), 'tegnap']),
-    tr(['<span class="fl-mono">e4410b9f</span>', reg('us-hetzner'), 'client-us-hz-02', 'v41', badge('running'), 'tegnap'])]),
-  deployments: () => `<div class="card-body">${mrSteps(true)}</div>` + tbl(['Deployment', 'Verzió', 'Régiók', 'Állapot', 'Kezdete'], [
+    tr(['<span class="fl-mono">c09e77ab</span>', reg('eu-gcp'), 'client-eu-gcp-03', 'v41', badge('running'), 'yesterday']),
+    tr(['<span class="fl-mono">e4410b9f</span>', reg('us-hetzner'), 'client-us-hz-02', 'v41', badge('running'), 'yesterday'])]),
+  deployments: () => `<div class="card-body">${mrSteps(true)}</div>` + tbl(['Deployment', 'Version', 'Regions', 'Status', 'Started'], [
     tr(['<span class="fl-mono">d-42-mr</span>', 'v42', regs(['eu-aws', 'eu-gcp', 'us-hetzner']), badge('deploying'), '13:05']),
-    tr(['<span class="fl-mono">d-41-mr</span>', 'v41', regs(['eu-aws', 'eu-gcp', 'us-hetzner']), badge('successful'), 'tegnap 16:40'])]),
+    tr(['<span class="fl-mono">d-41-mr</span>', 'v41', regs(['eu-aws', 'eu-gcp', 'us-hetzner']), badge('successful'), 'yesterday 16:40'])]),
   versions: () => `<div class="card-body"><div class="row g-3"><div class="col-lg-5"><div class="list-group">
-      ${[[42, 'most', 'Nomad'], [41, 'tegnap', 'Nomad'], [40, '10.20.', 'Nomad'], [37, '10.08.', 'Nomad'], [31, '09.14.', 'Mentés 2026-09-30 02:00'], [24, '08.02.', 'Mentés 2026-08-31 02:00']]
-        .map(([v, d, src], i) => `<a href="#/job/api/versions" class="list-group-item list-group-item-action ${i === 4 ? 'active' : ''}"><div class="d-flex justify-content-between"><b>v${v}</b><span class="text-secondary">${d}</span></div><div class="small">${src === 'Nomad' ? '<span class="text-secondary">A Nomad tárolja</span>' : `<span class="badge bg-azure-lt">${ic('cloud-upload', 'icon icon-sm me-1')}${src}</span>`}</div></a>`).join('')}
-      </div></div><div class="col-lg-7"><div class="d-flex justify-content-between mb-2"><b>v31 és v42 különbsége</b><button class="btn btn-sm btn-primary" type="button">${ic('history')}Visszaállítás ebből a verzióból</button></div>
-      <pre class="fl-code"><span class="fl-diff-del">-   image = "registry.belso/api:2.14.0"</span>
-<span class="fl-diff-add">+   image = "registry.belso/api:2.9.3"</span>
+      ${[[42, 'now', 'Nomad'], [41, 'yesterday', 'Nomad'], [40, 'Oct 20', 'Nomad'], [37, 'Oct 8', 'Nomad'], [31, 'Sep 14', 'Backup 2026-09-30 02:00'], [24, 'Aug 2', 'Backup 2026-08-31 02:00']]
+        .map(([v, d, src], i) => `<a href="#/job/api/versions" class="list-group-item list-group-item-action ${i === 4 ? 'active' : ''}"><div class="d-flex justify-content-between"><b>v${v}</b><span class="text-secondary">${d}</span></div><div class="small">${src === 'Nomad' ? '<span class="text-secondary">Stored by Nomad</span>' : `<span class="badge bg-azure-lt">${ic('cloud-upload', 'icon icon-sm me-1')}${src}</span>`}</div></a>`).join('')}
+      </div></div><div class="col-lg-7"><div class="d-flex justify-content-between mb-2"><b>Difference between v31 and v42</b><button class="btn btn-sm btn-primary" type="button">${ic('history')}Restore from this version</button></div>
+      <pre class="fl-code"><span class="fl-diff-del">-   image = "registry.internal/api:2.14.0"</span>
+<span class="fl-diff-add">+   image = "registry.internal/api:2.9.3"</span>
     resources {
 <span class="fl-diff-del">-     memory = 768</span>
 <span class="fl-diff-add">+     memory = 512</span>
-    }</pre><div class="small text-secondary">A visszaállítás új verzióként (v43) kerül be, a normál beküldési úton.</div></div></div></div>`,
+    }</pre><div class="small text-secondary">The restore goes in as a new version (v43), through the normal submission path.</div></div></div></div>`,
   scaling: () => `<div class="card-body"><div class="row g-3"><div class="col-lg-4"><div class="datagrid">
-      ${[['Motor', 'beépített'], ['Min / max', '3 / 20'], ['Kiértékelés', '30 mp'], ['Cooldown', '2 perc'], ['Check: cpu', 'nomad.cpu, target-value 70'], ['Check: latency', 'prometheus, threshold 0,3 s']].map(([a, b]) => `<div class="datagrid-item"><div class="datagrid-title">${a}</div><div class="datagrid-content">${b}</div></div>`).join('')}
-      </div></div><div class="col-lg-8">${scaleChart()}</div></div></div>` + tbl(['Idő', 'Régió', 'Változás', 'Kiváltó check', 'Ok'], [
-      tr(['14:11', reg('eu-gcp'), '4 → 6', 'cpu', 'átlag 82%, cél 70%']), tr(['13:31', reg('eu-aws'), '6 → 5', 'cpu', 'átlag 41%, cél 70%']), tr(['13:05', reg('eu-gcp'), '–', '–', 'Szünetel: aktív deployment'])]),
-  services: () => tbl(['Példány', 'Régió', 'Cím', 'Startup', 'Readiness', 'Liveness', 'Katalógusban'], [
-    tr(['api-a3f9', reg('eu-aws'), '10.20.4.17:8080', badge('passing'), badge('passing'), badge('passing'), 'igen']),
-    tr(['api-7b21', reg('eu-gcp'), '10.30.1.9:8080', badge('passing'), badge('warning'), badge('passing'), '<span class="text-warning">nem kész, kiszűrve</span>']),
-    tr(['api-e441', reg('us-hetzner'), '10.40.2.5:8080', badge('passing'), badge('passing'), badge('passing'), 'igen'])]),
-  placement: () => `<div class="card-body"><div class="row g-3"><div class="col-md-6"><h4>Elhelyezési szabályok</h4><pre class="fl-code">separate {
+      ${[['Engine', 'built-in'], ['Min / max', '3 / 20'], ['Evaluation interval', '30 s'], ['Cooldown', '2 min'], ['Check: cpu', 'nomad.cpu, target-value 70'], ['Check: latency', 'prometheus, threshold 0.3 s']].map(([a, b]) => `<div class="datagrid-item"><div class="datagrid-title">${a}</div><div class="datagrid-content">${b}</div></div>`).join('')}
+      </div></div><div class="col-lg-8">${scaleChart()}</div></div></div>` + tbl(['Time', 'Region', 'Change', 'Triggering check', 'Reason'], [
+      tr(['14:11', reg('eu-gcp'), '4 → 6', 'cpu', 'average 82%, target 70%']), tr(['13:31', reg('eu-aws'), '6 → 5', 'cpu', 'average 41%, target 70%']), tr(['13:05', reg('eu-gcp'), '–', '–', 'Paused: active deployment'])]),
+  services: () => tbl(['Instance', 'Region', 'Address', 'Startup', 'Readiness', 'Liveness', 'In catalog'], [
+    tr(['api-a3f9', reg('eu-aws'), '10.20.4.17:8080', badge('passing'), badge('passing'), badge('passing'), 'yes']),
+    tr(['api-7b21', reg('eu-gcp'), '10.30.1.9:8080', badge('passing'), badge('warning'), badge('passing'), '<span class="text-warning">not ready, filtered out</span>']),
+    tr(['api-e441', reg('us-hetzner'), '10.40.2.5:8080', badge('passing'), badge('passing'), badge('passing'), 'yes'])]),
+  placement: () => `<div class="card-body"><div class="row g-3"><div class="col-md-6"><h4>Placement rules</h4><pre class="fl-code">separate {
   selector { app = "api" }
   scope    = "\${node.datacenter}"
   required = true
-}</pre><div class="small text-secondary">Két replika nem kerül közös adatközpontba, más jobok azonos címkéjű allokációival együtt sem.</div></div>
-    <div class="col-md-6"><h4>Disruption budget</h4><div class="datagrid mb-2"><div class="datagrid-item"><div class="datagrid-title">Szabály</div><div class="datagrid-content">min_healthy = 4</div></div><div class="datagrid-item"><div class="datagrid-title">Egészséges most</div><div class="datagrid-content">6 / 6 (eu-aws)</div></div><div class="datagrid-item"><div class="datagrid-title">Megszakítható most</div><div class="datagrid-content text-success">2 allokáció</div></div></div>
-    <div class="small text-secondary">A drain és a kilakoltatás ezt tartja be; a darabszám csökkentésére nem vonatkozik.</div></div></div></div>`,
-  events: () => `<div class="card-body">${tl([['git-branch', 'blue', '14:02', 'eu-gcp: deployment fut', 'canary promotálva automatikusan', ''], ['arrows-maximize', 'blue', '14:11', 'Felskálázva 4 → 6 (eu-gcp)', 'cpu 82%', ''], ['circle-check', 'green', '13:20', 'eu-aws: deployment sikeres', '6/6 egészséges', '']])}</div>`
+}</pre><div class="small text-secondary">Two replicas never land in the same datacenter, not even next to allocations of other jobs with the same label.</div></div>
+    <div class="col-md-6"><h4>Disruption budget</h4><div class="datagrid mb-2"><div class="datagrid-item"><div class="datagrid-title">Policy</div><div class="datagrid-content">min_healthy = 4</div></div><div class="datagrid-item"><div class="datagrid-title">Healthy now</div><div class="datagrid-content">6 / 6 (eu-aws)</div></div><div class="datagrid-item"><div class="datagrid-title">Can be disrupted now</div><div class="datagrid-content text-success">2 allocations</div></div></div>
+    <div class="small text-secondary">Drains and evictions respect this; it does not apply when the count is lowered.</div></div></div></div>`,
+  events: () => `<div class="card-body">${tl([['git-branch', 'blue', '14:02', 'eu-gcp: deployment running', 'canary promoted automatically', ''], ['arrows-maximize', 'blue', '14:11', 'Scaled up 4 → 6 (eu-gcp)', 'cpu 82%', ''], ['circle-check', 'green', '13:20', 'eu-aws: deployment successful', '6/6 healthy', '']])}</div>`
 };
 function scaleChart() {
   const cpu = [48, 52, 61, 66, 74, 83, 86, 79, 71, 68, 66, 69, 72, 70, 67], cnt = [4, 4, 4, 4, 4, 4, 6, 6, 6, 6, 6, 6, 6, 6, 6];
   const W = 520, H = 190, px = i => 40 + i * (W - 60) / (cpu.length - 1), py = v => 20 + (100 - v) * (H - 50) / 100;
   const pts = cpu.map((v, i) => `${px(i)},${py(v)}`).join(' ');
   const steps = cnt.map((c, i) => `${i ? 'L' : 'M'}${px(i)},${py(c * 10)}` + (i < cnt.length - 1 && cnt[i + 1] !== c ? ` L${px(i + 1)},${py(c * 10)}` : '')).join(' ');
-  return `<svg class="fl-chart w-100" viewBox="0 0 ${W} ${H}" role="img" aria-label="CPU-kihasználtság a 70%-os cél körül; a példányszám 4-ről 6-ra nőtt">
+  return `<svg class="fl-chart w-100" viewBox="0 0 ${W} ${H}" role="img" aria-label="CPU usage around the 70% target; the instance count rose from 4 to 6">
     ${[0, 50, 100].map(v => `<line x1="40" x2="${W - 20}" y1="${py(v)}" y2="${py(v)}" stroke="currentColor" opacity=".12"/><text x="8" y="${py(v) + 4}">${v}%</text>`).join('')}
-    <line x1="40" x2="${W - 20}" y1="${py(70)}" y2="${py(70)}" stroke="var(--tblr-warning)" stroke-dasharray="5 4"/><text x="${W - 70}" y="${py(70) - 6}">cél 70%</text>
+    <line x1="40" x2="${W - 20}" y1="${py(70)}" y2="${py(70)}" stroke="var(--tblr-warning)" stroke-dasharray="5 4"/><text x="${W - 70}" y="${py(70) - 6}">target 70%</text>
     <polyline points="${pts}" fill="none" stroke="var(--tblr-primary)" stroke-width="2.5"/>
     <path d="${steps}" fill="none" stroke="var(--fl-reg-b)" stroke-width="2"/>
     <text x="40" y="${H - 6}">13:40</text><text x="${W - 60}" y="${H - 6}">14:15</text>
-    <circle cx="${px(6)}" cy="${py(60)}" r="4" fill="var(--fl-reg-b)"/><text x="${px(6) + 8}" y="${py(60) + 4}">6 példány</text>
-  </svg><div class="small text-secondary"><span style="color:var(--tblr-primary)">━</span> nomad.cpu (eu-gcp) <span class="ms-3" style="color:var(--fl-reg-b)">━</span> példányszám × 10</div>`;
+    <circle cx="${px(6)}" cy="${py(60)}" r="4" fill="var(--fl-reg-b)"/><text x="${px(6) + 8}" y="${py(60) + 4}">6 instances</text>
+  </svg><div class="small text-secondary"><span style="color:var(--tblr-primary)">━</span> nomad.cpu (eu-gcp) <span class="ms-3" style="color:var(--fl-reg-b)">━</span> instance count × 10</div>`;
 }
 
-/* ---------- csomagok ---------- */
+/* ---------- packages ---------- */
 const RELEASES = [
   { id: 'postgres-operator', pack: 'postgres-operator', ver: '1.4.0', rev: 5, st: 'deployed', drift: false, regions: ['eu-aws', 'eu-gcp'], signed: true, ns: 'platform' },
   { id: 'traefik', pack: 'traefik', ver: '3.1.4', rev: 7, st: 'deployed', drift: false, regions: ['eu-aws', 'eu-gcp', 'us-hetzner'], signed: true, ns: 'platform' },
   { id: 'nats', pack: 'nats', ver: '2.10.18', rev: 3, st: 'deployed', drift: false, regions: ['eu-aws', 'eu-gcp', 'us-hetzner'], signed: true, ns: 'platform' },
   { id: 'observability', pack: 'observability', ver: '0.9.2', rev: 3, st: 'deployed', drift: true, regions: ['eu-aws', 'eu-gcp', 'us-hetzner'], signed: true, ns: 'platform' },
-  { id: 'riport', pack: 'riport-szolgaltatas', ver: '2.0.0', rev: 2, st: 'failed', drift: false, regions: ['eu-gcp'], signed: false, ns: 'prod' }
+  { id: 'reporting', pack: 'reporting-service', ver: '2.0.0', rev: 2, st: 'failed', drift: false, regions: ['eu-gcp'], signed: false, ns: 'prod' }
 ];
 function pagePackages() {
   const rows = RELEASES.filter(r => inRegion(r.regions)).map(r => tr([`<a class="fw-medium" href="#/package/${r.id}">${r.id}</a>`, `${r.pack} <span class="text-secondary">${r.ver}</span>`, r.rev, badge(r.st),
-    r.drift ? '<span class="badge bg-orange-lt">eltér</span>' : '<span class="text-secondary">nincs</span>', regs(r.regions), r.signed ? `<span class="text-success">${ic('circle-check', 'icon icon-sm')} aláírt</span>` : `<span class="text-warning">${ic('alert-triangle', 'icon icon-sm')} nincs aláírva</span>`]));
-  return header('Workloadok', 'Csomagok', `<button class="btn" type="button">${ic('refresh')}Regiszterek frissítése</button><button class="btn btn-primary" type="button">${ic('plus')}Csomag telepítése</button>`, scopeLabel()) + body(
-    card('', tbl(['Release', 'Csomag', 'Revízió', 'Állapot', 'Eltérés', 'Régiók', 'Aláírás'], rows)) +
-    note('Csomagok', ['A Nomad Pack a csomagformátum és a CLI, a release-nyilvántartás a szerveren van.', 'Eltérés: a tényleges állapot nem egyezik a revízióval (például kézi módosítás).', 'Aláírás: cosign/Sigstore, védett namespace-ben kötelező.'], 'csomagkezeles-terv.md'));
+    r.drift ? '<span class="badge bg-orange-lt">drifted</span>' : '<span class="text-secondary">none</span>', regs(r.regions), r.signed ? `<span class="text-success">${ic('circle-check', 'icon icon-sm')} signed</span>` : `<span class="text-warning">${ic('alert-triangle', 'icon icon-sm')} not signed</span>`]));
+  return header('Workloads', 'Packages', `<button class="btn" type="button">${ic('refresh')}Refresh registries</button><button class="btn btn-primary" type="button">${ic('plus')}Install package</button>`, scopeLabel()) + body(
+    card('', tbl(['Release', 'Package', 'Revision', 'Status', 'Drift', 'Regions', 'Signature'], rows)) +
+    note('Packages', ['Nomad Pack is the package format and the CLI; the release registry lives on the server.', 'Drift: the actual state does not match the revision (for example a manual change).', 'Signature: cosign/Sigstore, required in a protected namespace.'], 'package-management-plan.md'));
 }
 function pagePackage(id) {
   const r = RELEASES.find(x => x.id === id) || RELEASES[0];
-  const res = [['Namespace', 'db-operator', 1], ['ACL-szabály', 'postgres-operator-controller', 3], ['Típusdefiníció', 'db.example.com/PostgresCluster', 5], ['Admission policy', 'postgres-replikak-korlatja', 6], ['Job', 'postgres-operator', 8]];
-  return header(`Csomagok / ${r.ns}`, `${r.id} <span class="ms-2">${badge(r.st)}</span>`, `<button class="btn" type="button">${ic('flask')}Tesztek futtatása</button><button class="btn" type="button">${ic('arrow-back-up')}Visszagörgetés</button><button class="btn btn-primary" type="button">${ic('refresh')}Frissítés</button>`, `${r.pack} ${r.ver}, ${r.rev}. revízió, ${regs(r.regions)}`) + body(`
-  ${r.drift ? `<div class="alert alert-warning">${ic('alert-triangle', 'icon alert-icon')}<div><b>A release eltér a ${r.rev}. revíziótól.</b> A log-shipper jobot kézzel módosították (memory 256 → 512). Görgesd vissza, vagy vedd fel a változást a csomag változói közé, és frissíts.</div></div>` : ''}
+  const res = [['Namespace', 'db-operator', 1], ['ACL policy', 'postgres-operator-controller', 3], ['Type definition', 'db.example.com/PostgresCluster', 5], ['Admission policy', 'postgres-replica-limit', 6], ['Job', 'postgres-operator', 8]];
+  return header(`Packages / ${r.ns}`, `${r.id} <span class="ms-2">${badge(r.st)}</span>`, `<button class="btn" type="button">${ic('flask')}Run tests</button><button class="btn" type="button">${ic('arrow-back-up')}Roll back</button><button class="btn btn-primary" type="button">${ic('refresh')}Upgrade</button>`, `${r.pack} ${r.ver}, revision ${r.rev}, ${regs(r.regions)}`) + body(`
+  ${r.drift ? `<div class="alert alert-warning">${ic('alert-triangle', 'icon alert-icon')}<div><b>The release drifts from revision ${r.rev}.</b> The log-shipper job was changed by hand (memory 256 → 512). Roll it back, or add the change to the package variables and upgrade.</div></div>` : ''}
   <div class="row row-cards">
-    <div class="col-lg-6">${card('Erőforrások alkalmazási sorrendben', `<div class="list-group list-group-flush">${res.map(([t, n, o]) => `<div class="list-group-item"><div class="row align-items-center"><div class="col-auto"><span class="avatar avatar-sm">${o}</span></div><div class="col"><div class="fw-medium">${n}</div><div class="small text-secondary">${t}</div></div><div class="col-auto">${badge('ready')}</div></div></div>`).join('')}</div>`)}</div>
-    <div class="col-lg-6">${card('Revíziók', `<div class="card-body">${tl([
-      ['package', 'green', '10.21.', `${r.rev}. revízió (jelenlegi)`, `${r.pack} ${r.ver}; hookok: pre-upgrade, test sikeres`, ''],
-      ['package', 'secondary', '10.02.', `${r.rev - 1}. revízió`, 'változó: replicas 2 → 3', ''],
-      ['circle-x', 'red', '09.30.', `${r.rev - 2}. revízió (sikertelen, visszaállítva)`, 'atomic: a post-upgrade hook hibázott, automatikus visszaállás', '']])}
-      <div class="btn-list"><button class="btn btn-sm" type="button">Két revízió összehasonlítása</button><button class="btn btn-sm" type="button">${ic('arrow-back-up')}Visszagörgetés a ${r.rev - 1}. revízióra</button></div></div>`)}</div>
-    <div class="col-12">${card('Hookok és tesztek', tbl(['Hook', 'Szerep', 'Utolsó futás', 'Eredmény'], [tr(['schema-migracio', 'pre-upgrade', '10.21. 09:12', badge('successful')]), tr(['kapcsolat-teszt', 'test', '10.21. 09:15', badge('successful')])]))}</div>
-  </div>${note('Release részletei', ['Revíziók megváltoztathatatlanok; a visszagörgetés új revízió.', 'Az atomic mód hiba esetén az előző revízió erőforrásait állítja vissza.', 'A release alkalmazása nem ad többletjogot: minden erőforrás a hívó jogával kerül be.'], 'csomagkezeles-terv.md: Release-objektum, Telepítés')}`);
+    <div class="col-lg-6">${card('Resources in apply order', `<div class="list-group list-group-flush">${res.map(([t, n, o]) => `<div class="list-group-item"><div class="row align-items-center"><div class="col-auto"><span class="avatar avatar-sm">${o}</span></div><div class="col"><div class="fw-medium">${n}</div><div class="small text-secondary">${t}</div></div><div class="col-auto">${badge('ready')}</div></div></div>`).join('')}</div>`)}</div>
+    <div class="col-lg-6">${card('Revisions', `<div class="card-body">${tl([
+      ['package', 'green', 'Oct 21', `Revision ${r.rev} (current)`, `${r.pack} ${r.ver}; hooks: pre-upgrade, test successful`, ''],
+      ['package', 'secondary', 'Oct 2', `Revision ${r.rev - 1}`, 'variable: replicas 2 → 3', ''],
+      ['circle-x', 'red', 'Sep 30', `Revision ${r.rev - 2} (failed, rolled back)`, 'atomic: the post-upgrade hook failed, automatic rollback', '']])}
+      <div class="btn-list"><button class="btn btn-sm" type="button">Compare two revisions</button><button class="btn btn-sm" type="button">${ic('arrow-back-up')}Roll back to revision ${r.rev - 1}</button></div></div>`)}</div>
+    <div class="col-12">${card('Hooks and tests', tbl(['Hook', 'Role', 'Last run', 'Result'], [tr(['schema-migration', 'pre-upgrade', 'Oct 21 09:12', badge('successful')]), tr(['connection-test', 'test', 'Oct 21 09:15', badge('successful')])]))}</div>
+  </div>${note('Release details', ['Revisions are immutable; a rollback is a new revision.', 'Atomic mode restores the resources of the previous revision on failure.', 'Applying a release grants no extra rights: every resource goes in with the rights of the caller.'], 'package-management-plan.md: Release object, Installation')}`);
 }
 
-/* ---------- objektumok, típusok ---------- */
+/* ---------- objects, types ---------- */
 function pageObjects() {
-  return header('Workloadok', 'Objektumok', `<select class="form-select w-auto" aria-label="Típus"><option>db.example.com/PostgresCluster</option><option>backup.example.com/Schedule</option></select><button class="btn btn-primary" type="button">${ic('plus')}Új objektum</button>`, 'A típusdefiníció oszlopai szerint') + body(
-    card('', tbl(['Név', 'Namespace', 'Verzió', 'Replika', 'Állapot', 'Generáció'], [
-      tr(['<a class="fw-medium" href="#/object/szamlazas">szamlazas</a>', 'prod', '16', '3/3', badge('ready'), '7 / 7']),
-      tr(['<a class="fw-medium" href="#/object/szamlazas">riport</a>', 'prod', '16', '1/2', badge('warning'), '4 / 3']),
-      tr(['<a class="fw-medium" href="#/object/szamlazas">teszt-db</a>', 'staging', '15', '1/1', badge('ready'), '2 / 2'])])) +
-    note('Objektumok', ['Általános nézet bármely típushoz; az oszlopokat a típusdefiníció adja.', 'Generáció / megfigyelt generáció: látszik, feldolgozta-e már a controller a módosítást.'], 'kubernetes-funkciok-reszletes.md: 8. tétel'));
+  return header('Workloads', 'Objects', `<select class="form-select w-auto" aria-label="Type"><option>db.example.com/PostgresCluster</option><option>backup.example.com/Schedule</option></select><button class="btn btn-primary" type="button">${ic('plus')}New object</button>`, 'Columns from the type definition') + body(
+    card('', tbl(['Name', 'Namespace', 'Version', 'Replicas', 'Status', 'Generation'], [
+      tr(['<a class="fw-medium" href="#/object/billing">billing</a>', 'prod', '16', '3/3', badge('ready'), '7 / 7']),
+      tr(['<a class="fw-medium" href="#/object/billing">reporting</a>', 'prod', '16', '1/2', badge('warning'), '4 / 3']),
+      tr(['<a class="fw-medium" href="#/object/billing">test-db</a>', 'staging', '15', '1/1', badge('ready'), '2 / 2'])])) +
+    note('Objects', ['A generic view for any type; the columns come from the type definition.', 'Generation / observed generation: shows whether the controller has processed the change yet.'], 'kubernetes-features-spec.md: item 8'));
 }
 function pageObject() {
-  return header('Objektumok / db.example.com/PostgresCluster', `szamlazas <span class="ms-2">${badge('ready')}</span>`, `<button class="btn" type="button">${ic('eye')}Próbafuttatás</button><button class="btn btn-primary" type="button">Módosítások mentése</button>`, `prod namespace, controller: ${owner('rel:postgres-operator')}`) + body(`
-  <div class="row row-cards"><div class="col-lg-6">${card('Spec (szerkeszthető)', `<div class="card-body"><pre class="fl-code">spec {
+  return header('Objects / db.example.com/PostgresCluster', `billing <span class="ms-2">${badge('ready')}</span>`, `<button class="btn" type="button">${ic('eye')}Dry run</button><button class="btn btn-primary" type="button">Save changes</button>`, `prod namespace, controller: ${owner('rel:postgres-operator')}`) + body(`
+  <div class="row row-cards"><div class="col-lg-6">${card('Spec (editable)', `<div class="card-body"><pre class="fl-code">spec {
   version  = "16"
   replicas = 3
   storage  = "100GiB"
   backup { schedule = "0 2 * * *" }
-}</pre><div class="small text-success mt-2">${ic('circle-check', 'icon icon-sm')} Megfelel a sémának és a CEL-szabályoknak.</div></div>`)}</div>
-  <div class="col-lg-6">${card('Státusz', `<div class="card-body"><div class="datagrid mb-3">${[['Primary', 'szamlazas-db-0 (eu-aws)'], ['Kész replikák', '3 / 3'], ['Utolsó mentés', 'ma 02:00, sikeres'], ['Megfigyelt generáció', '7']].map(([a, b]) => `<div class="datagrid-item"><div class="datagrid-title">${a}</div><div class="datagrid-content">${b}</div></div>`).join('')}</div>
-    ${tbl(['Feltétel', 'Érték', 'Ok'], [tr(['Ready', '<span class="text-success">igaz</span>', 'Minden replika kész']), tr(['Progressing', 'hamis', '–']), tr(['Degraded', 'hamis', '–'])])}</div>`)}</div>
-  <div class="col-12">${card('Eseménynapló', `<div class="card-body">${tl([['circle-check', 'green', '02:04', 'BackupSucceeded', 'szamlazas-20261024-0200, 3,2 GB', ''], ['refresh', 'blue', 'tegnap', 'Reconciled', 'replicas 2 → 3, új replika szinkronizálva', '']])}</div>`)}</div></div>
-  ${note('Objektum részletei', ['A spec a felhasználóé, a státusz a controlleré; a mentés előtt próbafuttatás.', 'Az eseménynapló objektumszintű (utolsó 20 esemény).'], 'kubernetes-funkciok-reszletes.md: 8. tétel')}`);
+}</pre><div class="small text-success mt-2">${ic('circle-check', 'icon icon-sm')} Matches the schema and the CEL rules.</div></div>`)}</div>
+  <div class="col-lg-6">${card('Status', `<div class="card-body"><div class="datagrid mb-3">${[['Primary', 'billing-db-0 (eu-aws)'], ['Ready replicas', '3 / 3'], ['Last backup', 'today 02:00, successful'], ['Observed generation', '7']].map(([a, b]) => `<div class="datagrid-item"><div class="datagrid-title">${a}</div><div class="datagrid-content">${b}</div></div>`).join('')}</div>
+    ${tbl(['Condition', 'Value', 'Reason'], [tr(['Ready', '<span class="text-success">true</span>', 'All replicas ready']), tr(['Progressing', 'false', '–']), tr(['Degraded', 'false', '–'])])}</div>`)}</div>
+  <div class="col-12">${card('Event log', `<div class="card-body">${tl([['circle-check', 'green', '02:04', 'BackupSucceeded', 'billing-20261024-0200, 3.2 GB', ''], ['refresh', 'blue', 'yesterday', 'Reconciled', 'replicas 2 → 3, new replica synchronized', '']])}</div>`)}</div></div>
+  ${note('Object details', ['The spec belongs to the user, the status to the controller; a dry run before saving.', 'The event log is per object (last 20 events).'], 'kubernetes-features-spec.md: item 8')}`);
 }
 function pageKinds() {
-  return header('Konfiguráció', 'Típusdefiníciók', `<button class="btn btn-primary" type="button">${ic('plus')}Típus hozzáadása</button>`) + body(card('', tbl(['Típus', 'Hatókör', 'Objektumok', 'Szabályok', 'Skálázható', 'Csomag'], [
-    tr(['db.example.com/PostgresCluster', 'namespace', 3, 2, 'igen (spec.replicas)', owner('rel:postgres-operator')]),
-    tr(['packs.nomad/Release', 'namespace', 5, 'beépített', 'nem', 'beépített']),
-    tr(['backup.example.com/Schedule', 'namespace', 4, 1, 'nem', '–'])])) + note('Típusdefiníciók', ['Séma, alapértékek, CEL-szabályok (oldSelf-fel), oszlopok, scale alerőforrás.'], 'kubernetes-funkciok-reszletes.md: 8. tétel'));
+  return header('Configuration', 'Type definitions', `<button class="btn btn-primary" type="button">${ic('plus')}Add type</button>`) + body(card('', tbl(['Type', 'Scope', 'Objects', 'Rules', 'Scalable', 'Package'], [
+    tr(['db.example.com/PostgresCluster', 'namespace', 3, 2, 'yes (spec.replicas)', owner('rel:postgres-operator')]),
+    tr(['packs.nomad/Release', 'namespace', 5, 'built-in', 'no', 'built-in']),
+    tr(['backup.example.com/Schedule', 'namespace', 4, 1, 'no', '–'])])) + note('Type definitions', ['Schema, defaults, CEL rules (with oldSelf), columns, scale subresource.'], 'kubernetes-features-spec.md: item 8'));
 }
 
-/* ---------- deploymentek ---------- */
+/* ---------- deployments ---------- */
 function pageDeployments() {
-  return header('Workloadok', 'Deploymentek', '', scopeLabel()) + body(card('Folyamatban: api v42 (multiregion)', `<div class="card-body">${mrSteps(true)}</div>`) + `<div class="mt-3">` + card('Legutóbbi deploymentek', tbl(['Job', 'Verzió', 'Régiók', 'Állapot', 'Kezdete'], [
+  return header('Workloads', 'Deployments', '', scopeLabel()) + body(card('In progress: api v42 (multiregion)', `<div class="card-body">${mrSteps(true)}</div>`) + `<div class="mt-3">` + card('Latest deployments', tbl(['Job', 'Version', 'Regions', 'Status', 'Started'], [
     tr(['<a href="#/job/api/deployments">api</a>', 'v42', regs(['eu-aws', 'eu-gcp', 'us-hetzner']), badge('deploying'), '13:05']),
     tr(['<a href="#/job/worker">worker</a>', 'v17', regs(['eu-aws', 'eu-gcp']), badge('successful'), '11:20']),
     tr(['<a href="#/job/traefik">traefik</a>', 'v12', regs(['eu-aws', 'eu-gcp', 'us-hetzner']), badge('successful'), '10:42'])])) + '</div>' +
-    note('Deploymentek', ['Jobokon átívelő lista; multiregion telepítéseknél régiós idővonal.'], 'felulet-terv.md: Oldalak'));
+    note('Deployments', ['Cross-job list; a per-region timeline for multiregion deployments.'], 'ui-plan.md: Pages'));
 }
 
-/* ---------- szolgáltatások, hálózat ---------- */
+/* ---------- services, networking ---------- */
 function pageServices() {
-  return header('Szolgáltatások és hálózat', 'Szolgáltatások', `<button class="btn" type="button">${ic('external-link')}DNS-nevek</button>`, scopeLabel()) + body(`
+  return header('Services and networking', 'Services', `<button class="btn" type="button">${ic('external-link')}DNS names</button>`, scopeLabel()) + body(`
   <div class="row row-cards mb-3">
-    <div class="col-md-4"><div class="card card-sm"><div class="card-body"><div class="subheader">Natív katalógus</div><div class="h2 mb-0">34 szolgáltatás</div><div class="text-secondary">csak egészséges példányok a felfedezésben</div></div></div></div>
-    <div class="col-md-4"><div class="card card-sm"><div class="card-body"><div class="subheader">Beépített DNS</div><div class="h2 mb-0 fl-mono">*.service.norca</div><div class="text-secondary">és *.service.consul kompatibilitási módban</div></div></div></div>
-    <div class="col-md-4"><div class="card card-sm"><div class="card-body"><div class="subheader">Consul-kompatibilis réteg</div><div class="h2 mb-0">87 / 87 kliens</div><div class="text-secondary">Traefik és Prometheus módosítás nélkül</div></div></div></div>
-  </div>` + card('', tbl(['Szolgáltatás', 'Namespace', 'eu-aws', 'eu-gcp', 'us-hetzner', 'Tagek', 'mTLS'], [
+    <div class="col-md-4"><div class="card card-sm"><div class="card-body"><div class="subheader">Native catalog</div><div class="h2 mb-0">34 services</div><div class="text-secondary">only healthy instances in discovery</div></div></div></div>
+    <div class="col-md-4"><div class="card card-sm"><div class="card-body"><div class="subheader">Built-in DNS</div><div class="h2 mb-0 fl-mono">*.service.norca</div><div class="text-secondary">and *.service.consul in compatibility mode</div></div></div></div>
+    <div class="col-md-4"><div class="card card-sm"><div class="card-body"><div class="subheader">Consul-compatible layer</div><div class="h2 mb-0">87 / 87 clients</div><div class="text-secondary">Traefik and Prometheus without changes</div></div></div></div>
+  </div>` + card('', tbl(['Service', 'Namespace', 'eu-aws', 'eu-gcp', 'us-hetzner', 'Tags', 'mTLS'], [
     tr(['api', 'prod', '6/6', '<span class="text-warning">5/6</span>', '4/4', 'http, v42', '<span class="text-success">app</span>']),
     tr(['postgres', 'prod', '3/3', '–', '–', 'primary, replica', '<span class="text-success">sidecar</span>']),
     tr(['nats', 'platform', '3/3', '3/3', '3/3', 'client, cluster', '<span class="text-success">app</span>']),
     tr(['traefik', 'platform', '42/42', '27/27', '18/18', 'ingress', '<span class="text-secondary">–</span>'])])) +
-    note('Szolgáltatások', ['Egészség szerinti katalógus Consul nélkül; régiónként egészséges / összes.', 'A Consul-kompatibilis réteg állapota, hogy a Consulra épülő eszközök is lássák.'], 'consul-fuggetlenseg-terv.md: 1–3. fázis'));
+    note('Services', ['Health-based catalog without Consul; healthy / total per region.', 'State of the Consul-compatible layer, so that tools built on Consul see the services too.'], 'consul-independence-plan.md: phases 1–3'));
 }
 function pageNetwork() {
   const N = { traefik: [70, 60], api: [260, 60], postgres: [470, 30], nats: [470, 120], worker: [260, 170], loki: [470, 210] };
   const E = [['traefik', 'api', 1], ['api', 'postgres', 1], ['api', 'nats', 1], ['worker', 'nats', 1], ['worker', 'postgres', 0], ['worker', 'loki', 1]];
-  const g = `<svg class="fl-graph w-100" viewBox="0 0 560 240" role="img" aria-label="Szolgáltatások közötti engedélyezett és tiltott kapcsolatok">
+  const g = `<svg class="fl-graph w-100" viewBox="0 0 560 240" role="img" aria-label="Allowed and denied connections between services">
     <defs><marker id="arrOk" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--tblr-success)"/></marker><marker id="arrNo" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--tblr-danger)"/></marker></defs>
     ${E.map(([a, b, ok]) => { const [x1, y1] = N[a], [x2, y2] = N[b]; return `<line x1="${x1 + 45}" y1="${y1}" x2="${x2 - 48}" y2="${y2}" stroke="${ok ? 'var(--tblr-success)' : 'var(--tblr-danger)'}" stroke-width="2" ${ok ? '' : 'stroke-dasharray="6 5"'} marker-end="url(#${ok ? 'arrOk' : 'arrNo'})"/>`; }).join('')}
     ${Object.entries(N).map(([k, [x, y]]) => `<rect x="${x - 45}" y="${y - 16}" width="90" height="32" rx="6" fill="var(--tblr-bg-surface)" stroke="var(--tblr-border-color)"/><text x="${x}" y="${y + 4}" text-anchor="middle">${k}</text>`).join('')}
   </svg>`;
-  return header('Szolgáltatások és hálózat', 'Intentionök és hálózati szabályok', `<button class="btn btn-primary" type="button">${ic('plus')}Új szabály</button>`) + body(`
-  <div class="row row-cards"><div class="col-lg-7">${card('Ki kivel beszélhet', `<div class="card-body">${g}<div class="small text-secondary mt-2"><span class="text-success">━</span> engedélyezett (mTLS-identitás alapján) <span class="text-danger ms-3">╍</span> tiltott</div></div>`)}</div>
-  <div class="col-lg-5">${card('Szabályok', tbl(['Forrás', 'Cél', 'Döntés', 'Eldobva (1 ó)'], [tr(['worker', 'postgres', '<span class="badge bg-red-lt">deny</span>', '14']), tr(['api', 'postgres', '<span class="badge bg-green-lt">allow</span>', '0']), tr(['*', 'api', '<span class="badge bg-green-lt">allow</span>', '0']), tr(['log-shipper (egress)', '10.20.0.0/16:443', '<span class="badge bg-green-lt">allow</span>', '0'])]))}</div></div>
-  ${note('Hálózat', ['Intentionök a natív mTLS identitására építve; node-ok között is működik, címfordítás mellett.', 'Egress-szabályok allokációnként; eldobott kapcsolatok számlálói.'], 'consul-fuggetlenseg-terv.md: 5. fázis; 7. K8s-tétel')}`);
+  return header('Services and networking', 'Intentions and network rules', `<button class="btn btn-primary" type="button">${ic('plus')}New rule</button>`) + body(`
+  <div class="row row-cards"><div class="col-lg-7">${card('Who can talk to whom', `<div class="card-body">${g}<div class="small text-secondary mt-2"><span class="text-success">━</span> allowed (by mTLS identity) <span class="text-danger ms-3">╍</span> denied</div></div>`)}</div>
+  <div class="col-lg-5">${card('Rules', tbl(['Source', 'Destination', 'Decision', 'Dropped (1 h)'], [tr(['worker', 'postgres', '<span class="badge bg-red-lt">deny</span>', '14']), tr(['api', 'postgres', '<span class="badge bg-green-lt">allow</span>', '0']), tr(['*', 'api', '<span class="badge bg-green-lt">allow</span>', '0']), tr(['log-shipper (egress)', '10.20.0.0/16:443', '<span class="badge bg-green-lt">allow</span>', '0'])]))}</div></div>
+  ${note('Networking', ['Intentions built on the native mTLS identity; also works between nodes, behind address translation.', 'Egress rules per allocation; counters of dropped connections.'], 'consul-independence-plan.md: phase 5; K8s item 7')}`);
 }
 
-/* ---------- kvóták, skálázás, admission ---------- */
+/* ---------- quotas, scaling, admission ---------- */
 function pageQuotas() {
-  const q = (name, ns, rows) => `<div class="col-lg-6">${card(name, `<div class="card-body">${rows.map(([lbl, used, max, unit]) => { const p = Math.round(used / max * 100); return `<div class="mb-3"><div class="d-flex justify-content-between small"><span>${lbl}</span><span>${used.toLocaleString('hu-HU')} / ${max.toLocaleString('hu-HU')} ${unit} (${p}%)</span></div><div class="progress mt-1"><div class="progress-bar ${p > 90 ? 'bg-red' : p > 75 ? 'bg-orange' : ''}" style="width:${p}%" role="progressbar" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100" aria-label="${lbl} ${p}%"></div></div></div>`; }).join('')}<div class="small text-secondary">Namespace-ek: ${ns}</div></div>`)}</div>`;
-  return header('Kapacitás', 'Kvóták', `<button class="btn btn-primary" type="button">${ic('plus')}Új kvóta</button>`, scopeLabel()) + body(`<div class="row row-cards">
-    ${q('csapat-a (eu-aws)', 'prod', [['CPU', 28400, 40000, 'MHz'], ['Memória', 51200, 81920, 'MB'], ['Allokációk', 118, 200, 'db']])}
-    ${q('csapat-b (eu-gcp)', 'riport', [['CPU', 19200, 20000, 'MHz'], ['Memória', 30100, 40960, 'MB'], ['Allokációk', 61, 100, 'db']])}
-    <div class="col-12">${card('Kvóta miatt blokkolt evaluationök', tbl(['Job', 'Kvóta', 'Hiányzó', 'Várakozik'], [tr(['<a href="#/job/riport-export">riport-export</a>', 'csapat-b', 'CPU: 2 400 MHz', '23 perce'])]))}</div></div>
-    ${note('Kvóták', ['Felhasználási sávok namespace-enként és régiónként; a kvóta felszabadulásakor a blokkolt evaluationök automatikusan lefutnak.'], 'kubernetes-funkciok-reszletes.md: 1. tétel')}`);
+  const q = (name, ns, rows) => `<div class="col-lg-6">${card(name, `<div class="card-body">${rows.map(([lbl, used, max, unit]) => { const p = Math.round(used / max * 100); return `<div class="mb-3"><div class="d-flex justify-content-between small"><span>${lbl}</span><span>${used.toLocaleString('en-US')} / ${max.toLocaleString('en-US')} ${unit} (${p}%)</span></div><div class="progress mt-1"><div class="progress-bar ${p > 90 ? 'bg-red' : p > 75 ? 'bg-orange' : ''}" style="width:${p}%" role="progressbar" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100" aria-label="${lbl} ${p}%"></div></div></div>`; }).join('')}<div class="small text-secondary">Namespaces: ${ns}</div></div>`)}</div>`;
+  return header('Capacity', 'Quotas', `<button class="btn btn-primary" type="button">${ic('plus')}New quota</button>`, scopeLabel()) + body(`<div class="row row-cards">
+    ${q('team-a (eu-aws)', 'prod', [['CPU', 28400, 40000, 'MHz'], ['Memory', 51200, 81920, 'MB'], ['Allocations', 118, 200, '']])}
+    ${q('team-b (eu-gcp)', 'reporting', [['CPU', 19200, 20000, 'MHz'], ['Memory', 30100, 40960, 'MB'], ['Allocations', 61, 100, '']])}
+    <div class="col-12">${card('Evaluations blocked by quota', tbl(['Job', 'Quota', 'Missing', 'Waiting for'], [tr(['<a href="#/job/report-export">report-export</a>', 'team-b', 'CPU: 2,400 MHz', '23 min'])]))}</div></div>
+    ${note('Quotas', ['Usage bars per namespace and region; when quota frees up, the blocked evaluations run automatically.'], 'kubernetes-features-spec.md: item 1')}`);
 }
 function pageScaling() {
-  return header('Kapacitás', 'Skálázás', '', scopeLabel()) + body(card('', tbl(['Job / csoport', 'Motor', 'Min–max', 'Jelenlegi', 'Utolsó döntés'], [
-    tr(['<a href="#/job/api/scaling">api / web</a>', 'beépített', '3–20', '6 (eu-gcp)', '14:11, 4 → 6']),
-    tr(['<a href="#/job/worker">worker / queue</a>', 'beépített', '2–12', '8', '14:11, 6 → 8']),
-    tr(['riport-export / run', 'külső', '1–4', '1', '–'])])) + note('Skálázás', ['Beépített (leaderen futó) és külső autoscaler együtt, az engine mező szerint.', 'Klaszterszintű sebességkorlát és oszcillációvédelem.'], 'nomad-fork-fejlesztesi-terv.md: autoscaler'));
+  return header('Capacity', 'Scaling', '', scopeLabel()) + body(card('', tbl(['Job / group', 'Engine', 'Min–max', 'Current', 'Last decision'], [
+    tr(['<a href="#/job/api/scaling">api / web</a>', 'built-in', '3–20', '6 (eu-gcp)', '14:11, 4 → 6']),
+    tr(['<a href="#/job/worker">worker / queue</a>', 'built-in', '2–12', '8', '14:11, 6 → 8']),
+    tr(['report-export / run', 'external', '1–4', '1', '–'])])) + note('Scaling', ['Built-in (running on the leader) and external autoscaler side by side, chosen by the engine field.', 'Cluster-wide rate limit and oscillation protection.'], 'development-plan.md: autoscaler'));
 }
 function pageAdmission() {
-  return header('Konfiguráció', 'Admission policyk', `<button class="btn btn-primary" type="button">${ic('plus')}Új szabály</button>`) + body(`
-  <div class="row row-cards"><div class="col-lg-5">${card('Szabályok', `<div class="list-group list-group-flush">
-    <a class="list-group-item list-group-item-action active" href="#/admission"><b>nincs-privilegizalt-kontener</b><div class="small">deny, prod</div></a>
-    <a class="list-group-item list-group-item-action" href="#/admission"><b>kotelezo-csapat-cimke</b><div class="small">warn, minden namespace</div></a>
-    <a class="list-group-item list-group-item-action" href="#/admission"><b>csak-alairt-release</b><div class="small">deny, prod</div></a></div>`)}</div>
-  <div class="col-lg-7">${card('nincs-privilegizalt-kontener', `<div class="card-body"><pre class="fl-code">rule {
+  return header('Configuration', 'Admission policies', `<button class="btn btn-primary" type="button">${ic('plus')}New policy</button>`) + body(`
+  <div class="row row-cards"><div class="col-lg-5">${card('Policies', `<div class="list-group list-group-flush">
+    <a class="list-group-item list-group-item-action active" href="#/admission"><b>no-privileged-container</b><div class="small">deny, prod</div></a>
+    <a class="list-group-item list-group-item-action" href="#/admission"><b>require-team-label</b><div class="small">warn, all namespaces</div></a>
+    <a class="list-group-item list-group-item-action" href="#/admission"><b>signed-releases-only</b><div class="small">deny, prod</div></a></div>`)}</div>
+  <div class="col-lg-7">${card('no-privileged-container', `<div class="card-body"><pre class="fl-code">rule {
   expression = "!job.TaskGroups.exists(g, g.Tasks.exists(t,
     t.Driver == 'docker' &amp;&amp; has(t.Config.privileged) &amp;&amp; t.Config.privileged))"
-  message    = "Privilegizált konténer nem engedélyezett a prod namespace-ben."
-}</pre><div class="d-flex justify-content-between align-items-center mt-3"><b>Próba a meglévő jobokon</b><button class="btn btn-sm" type="button">${ic('player-play')}Futtatás</button></div></div>
-    ${tbl(['Job', 'Eredmény'], [tr(['debug-shell', '<span class="badge bg-red-lt">elutasítaná</span>']), tr(['api', '<span class="badge bg-green-lt">átengedné</span>']), tr(['worker', '<span class="badge bg-green-lt">átengedné</span>'])])}`)}</div></div>
-  ${note('Admission', ['CEL-szerkesztő; élesítés előtt próba a meglévő jobokon, majd figyelmeztető mód.'], 'kubernetes-funkciok-reszletes.md: 2. tétel')}`);
+  message    = "Privileged containers are not allowed in the prod namespace."
+}</pre><div class="d-flex justify-content-between align-items-center mt-3"><b>Try on existing jobs</b><button class="btn btn-sm" type="button">${ic('player-play')}Run</button></div></div>
+    ${tbl(['Job', 'Result'], [tr(['debug-shell', '<span class="badge bg-red-lt">would reject</span>']), tr(['api', '<span class="badge bg-green-lt">would admit</span>']), tr(['worker', '<span class="badge bg-green-lt">would admit</span>'])])}`)}</div></div>
+  ${note('Admission', ['CEL editor; before enforcing, a trial run on existing jobs, then warning mode.'], 'kubernetes-features-spec.md: item 2')}`);
 }
 
-/* ---------- mentések ---------- */
+/* ---------- backups ---------- */
 function pageBackups(sub) {
   if (sub === 'restore') return pageRestore();
-  const rows = [['20261024T141000Z-1834567', '14:10', 'ütemezett', '41 MB', 'us-hetzner', false, ''], ['20261024T140000Z-2201190', '14:00', 'ütemezett', '48 MB', 'eu-aws', false, ''], ['20261023T180000Z-2187003', 'tegnap 18:00', 'kézi', '47 MB', 'eu-aws', true, 'frissítés előtti állapot'], ['20261023T020000Z-2170410', 'tegnap 02:00', 'ütemezett', '47 MB', 'eu-aws', true, 'napi']]
+  const rows = [['20261024T141000Z-1834567', '14:10', 'scheduled', '41 MB', 'us-hetzner', false, ''], ['20261024T140000Z-2201190', '14:00', 'scheduled', '48 MB', 'eu-aws', false, ''], ['20261023T180000Z-2187003', 'yesterday 18:00', 'manual', '47 MB', 'eu-aws', true, 'state before upgrade'], ['20261023T020000Z-2170410', 'yesterday 02:00', 'scheduled', '47 MB', 'eu-aws', true, 'daily']]
     .filter(r => inRegion([r[4]]));
-  return header('Üzemeltetés', 'Mentések', `<a class="btn" href="#/backups/restore">${ic('rotate-clockwise')}Visszaállítás</a><button class="btn btn-primary" type="button">${ic('cloud-upload')}Mentés most</button>`, scopeLabel()) + body(`
+  return header('Operations', 'Backups', `<a class="btn" href="#/backups/restore">${ic('rotate-clockwise')}Restore</a><button class="btn btn-primary" type="button">${ic('cloud-upload')}Back up now</button>`, scopeLabel()) + body(`
   <div class="row row-cards mb-3">
-    <div class="col-md-4"><div class="card card-sm"><div class="card-body"><div class="subheader">Ütemezés</div><div class="h3 mb-0">óránként, 5 perc szórással</div><div class="text-secondary">következő: 15:00</div></div></div></div>
-    <div class="col-md-4"><div class="card card-sm"><div class="card-body"><div class="subheader">Célhelyek</div><div class="mb-0"><span class="status-dot status-green me-1"></span>elsődleges S3 (kms) <span class="status-dot status-green ms-3 me-1"></span>DR-másolat (age)</div><div class="text-secondary">megőrzés: 24 óránkénti, 14 napi, 8 heti, 12 havi</div></div></div></div>
-    <div class="col-md-4"><div class="card card-sm"><div class="card-body"><div class="subheader">Helyreállítási gyakorlat</div><div class="h3 mb-0 text-success">sikeres, ma 03:12</div><div class="text-secondary">214 job, Variables visszafejthető</div></div></div></div>
-  </div>` + card('', tbl(['Mentés', 'Időpont', 'Kiváltó', 'Méret', 'Régió', 'Rögzítve', 'Megjegyzés', ''], rows.map(([id, t, k, s, r, p, m]) => tr([`<span class="fl-mono">${id}</span>`, t, k, s, reg(r), p ? `${ic('lock', 'icon icon-sm')} igen` : '–', m || '–', `<a href="#/backups/restore" class="btn btn-sm">Megnyitás</a>`])))) +
-    note('Mentések', ['Időzítés és célhelyek a szerverkonfigurációban; a felületen kézi mentés, rögzítés, böngészés, összehasonlítás és visszaállítás.', 'A Variables kulcsai is mentésre kerülnek, kötelező titkosítással.'], 'backup-restore-terv.md'));
+    <div class="col-md-4"><div class="card card-sm"><div class="card-body"><div class="subheader">Schedule</div><div class="h3 mb-0">hourly, 5 min jitter</div><div class="text-secondary">next: 15:00</div></div></div></div>
+    <div class="col-md-4"><div class="card card-sm"><div class="card-body"><div class="subheader">Destinations</div><div class="mb-0"><span class="status-dot status-green me-1"></span>primary S3 (kms) <span class="status-dot status-green ms-3 me-1"></span>DR copy (age)</div><div class="text-secondary">retention: 24 hourly, 14 daily, 8 weekly, 12 monthly</div></div></div></div>
+    <div class="col-md-4"><div class="card card-sm"><div class="card-body"><div class="subheader">Restore drill</div><div class="h3 mb-0 text-success">successful, today 03:12</div><div class="text-secondary">214 jobs, Variables decryptable</div></div></div></div>
+  </div>` + card('', tbl(['Backup', 'Time', 'Trigger', 'Size', 'Region', 'Pinned', 'Note', ''], rows.map(([id, t, k, s, r, p, m]) => tr([`<span class="fl-mono">${id}</span>`, t, k, s, reg(r), p ? `${ic('lock', 'icon icon-sm')} yes` : '–', m || '–', `<a href="#/backups/restore" class="btn btn-sm">Open</a>`])))) +
+    note('Backups', ['Schedule and destinations in the server configuration; in the UI: manual backup, pinning, browsing, comparison and restore.', 'The Variables keys are backed up too, with mandatory encryption.'], 'backup-restore-plan.md'));
 }
 function pageRestore() {
-  return header('Mentések', 'Visszaállítás: 20261023T180000Z-2187003', '', 'eu-aws, tegnap 18:00, kézi mentés, rögzítve') + body(`
+  return header('Backups', 'Restore: 20261023T180000Z-2187003', '', 'eu-aws, yesterday 18:00, manual backup, pinned') + body(`
   <div class="card"><div class="card-body">
-    <ul class="steps steps-counter my-3"><li class="step-item">Mód</li><li class="step-item">Elemek</li><li class="step-item active">Előnézet</li><li class="step-item">Megerősítés</li></ul>
-    <div class="row g-3 mt-2"><div class="col-lg-6"><h4>Mód: szelektív</h4><p class="text-secondary">A kiválasztott elemek normál írásként kerülnek vissza: a jobok új verzióként, az admission és a kvóta ellenőrzésével. A klaszter többi része nem változik.</p>
-      ${tbl(['Elem', 'Most', 'A mentésben', 'Hatás'], [tr(['job: api', 'v42', 'v40', 'új verzió: v43']), tr(['Variables: nomad/jobs/api', '5 kulcs', '4 kulcs', '1 kulcs törlődik']), tr(['ACL: api-olvaso', 'van', 'van', 'nincs változás'])])}</div>
-    <div class="col-lg-6"><h4>Teljes régió-visszaállítás helyett?</h4><div class="alert alert-danger">${ic('alert-triangle', 'icon alert-icon')}<div>A teljes visszaállítás minden, tegnap 18:00 óta történt változást elvet, és <b>57 futó allokációt leállít</b>. Ehhez gépelt megerősítés és egy második management token jóváhagyása kell, és előtte automatikus mentés készül.</div></div></div></div>
-    <div class="btn-list justify-content-end mt-3"><a class="btn" href="#/backups">Mégse</a><button class="btn" type="button">Vissza</button><button class="btn btn-primary" type="button">Tovább a megerősítéshez</button></div>
-  </div></div>${note('Visszaállítási varázsló', ['Kötelező előnézet: mi változna, a klaszter érintése nélkül (a mentés külön state store-ba töltve).', 'Lépésjelző a Tabler steps mintájával.'], 'backup-restore-terv.md: Visszaállítás')}`);
+    <ul class="steps steps-counter my-3"><li class="step-item">Mode</li><li class="step-item">Items</li><li class="step-item active">Preview</li><li class="step-item">Confirmation</li></ul>
+    <div class="row g-3 mt-2"><div class="col-lg-6"><h4>Mode: selective</h4><p class="text-secondary">The selected items are written back as normal writes: jobs as new versions, checked by admission and quota. The rest of the cluster does not change.</p>
+      ${tbl(['Item', 'Now', 'In the backup', 'Effect'], [tr(['job: api', 'v42', 'v40', 'new version: v43']), tr(['Variables: nomad/jobs/api', '5 keys', '4 keys', '1 key deleted']), tr(['ACL: api-reader', 'present', 'present', 'no change'])])}</div>
+    <div class="col-lg-6"><h4>Full region restore instead?</h4><div class="alert alert-danger">${ic('alert-triangle', 'icon alert-icon')}<div>A full restore discards every change made since yesterday 18:00 and <b>stops 57 running allocations</b>. It needs a typed confirmation and the approval of a second management token, and an automatic backup is taken first.</div></div></div></div>
+    <div class="btn-list justify-content-end mt-3"><a class="btn" href="#/backups">Cancel</a><button class="btn" type="button">Back</button><button class="btn btn-primary" type="button">Continue to confirmation</button></div>
+  </div></div>${note('Restore wizard', ['Mandatory preview: what would change, without touching the cluster (the backup is loaded into a separate state store).', 'Step indicator with the Tabler steps pattern.'], 'backup-restore-plan.md: Restore')}`);
 }
 
-/* ---------- események, szerverek ---------- */
+/* ---------- events, servers ---------- */
 function pageEvents() {
-  return header('Üzemeltetés', 'Események és audit', `<button class="btn" type="button">${ic('download')}Exportálás</button>`, scopeLabel()) + body(`
-  <div class="card mb-3"><div class="card-body d-flex flex-wrap gap-2">${['Minden', 'Deployment', 'Skálázás', 'Admission', 'Kvóta', 'Mentés', 'Release', 'Objektum'].map((t, i) => `<button class="btn btn-sm ${i ? '' : 'btn-primary'}" type="button">${t}</button>`).join('')}</div></div>
+  return header('Operations', 'Events and audit', `<button class="btn" type="button">${ic('download')}Export</button>`, scopeLabel()) + body(`
+  <div class="card mb-3"><div class="card-body d-flex flex-wrap gap-2">${['All', 'Deployment', 'Scaling', 'Admission', 'Quota', 'Backup', 'Release', 'Object'].map((t, i) => `<button class="btn btn-sm ${i ? '' : 'btn-primary'}" type="button">${t}</button>`).join('')}</div></div>
   <div class="card"><div class="card-body">${tl([
-    ['arrows-maximize', 'blue', '14:11', 'Skálázás: worker 6 → 8 (eu-aws)', 'Kiváltó check: nomad.cpu, beépített motor', '#/scaling'],
-    ['cloud-upload', 'green', '14:10', 'Mentés kész (us-hetzner)', '41 MB, mindkét célhelyre feltöltve és ellenőrizve', '#/backups'],
-    ['git-branch', 'blue', '14:02', 'Deployment: api v42 elindult (eu-gcp)', 'Az eu-aws sikere után, régiók közötti RPC-vel', '#/job/api/deployments'],
-    ['shield-check', 'red', '13:52', 'Admission elutasítás: debug-shell', 'Szabály: nincs-privilegizalt-kontener; felhasználó: kovacs.bela', '#/admission'],
-    ['chart-pie', 'orange', '13:48', 'Kvóta: csapat-b 96%', 'riport-export evaluation blokkolva', '#/quotas'],
-    ['package', 'green', '13:40', 'Release: traefik 7. revízió', 'Frissítés 3.1.2 → 3.1.4, minden hook sikeres', '#/package/traefik']])}</div></div>
-  ${note('Események és audit', ['Egységes folyam az event streamből, a NATS-hídon át régiókon átívelően is.', 'Minden eseményből hivatkozás az érintett elemre.'], 'felulet-terv.md; multi-cloud fejezet')}`);
+    ['arrows-maximize', 'blue', '14:11', 'Scaling: worker 6 → 8 (eu-aws)', 'Triggering check: nomad.cpu, built-in engine', '#/scaling'],
+    ['cloud-upload', 'green', '14:10', 'Backup done (us-hetzner)', '41 MB, uploaded to both destinations and verified', '#/backups'],
+    ['git-branch', 'blue', '14:02', 'Deployment: api v42 started (eu-gcp)', 'After eu-aws succeeded, over cross-region RPC', '#/job/api/deployments'],
+    ['shield-check', 'red', '13:52', 'Admission rejection: debug-shell', 'Policy: no-privileged-container; user: alex.morgan', '#/admission'],
+    ['chart-pie', 'orange', '13:48', 'Quota: team-b 96%', 'report-export evaluation blocked', '#/quotas'],
+    ['package', 'green', '13:40', 'Release: traefik revision 7', 'Upgrade 3.1.2 → 3.1.4, all hooks successful', '#/package/traefik']])}</div></div>
+  ${note('Events and audit', ['A unified stream from the event stream, across regions too, through the NATS bridge.', 'Every event links to the affected item.'], 'ui-plan.md; multi-cloud chapter')}`);
 }
 function pageServers() {
-  return header('Üzemeltetés', 'Szerverek és régiók', '', scopeLabel()) + body(card('', tbl(['Szerver', 'Régió', 'Szerep', 'Raft-index', 'Verzió', 'Állapot'],
-    REGIONS.filter(r => inRegion([r.id])).flatMap(r => [1, 2, 3].map(n => { const nm = r.leader.replace(/\d$/, n); return tr([`<span class="fl-mono">${nm}</span>`, reg(r.id), nm === r.leader ? '<b>leader</b>' : 'follower', (1834500 + n * 17).toLocaleString('hu-HU'), '1.6.5+fork.8', badge('passing')]); })))) +
-    note('Szerverek és régiók', ['Régiónként szerverek, leader, Raft-állapot és a föderációs kapcsolat.'], 'felulet-terv.md'));
+  return header('Operations', 'Servers and regions', '', scopeLabel()) + body(card('', tbl(['Server', 'Region', 'Role', 'Raft index', 'Version', 'Status'],
+    REGIONS.filter(r => inRegion([r.id])).flatMap(r => [1, 2, 3].map(n => { const nm = r.leader.replace(/\d$/, n); return tr([`<span class="fl-mono">${nm}</span>`, reg(r.id), nm === r.leader ? '<b>leader</b>' : 'follower', (1834500 + n * 17).toLocaleString('en-US'), '1.6.5+fork.8', badge('passing')]); })))) +
+    note('Servers and regions', ['Per region: servers, leader, Raft state and the federation connection.'], 'ui-plan.md'));
 }
 
-/* ---------- meglévő oldalak az új keretben ---------- */
+/* ---------- existing pages in the new frame ---------- */
 const LEGACY = {
-  clients: ['Kapacitás', 'Kliensek', ['Régióoszlop, node pool, állapot, allokációszám, leválasztás ideje.', 'Drain indítása a disruption budget előnézetével (mely allokációk mozdulhatnak most).']],
-  nodepools: ['Kapacitás', 'Node poolok', ['Node poolonként kapacitás és kihasználtság.', 'Node-szintű skálázás (autoscaler 4. fázis): felhős csoport, min/max, legutóbbi döntések.']],
-  topology: ['Kapacitás', 'Topológia', ['A meglévő topológia-nézet a design tokenekkel, régiónkénti bontással.']],
-  storage: ['Kapacitás', 'Tárolók', ['CSI-volume-ok és pluginek, mint ma, egységes listamintával.']],
-  variables: ['Konfiguráció', 'Variables', ['Útvonalfa, szerkesztő, a mentésekből visszahozható korábbi értékekkel (szelektív visszaállítás).']],
-  evaluations: ['Üzemeltetés', 'Evaluationök', ['Haladó nézet; a kvóta miatt blokkoltak külön szűrővel.']],
-  access: ['Hozzáférés', 'Tokenek és szabályok', ['Tokenek, szabályok, szerepkörök, auth methodok; az új jogosultsági blokkok (backup, object, admission, network_policy) szerkesztővel.']]
+  clients: ['Capacity', 'Clients', ['Region column, node pool, status, allocation count, time of disconnection.', 'Start a drain with a preview of the disruption budget (which allocations can move now).']],
+  nodepools: ['Capacity', 'Node pools', ['Capacity and usage per node pool.', 'Node-level scaling (autoscaler phase 4): cloud group, min/max, latest decisions.']],
+  topology: ['Capacity', 'Topology', ['The existing topology view with the design tokens, broken down by region.']],
+  storage: ['Capacity', 'Storage', ['CSI volumes and plugins, as today, with the unified list pattern.']],
+  variables: ['Configuration', 'Variables', ['Path tree and editor, with earlier values that can be brought back from backups (selective restore).']],
+  evaluations: ['Operations', 'Evaluations', ['Advanced view; the ones blocked by quota get a filter of their own.']],
+  access: ['Access', 'Tokens and policies', ['Tokens, policies, roles, auth methods; the new permission blocks (backup, object, admission, network_policy) with an editor.']]
 };
 function pageLegacy(r) {
   const [g, t, items] = LEGACY[r];
-  return header(g, t, '', scopeLabel()) + body(`<div class="card"><div class="empty"><div class="empty-icon">${ic(ALLPAGES.find(p => p.r === r).i, 'icon icon-lg')}</div><p class="empty-title">Meglévő oldal, az új keretben</p><p class="empty-subtitle text-secondary">Ez a látványterv a meglévő oldalt nem részletezi. A tartalma megmarad, a 2. fázisban kerül át az új komponensekre.</p><div class="empty-action"><a class="btn btn-primary" href="#/plan">Felületi terv megnyitása</a></div></div></div>${note(t, items, 'felulet-terv.md: Oldalak (2. fázis)')}`);
+  return header(g, t, '', scopeLabel()) + body(`<div class="card"><div class="empty"><div class="empty-icon">${ic(ALLPAGES.find(p => p.r === r).i, 'icon icon-lg')}</div><p class="empty-title">Existing page, in the new frame</p><p class="empty-subtitle text-secondary">This mockup does not detail the existing page. Its content stays, and moves to the new components in phase 2.</p><div class="empty-action"><a class="btn btn-primary" href="#/plan">Open the UI plan</a></div></div></div>${note(t, items, 'ui-plan.md: Pages (phase 2)')}`);
 }
 
-/* ---------- felületi terv oldal ---------- */
+/* ---------- UI plan page ---------- */
 function pagePlan() {
-  const ia = NAV.filter(([g]) => g !== 'Tervezés').map(([g, items]) => tr([`<b>${g}</b>`, items.map(([r, , t]) => `<a href="#/${r}">${t}</a>`).join(', ')]));
-  return header('Tervezés', 'Felületi terv', '', 'A felulet-terv.md összefoglalója ebben a látványtervben') + body(`<div class="row row-cards">
-  <div class="col-lg-7">${card('Információs architektúra', tbl(['Csoport', 'Oldalak'], ia))}</div>
-  <div class="col-lg-5">${card('Ütemezés', `<div class="card-body"><ul class="steps steps-vertical">
-    <li class="step-item active"><div class="h4 m-0">1. Alap</div><div class="text-secondary">Ember-frissítés, Tabler és komponensréteg, új keret, irányítópult, eseményfolyam, magyar nyelv</div></li>
-    <li class="step-item"><div class="h4 m-0">2. Meglévő területek</div><div class="text-secondary">Job-oldal fülekkel, listák és szerkesztő, a meglévő oldalak átállítása</div></li>
-    <li class="step-item"><div class="h4 m-0">3. Új területek</div><div class="text-secondary">Mentések, kvóták, admission, csomagok, objektumok, skálázás, hálózat, multiregion</div></li>
-    <li class="step-item"><div class="h4 m-0">4. Lezárás</div><div class="text-secondary">Bulma és .legacy hatókör eltávolítása, arculatcsere</div></li></ul></div>`)}</div>
-  <div class="col-lg-6">${card('Tabler-átállás', `<div class="card-body"><ul class="mb-0">
-    <li><b>@tabler/core 1.6.1</b> és <b>@tabler/icons 3.49.0</b> (MIT), két hétnél régebbi kiadások.</li>
-    <li>Saját Ember-komponensréteg a Tabler fölé; a template-ekben nincs nyers osztály.</li>
-    <li>A Bootstrap JavaScriptje helyett Ember-viselkedés; csak CSS és Popper.</li>
-    <li>Régi Bulma-stílusok <span class="fl-mono">.legacy</span> hatókörben, oldalanként átállás.</li>
-    <li><b>ApexCharts nem használható</b> (kettős licenc, termékbe ágyazáshoz fizetős OEM-licenc); diagramok: d3, ECharts vagy Chart.js.</li></ul></div>`)}</div>
-  <div class="col-lg-6">${card('Vizuális irány', `<div class="card-body"><p>Egy hangsúlyos elem: a <b>föderációs sáv</b> az irányítópulton, régiónként a felhő színével. Minden más visszafogott, állapotszín csak állapotra.</p>
-    <div class="d-flex flex-wrap gap-3">${[['Tinta', '#10233a'], ['Petrol', '#1f6f8b'], ['A régió', 'var(--fl-reg-a)'], ['B régió', 'var(--fl-reg-b)'], ['C régió', 'var(--fl-reg-c)']].map(([n, c]) => `<div class="text-center"><div style="width:3rem;height:3rem;border-radius:8px;background:${c};border:1px solid var(--tblr-border-color)"></div><div class="small mt-1">${n}</div></div>`).join('')}</div>
-    <p class="text-secondary mt-3 mb-0">Betűtípus: IBM Plex Sans, kódhoz IBM Plex Mono. Sötét mód a jobb felső kapcsolóval. A tervjegyzetek az <span class="d-inline-block">${ic('info-circle', 'icon icon-sm')}</span> gombbal kapcsolhatók ki.</p></div>`)}</div>
+  const ia = NAV.filter(([g]) => g !== 'Design').map(([g, items]) => tr([`<b>${g}</b>`, items.map(([r, , t]) => `<a href="#/${r}">${t}</a>`).join(', ')]));
+  return header('Design', 'UI plan', '', 'Summary of ui-plan.md in this mockup') + body(`<div class="row row-cards">
+  <div class="col-lg-7">${card('Information architecture', tbl(['Group', 'Pages'], ia))}</div>
+  <div class="col-lg-5">${card('Schedule', `<div class="card-body"><ul class="steps steps-vertical">
+    <li class="step-item active"><div class="h4 m-0">1. Foundation</div><div class="text-secondary">Ember upgrade, Tabler and component layer, new frame, dashboard, event stream, Hungarian language</div></li>
+    <li class="step-item"><div class="h4 m-0">2. Existing areas</div><div class="text-secondary">Job page with tabs, lists and editor, migration of the existing pages</div></li>
+    <li class="step-item"><div class="h4 m-0">3. New areas</div><div class="text-secondary">Backups, quotas, admission, packages, objects, scaling, networking, multiregion</div></li>
+    <li class="step-item"><div class="h4 m-0">4. Completion</div><div class="text-secondary">Removal of Bulma and the .legacy scope, rebranding</div></li></ul></div>`)}</div>
+  <div class="col-lg-6">${card('Tabler migration', `<div class="card-body"><ul class="mb-0">
+    <li><b>@tabler/core 1.6.1</b> and <b>@tabler/icons 3.49.0</b> (MIT), releases older than two weeks.</li>
+    <li>Own Ember component layer on top of Tabler; the templates contain no raw classes.</li>
+    <li>Ember behavior instead of the Bootstrap JavaScript; only CSS and Popper.</li>
+    <li>Old Bulma styles in a <span class="fl-mono">.legacy</span> scope, migration page by page.</li>
+    <li><b>ApexCharts cannot be used</b> (dual license, embedding in a product needs a paid OEM license); charts: d3, ECharts or Chart.js.</li></ul></div>`)}</div>
+  <div class="col-lg-6">${card('Visual direction', `<div class="card-body"><p>One emphasized element: the <b>federation strip</b> on the dashboard, one column per region in the color of its cloud. Everything else is restrained; status colors for status only.</p>
+    <div class="d-flex flex-wrap gap-3">${[['Ink', '#10233a'], ['Petrol', '#1f6f8b'], ['Region A', 'var(--fl-reg-a)'], ['Region B', 'var(--fl-reg-b)'], ['Region C', 'var(--fl-reg-c)']].map(([n, c]) => `<div class="text-center"><div style="width:3rem;height:3rem;border-radius:8px;background:${c};border:1px solid var(--tblr-border-color)"></div><div class="small mt-1">${n}</div></div>`).join('')}</div>
+    <p class="text-secondary mt-3 mb-0">Typeface: IBM Plex Sans, IBM Plex Mono for code. Dark mode with the switch at the top right. The design notes can be turned off with the <span class="d-inline-block">${ic('info-circle', 'icon icon-sm')}</span> button.</p></div>`)}</div>
   </div>`);
 }
 
-/* ---------- útválasztás ---------- */
+/* ---------- routing ---------- */
 function route() {
   const parts = (location.hash.replace(/^#\/?/, '') || '').split('/');
   const [p, a, b] = parts;
@@ -670,22 +670,22 @@ function route() {
   });
   $('#sidebar-menu').classList.remove('show');
   window.scrollTo(0, 0);
-  const h = document.querySelector('.page-title'); if (h) document.title = h.textContent.trim() + ' – Flotta látványterv';
+  const h = document.querySelector('.page-title'); if (h) document.title = h.textContent.trim() + ' – Norca mockup';
 }
 
-/* ---------- parancspaletta ---------- */
+/* ---------- command palette ---------- */
 let palSel = 0, palItems = [];
-const EXTRA = [{ t: 'Job: api', h: '#/job/api' }, { t: 'Job: worker', h: '#/job/worker' }, { t: 'Release: postgres-operator', h: '#/package/postgres-operator' }, { t: 'Release: observability', h: '#/package/observability' }, { t: 'Objektum: szamlazas (PostgresCluster)', h: '#/object/szamlazas' }, { t: 'Művelet: mentés most', h: '#/backups' }, { t: 'Művelet: visszaállítás mentésből', h: '#/backups/restore' }];
+const EXTRA = [{ t: 'Job: api', h: '#/job/api' }, { t: 'Job: worker', h: '#/job/worker' }, { t: 'Release: postgres-operator', h: '#/package/postgres-operator' }, { t: 'Release: observability', h: '#/package/observability' }, { t: 'Object: billing (PostgresCluster)', h: '#/object/billing' }, { t: 'Action: back up now', h: '#/backups' }, { t: 'Action: restore from backup', h: '#/backups/restore' }];
 function palRender() {
   const q = $('#palIn').value.toLowerCase();
-  palItems = ALLPAGES.map(p => ({ t: p.t, s: p.g, h: '#/' + p.r })).concat(EXTRA.map(e => ({ t: e.t, s: 'Ugrás', h: e.h }))).filter(i => (i.t + ' ' + i.s).toLowerCase().includes(q));
+  palItems = ALLPAGES.map(p => ({ t: p.t, s: p.g, h: '#/' + p.r })).concat(EXTRA.map(e => ({ t: e.t, s: 'Go to', h: e.h }))).filter(i => (i.t + ' ' + i.s).toLowerCase().includes(q));
   palSel = Math.min(palSel, Math.max(palItems.length - 1, 0));
-  $('#palList').innerHTML = palItems.length ? palItems.map((i, n) => `<a href="${i.h}" class="list-group-item list-group-item-action ${n === palSel ? 'active' : ''}" data-pal>${esc(i.t)}<span class="text-secondary small ms-2">${esc(i.s)}</span></a>`).join('') : '<div class="list-group-item text-secondary">Nincs találat. Próbálj rövidebb kifejezést.</div>';
+  $('#palList').innerHTML = palItems.length ? palItems.map((i, n) => `<a href="${i.h}" class="list-group-item list-group-item-action ${n === palSel ? 'active' : ''}" data-pal>${esc(i.t)}<span class="text-secondary small ms-2">${esc(i.s)}</span></a>`).join('') : '<div class="list-group-item text-secondary">No results. Try a shorter term.</div>';
 }
 function palOpen() { $('#pal').classList.add('show'); $('#palIn').value = ''; palSel = 0; palRender(); $('#palIn').focus(); }
 function palClose() { $('#pal').classList.remove('show'); $('#palBtn').focus(); }
 
-/* ---------- indítás ---------- */
+/* ---------- startup ---------- */
 function applyTheme(t) { document.documentElement.setAttribute('data-bs-theme', t); document.body.setAttribute('data-bs-theme', t); $('#themeBtn').innerHTML = ic(t === 'dark' ? 'sun' : 'moon'); }
 function init() {
   renderShell();
