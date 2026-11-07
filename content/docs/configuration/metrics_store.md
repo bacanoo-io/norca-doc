@@ -1,17 +1,18 @@
 ---
 title: "metrics_store Block"
 linkTitle: "metrics_store"
-description: "The \"metrics_store\" block configures the history of the task group usage that every server keeps."
+description: "The \"metrics_store\" block configures the history of the task group usage, the cluster, the control plane and the custom objects that every server keeps."
 ---
 
 **Placement:** `server -> metrics_store`
 
 The `metrics_store` block configures the history of the CPU and memory usage
-of the task groups. The clients publish their usage on the
-[system bus](/docs/features/system-bus#task-group-usage); every server reads
-every report and keeps the history in its data directory
-(`[data_dir]/server/tsdb`), in an embedded time-series store. The history is
-never written to Raft and is not part of the backups.
+of the task groups, of the capacity of the cluster, of the scheduler and the
+control plane, and of the custom objects. The clients publish their usage on
+the [system bus](/docs/features/system-bus#task-group-usage); every server
+reads every report, samples the rest itself, and keeps the history in its
+data directory (`[data_dir]/server/tsdb`), in an embedded time-series store.
+The history is never written to Raft and is not part of the backups.
 
 The store is enabled by default on servers. It needs the
 [system bus](/docs/configuration/bus): without the bus the clients report no
@@ -23,7 +24,7 @@ ask the clients for their usage.
 server {
   metrics_store {
     enabled            = true
-    retention          = "720h"
+    retention          = "30d"
     partition_duration = "6h"
     sample_interval    = "30s"
     max_disk_size      = "2GiB"
@@ -38,28 +39,63 @@ server {
 - `enabled` `(bool: true)` - Stores the usage. With `false` the server creates
   no directory and stores nothing.
 
-- `retention` `(string: "720h")` - How long the points are kept, at most 30
-  days. The store drops a whole partition once it is older.
+- `retention` `(string: "30d")` - How long the points are kept: from `1h` to
+  `30d` (`720h`). It takes a duration (`"168h"`, `"90m"`) or whole days,
+  optionally followed by a duration (`"7d"`, `"1d12h"`). The store drops a
+  whole partition once the retention has passed since the partition was
+  written to disk, so the oldest point can be up to two partitions older than
+  the retention. A [reload](#reload) applies a new retention without a
+  restart.
 
 - `partition_duration` `(string: "6h")` - The time range of a partition. The
   points of the two newest partitions are kept in memory and in a write-ahead
   log, the older ones in compressed files mapped into memory. A report older
-  than one partition before the newest one is dropped.
+  than one partition before the newest one is dropped. It must not be longer
+  than `retention`; without it, a retention shorter than six hours sets the
+  partition to the retention (`retention = "2h"` gives two-hour partitions).
 
 - `sample_interval` `(string: "30s")` - The resolution of the history. The
   reports of an interval are combined into one point per task group: the
   averages weighted by the number of samples, and the largest maximum.
 
 - `max_disk_size` `(string: "2GiB")` - The disk cap. Above it the oldest
-  partitions are removed first, whatever their age.
+  partitions are removed first, whatever their age. A [reload](#reload)
+  applies it without a restart.
 
 - `max_series` `(int: 50000)` - The largest number of series. Every task
-  group has 18 series (the average and the maximum of 9 metrics); the task
-  groups beyond the limit are not stored.
+  group has 18 series (the average and the maximum of 9 metrics), every
+  series of the other metrics counts 2; the series beyond the limit are not
+  stored. A [reload](#reload) applies it to new series.
 
 - `wal_buffered_size` `(int: 4096)` - The bytes the write-ahead log buffers
   before it writes them: `0` writes every point, `-1` disables the log, so
   the newest points are lost when the server stops abruptly.
+
+## Reload
+
+A configuration reload of the agent (`SIGHUP`) applies three settings to the
+running store, without a restart:
+
+- `retention`: a shorter retention removes the partitions now past it at
+  once; a longer one keeps what is still on disk longer. What was already
+  removed does not come back.
+- `max_disk_size`: applied at the next maintenance of the store, within a
+  minute.
+- `max_series`: applies to new series; the series stored already stay.
+
+`partition_duration`, `sample_interval` and `wal_buffered_size` shape the
+files and the sampling: a reload that changes them logs a warning and keeps
+the running values until the next restart. Turning the store on or off with
+`enabled` also needs a restart. A reload with an invalid block (a retention
+outside `1h` to `30d`, or a `partition_duration` longer than `retention`)
+changes nothing and logs the error.
+
+Each server has its own store and its own configuration: give the servers of
+a region the same `retention` and `max_disk_size`, so that they answer the
+same query with the same range. The [deployer](/docs/deployer/configuration#metrics_store)
+writes the same block to every server. The effective values of a server are
+in the output of
+[`norca operator metrics-store status`](/docs/commands/operator/metrics-store/status).
 
 ## Metrics
 
@@ -113,6 +149,91 @@ The label `class` is the node class. The series with `class` empty covers all th
 
 The `used` values come from the clients' usage reports: a node whose latest
 report is older than two report intervals counts as using nothing.
+
+### Scheduler and control plane metrics
+
+Every sample interval each server also samples the scheduler and the control
+plane. What only the leader has (the eval broker, the plan queue, the blocked
+evaluations, the heartbeats, the secrets watchers and the autoscaler) is
+stored by the leader only: after a leader change the history continues in the
+store of the new leader. The jobs and the backups come from the state, which
+every server has. The security events and the store's own values are those of
+the server that stores them.
+
+The security events are counters: each point is the number of events in the
+sample interval on that server (the sum over a step of the history).
+
+| Metric | Labels | Value | Stored by |
+| --- | --- | --- | --- |
+| `norca.sched.broker_ready` | | evaluations ready for a scheduler | leader |
+| `norca.sched.broker_unacked` | | evaluations handed to a scheduler and not acknowledged yet | leader |
+| `norca.sched.broker_pending` | | evaluations waiting behind another evaluation of the same job | leader |
+| `norca.sched.broker_waiting` | | evaluations waiting for their wait time | leader |
+| `norca.sched.broker_delayed` | | evaluations delayed until a time (rescheduling) | leader |
+| `norca.sched.plan_queue_depth` | | plans waiting to be applied | leader |
+| `norca.sched.blocked_total` | | blocked evaluations | leader |
+| `norca.sched.blocked_escaped` | | blocked evaluations that escaped the node classes | leader |
+| `norca.sched.blocked_quota_limit` | | evaluations blocked by a quota | leader |
+| `norca.sched.heartbeats_active` | | nodes whose heartbeat the leader tracks | leader |
+| `norca.jobs.pending` | `ns` | pending jobs of the namespace | every server |
+| `norca.jobs.running` | `ns` | running jobs of the namespace | every server |
+| `norca.jobs.dead` | `ns` | dead (stopped or finished) jobs of the namespace | every server |
+| `norca.secrets.leases_active` | | active leases of the built-in secret store | leader |
+| `norca.secrets.expiring` | | secrets about to expire | leader |
+| `norca.secrets.expired` | | expired secrets | leader |
+| `norca.secrets.rotation_due` | | secrets whose rotation is due | leader |
+| `norca.backup.last_success_age_seconds` | | seconds since the newest usable (complete or partial) backup; no series before the first one | every server |
+| `norca.backup.size_bytes` | `destination` | bytes of the state of the newest usable backup on the destination | every server |
+| `norca.backup.duration_seconds` | `destination` | seconds the newest usable backup took on the destination | every server |
+| `norca.security.certificates_issued` | | workload certificates issued by the [mTLS](/docs/configuration/mtls) certificate authority, per interval | each server |
+| `norca.security.admission_denied` | | jobs and variables denied by [admission control](/docs/configuration/admission), per interval | each server |
+| `norca.security.webhook_calls` | `webhook` | calls to the admission webhook, per interval | each server |
+| `norca.security.webhook_errors` | `webhook` | failed calls to the admission webhook, per interval | each server |
+| `norca.autoscaler.queue` | | scaling policies waiting for an evaluation; while the [built-in autoscaler](/docs/configuration/autoscaler) runs | leader |
+| `norca.autoscaler.policies` | | scaling policies of the autoscaler | leader |
+| `norca.autoscaler.oscillation_suspended` | | targets this leader suspended for oscillating, while suspended | leader |
+| `norca.store.disk_bytes` | | disk use of the metrics store, in bytes | each server |
+| `norca.store.series` | | series of the metrics store | each server |
+| `norca.store.dropped_reports` | | usage reports dropped (too old, or late for a window written already), per interval | each server |
+
+### Object metrics
+
+Every sample interval each server samples the
+[custom objects](/docs/other-specifications/custom-object) of its state.
+
+| Metric | Labels | Value |
+| --- | --- | --- |
+| `norca.objects.count` | `kind` | objects of the kind (`group/Kind`, for example `norca.io/NodeGroup`), in all namespaces |
+| `norca.objects.degraded` | `kind` | objects of the kind whose `Degraded` condition is `True` |
+| `norca.nodegroup.replicas` | `group` | nodes the [node group](/docs/features/node-scaling) wants (`spec.replicas`); no series while it is not set |
+| `norca.nodegroup.ready` | `group` | ready nodes (`status.replicas`) |
+| `norca.nodegroup.joining` | `group` | nodes joining (`status.joining`) |
+| `norca.nodegroup.failed` | `group` | nodes that failed to join (`status.failed`) |
+| `norca.nodegroup.rollout_replacing` | `group` | nodes being replaced in a rollout |
+| `norca.nodegroup.rollout_outdated` | `group` | nodes a rollout still has to replace |
+| `norca.nodegroup.condition` | `group`, `type` | 1 while the condition of the type (`RollBlocked`, `JoinFailing`, `ScaleDownBlocked`, `ProviderAvailable`, ...) is `True`, else 0; a series for every condition type the status has |
+| `norca.lb.targets` | `ns`, `name` | healthy targets of the load balancer (`norca.io/LoadBalancer`, from the LoadBalancer operator) |
+| `norca.lb.ready` | `ns`, `name` | 1 while its `Ready` condition is `True`, else 0 |
+
+The label `group` is the name of the NodeGroup object. No series is stored per
+allocation or per node; the number of series grows with the namespaces, the
+node groups, the load balancers, the object kinds, the backup destinations and
+the admission webhooks.
+
+### Access
+
+The history and the series list of a metric need, when ACLs are enabled:
+
+| Metrics | ACL |
+| --- | --- |
+| `norca.group.*` | `read-job` in the namespace of the job |
+| `norca.cluster.*` | `node:read`; `operator:read` for `norca.cluster.autopilot_*` |
+| `norca.quota.*` | `quota:read` |
+| `norca.sched.*`, `norca.secrets.*`, `norca.security.*`, `norca.autoscaler.*`, `norca.store.*`, `norca.objects.*` | `operator:read` |
+| `norca.jobs.*` | `list-jobs` in the namespace of the label `ns` |
+| `norca.backup.*` | `backup:read` |
+| `norca.nodegroup.*` | `read` on the objects of `norca.io/NodeGroup` (a rule in `namespace "*"`) |
+| `norca.lb.*` | `read` on the objects of `norca.io/LoadBalancer` in the namespace of the label `ns` |
 
 Read the history, the list of series and the usage summary of a task group
 (the right-sizing view: average, 95th percentile and maximum against the
