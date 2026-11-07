@@ -189,13 +189,14 @@ before their time.
   "Partitions": 14,
   "DiskPartitions": 12,
   "DiskBytes": 48211968,
-  "MaxDiskSize": 2147483648,
+  "MaxDiskSize": 5368709120,
   "Series": 960,
   "MaxSeries": 50000,
   "Oldest": "2026-10-28T08:00:00Z",
   "Newest": "2026-10-31T08:41:30Z",
   "DroppedReports": 0,
   "DroppedGroups": 0,
+  "ForgottenSeries": 0,
   "Retention": 2592000000000000,
   "SampleInterval": 30000000000
 }

@@ -28,7 +28,7 @@ server {
     retention          = "30d"
     partition_duration = "6h"
     sample_interval    = "30s"
-    max_disk_size      = "2GiB"
+    max_disk_size      = "5GiB"
     max_series         = 50000
     wal_buffered_size  = 4096
   }
@@ -59,15 +59,16 @@ server {
   reports of an interval are combined into one point per task group: the
   averages weighted by the number of samples, and the largest maximum.
 
-- `max_disk_size` `(string: "2GiB")` - The disk cap. Above it the oldest
+- `max_disk_size` `(string: "5GiB")` - The disk cap. Above it the oldest
   partitions are removed first, whatever their age. A [reload](#reload)
   applies it without a restart.
 
 - `max_series` `(int: 50000)` - The largest number of series. Every task
   group has 28 series (the average and the maximum of 14 metrics), every
   series of the other metrics counts 2 (a node has up to 7, so 14); the
-  series beyond the limit are not stored. A [reload](#reload) applies it to
-  new series.
+  series beyond the limit are not stored. A series without a point within the
+  retention no longer counts (see [Forgotten series](#forgotten-series)). A
+  [reload](#reload) applies it to new series.
 
 - `wal_buffered_size` `(int: 4096)` - The bytes the write-ahead log buffers
   before it writes them: `0` writes every point, `-1` disables the log, so
@@ -113,7 +114,7 @@ usage values are per allocation of the task group, like those of the
 | `norca.group.memory` | percent of the allocated memory | clients |
 | `norca.group.memory_mb` | MiB | clients |
 | `norca.group.memory_cache_mb` | MiB of page cache (reclaimable) | clients |
-| `norca.group.memory_peak_mb` | MiB: the highest memory usage the tasks of an allocation reached since they started (the sum over the tasks); only from the drivers that measure it, see below | clients |
+| `norca.group.memory_swap_mb` | MiB of swap in use; only from the drivers that measure it, see below | clients |
 | `norca.group.oom_kills` | tasks killed for running out of memory, of all allocations: the average is the sum in the interval or step | clients |
 | `norca.group.restarts` | task restarts of all allocations in the interval: the average is the sum in the interval or step | servers, from the task states |
 | `norca.group.allocs_running` | running allocations | servers, from the job summary |
@@ -132,11 +133,14 @@ allocations alone, which the summary of an old job keeps, start no series.
 sample after a server starts only takes the counts; an allocation removed by
 the garbage collection drops out without lowering the sum.
 
-`norca.group.memory_peak_mb` is the peak the driver reports (`MaxUsage` of
-the memory statistics): the `exec` and `java` drivers on cgroups v2 with
-Linux 5.19 or later (`memory.peak`), and drivers on cgroups v1. `docker`,
-`raw_exec` and `exec2` on cgroups v2 report none, and their task groups have
-no points of this metric.
+`norca.group.memory_swap_mb` is the swap alone, without the memory: the
+`exec` and `java` drivers report the swap of the task's cgroup
+(`memory.swap.current` on cgroups v2, `memsw` minus the memory on v1), `exec2`
+`memory.swap.current`, `raw_exec` the swap of the task's processes, and
+`docker` the swap of the container on cgroups v1. `docker` on cgroups v2 does
+not measure the swap: its task groups have no points of this metric rather
+than a zero. A kernel without swap accounting (cgroups v2 without
+`memory.swap.current`) reports zero.
 
 ### Cluster and quota metrics
 
@@ -194,7 +198,8 @@ The labels are `node` (the node ID), `dc`, `pool` and `class`. The server
 takes the datacenter, node pool and node class from the node in its state, not
 from the report; the report of a node the state does not know is not stored.
 A node has up to 14 series (7 metrics), so with many nodes and a long
-retention plan `max_disk_size` and `max_series` for them. A client with
+retention plan `max_disk_size` and `max_series` for them; the series of a
+node that is gone are [forgotten](#forgotten-series) after the retention. A client with
 [`usage`](/docs/configuration/client) disabled or off the bus reports no
 statistics of its host either. The statistics of devices (GPUs) are not
 stored.
@@ -289,6 +294,18 @@ Read the history, the list of series and the usage summary of a task group
 allocated resources) with the [metrics store API](/docs/api/metrics-store), and
 the state of the store with
 [`norca operator metrics-store status`](/docs/commands/operator/metrics-store/status).
+
+### Forgotten series
+
+A series (of a task group, a node or another metric) without a point within
+the retention leaves the list of the series: it no longer counts toward
+`max_series` and is no longer in the [series list](/docs/api/metrics-store#list-series),
+so the series of nodes, jobs and objects that are gone make room for new ones.
+The store checks every minute; a series whose newest point is not written
+yet stays. Its old points stay on disk until their partition expires. A
+forgotten series that gets a point again, a node that reports again for
+example, starts again. The status of the store counts the forgotten series
+(`Forgotten Series`, as they counted toward `max_series`).
 
 ## Autoscaler
 
