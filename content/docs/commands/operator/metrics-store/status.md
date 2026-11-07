@@ -9,7 +9,8 @@ The `operator metrics-store status` command displays the state of the
 [metrics store](/docs/configuration/metrics_store) of one server: its
 partitions, the disk use against `max_disk_size`, the series against
 `max_series`, the oldest and the newest point, the effective retention and
-sample interval, and the reports and task groups it dropped. The retention,
+sample interval, the reports and task groups it dropped, and the series it
+forgot for having no point within the retention. The retention,
 `max_disk_size` and `max_series` shown are those in effect: a
 [reload](/docs/configuration/metrics_store#reload) of the server
 configuration changes them without a restart. A retention of whole days is
@@ -38,7 +39,7 @@ capability.
 $ norca operator metrics-store status
 Server            = nomad-1.global
 Partitions        = 14 (12 on disk)
-Disk              = 46 MiB of 2.0 GiB
+Disk              = 46 MiB of 5.0 GiB
 Series            = 960 of 50000
 Oldest Point      = 2026-10-28T08:00:00Z
 Newest Point      = 2026-10-31T08:41:30Z
@@ -47,4 +48,5 @@ Sample Interval   = 30s
 Dropped Reports   = 0
 Duplicate Reports = 0
 Dropped Groups    = 0
+Forgotten Series  = 0
 ```
