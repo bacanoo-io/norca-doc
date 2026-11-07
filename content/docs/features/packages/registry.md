@@ -469,6 +469,8 @@ scripts/check-packs.sh   local and CI checks
 Contributions are welcome: fixes, new variables, new packs for infrastructure that runs on Norca.
 Every commit needs a DCO sign-off (`git commit -s`).
 
+<!-- REUSE-IgnoreStart -->
+
 - Write packs as described in [Writing packs](/docs/features/packages/writing-packs) and the
   [extended package format](/docs/features/packages/releases#extended-package-format): `[[ ]]`
   delimiters, `var "name" .` / `vars .` to read variables, `validation` and `rule` blocks in
@@ -482,6 +484,8 @@ Every commit needs a DCO sign-off (`git commit -s`).
 - Every pack needs a README (what it deploys, prerequisites, variables, checks, limitations) and at
   least one variable file in `examples/<pack>/` if its defaults don't cover the main use.
 - Check before a pull request, with a `norca` binary built from the Norca repository:
+
+<!-- REUSE-IgnoreEnd -->
 
   ```shell
   NORCA=~/bin/norca scripts/check-packs.sh          # all packs
