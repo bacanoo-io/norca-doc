@@ -159,6 +159,8 @@ backup:
 metrics_store:                      # The same metrics_store block on every server.
   retention: 14d                    # 1h to 30d, "336h" or "14d".
   max_disk_size: 4GiB               # Disk cap of the history on each server.
+  host_retention: 7d                # Host statistics, Raft and bus history.
+  host_max_disk_size: 1GiB          # Disk cap of that history on each server.
 
 host_packages:
   update_cache: true                # apt-get update before installing (skipped on offline nodes).
@@ -580,8 +582,10 @@ backup {
 }
 
 metrics_store {                        # The same metrics_store block on every server.
-  retention     = "14d"                # 1h to 30d, "336h" or "14d".
-  max_disk_size = "4GiB"
+  retention          = "14d"           # 1h to 30d, "336h" or "14d".
+  max_disk_size      = "4GiB"
+  host_retention     = "7d"            # Host statistics, Raft and bus history.
+  host_max_disk_size = "1GiB"
 }
 
 host_packages {
