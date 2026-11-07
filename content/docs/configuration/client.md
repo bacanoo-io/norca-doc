@@ -241,13 +241,15 @@ client {
   }
   ```
 
-- `usage` - (Norca) Whether the client reports the CPU and memory usage of its task groups
-  on the [system bus](/docs/features/system-bus#task-group-usage). The servers ask for it while
+- `usage` - (Norca) Whether the client reports the CPU and memory usage of its task groups,
+  and the statistics of its host (CPU, memory, the disk of the allocation directory), on the
+  [system bus](/docs/features/system-bus#task-group-usage). The servers ask for it while
   the [built-in autoscaler](/docs/configuration/autoscaler) or the
   [metrics store](/docs/configuration/metrics_store) is enabled; with `enabled = true` (default)
   the client then reports every `client_metrics_interval`. `enabled = false` turns the reports
   off on this node, for example when an external monitoring system collects the usage: its task
-  groups then get no built-in autoscaler metrics and no history. A client off the bus
+  groups then get no built-in autoscaler metrics and no history, and the node no
+  [node metrics](/docs/configuration/metrics_store#node-metrics). A client off the bus
   (`bus { enabled = false }`) reports nothing either.
 
   ```hcl
