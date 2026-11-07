@@ -215,9 +215,13 @@ Telemetry of the autoscaler is described in
 - Only horizontal scaling of task groups (`type = "horizontal"`). Task level
   (vertical) policies are stored but not evaluated, and a task policy with
   `engine = "builtin"` is rejected.
-- Node pool (cluster) scaling with cloud providers is postponed; there are no
-  target plugins such as cloud instance groups, and external target plugins are
-  not loaded.
+- The number of nodes is scaled by [node scaling](/docs/features/node-scaling),
+  not by a policy target: the autoscaler decides the scale of the node groups
+  (`norca.io/NodeGroup` objects) and the operator `norca-nodescaler` creates
+  and deletes the machines through a provider application. There is no
+  provider for a cloud yet (the mock and a docker provider for tests). Target
+  plugins such as cloud instance groups do not exist, and external target
+  plugins are not loaded.
 - The Datadog, InfluxDB and Instana APMs are not built in; they can only be
   used as external plugins.
 - The usage data is not replicated: after a leader change the built-in metrics

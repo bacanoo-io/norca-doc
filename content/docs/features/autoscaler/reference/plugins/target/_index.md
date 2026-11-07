@@ -19,9 +19,11 @@ A policy has one of two targets:
 - a **custom object** with a scale subresource, selected with
   `target "custom-object"` (see the same page).
 
-Scaling the number of clients (horizontal cluster scaling) and the resources of
-a task (vertical application scaling) are not available in the built-in
-autoscaler.
+The resources of a task (vertical application scaling) are not scaled by the
+built-in autoscaler. The number of clients (horizontal cluster scaling) is not
+a policy target either: it is [node scaling](/docs/features/node-scaling),
+where the autoscaler decides the scale of node groups and an operator creates
+the machines through a provider.
 
 ## Common Policy Configuration Options
 
