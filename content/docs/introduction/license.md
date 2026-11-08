@@ -48,6 +48,8 @@ Nomad v1.6.5 goes into the repository together with the upstream git history up 
 
 **Licenses becoming free:** four years after their release, the BSL versions move to MPL 2.0 (Nomad v1.6.6: 2028-01-15, Nomad v1.6.10: 2028-04-16, Nomad v1.7.0: 2027-12-07, Consul v1.17.0: 2027-11-03). After that, the code of the given version can be freely adopted; until then it cannot.
 
+**Enterprise-only features: multiregion deployments.** Nomad v1.6.5 contains the public side of multiregion jobs: the `multiregion` block of the jobspec, the `Multiregion`, `MultiregionStrategy` and `MultiregionRegion` structures with their plan diff, the HTTP API, the CLI commands and the region forwarding of the RPC layer. The behaviour itself was Enterprise only and was never published. In its place the MPL tree has stubs, built with the `!ent` tag, that do nothing or return an error (`job_endpoint_oss.go`, `structs/structs_oss.go`, `deploymentwatcher/multiregion_oss.go`). Norca replaced these stubs with its own implementation: registration in every region, the rollout across regions with `max_parallel` and `on_failure`, multiregion pack releases and the region timeline of the UI. The files, their headers and what the similarity audit covers are listed in the [Multiregion deployments](https://github.com/bacanoo-io/norca/blob/main/CLEAN_ROOM.md#multiregion-deployments) section of `CLEAN_ROOM.md` in the Norca repository.
+
 ## File-level license marking
 
 The repository follows the REUSE specification (reuse.software). The license texts are in the `LICENSES/` directory, every file gets an SPDX header, or `REUSE.toml` describes its license. `reuse lint` runs in CI and fails the build on incorrect marking.
