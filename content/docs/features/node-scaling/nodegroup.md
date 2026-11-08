@@ -319,6 +319,69 @@ left) and `norca_nodescaler_orphans_deleted_total`. Adding the finalizer and
 writing the events of a provider need `manage-finalizers` on `NodeGroup` and `write-events` on
 `NodeProvider`; the `nodescaler-operator` pack grants both since version 0.3.0.
 
+## A group of a fixed size
+
+A group can keep a set number of machines that run for as long as nodes installed by hand do. The
+nodes have to [make their own keys](#nodes-that-make-their-own-keys) (the join endpoint on), and
+every reason for the operator to remove a node has to be closed:
+
+```hcl
+kind = "norca.io/NodeGroup"
+name = "fixed-dc-a"
+
+spec {
+  pool       = "default"
+  datacenter = "dc-a"
+  provider   = "hetzner-eu"
+  min        = 2
+  max        = 2
+  replicas   = 2
+  enforce    = true
+
+  node {
+    meta = { "norca.scale.protect" = "true" }
+  }
+
+  rolling {
+    mode = "paused"
+  }
+
+  deletion {
+    policy = "orphan"
+  }
+}
+```
+
+| A node would go when | Closed by |
+| --- | --- |
+| the autoscaler lowers the scale | `min = max = replicas`; without `policy.scale_down` it never lowers it anyway. |
+| it reaches its age | Nodes that make their own keys have no age limit. A node whose bootstrap carries its key has a 60-day certificate and is always replaced, so this mode cannot keep a node. Leave `rolling.max_node_age` unset. |
+| the template (`spec.node`) or `rolling.generation` changes | `norca.scale.protect = "true"` on the node, and `rolling.mode = "paused"`. |
+| the group is deleted | `deletion.policy = "orphan"`: the instances stay. |
+
+The operator still keeps the count: when the provider loses an instance, it asks for a new one. A
+node that has joined is never deleted for its join; only an instance that does not join by
+`join.deadline`, or that the provider reports as failed, is.
+
+- **The join endpoint has to stay reachable.** A node renews its certificate (7 days by default,
+  `join_validity`) at two thirds of its life, so an endpoint that is down for longer than the rest
+  of the certificate (about two days) leaves the node without one. Give stable `join_urls`, and a
+  longer `join_validity` where the endpoint may be away longer.
+- **Put the mark in the template before the first machine.** Adding `norca.scale.protect` to the
+  `spec.node` of a running group is itself a change of the template, and replaces the nodes that do
+  not have the mark yet. On running nodes, set it by hand:
+  `norca node meta apply -node-id <id> norca.scale.protect=true`.
+- **A new template does not reach the running machines.** To move them to a new image, set
+  `rolling.mode = "auto"`, then remove the mark of one node at a time: the operator replaces it (a
+  paused group replaces nothing, not even a node marked with `norca.scale.replace`), the new node
+  gets the mark from the template, and the others stay as long as they have theirs. Set the mode
+  back to `paused` at the end.
+- **`enforce = false` is not the same.** The machines are created, but nothing is ever replaced,
+  and a node whose bootstrap carried its key runs until its certificate expires.
+
+A machine that the operator should not manage at all is installed by hand: a node without the marks
+of a group is left alone.
+
 ## In the web UI
 
 - **Clients:** a node the operator created has the badge **Autoscaled**, and its state from its
