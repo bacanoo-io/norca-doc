@@ -9,7 +9,7 @@ description: "How the LoadBalancer operator finds the providers that create load
 
 A `service` with an [`expose { load_balancer { ... } }`](/docs/job-specification/service)
 block asks for a load balancer in front of it. Norca does not create load
-balancers. The sample **LoadBalancer operator** turns the request into a
+balancers. The **LoadBalancer operator** (`norca-loadbalancer`) turns the request into a
 `norca.io/LoadBalancer` object, and a **provider**, an external application,
 creates the real load balancer at a cloud or on hardware. The `class` of the
 request says which provider.
@@ -63,8 +63,9 @@ classes.
 ## The LoadBalancerClass object
 
 `norca.io/LoadBalancerClass` is a cluster-scoped kind (the files are
-`loadbalancerclass.kind.hcl` and `loadbalancerclass.schema.json` in the
-[operator example](https://github.com/bacanoo-io/norca/tree/main/norca/controller/examples/loadbalancer)).
+`loadbalancerclass.kind.hcl` and `loadbalancerclass.schema.json` of the
+[operator](https://github.com/bacanoo-io/norca-platform/tree/main/loadbalancer/operator)
+in the repository `norca-platform`).
 Register it once with `norca object-kind apply loadbalancerclass.kind.hcl`. The
 name of the object is the class.
 
@@ -73,8 +74,8 @@ kind = "norca.io/LoadBalancerClass"
 name = "hcloud-lb"
 
 spec {
-  endpoint      = "https://lb-hetzner.service.eu.norca:8443"
-  tokenVariable = "lb-provider/hcloud/token"
+  endpoint      = "https://norca-provider.service.eu.norca:8443/classes/hcloud-lb"
+  tokenVariable = "providers/hetzner-eu"
 
   capabilities {
     internal = true
@@ -95,7 +96,7 @@ spec {
 | `spec.capabilities.internal` | The provider can create load balancers that are not reachable from the internet. Default `false`. |
 | `spec.capabilities.ports` | Frontend ports the provider supports, such as `80,443,8000-8100`. Empty means any port. |
 | `spec.parameters` | Provider specific settings; sent with every call. |
-| `status.lastHeartbeat` | RFC 3339 time. The provider updates it while it runs. |
+| `status.heartbeat` | RFC 3339 time. The provider updates it while it runs (the same field as in the status of a [NodeProvider](/docs/features/node-scaling/nodeprovider)). |
 | `status.version` | Version of the provider. Informational. |
 
 A class **without** a heartbeat is a static registration and always available.
@@ -162,7 +163,11 @@ answer carries:
 `ready` says that the load balancer serves traffic; while it is `false`, the
 `message` explains why and the operator asks again shortly. `addresses` and
 `resource` appear in the status of the `LoadBalancer`. Any other status code is
-an error and is retried.
+an error. A failure has the same shape as in the
+[node provider contract](/docs/features/node-scaling/writing-a-provider):
+`{"reason": "invalid", "error": "port 9000 is not supported"}`; `422` is a
+request the provider cannot satisfy, `502` a failure of the platform, `401` a
+wrong token. The operator retries all of them with backoff.
 
 `DELETE` removes everything the provider created for the load balancer. It
 answers `2xx`, or `404` if there is nothing to delete. If it fails, the
@@ -171,7 +176,7 @@ finalizer keeps the `LoadBalancer` object, and the operator tries again.
 ## Running a provider
 
 A provider is an ordinary application. Three things matter in a real
-deployment, and the example provider shows each of them.
+deployment, and `norca-provider` (below) shows each of them.
 
 **The registered port is not the port it listens on.** A provider that runs in
 a container, behind a port mapping or behind a proxy listens on one address and
@@ -180,8 +185,8 @@ is reached on another. The operator calls what the provider **registered**
 register the address and port of the **host**. In a task of a Norca job these
 are in the environment: `NORCA_PORT_<label>` is the port inside the container
 (the `to` of a mapped port), `NORCA_HOST_IP_<label>` and
-`NORCA_HOST_PORT_<label>` the address and port of the host. The example
-provider expands them in its configuration file
+`NORCA_HOST_PORT_<label>` the address and port of the host. `norca-provider`
+expands them in its configuration file
 (`"listen": "0.0.0.0:${NORCA_PORT_api}"`,
 `"advertise_url": "http://${NORCA_HOST_IP_api}:${NORCA_HOST_PORT_api}"`), and a
 class can have its own full `endpoint`. In the `template` block of a job file
@@ -207,27 +212,81 @@ operator and the providers in a pool whose nodes nothing scales or drains
 automatically, two instances on different nodes; see
 [where to run a controller](/docs/features/operator-framework/controllers#where-to-run-a-controller).
 
-### The example provider
+### norca-provider
 
-[`norca-loadbalancer`](https://github.com/bacanoo-io/norca-loadbalancer) is an
-example of such an application: provider types that register themselves behind
-one interface, each in its own package with its own ID; declared parameters
-with defaults, secrets (`env:NAME`, `file:/path`) and **dynamic** parameters
-that can be changed in the `LoadBalancerClass` object without a restart; one
-process serving any number of classes; and a registrar that writes the
-`LoadBalancerClass` objects, keeps their heartbeat, registers a class again if
-its object disappears, and works on the task API socket as well as over the
-network. It has three types:
+`norca-provider`, in the repository
+[`norca-platform`](https://github.com/bacanoo-io/norca-platform), is the provider
+application of Norca. One application serves the load balancer classes and the
+[node providers](/docs/features/node-scaling/writing-a-provider) of the
+platforms in its configuration, on one HTTP server. A platform is one **type**,
+with the parameters its two sides share (the credentials and the API of the
+platform); a type implements a node provider, a load balancer provider or both:
 
-| Type | What it does |
-| --- | --- |
-| `tcpproxy` | TCP load balancers inside the process: round robin, failover to the next target. Needs no other software. |
-| `nginx` | TCP load balancers as nginx stream servers on the machine, with a rollback when nginx rejects a change. |
-| `mock` | Keeps the load balancers in memory; its `ready` and `latency` parameters are dynamic, to simulate an outage. |
+| Type | Load balancers | Nodes |
+| --- | --- | --- |
+| `hcloud`, `scaleway`, `aws`, `gcp`, `digitalocean`, `vultr` | the load balancers of the cloud, through its REST API | not yet |
+| `nginx` | TCP load balancers as nginx stream servers on the machine, with a rollback when nginx rejects a change | no |
+| `tcpproxy` | TCP load balancers inside the process: round robin, failover to the next target; needs no other software | no |
+| `docker` | no | containers on the host, for the lab |
+| `mock` | keeps the load balancers in memory; its `ready` and `latency` parameters are dynamic, to simulate an outage | in memory |
 
-It also has a `Dockerfile` (a static binary on `FROM scratch`). A cloud
-provider is a new package next to these; the README of the repository describes
-the interface.
+`norca-provider types` lists the linked types with their parameters. The
+parameters are declared with defaults, secrets (`env:NAME`, `file:/path`) and,
+for a class, **dynamic** parameters that can be changed in the
+`LoadBalancerClass` object without a restart. The configuration (JSON) names
+the providers; only the sections a provider has are started and registered:
+
+```json
+{
+  "listen": ":8443",
+  "tls": { "cert": "/secrets/tls.crt", "key": "/secrets/tls.key" },
+  "advertise_url": "https://norca-provider.service.eu.norca:8443",
+  "providers": [
+    {
+      "name": "hetzner-eu",
+      "type": "hcloud",
+      "params": { "token": "env:HCLOUD_TOKEN" },
+      "token_file": "/secrets/provider-token",
+      "token_variable": "providers/hetzner-eu",
+      "loadbalancer": {
+        "classes": [
+          { "class": "hcloud-lb", "params": { "location": "fsn1", "type": "lb11" } },
+          { "class": "hcloud-private", "params": { "location": "fsn1", "network_id": 4711 }, "internal": true }
+        ]
+      }
+    }
+  ]
+}
+```
+
+- A class is served at `advertise_url` + `/classes/<class>`, the endpoint it
+  registers; `endpoint` in a class replaces it.
+- One **token per provider**: `token` (or `token_file`) is required of every
+  call to its classes and its node provider, `token_variable` is the Variable
+  (item `token`) the operators read to send it. Without a token the provider
+  needs `no_auth`, for a trusted network only.
+- `internal` and `ports` of a class limit what it offers: `internal: false`
+  only public load balancers, `internal: true` requires a type that can make
+  internal ones, `ports` the frontend ports. They are published as the
+  `capabilities` of the class and checked by the provider too.
+- A section the type does not implement is an error at start (`type nginx has
+  no node provider`). `-serve lb` (or `node`) serves only that part of the
+  file, for running the two sides in separate jobs.
+
+The registrar writes a `LoadBalancerClass` for every class, keeps its
+heartbeat, registers a class again if its object disappears, removes the
+registrations on exit, and works on the task API socket as well as over the
+network. `GET /healthz`, `GET /v1/types`, `GET /v1/providers` and
+`GET /v1/classes` describe the process; tokens are never listed. The
+`norca-provider` pack of the [pack registry](/docs/features/packages/registry)
+runs it as a job with its configuration, token Variable and ACL policy. A
+`Dockerfile` builds a static image on `FROM scratch`.
+
+A new platform is a package under `providers/` that registers its type; the
+package `provider/lb/lbtest` checks a load balancer provider the way the
+operator calls it (idempotent `PUT`, changing and empty targets, `DELETE` of
+what does not exist, the token, an internal request of a class without the
+capability). The README of the repository describes the interface.
 
 The whole chain is tested in the lab (`norca-lab`, `.\run-tests.ps1 -Cases ...`)
 with ACLs on, as jobs with their workload identity:
@@ -250,9 +309,10 @@ service.
 - The **operator** reads the registrations: `read` on `norca.io/LoadBalancerClass`
   in the namespace `"*"` of its ACL policy (the kind is cluster-scoped), and
   `read` on the token Variables (`-class-token-namespace`, default `default`).
-  `loadbalancer-policy.hcl` in the example has the rules.
+  `loadbalancer-policy.hcl` of the operator has the rules.
 - A **provider** needs `read`, `write` and `write-status` on
-  `norca.io/LoadBalancerClass`, and nothing else. Who may write the kind
+  `norca.io/LoadBalancerClass` (and on `norca.io/NodeProvider` if it also
+  serves nodes), and nothing else. Who may write the kind
   decides who can receive calls (and the tokens) for a class, so grant it only
   to the provider's identity.
 
@@ -271,9 +331,9 @@ service.
 - The provider API has no status call: the answer of `PUT` is the state, and
   the operator calls it again periodically. Two providers for one class are not
   supported; the name of the object is unique.
-- A MetalLB-like provider for bare metal and the cloud providers (Hetzner,
-  Scaleway, AWS, Google) are separate applications and are not part of Norca;
-  the example provider above has none of them.
+- A MetalLB-like provider for bare metal does not exist yet. The cloud types of
+  `norca-provider` are tested against fakes of the cloud APIs, not yet against
+  the clouds.
 - An https provider needs a certificate that the operator trusts: one signed by a CA the system
   trusts, or by a private CA given with `-class-ca-file` (the file is read when the operator
   starts; a change needs a restart). The certificate must be valid for the host or the IP

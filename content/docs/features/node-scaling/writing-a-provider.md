@@ -12,11 +12,14 @@ provider that the group names; the provider talks to the platform with its own c
 never enter the cluster. This page is for writing one. The objects are described in
 [NodeProvider](/docs/features/node-scaling/nodeprovider) and [NodeGroup](/docs/features/node-scaling/nodegroup).
 
-The Go packages are in the repository `norca-platform`: `nodescaler/provider` (the contract, the
-HTTP handler and the client), `nodescaler/registrar` (the registration and the heartbeat),
-`nodescaler/provider/providertest` (the contract checks), and two providers to start from:
-`nodescaler/provider/mock` (in memory) and `nodescaler/provider/docker` (containers on one host, for
-the lab). `cmd/nodeprovider` runs either of them.
+A provider is usually a **type of `norca-provider`**, the provider application in the repository
+`norca-platform`: one package per platform under `providers/`, which can serve node groups and
+[load balancer classes](/docs/features/operator-framework/loadbalancer-providers) with the same
+credentials. The Go packages: `provider/node` (the contract, the HTTP handler and the client),
+`provider/registrar` (the registration and the heartbeat of `NodeProvider` and `LoadBalancerClass`
+objects), `provider/node/providertest` (the contract checks), `provider` (the type registry, the
+configuration and the server of `norca-provider`), and two providers to start from:
+`providers/mock` (in memory) and `providers/docker` (containers on one host, for the lab).
 
 ## The contract
 
@@ -58,7 +61,8 @@ An instance:
 `state` is `creating`, `running`, `deleting` or `failed`; a failed instance says why in `reason`
 and `message`. A request that cannot be served is answered with an error body `{"reason": ...,
 "error": ...}`: `invalid` (status 400; an unknown group is 404), `quota` or `no_capacity` (422), or
-`error` (500). With `provider.NewHandler` a provider returns Go errors and the handler writes them.
+`error` (500). With `node.NewHandler` a provider returns Go errors and the handler writes them. The
+load balancer contract answers its failures in the same shape.
 
 ## What the operator relies on
 
@@ -97,8 +101,8 @@ lists. These rules are what make that safe.
   address binding. Return them already from the create when you can: the first join of a node waits
   until the operator has them, or until the instance is `running` without any. A list replaces the
   one before; an empty list does not clear it. The docker provider reports the container's bridge
-  address and the host's (`-docker-host-address`): its containers reach other machines from the
-  host's address.
+  address and the host's (its parameter `host_addresses`, by default the address of its endpoint):
+  its containers reach other machines from the host's address.
 - **Delete is idempotent:** deleting an instance that is gone is not an error.
 - **Set `created_at`.** The orphan sweep leaves an instance alone until it is older than
   `-orphan-after`.
@@ -125,41 +129,42 @@ unavailable, so a heartbeat every 10–30 seconds is right.
 
 ## A provider in Go
 
-A provider implements `provider.Provider`, serves it with `provider.NewHandler` and registers it
-with `registrar.Registrar`. `cmd/nodeprovider` does exactly this for the mock and the docker
-provider; a provider for a cloud replaces the implementation:
+A provider implements `node.Provider` (`Group`, `Create`, `Delete`) and registers its platform as a
+type of `norca-provider`. `norca-provider` serves it with `node.NewHandler` at
+`advertise_url` + `/providers/<name>`, checks the token, and registers the `NodeProvider` object with
+the generic registrar; the platform only talks to its API:
 
 ```go
 type cloud struct{ api *cloudAPI } // the platform's client, with its credentials
 
-func (c *cloud) Group(ctx context.Context, group string, params map[string]any) (*provider.Group, error) {
+func (c *cloud) Group(ctx context.Context, group string, params map[string]any) (*node.Group, error) {
 	zone, ok := c.api.Zone(group)
 	if !ok {
-		return nil, provider.ErrUnknownGroup
+		return nil, node.ErrUnknownGroup
 	}
 	size, err := c.api.MachineType(ctx, params["size"])
 	if err != nil {
-		return nil, provider.Fail(provider.ReasonInvalid, "size: %v", err)
+		return nil, node.Fail(node.ReasonInvalid, "size: %v", err)
 	}
 	machines, err := c.api.List(ctx, zone, "norca.node_group") // by label, from the platform
 	if err != nil {
 		return nil, err
 	}
-	g := &provider.Group{Name: group, Capacity: &provider.Capacity{CPU: size.MHz, Memory: size.MB, Disk: size.DiskMB},
-		Instances: []provider.Instance{}}
+	g := &node.Group{Name: group, Capacity: &node.Capacity{CPU: size.MHz, Memory: size.MB, Disk: size.DiskMB},
+		Instances: []node.Instance{}}
 	for _, m := range machines {
 		g.Instances = append(g.Instances, toInstance(m)) // ID, name, state, labels, request ID, created
 	}
 	return g, nil
 }
 
-func (c *cloud) Create(ctx context.Context, group string, req provider.CreateRequest) ([]provider.Instance, error) {
+func (c *cloud) Create(ctx context.Context, group string, req node.CreateRequest) ([]node.Instance, error) {
 	if done, err := c.api.ListByLabel(ctx, "norca.request", req.RequestID); err != nil || len(done) > 0 {
 		return toInstances(done), err // the same request again: what it created the first time
 	}
-	// Check the request (provider.ReasonInvalid), then the quota (provider.ReasonQuota) before
-	// creating anything, and create one machine per instance with its name, the labels of the
-	// request and the bootstrap as the user data.
+	// Check the request (node.ReasonInvalid), then the quota (node.ReasonQuota) before creating
+	// anything, and create one machine per instance with its name, the labels of the request and
+	// the bootstrap as the user data.
 	...
 }
 
@@ -171,35 +176,63 @@ func (c *cloud) Delete(ctx context.Context, group, id string) error {
 	return err
 }
 
-func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-	p := &cloud{api: newCloudAPI()}
-	srv := &http.Server{Addr: ":8443", Handler: provider.NewHandler(p, token, logger), ReadHeaderTimeout: 10 * time.Second}
-	go srv.ListenAndServeTLS(certFile, keyFile)
+// The parameters the node and the load balancer side of the platform share, and those of a group.
+var shared = []params.Param{
+	{Name: "token", Type: params.ParamString, Required: true, Secret: true, Description: "API token"},
+}
+var groupParams = []params.Param{
+	{Name: "location", Type: params.ParamString, Required: true, Description: "the zone of the group"},
+}
 
-	store, _ := registrar.NewAPIStore(nil) // the Norca API of NORCA_ADDR (also unix://) and NORCA_TOKEN
-	reg := &registrar.Registrar{
-		Store: store,
-		Registration: registrar.Registration{
-			Name: "hetzner-eu", Endpoint: "https://provider.example.org:8443",
-			TokenVariable: "nodescaler/providers/hetzner-eu",
-			Groups: []registrar.GroupSpec{{Name: "fsn1", Max: 20}, {Name: "nbg1", Max: 20}},
+func init() {
+	provider.Register(provider.Type{
+		ID: "mycloud", Description: "My Cloud", Params: shared,
+		Node: &provider.NodeSpec{
+			GroupParams: groupParams,
+			New: func(cfg provider.NodeConfig) (node.Provider, error) {
+				// cfg.Values: the shared and node parameters; cfg.Groups: name, max, parameters.
+				return &cloud{api: newCloudAPI(cfg.Values.String("token"), cfg.Groups)}, nil
+			},
 		},
-		Interval: 15 * time.Second, Version: version, DeregisterOnExit: true, Logger: logger,
-	}
-	_ = reg.Run(ctx) // registers, then reports the heartbeat until ctx ends
-	_ = srv.Shutdown(context.Background())
+		// LB: &provider.LBSpec{...} for load balancers of the same platform.
+	})
 }
 ```
 
-The calls of `cloudAPI` stand for the platform's SDK; the license of the SDK must be on the allowed
+With a blank import in `providers/all`, the type is configured in the file of `norca-provider`:
+
+```json
+{
+  "listen": ":8443",
+  "tls": { "cert": "/secrets/tls.crt", "key": "/secrets/tls.key" },
+  "advertise_url": "https://norca-provider.service.eu.norca:8443",
+  "providers": [{
+    "name": "mycloud-eu", "type": "mycloud",
+    "params": { "token": "env:MYCLOUD_TOKEN" },
+    "token_file": "/secrets/provider-token",
+    "token_variable": "nodescaler/providers/mycloud-eu",
+    "node": { "groups": [{ "name": "fsn1", "max": 20, "params": { "location": "fsn1" } }] }
+  }]
+}
+```
+
+The `NodeProvider` object `mycloud-eu` then has the endpoint
+`https://norca-provider.service.eu.norca:8443/providers/mycloud-eu`, its groups with `max` and the
+parameters that are not secret, and the heartbeat of the process. A type without a node section in
+its code fails at start when the file asks for one. `norca-provider types` lists the linked types
+and their parameters; the `norca-provider` pack of the pack registry runs it as a job.
+
+An application of its own can use the packages directly: `node.NewHandler` for the server and
+`registrar.Registrar` with `registrar.NodeProvider(name, endpoint, tokenVariable, groups, parameters)`
+in its `Registrations` for the object and the heartbeat.
+
+The calls of `cloudAPI` stand for the platform's API; a dependency must be on the allowed license
 list of the repository.
 
 ## The contract checks
 
-`nodescaler/provider/providertest` checks a provider the way the operator uses it: it serves the
-provider with `provider.NewHandler`, calls it with the operator's client over HTTP, and checks the
+`provider/node/providertest` checks a provider the way the operator uses it: it serves the
+provider with `node.NewHandler`, calls it with the operator's client over HTTP, and checks the
 capacity of a group without instances, the idempotent create (names, labels, request IDs), invalid
 requests and unknown groups, the quota reason of a full group, the delete, a restart that loses
 nothing, and the token. The mock and the docker provider run it in their tests; a provider for a
@@ -208,8 +241,8 @@ cloud runs it against a test account, with groups of its own:
 ```go
 func TestContract(t *testing.T) {
 	providertest.Run(t, providertest.Config{
-		New:        func(t *testing.T) provider.Provider { return newTestProvider(t) },
-		Restart:    func(t *testing.T, _ provider.Provider) provider.Provider { return newTestProvider(t) },
+		New:        func(t *testing.T) node.Provider { return newTestProvider(t) },
+		Restart:    func(t *testing.T, _ node.Provider) node.Provider { return newTestProvider(t) },
 		Group:      "fsn1",
 		Params:     map[string]any{"size": "cx22"},
 		QuotaGroup: "fsn1-small", QuotaMax: 2,

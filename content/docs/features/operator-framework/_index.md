@@ -65,9 +65,9 @@ tell whether the controller has acted on the latest spec.
 
 ## Example
 
-The running example of this section is the LoadBalancer operator, the sample
-operator of the controller SDK
-([`norca/controller/examples/loadbalancer`](https://github.com/bacanoo-io/norca/tree/main/norca/controller/examples/loadbalancer)).
+The running example of this section is the LoadBalancer operator, built on
+the controller SDK
+([`loadbalancer/operator`](https://github.com/bacanoo-io/norca-platform/tree/main/loadbalancer/operator) in the repository `norca-platform`).
 A `norca.io/LoadBalancer` object names a service and a frontend port; the
 controller keeps a load balancer that forwards to the healthy instances of the
 service. Its built-in `nomad` class runs the load balancer as a Norca job

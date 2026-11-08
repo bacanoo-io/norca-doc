@@ -26,7 +26,8 @@ Node scaling is built from three parts:
 > **What is available today.** The decisions (the kinds, the policy derived from the objects, the
 > trigger on blocked work, the headroom, the expanders, the dry run) and the operator,
 > `norca-nodescaler` (the `nodescaler-operator` pack), with its provider contract. There is no
-> provider for a cloud yet: the providers that exist are the mock and a docker provider for tests.
+> provider for a cloud yet: the node providers that exist are the `mock` and `docker` types of
+> `norca-provider`, for tests.
 > Without a provider for your platform the scale is a recommendation: use it with
 > `enforce = false` and read the events, or let your own tooling (or a person, with
 > `norca object scale`) act on `spec.replicas`.

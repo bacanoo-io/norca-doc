@@ -10,6 +10,9 @@ the region. A **provider** is an application outside the core that handles one p
 or the VMs of a lab): it creates and deletes machines on request and reports the size of a machine
 kind. It registers itself by writing its object when it starts and keeps a heartbeat in the status.
 Credentials of the platform stay with the provider application and never enter an object.
+`norca-provider` (see [writing a provider](/docs/features/node-scaling/writing-a-provider)) is the
+provider application of Norca: it registers a `NodeProvider` for every provider of its configuration
+that has a node section, with the endpoint `<advertise_url>/providers/<name>`.
 
 The core registers the kind when a server becomes leader, like [`NodeGroup`](/docs/features/node-scaling/nodegroup).
 
@@ -47,7 +50,7 @@ kind = "norca.io/NodeProvider"
 name = "hetzner-eu"
 
 spec {
-  endpoint       = "https://provider.example.org:8443"
+  endpoint       = "https://norca-provider.service.eu.norca:8443/providers/hetzner-eu"
   token_variable = "nodescaler/hetzner-eu/token"
 
   groups = [

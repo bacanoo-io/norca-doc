@@ -178,7 +178,7 @@ host volume `forgejo`.
 
 ## loadbalancer-operator
 
-The LoadBalancer operator of Norca (the sample operator of the controller SDK) packaged as an
+The LoadBalancer operator of Norca (`norca-loadbalancer`, built on the controller SDK) packaged as an
 **operator pack**: one release installs, upgrades, rolls back and uninstalls everything the operator
 needs, in the fixed order of the extended pack format. It is the reference for writing operator packs
 (see the [operator framework](/docs/features/operator-framework)).
@@ -202,8 +202,9 @@ norca pack status lb
 norca pack uninstall lb
 ```
 
-The controller binary (`norca-loadbalancer`) is built from the Norca repository and installed on the
-nodes. A token with less than management rights needs `operator`, `acl` and `admission` write
+The controller binary (`norca-loadbalancer`) is built from the repository `norca-platform`
+(`go build ./cmd/norca-loadbalancer`) and installed on the nodes. The classes other than `nomad` are
+served by `norca-provider` (the [norca-provider](#norca-provider) pack). A token with less than management rights needs `operator`, `acl` and `admission` write
 permissions; applying a release grants no extra permissions.
 
 ## mtls-gateway
@@ -276,6 +277,19 @@ built-in secret store (`nats/users/<name>`); never from pack variables. With `au
 the item `client_token` holds the token (plain or a bcrypt hash of `nats server passwd`; any
 characters, quoted for the NATS configuration parser). `auth_mode = "userpass"` is available from
 pack version 0.3.0.
+
+## norca-provider
+
+`norca-provider`, the provider application of the repository `norca-platform`, as a job: it serves
+the [load balancer classes](/docs/features/operator-framework/loadbalancer-providers) of the
+LoadBalancer operator and the [node providers](/docs/features/node-scaling/writing-a-provider) of the
+node scaling operator named in its configuration, on one HTTP server, and registers them
+(`norca.io/LoadBalancerClass` and `norca.io/NodeProvider` objects with a heartbeat). The release holds
+the job with its configuration file, the token the operators send (a Variable that the job and the
+operators read), an ACL policy bound to the job that may write and write the status of the two kinds
+and nothing else, and a service check on `/healthz`. The kind `norca.io/LoadBalancerClass` must be
+registered first: by the `loadbalancer-operator` pack, or with `loadbalancerclass.kind.hcl` of the
+operator. See the README of the pack for its variables.
 
 ## openobserve
 

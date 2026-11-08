@@ -346,6 +346,6 @@ Check the generated kind with `norca object-kind lint` before you change it.
 ## Reference
 
 - [Controller SDK source](https://github.com/bacanoo-io/norca/tree/main/norca/controller)
-  and the [LoadBalancer sample](https://github.com/bacanoo-io/norca/tree/main/norca/controller/examples/loadbalancer)
+  and the [LoadBalancer operator](https://github.com/bacanoo-io/norca-platform/tree/main/loadbalancer/operator)
 - [`norca operator init`](/docs/commands/operator/init)
 - [Objects HTTP API](/docs/api/objects)

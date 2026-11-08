@@ -244,8 +244,8 @@ metrics-store`, the **Scaling** page of the web UI).
 # Build the operator binary (it is also the TCP proxy of the "nomad" class)
 # and install it on every node. The pack is loadbalancer-operator of the
 # Norca pack registry (see ../README.md#the-pack-registry).
-(cd ../../nomad/controller && go build -o norca-loadbalancer ./examples/loadbalancer)
-sudo install ../../nomad/controller/norca-loadbalancer /usr/local/bin/   # on every node
+(cd ../../../norca-platform && go build -o norca-loadbalancer ./cmd/norca-loadbalancer)
+sudo install ../../../norca-platform/norca-loadbalancer /usr/local/bin/   # on every node
 
 # One release: object kind, ACL policy bound to the controller job,
 # admission policy and the controller job (two instances, leader election).
