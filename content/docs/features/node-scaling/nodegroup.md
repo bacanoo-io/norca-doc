@@ -45,7 +45,7 @@ Fields marked *operator* are used by the operator that creates the machines
 | `rolling` | object | | Replacement of nodes: `mode` (`auto` or `paused`), `generation`, `max_node_age`, `max_unavailable` (at least 1), `max_surge`, `jitter`. *operator* |
 | `deletion` | object | | `policy` (`drain`, `orphan` or `terminate`) and `drain_timeout`. *operator* |
 | `edge` | object | | `min_shutdown_delay` (30 seconds by default): an instance behind a load balancer with a shorter `shutdown_delay` raises `ShortShutdownDelay` when its node leaves. *operator* |
-| `join` | object | | `deadline`, `slow_after`, `max_failures`, `resume_generation`. *operator* |
+| `join` | object | | `deadline`, `slow_after`, `max_failures`, `resume_generation`, and `key_store` (`file`, `tpm` or `auto`: where the nodes keep their keys, [in the TPM](#keys-in-the-tpm) or in a file; unset, the operator's `join_key_store`). *operator* |
 | `policy.evaluation_interval` | duration | server default | How often the checks run. |
 | `policy.cooldown` | duration | server default | The wait after a change, for the checks. |
 | `policy.check` | map of checks | | Checks on the group, see below. They only raise the scale. |
@@ -149,6 +149,41 @@ not cleared when a provider stops reporting them. A provider that reports no add
 binding. A proxy, a load balancer or NAT in front of the endpoint that changes the source address
 would refuse every node: there turn the check off with `join_check_address = false` (or
 `-join-check-address=false`), for example for `join_urls` behind such a load balancer.
+
+### Keys in the TPM
+
+A node can keep its key in the TPM 2.0 of its machine instead of a file. The operator sets it for
+all groups with `join_key_store` of the pack (`-join-key-store`), a group for its nodes with
+`join.key_store`, which wins:
+
+| Value | The key of the node |
+| --- | --- |
+| `file` (default) | A PEM key file (`EC PRIVATE KEY`), readable by root only. |
+| `tpm` | Made in the TPM and never leaves it. A machine without a usable TPM does not join: `norca-join` fails before it uses the token, and the instance fails at the join deadline like any node that does not join. |
+| `auto` | In the TPM where the machine has one (`/dev/tpmrm0`), otherwise in a file. |
+
+With the TPM the key is an ECDSA P-256 key under the storage key of the owner hierarchy, and the
+TPM signs the certificate request, the client certificate of each renewal and the TLS handshakes
+of the agent. The key file at the usual place (`client-key.pem`) is then a TSS2 key file
+(`-----BEGIN TSS2 PRIVATE KEY-----`, the format of the tpm2 providers of OpenSSL): a blob that
+only this TPM can load, useless on another machine or in a copy of the disk. Each renewal makes a
+new key in the TPM and replaces the file; keys are loaded only while in use, so no persistent
+handle or NV space of the TPM is used.
+
+- **Linux only.** On other systems `tpm` fails and `auto` uses a file.
+- **The machine needs a TPM 2.0** with the resource manager device `/dev/tpmrm0`: on clouds a
+  virtual TPM (Google Shielded VM, Azure Trusted Launch, AWS NitroTPM), on hardware the firmware
+  TPM turned on. The owner hierarchy must have no password (the default). `norca-join` and the
+  agent run as root in their units and need read and write access to `/dev/tpmrm0`; no TPM tools
+  are needed on the machine.
+- The agent loads the TSS2 key file itself and checks at its start and at each `SIGHUP` that the
+  TPM can load it. The certificate of the agent works as before for RPC, the HTTP API and the
+  migration of ephemeral disks.
+- The node reports where it keeps its key; the events of a key in the TPM say so
+  (`CertificateIssued`: "joined with its own key (key in its TPM)"). This is what the node says,
+  not a proof: the endpoint does not attest the TPM.
+- A machine without a TPM keeps its key in a file with `auto`. Nodes of the docker provider have
+  no TPM of their own: see [a container node is not a machine](/docs/deployer/node-scaling-machines#a-container-node-is-not-a-machine).
 
 Such a node has the meta `norca.identity = "join"` and no `norca.cert_expires`: it is **not
 replaced for its age** (an explicit `rolling.max_node_age` still applies), and the other reasons of
