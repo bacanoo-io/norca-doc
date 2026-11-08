@@ -90,6 +90,15 @@ lists. These rules are what make that safe.
 - **Report a machine that did not come up as `failed`,** with a message (the docker provider puts the
   last lines of the container's output there). The operator deletes it and asks for another; a row
   of failures stops the group (`JoinFailing`).
+- **Report the `addresses` of an instance** if the platform knows them (optional): every IP address
+  the node's traffic to the operator can come from, its own and the public address of a NAT in front
+  of it. The [join endpoint](/docs/features/node-scaling/nodegroup#nodes-that-make-their-own-keys)
+  accepts the join and the renewals of the node only from them; without addresses there is no
+  address binding. Return them already from the create when you can: the first join of a node waits
+  until the operator has them, or until the instance is `running` without any. A list replaces the
+  one before; an empty list does not clear it. The docker provider reports the container's bridge
+  address and the host's (`-docker-host-address`): its containers reach other machines from the
+  host's address.
 - **Delete is idempotent:** deleting an instance that is gone is not an error.
 - **Set `created_at`.** The orphan sweep leaves an instance alone until it is older than
   `-orphan-after`.

@@ -134,8 +134,21 @@ node:
 The endpoint proves itself with a certificate of the node CA whose only name is a URI no node
 certificate carries, so a node cannot pose as the endpoint. A token is used once, and only the
 latest certificate of an instance renews it: a copy of an older one is refused, with a
-`RenewalRefused` warning in the log of the group. Every join and renewal is an event
+`RenewalRefused` warning in the log of the group. A renewal must bring a new key: a request for
+the key of the current certificate is refused the same way. Every join and renewal is an event
 (`CertificateIssued`, `CertificateRenewed`).
+
+**Bound to the addresses of the instance.** The operator writes the addresses the provider reports
+for an instance into the record of its join, and the endpoint accepts the join and the renewals
+only from one of them: the source address of the connection, no forwarding header. A request from
+another address is refused (`403`) with a `JoinAddressRefused` warning in the log of the group: it
+may be a stolen token or key; a refused join does not use the token. The token is issued before the
+machine exists, so a first join waits (the endpoint answers `503`, `norca-join` tries again a few
+seconds later) until the operator has recorded what the provider reports. Addresses once known are
+not cleared when a provider stops reporting them. A provider that reports no addresses has no
+binding. A proxy, a load balancer or NAT in front of the endpoint that changes the source address
+would refuse every node: there turn the check off with `join_check_address = false` (or
+`-join-check-address=false`), for example for `join_urls` behind such a load balancer.
 
 Such a node has the meta `norca.identity = "join"` and no `norca.cert_expires`: it is **not
 replaced for its age** (an explicit `rolling.max_node_age` still applies), and the other reasons of
