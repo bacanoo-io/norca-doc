@@ -23,8 +23,9 @@ The reference operator pack is `loadbalancer-operator` in the
 
 | Template | Resource |
 | --- | --- |
-| `controller.acl.hcl.tpl` | ACL policy bound to the controller job (`job_acl`): jobs, the proxy jobs' Variables, the leases, and the `norca.io/LoadBalancer` objects |
+| `controller.acl.hcl.tpl` | ACL policy bound to the controller job (`job_acl`): jobs, the proxy jobs' Variables, the leases, the `norca.io/LoadBalancer` objects, and reading the `norca.io/LoadBalancerClass` objects and the token Variables of the providers |
 | `loadbalancer.kind.hcl.tpl` | The kind: JSON Schema with defaults, a CEL transition rule, display columns, optional webhooks, limits |
+| `loadbalancerclass.kind.hcl.tpl` | The LoadBalancerClass kind the providers register with (`class_kind_enabled`, on by default): endpoint, token Variable, capabilities, parameters, `status.heartbeat` |
 | `service-marks.admission.hcl.tpl` | Admission policy: services marked with `norca_lb_port` must name a valid port (optional) |
 | `controller.nomad.tpl` | The controller job (two instances with leader election) and the optional webhook task |
 
