@@ -153,6 +153,11 @@ protocol version 3 requires Nomad 0.8.0 or newer (or Norca) on all
 servers in order to work. Raft protocol version 2 will be removed in
 Nomad 1.4.0.
 
+Norca speaks Raft protocol 3 only and has no `raft_protocol` option: a
+server configuration that still sets it is refused. A Nomad cluster must
+run Raft protocol 3 before its servers move to Norca; the steps below are
+the Nomad ones, with Nomad's [`raft_protocol`] option.
+
 To see the version of the Raft protocol in use on each server, use the
 `norca operator raft list-peers` command.
 
@@ -224,6 +229,6 @@ After running this script, if the upgrade is for a Nomad version lower
 than v1.3.0, update the [`raft_protocol`] in the server's
 configuration to `3` and restart the server.
 
-[`raft_protocol`]: /docs/configuration/server#raft_protocol
+[`raft_protocol`]: https://developer.hashicorp.com/nomad/docs/configuration/server#raft_protocol
 [`leave_on_interrupt`]: /docs/configuration#leave_on_interrupt
 [`leave_on_terminate`]: /docs/configuration#leave_on_terminate

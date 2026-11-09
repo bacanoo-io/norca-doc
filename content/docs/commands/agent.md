@@ -132,10 +132,6 @@ via CLI arguments. The `agent` command accepts the following arguments:
 
 - `-plugin-dir=<path>`: Equivalent to the [plugin_dir] config option.
 
-- `-raft-protocol=<num>`: Equivalent to the server
-  [`raft_protocol`](/docs/configuration/server#raft_protocol) config option
-  (default `3`).
-
 - `-region=<region>`: Equivalent to the [region] config option.
 
 - `-rejoin`: Equivalent to the [rejoin_after_leave] config option.

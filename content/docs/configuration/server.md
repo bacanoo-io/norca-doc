@@ -293,12 +293,6 @@ server {
   }
   ```
 
-- `raft_protocol` `(int: 3)` - Specifies the Raft protocol version to use when
-  communicating with other Norca servers. This affects available Autopilot
-  features and is typically not required as the agent internally knows the
-  latest version, but may be useful in some upgrade scenarios. Must be `3` in
-  Nomad v1.4 or later.
-
 - `raft_multiplier` `(int: 1)` - An integer multiplier used by Norca servers to
   scale key Raft timing parameters. Omitting this value or setting it to 0 uses
   default timing described below. Lower values are used to tighten timing and
