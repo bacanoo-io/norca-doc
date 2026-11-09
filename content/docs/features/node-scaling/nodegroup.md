@@ -30,6 +30,7 @@ Fields marked *operator* are used by the operator that creates the machines
 | `replicas` | integer | | The scale: the number of nodes the group should have. Written by the autoscaler, by a person or tool (`norca object scale`). |
 | `min` | integer | `0` | The fewest nodes. |
 | `max` | integer, required | | The most nodes. |
+| `schedule` | map of windows | | Recurring windows that change `min` and `max` for a time, see [scheduled windows](#scheduled-windows). |
 | `priority` | integer | `0` | For the `priority` expander: lower is tried first. |
 | `weight` | integer, at least 1 | `1` | For the `weighted` expander. |
 | `headroom_nodes` | integer | `0` | Keep free capacity worth this many nodes ahead of the work. |
@@ -65,6 +66,57 @@ Durations are written as numbers with `s`, `m`, `h` or `d`: `30s`, `15m`, `1h30m
 | `query_window` | The range of the query. |
 | `strategy` | Exactly one strategy with its settings: `strategy "target-value" { target = 70 }`. |
 | `on_error` | `fail` or `ignore`. |
+
+### Scheduled windows
+
+`schedule` is a map from the name of a window to its settings. While a window is active, its `min`
+raises the minimum of the group and its `max` lowers the maximum:
+
+| Field | Meaning |
+| --- | --- |
+| `start` | When the window opens: a cron expression of five fields (minute, hour, day of month, month, day of week), in UTC. Required. |
+| `end` | When it closes, a cron expression. Exactly one of `end` and `duration`. |
+| `duration` | How long it stays open after each `start`, for example `12h` or `2d`. |
+| `min` | The minimum of the group while the window is open: at most `max` of the group. |
+| `max` | The maximum of the group while the window is open: at least `min` of the group. |
+
+```hcl
+spec {
+  min = 1
+  max = 8
+
+  # On weekdays, 07:00 to 19:00 UTC: at least 4 nodes.
+  schedule "business-hours" {
+    start    = "0 7 * * 1-5"
+    duration = "12h"
+    min      = 4
+  }
+
+  # Every night, 22:00 to 06:00 UTC: at most 2 nodes.
+  schedule "night" {
+    start = "0 22 * * *"
+    end   = "0 6 * * *"
+    max   = 2
+  }
+}
+```
+
+The bounds of the moment hold for every decision of the autoscaler:
+
+- **A group below the minimum of a window** is raised to it at the start of the window, without
+  blocked work and without waiting for the cooldown.
+- **A group above the maximum of a window** is lowered a node at a time, whatever its use and
+  whether it has a `policy.scale_down` block: a node goes the way of a [scale
+  down](/docs/features/node-scaling#scale-down) (the operator drains it), the next one when the
+  group has all its nodes again. Not while nodes join or go, and not while the operator holds the
+  scale down (`ScaleDownBlocked`).
+- **Blocked work, the headroom and the checks** do not raise the group above the maximum of a
+  window, and the scale down by use does not lower it below the minimum.
+
+When windows overlap, the largest `min` and the smallest `max` hold; when that `min` is above that
+`max`, the `max` holds. A window whose `start` or `end` cannot be read is left out (the leader logs
+it once) and the others still hold. The reason of a `Scaled` event names the windows, for example
+`maximum 2 (schedule "night": max 2)`. Outside every window, `min` and `max` of the group hold.
 
 ## Status
 
@@ -455,6 +507,9 @@ The kind refuses an object when:
 - `replicas` is not between `min` and `max`;
 - `provider` is not set and `engine` is not `external`;
 - `pool`, `datacenter` or `node_class` is changed;
+- a window of `schedule` has no `start`, both or neither of `end` and `duration`, neither `min`
+  nor `max`, a `min` above its `max` or above the `max` of the group, or a `max` below the `min`
+  of the group;
 - a duration, a CIDR, a share or an enum value is not in the form above, a nested block has an
   unknown field, or a check has no strategy or more than one.
 
