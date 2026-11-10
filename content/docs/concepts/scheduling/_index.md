@@ -13,7 +13,7 @@ for implementation details on scheduling in Norca.
 
 - [Scheduling Internals](/docs/concepts/scheduling/scheduling/) - An overview of how the scheduler works.
 - [Placement](/docs/concepts/scheduling/placement/) - Explains how placements are computed and how they can be adjusted.
-- [Preemption](/docs/concepts/scheduling/preemption/) - Details of preemption, an advanced scheduler feature introduced in Nomad 0.9.
+- [Preemption](/docs/concepts/scheduling/preemption/) - Details of preemption, an advanced scheduler feature.
 
 [omega]: https://research.google.com/pubs/pub41684.html
 [borg]: https://research.google.com/pubs/pub43438.html

@@ -7,7 +7,7 @@ weight: 1
 
 ## Build from source
 
-Norca is built from the `nomad/` directory of the [Norca repository](https://github.com/bacanoo-io/norca)
+Norca is built from the `norca/` directory of the [Norca repository](https://github.com/bacanoo-io/norca)
 (Go module `github.com/bacanoo-io/norca/norca`).
 
 {{% steps %}}

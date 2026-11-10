@@ -19,7 +19,7 @@ stages by sorting the respective queues accordingly (higher priority jobs get mo
 
 ### The problem: priority inversion
 
-Prior to Nomad 0.9, when a cluster is at capacity, any allocations that result from a newly scheduled or updated
+Without preemption, when a cluster is at capacity, any allocations that result from a newly scheduled or updated
 job remain in the pending state until sufficient resources become available - regardless of the defined priority.
 This leads to **priority inversion**, where a low priority task can prevent high priority tasks from completing.
 
@@ -31,7 +31,7 @@ into the plan queue.
 
 ## Details
 
-Preemption is enabled by default in Nomad 0.9 for system jobs. Operators can use the [scheduler config](/docs/api/operator#update-scheduler-configuration) API endpoint to disable preemption.
+Preemption is enabled by default for system jobs and disabled for service, batch and sysbatch jobs. Operators can use the [scheduler config](/docs/api/operator#update-scheduler-configuration) API endpoint to disable preemption.
 
 ### The priority delta rule
 
