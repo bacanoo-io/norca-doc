@@ -75,9 +75,9 @@ run the command with a job prefix instead of the exact job ID.
 
 - `-latest`: Display the latest deployment only.
 
-- `-json` : Output the deployment in its JSON format.
+- `-json`: Output the deployment in its JSON format.
 
-- `-t` : Format and display the deployment using a Go template.
+- `-t`: Format and display the deployment using a Go template.
 
 - `-verbose`: Show full information.
 

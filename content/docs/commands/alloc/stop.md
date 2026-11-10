@@ -22,7 +22,7 @@ matching allocs and information will be displayed.
 
 Stop will issue a request to stop and reschedule the allocation. An interactive
 monitoring session will display log lines as the allocation completes shutting
-down. It is safe to exit the monitor early with ctrl-c.
+down. It is safe to exit the monitor early with `ctrl-c`.
 
 When ACLs are enabled, this command requires a token with the
 `alloc-lifecycle`, `read-job`, and `list-jobs` capabilities for the
@@ -86,18 +86,20 @@ allocation's namespace.
 
 - `-verbose`: Display verbose output.
 
-- `-no-shutdown-delay`
-  Ignore the group and task [`shutdown_delay`] configuration so that
+- `-no-shutdown-delay`: Ignore the group and task [`shutdown_delay`] configuration so that
   there is no delay between service deregistration and task
-  shutdown. Note that using this flag will result in failed network
-  connections to the allocation being stopped.
+  shutdown.
+
+  > [!WARNING]
+  > Note that using this flag will result in failed network
+  > connections to the allocation being stopped.
 
 - `-respect-disruption` (Norca): Stop the allocation through the
   [eviction API](/docs/api/allocations#evict-allocation), which stops and
   reschedules it like a migration only if the
   [disruption budget](/docs/features/disruption-budget) of its task group allows
-  it. If the budget does not allow it, the command fails with exit code 1 and
-  the allocation keeps running. If the allocation is already stopping or
+  it. **If the budget does not allow it, the command fails with exit code 1 and
+  the allocation keeps running.** If the allocation is already stopping or
   migrating, the command reports it and exits with 0. Without this flag, the
   stop ignores disruption budgets, as before.
 

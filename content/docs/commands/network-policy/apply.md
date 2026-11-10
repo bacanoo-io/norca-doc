@@ -20,7 +20,7 @@ with `-json` the JSON form of the [API](/docs/api/network-policies).
 
 A namespace policy is created in the namespace set by its `namespace`
 attribute, or in the namespace given with `-namespace` if the file sets none.
-The namespace must exist. Applying a policy with an existing name replaces it.
+**The namespace must exist. Applying a policy with an existing name replaces it.**
 
 If ACLs are enabled, this command requires the `write-network-policy`
 capability in the namespace (`network_policy { policy = "write" }`), or

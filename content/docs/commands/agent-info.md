@@ -73,11 +73,11 @@ capability.
 Depending on the agent queried, information from different subsystems is
 returned. These subsystems are described below:
 
-- client - Status of the local Norca client
+- `client` - Status of the local Norca client
 - `nomad` - Status of the local Norca server
-- serf - Gossip protocol metrics and information
-- raft - Status information about the Raft consensus protocol
-- runtime - Various metrics from the runtime environment
+- `serf` - Gossip protocol metrics and information
+- `raft` - Status information about the Raft consensus protocol
+- `runtime` - Various metrics from the runtime environment
 
 ## Examples
 

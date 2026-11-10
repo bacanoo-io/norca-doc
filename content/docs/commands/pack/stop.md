@@ -8,7 +8,7 @@ The `pack stop` command stops the jobs of the specified pack deployment. To dele
 the cluster, give `--purge` or use [`pack destroy`](/docs/commands/pack/destroy); for releases, prefer
 [`pack uninstall`](/docs/commands/pack/uninstall).
 
-By default, the command stops all jobs of the pack deployment. If the pack was run with variable
+**By default, the command stops all jobs of the pack deployment.** If the pack was run with variable
 overrides that set the job names, pass the same overrides to target the right jobs.
 
 Without `--name` the deployment is the one named after the pack (`pack@ref` with an explicit

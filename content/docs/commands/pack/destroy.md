@@ -9,7 +9,7 @@ deployed from the client it is the same as `norca pack stop <pack name> --purge`
 a [release](/docs/features/packages/releases) is uninstalled by the servers, like
 [`pack uninstall`](/docs/commands/pack/uninstall), unless `--client-side` is given.
 
-By default, the command deletes all jobs of the pack deployment. If the pack was run with variable
+**By default, the command deletes all jobs of the pack deployment.** If the pack was run with variable
 overrides that set the job names, pass the same overrides to target the right jobs.
 
 Without `--name` the deployment is the one named after the pack (`pack@ref` with an explicit

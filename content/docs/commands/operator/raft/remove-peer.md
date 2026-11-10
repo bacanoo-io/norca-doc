@@ -10,7 +10,7 @@ Remove the Norca server with given address from the Raft configuration.
 
 There are rare cases where a peer may be left behind in the Raft quorum even
 though the server is no longer present and known to the cluster. This command
-can be used to remove the failed server so that it is no longer affects the Raft
+can be used to remove the failed server so that it no longer affects the Raft
 quorum. If the server still shows in the output of the [`norca server members`]
 command, it is preferable to clean up by running [`norca server force-leave`]
 instead of this command.

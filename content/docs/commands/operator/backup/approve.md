@@ -8,12 +8,12 @@ weight: 11
 The `operator backup approve` command approves a pending full restore of the
 region as the second administrator, and runs it. Review the preview first with
 [`operator backup restores <restore_id>`](/docs/commands/operator/backup/restores).
-The requester can't approve their own request.
+**The requester can't approve their own request.**
 
 The restore takes an automatic, pinned backup of the current state first
 (shown as the pre-restore backup, to undo the restore), adds the keys of the
 backup to the keystore of every server, and restores the Raft state of the
-backup. Every change since the backup is lost; clients stop the allocations
+backup. **Every change since the backup is lost**; clients stop the allocations
 that are not in the backup. The command waits until the restore has
 finished.
 

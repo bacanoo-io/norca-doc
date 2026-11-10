@@ -64,7 +64,7 @@ via flags detailed below.
 ## Create Options
 
 - `-name`: Sets the human readable name for the ACL auth method. The name must
-  be between 1-128 characters and is a required parameter.
+  be between 1-128 characters and **is a required parameter**.
 
 - `-type`: Sets the type of the auth method. Supported types are `OIDC` and `JWT`.
 
@@ -77,8 +77,8 @@ via flags detailed below.
 - `-default`: Specifies whether this auth method should be treated as a default
   one in case no auth method is explicitly specified for a login command.
 
-- `-config`: Auth method [configuration] in JSON format. May be prefixed with '@'
-  to indicate that the value is a file path to load the config from. '-' may also
+- `-config`: Auth method [configuration] in JSON format. May be prefixed with `'@'`
+  to indicate that the value is a file path to load the config from. `'-'` may also
   be given to indicate that the config is available on stdin.
 
 - `-json`: Output the ACL auth-method in a JSON format.

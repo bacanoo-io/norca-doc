@@ -6,7 +6,7 @@ weight: 6
 ---
 
 The `operator backup download` command prints a short-lived (15 minutes)
-pre-signed URL of an encrypted backup object. The object stays encrypted;
+pre-signed URL of an encrypted backup object. **The object stays encrypted**;
 decrypt it with the age CLI and the identity of the backup.
 
 Only S3 destinations sign URLs. Without `-destination` the first S3

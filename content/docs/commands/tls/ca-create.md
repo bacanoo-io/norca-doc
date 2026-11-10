@@ -39,12 +39,12 @@ norca tls ca create [options]
 - `-name-constraint`: Enables the DNS name restriction functionality to the CA.
   Results in the CA rejecting certificates for any other DNS zone. If enabled,
   `localhost` and the value of `-domain` will be added to the allowed DNS zones
-  field. Defaults to false.
+  field. Defaults to `false`.
 
-> [!WARNING]
-> If `-name-constraint` is enabled and you intend to serve the Norca web UI
-> over HTTPS, its DNS name must be added with `-additional-domain`. It is not
-> possible to add that after the fact.
+  > [!WARNING]
+  > If `-name-constraint` is enabled and you intend to serve the Norca web UI
+  > over HTTPS, its DNS name must be added with `-additional-domain`. **It is not
+  > possible to add that after the fact.**
 
 - `-organization`: Organization of the CA. Defaults to "Norca".
 

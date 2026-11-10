@@ -6,7 +6,7 @@ upstream:
   path: "website/content/docs/commands/deployment/list.mdx"
 ---
 
-The `deployment list` command is used list all deployments.
+The `deployment list` command is used to list all deployments.
 
 ## Usage
 

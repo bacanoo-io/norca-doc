@@ -12,7 +12,7 @@ The `object delete` command deletes a custom object.
 norca object delete [options] <group>/<Kind> <name>
 ```
 
-An object with finalizers is only marked for deletion; it disappears when its
+**An object with finalizers is only marked for deletion**; it disappears when its
 controllers have removed the finalizers (after cleaning up). The objects and
 jobs the object owns are deleted according to the propagation mode. See
 [Lifecycle](/docs/features/operator-framework/lifecycle) for the details.
@@ -35,9 +35,9 @@ This command accepts the general options of the Norca CLI (`-address`,
 - `-dry-run`: Check that the object can be deleted without deleting it.
 
 - `-propagation <mode>`: What happens to the objects and jobs the object owns:
-  `background` (default) deletes the object at once and them afterwards,
-  `foreground` deletes them first and the object afterwards, `orphan` leaves
-  them in place.
+  - `background` (default) deletes the object at once and them afterwards,
+  - `foreground` deletes them first and the object afterwards,
+  - `orphan` leaves them in place.
 
 ## Examples
 

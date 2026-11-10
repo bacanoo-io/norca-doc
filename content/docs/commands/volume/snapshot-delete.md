@@ -21,8 +21,8 @@ The `volume snapshot delete` command requires both the plugin ID and the
 snapshot ID. The volume that was the source of the snapshot does not still
 need to be [registered] with Norca in order to be deleted.
 
-When ACLs are enabled, this command requires a token with the `csi-write-
-volume` and `plugin:read` capabilities.
+When ACLs are enabled, this command requires a token with the
+`csi-write-volume` and `plugin:read` capabilities.
 
 ## General Options
 

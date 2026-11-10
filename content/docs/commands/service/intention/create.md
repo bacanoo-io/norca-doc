@@ -19,7 +19,7 @@ part may be `*`. The destination is a service of the namespace given with `-name
 existing intention with the same source and destination is replaced.
 
 When ACLs are enabled, this command requires a token with the `write-intention` capability for the
-namespace. No policy shorthand includes it.
+namespace. **No policy shorthand includes it.**
 
 ## General Options
 

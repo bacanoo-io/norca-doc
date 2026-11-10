@@ -9,9 +9,9 @@ upstream:
 The `operator gossip keyring list` command lists all gossip keys
 currently in use within the cluster.
 
-This command can only be run against server nodes. It returns 0 if all
+This command can only be run against server nodes. It returns `0` if all
 nodes reply and there are no errors. If any node fails to reply or
-reports failure, the exit code will be 1.
+reports failure, the exit code will be `1`.
 
 If ACLs are enabled, this command requires a token with the
 `agent:write` capability.

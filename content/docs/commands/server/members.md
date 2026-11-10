@@ -74,9 +74,9 @@ capability.
   for each member. This mode reveals additional information not displayed in
   the standard output format.
 
-- `-json`: Output the server memebers in its JSON format.
+- `-json`: Output the server members in its JSON format.
 
-- `-t`: Format and display the server memebers using a Go template.
+- `-t`: Format and display the server members using a Go template.
 
 ## Examples
 

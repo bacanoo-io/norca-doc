@@ -5,8 +5,8 @@ description: "The pack upgrade command upgrades an existing release of a pack."
 ---
 
 The `pack upgrade` command upgrades an existing [release](/docs/features/packages/releases) of a
-pack: the servers apply the rendered resources as a new revision. It fails if the release does not
-exist or the servers do not support releases; use [`pack run`](/docs/commands/pack/run) to install.
+pack: the servers apply the rendered resources as a new revision. **It fails if the release does not
+exist or the servers do not support releases**; use [`pack run`](/docs/commands/pack/run) to install.
 
 It takes the same options as `pack run`.
 
@@ -32,7 +32,13 @@ This command takes the [operation options](/docs/commands/pack#operation-options
 
 - `--detach` `(default: false)` - Do not wait for the deployments; return after the registration.
 
-- `--lock=<string>` `(default: verify)` - How to handle the `pack.lock` file of the pack: `verify` checks the digests of the pack and its vendored dependencies if the pack has a lock file, `require` also fails if it has none, `update` (re)writes the lock file of a pack in a local directory, and `ignore` skips the check. Also set by `NORCA_PACK_LOCK` (or `NORCA_PACK_LOCK`). See [pack.lock](/docs/features/packages/supply-chain#packlock).
+- `--lock=<string>` `(default: verify)` - How to handle the `pack.lock` file of the pack:
+  - `verify` checks the digests of the pack and its vendored dependencies if the pack has a lock file,
+  - `require` also fails if it has none,
+  - `update` (re)writes the lock file of a pack in a local directory,
+  - and `ignore` skips the check.
+
+  Also set by `NORCA_PACK_LOCK` (or `NORCA_PACK_LOCK`). See [pack.lock](/docs/features/packages/supply-chain#packlock).
 
 - `--policy-override` `(default: false)` - Has no effect: Norca has no Sentinel policies, and [admission policies](/docs/features/admission-control) cannot be overridden. Accepted for compatibility.
 

@@ -63,8 +63,8 @@ non-management token can query its own policies.
 
 ## List Options
 
-- `-json` : Output the policies in their JSON format.
-- `-t` : Format and display the policies using a Go template.
+- `-json`: Output the policies in their JSON format.
+- `-t`: Format and display the policies using a Go template.
 
 ## Examples
 

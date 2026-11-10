@@ -103,11 +103,11 @@ curl \
   than once. These headers take precedence over automatically set ones such as
   `X-Nomad-Token`.
 
-- `-verbose`: Output extra information to stderr similar to curl's --verbose
+- `-verbose`: Output extra information to stderr similar to curl's `--verbose`
   flag.
 
 - `-X`: HTTP method of request. If there is data piped to stdin, then the
-  method defaults to POST. Otherwise the method defaults to GET.
+  method defaults to `POST`. Otherwise the method defaults to `GET`.
 
 ## Examples
 

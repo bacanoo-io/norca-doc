@@ -15,7 +15,7 @@ norca quota delete [options] <quota>
 ```
 
 The `quota delete` command requires the quota specification name as an argument.
-A quota that is still attached to a namespace cannot be deleted; detach it first
+**A quota that is still attached to a namespace cannot be deleted**; detach it first
 with `norca namespace apply -quota= <namespace>`.
 
 If ACLs are enabled, this command requires a token with the `quota:write`

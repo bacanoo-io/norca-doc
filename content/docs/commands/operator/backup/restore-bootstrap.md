@@ -44,8 +44,8 @@ use `file:///C:/backups/norca/eu-1/`. The `Location` that
 directory destination has this form. The S3 options don't apply to it.
 
 The region of the backup must match the region of the server; the region
-references of the jobs are not rewritten. The cluster must be new: one server
-and no jobs, unless `-force` is given. A backup taken by a newer Norca version
+references of the jobs are not rewritten. **The cluster must be new: one server
+and no jobs, unless `-force` is given.** A backup taken by a newer Norca version
 than the one of the server is refused.
 
 ## Usage
@@ -137,8 +137,8 @@ The keys of the Consul KV of the [system bus](/docs/features/system-bus) are not
 - `-allow-region-change`: Restore a backup of another region. The region
   references of the jobs are not rewritten.
 
-- `-force`: Restore into a cluster that is not new: every change of its state
-  is lost.
+- `-force`: Restore into a cluster that is not new: **every change of its state
+  is lost**.
 
 ## Examples
 

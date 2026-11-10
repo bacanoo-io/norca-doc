@@ -15,7 +15,7 @@ norca acl policy apply [options] <name> <path>
 ```
 
 The `acl policy apply` command requires two arguments, the policy name and path
-to file. The policy can be read from stdin by setting the path to "-".
+to file. The policy can be read from stdin by setting the path to `"-"`.
 
 This command requires a management ACL token.
 

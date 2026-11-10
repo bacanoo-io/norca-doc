@@ -9,13 +9,14 @@ upstream:
 Restores an atomic, point-in-time snapshot of the state of the Norca servers
 which includes jobs, nodes, allocations, periodic jobs, and ACLs.
 
-Restores involve a potentially dangerous low-level Raft operation that is not
-designed to handle server failures during a restore. This command is primarily
+**Restores involve a potentially dangerous low-level Raft operation that is not
+designed to handle server failures during a restore.** This command is primarily
 intended to be used when recovering from a disaster, restoring into a fresh
 cluster of Norca servers.
 
-This command only restores the Raft snapshot. If you are recovering a cluster,
-you will also need to [restore the keyring][] onto at least one server.
+> [!WARNING]
+> This command only restores the Raft snapshot. If you are recovering a cluster,
+> you will also need to [restore the keyring][] onto at least one server.
 
 If ACLs are enabled, a management token must be supplied in order to perform
 snapshot operations.

@@ -13,8 +13,8 @@ to an object kind.
 norca object-kind webhook revoke [options] <group>/<Kind> <webhook>
 ```
 
-After the approval is revoked, the writes the webhook reviews fail, unless its
-failure policy is `ignore`. Approve it again with
+**After the approval is revoked, the writes the webhook reviews fail, unless its
+failure policy is `ignore`.** Approve it again with
 [`norca object-kind webhook approve`](/docs/commands/object-kind/webhook-approve).
 
 If ACLs are enabled, this command requires a management token.

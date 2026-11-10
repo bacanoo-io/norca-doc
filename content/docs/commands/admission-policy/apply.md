@@ -18,9 +18,9 @@ The `admission-policy apply` command requires the path to the
 specification is read from stdin by specifying "-". A file with the `.json`
 extension is read as a JSON admission policy.
 
-The CEL expressions of the rules are compiled by the server and the policy is
-rejected if one of them does not compile. Admission policies are stored in the
-region of the server; apply them in every region of a federation.
+The CEL expressions of the rules are compiled by the server and **the policy is
+rejected if one of them does not compile**. **Admission policies are stored in the
+region of the server; apply them in every region of a federation.**
 
 If ACLs are enabled, this command requires a token with the `write` capability
 of the `admission` policy (`admission { policy = "write" }`).

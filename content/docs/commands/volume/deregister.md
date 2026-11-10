@@ -9,8 +9,11 @@ upstream:
 The `volume deregister` command deregisters external storage volumes with
 Norca's [Container Storage Interface (CSI)][csi] support. The volume will be
 removed from Norca's state store but not deleted from the external storage
-provider. Note that deregistering a volume prevents Norca from deleting it via
-[`volume delete`] at a later time.
+provider.
+
+> [!WARNING]
+> Note that deregistering a volume prevents Norca from deleting it via
+> [`volume delete`] at a later time.
 
 ## Usage
 
@@ -19,9 +22,9 @@ norca volume deregister [options] [volume]
 ```
 
 The `volume deregister` command requires a single argument, specifying
-the ID of volume to be deregistered. Deregistration will fail if the
+the ID of volume to be deregistered. **Deregistration will fail if the
 volume is still in use by an allocation or in the process of being
-unpublished.
+unpublished.**
 
 When ACLs are enabled, this command requires a token with the
 `csi-write-volume` capability for the volume's namespace.

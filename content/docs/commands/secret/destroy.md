@@ -5,8 +5,8 @@ description: "The \"secret destroy\" command destroys versions of a secret, or t
 ---
 
 The `secret destroy` command destroys versions of a secret permanently, or with `-all` the whole secret
-with all of its versions and its metadata. Destroyed values can't be restored. One of `-versions` and
-`-all` is required: there is no default, so that a destroy never removes more than was named (the
+with all of its versions and its metadata. **Destroyed values can't be restored.** **One of `-versions` and
+`-all` is required**: there is no default, so that a destroy never removes more than was named (the
 [API](/docs/api/secrets#destroy-versions-or-a-secret) destroys the whole secret when no versions are
 given). Without either the command fails with "Name the versions to destroy with -versions, or
 destroy the whole secret with -all"; with both, with "Only one of -versions and -all can be

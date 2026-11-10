@@ -11,7 +11,7 @@ services that use native mTLS.
 An intention belongs to the namespace of its destination service (the `-namespace` option) and names a
 source service, optionally in another namespace as `<namespace>/<service>`. `*` matches every service or
 namespace. The most specific matching intention decides; at equal specificity `deny` wins over `allow`;
-without a matching intention a connection is denied. Intentions are regional: they are written to and
+**without a matching intention a connection is denied.** Intentions are regional: they are written to and
 enforced in the region of the request (`-region`).
 
 ## Usage

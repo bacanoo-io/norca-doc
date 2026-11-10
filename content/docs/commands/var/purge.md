@@ -6,7 +6,7 @@ upstream:
   path: "website/content/docs/commands/var/purge.mdx"
 ---
 
-The `var purge` command permanently deletes an existing [variable][] from Norca's
+The `var purge` command **permanently deletes** an existing [variable][] from Norca's
 variable storage.
 
 ## Usage

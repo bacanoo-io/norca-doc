@@ -60,9 +60,9 @@ norca acl binding-rule list [options]
 
 ## List Options
 
-- `-json` : Output the ACL binding-rules in a JSON format.
+- `-json`: Output the ACL binding-rules in a JSON format.
 
-- `-t` : Format and display the ACL binding-rules using a Go template.
+- `-t`: Format and display the ACL binding-rules using a Go template.
 
 ## Examples
 

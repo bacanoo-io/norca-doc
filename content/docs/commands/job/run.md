@@ -19,7 +19,7 @@ norca job run [options] <job file>
 
 The `job run` command requires a single argument, specifying the path to a file
 containing a valid [job specification]. This file will be read and the job will
-be submitted to Norca for scheduling. If the supplied path is "-", the job file
+be submitted to Norca for scheduling. If the supplied path is `"-"`, the job file
 is read from STDIN. Otherwise it is read from the file at the supplied path or
 downloaded and read from URL specified. Norca downloads the job file using
 [`go-getter`] and supports `go-getter` syntax.
@@ -30,11 +30,11 @@ decisions, placement information, and [deployment status] for the provided job
 if applicable ([`batch`] and [`system`] jobs don't create deployments). The monitor will
 exit after scheduling and deployment have finished or failed.
 
-On successful job submission and scheduling, exit code 0 will be returned. If
+On successful job submission and scheduling, **exit code 0** will be returned. If
 there are job placement issues encountered (unsatisfiable constraints, resource
-exhaustion, etc), then the exit code will be 2. Any other errors, including
+exhaustion, etc), then the **exit code will be 2**. Any other errors, including
 deployment failures, client connection issues, or internal errors, are indicated
-by exit code 1.
+by **exit code 1**.
 
 If the job has specified the region, the `-region` flag and `$NORCA_REGION`
 environment variable are overridden and the job's region is used.
@@ -106,8 +106,8 @@ that volume.
 
 - `-check-index`: If set, the job is only registered or
   updated if the passed job modify index matches the server side version.
-  If a check-index value of zero is passed, the job is only registered if it does
-  not yet exist. If a non-zero value is passed, it ensures that the job is being
+  **If a check-index value of zero is passed, the job is only registered if it does
+  not yet exist.** If a non-zero value is passed, it ensures that the job is being
   updated from a known state. The use of this flag is most common in conjunction
   with [`job plan` command].
 
@@ -118,8 +118,8 @@ that volume.
 - `-eval-priority`: Override the priority of the evaluations produced as a result
   of this job submission. By default, this is set to the priority of the job.
 
-- `-json`: Parses the job file as JSON. If the outer object has a Job field,
-  such as from "norca job inspect" or "norca run -output", the value of the
+- `-json`: Parses the job file as JSON. If the outer object has a `Job` field,
+  such as from `"norca job inspect"` or `"norca run -output"`, the value of the
   field is used as the job. See [JSON Jobs] for details.
 
 - `-hcl1`: If set, HCL1 parser is used for parsing the job spec. Takes
@@ -127,7 +127,7 @@ that volume.
 
 - `-hcl2-strict`: Whether an error should be produced from the HCL2 parser where
   a variable has been supplied which is not defined within the root variables.
-  Defaults to true, but ignored if `-hcl1` is defined.
+  Defaults to `true`, but ignored if `-hcl1` is defined.
 
 - `-output`: Output the JSON that would be submitted to the HTTP API without
   submitting the job.
@@ -155,8 +155,8 @@ that volume.
   Vault token is added to the jobspec before sending to the Norca servers. This
   allows passing the Vault token without storing it in the job file. This
   overrides the token found in the `$VAULT_TOKEN` environment variable and the
-  [`vault_token`] field in the job file. This token is cleared from the job
-  after validating and cannot be used within the job executing environment. Use
+  [`vault_token`] field in the job file. **This token is cleared from the job
+  after validating and cannot be used within the job executing environment.** Use
   the `vault` block when templating in a job with a Vault token.
 
 - `-vault-namespace`: If set, the passed Vault namespace is stored in the job

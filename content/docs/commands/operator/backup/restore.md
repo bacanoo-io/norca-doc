@@ -19,9 +19,9 @@ your token:
 Jobs, Variables and secrets are restored in the namespace given with
 `-namespace` (default: `default`).
 
-With `-full`, the command requests a full restore of the region instead: the
+With `-full`, the command requests a full restore of the region instead: **the
 whole state of the region returns to the time of the backup, and every change
-since is lost. The request shows a preview of the changes (`-dry-run` shows
+since is lost**. The request shows a preview of the changes (`-dry-run` shows
 only the preview) and must be confirmed with `-confirm <region>`. A second
 administrator then approves it with
 [`operator backup approve`](/docs/commands/operator/backup/approve), which runs

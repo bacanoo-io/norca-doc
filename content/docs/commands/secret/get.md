@@ -5,8 +5,8 @@ description: "The \"secret get\" command reads the value of a version of a secre
 ---
 
 The `secret get` command reads the value of a version of a secret. The read is recorded in the audit
-trail of the secret store. Values are only printed when asked for explicitly with `-item` or `-format`;
-without either the command refuses to print anything. To see the metadata, use
+trail of the secret store. **Values are only printed when asked for explicitly with `-item` or `-format`;
+without either the command refuses to print anything.** To see the metadata, use
 [`secret info`](/docs/commands/secret/info).
 
 If ACLs are enabled, this command requires the `read-secret` capability for the path.

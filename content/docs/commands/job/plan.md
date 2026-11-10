@@ -20,14 +20,14 @@ norca job plan [options] <path>
 
 The `job plan` command requires a single argument, specifying the path to a file
 containing an HCL [job specification]. This file will be read and the resulting
-parsed job will be validated. If the supplied path is "-", the job file is read
+parsed job will be validated. If the supplied path is `"-"`, the job file is read
 from STDIN. Otherwise it is read from the file at the supplied path or
 downloaded and read from URL specified. Norca downloads the job file using
 [`go-getter`] and supports `go-getter` syntax.
 
 Plan invokes a dry-run of the scheduler to determine the effects of submitting
-either a new or updated version of a job. The plan will not result in any
-changes to the cluster but gives insight into whether the job could be run
+either a new or updated version of a job. **The plan will not result in any
+changes to the cluster** but gives insight into whether the job could be run
 successfully and how it would affect existing allocations.
 
 A job modify index is returned with the plan. This value can be used when
@@ -43,9 +43,9 @@ environment variable are overridden and the job's region is used.
 
 Plan will return one of the following exit codes:
 
-- 0: No allocations created or destroyed.
-- 1: Allocations created or destroyed.
-- 255: Error determining plan results.
+- `0`: No allocations created or destroyed.
+- `1`: Allocations created or destroyed.
+- `255`: Error determining plan results.
 
 The plan command will set the `vault_token` of the job based on the following
 precedence, going from highest to lowest: the `-vault-token` flag, the
@@ -106,13 +106,13 @@ capability for the job's namespace.
 ## Plan Options
 
 - `-diff`: Determines whether the diff between the remote job and planned job is
-  shown. Defaults to true.
+  shown. Defaults to `true`.
 
 - `-policy-override`: Has no effect: overriding admission policies is not
   supported. The flag is still accepted for compatibility and prints a warning.
 
-- `-json`: Parses the job file as JSON. If the outer object has a Job field,
-  such as from "norca job inspect" or "norca run -output", the value of the
+- `-json`: Parses the job file as JSON. If the outer object has a `Job` field,
+  such as from `"norca job inspect"` or `"norca run -output"`, the value of the
   field is used as the job.
 
 - `-hcl1`: If set, HCL1 parser is used for parsing the job spec. Takes
@@ -120,7 +120,7 @@ capability for the job's namespace.
 
 - `-hcl2-strict`: Whether an error should be produced from the HCL2 parser where
   a variable has been supplied which is not defined within the root variables.
-  Defaults to true, but ignored if `-hcl1` is defined.
+  Defaults to `true`, but ignored if `-hcl1` is defined.
 
 - `-vault-token`: Used to validate if the user submitting the job has
   permission to run the job according to its Vault policies. A Vault token must
@@ -129,8 +129,8 @@ capability for the job's namespace.
   Vault token is added to the jobspec before sending to the Norca servers. This
   allows passing the Vault token without storing it in the job file. This
   overrides the token found in the `$VAULT_TOKEN` environment variable and the
-  [`vault_token`] field in the job file. This token is cleared from the job
-  after planning and cannot be used within the job executing environment. Use
+  [`vault_token`] field in the job file. **This token is cleared from the job
+  after planning and cannot be used within the job executing environment.** Use
   the `vault` block when templating in a job with a Vault token.
 
 - `-vault-namespace`: If set, the passed Vault namespace is stored in the job

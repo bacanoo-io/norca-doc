@@ -23,11 +23,11 @@ times. If multiple config files are passed, the values from each will
 be merged together. During merging, values from files found later in
 the list are merged over values from previously parsed files.
 
-This command cannot operate on partial configuration fragments since
+**This command cannot operate on partial configuration fragments** since
 those won't pass the full agent validation. This command does not
 require an ACL token.
 
-Returns 0 if the configuration is valid, or 1 if there are problems.
+Returns **0** if the configuration is valid, or **1** if there are problems.
 
 ## General Options
 

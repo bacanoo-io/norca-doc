@@ -7,7 +7,7 @@ upstream:
 ---
 
 Initializes a garbage collection of jobs, evaluations, allocations, and nodes.
-This is an asynchronous operation.
+**This is an asynchronous operation.**
 
 Norca periodically garbage collects jobs, evaluations, allocations, and nodes.
 The exact garbage collection logic varies by object, but in general Norca only
@@ -20,8 +20,8 @@ parameters][gc_params] for details on tuning periodic garbage collection.
 The `system gc` command bypasses these settings and immediately attempts to
 garbage collect dead objects regardless of any "threshold" or "interval" server
 settings. This is useful to quickly free memory on servers running low, but
-users should prefer tuning periodic garbage collection parameters to meet their
-needs instead of relying on manually running `system gc`.
+**users should prefer tuning periodic garbage collection parameters to meet their
+needs instead of relying on manually running `system gc`.**
 
 ## Usage
 

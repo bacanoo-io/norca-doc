@@ -19,8 +19,8 @@ Without a count, the command shows the replica count (from the spec path), the
 observed replica count (from the status path, if the status sets it), the spec
 path and the generation. With a count, the new count is written to the spec
 path of the kind, validated like any spec change, and recorded in the object's
-event log as a `Scaled` event. The `managed_by` identity of the object is not
-enforced, so the count of an object managed by another tool can be changed.
+event log as a `Scaled` event. **The `managed_by` identity of the object is not
+enforced**, so the count of an object managed by another tool can be changed.
 
 If ACLs are enabled, this command requires a token with the `write` capability
 of an object rule matching the kind in the namespace (`read` to show the scale).

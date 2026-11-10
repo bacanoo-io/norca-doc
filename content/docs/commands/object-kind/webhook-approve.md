@@ -18,8 +18,8 @@ They are declared in the kind (usually by the pack of the operator), but the
 servers call them only after an administrator approved them: kinds applied with
 a management token approve their webhooks at once, others wait for an approval.
 The approval covers the current configuration of the webhook (URL, CA, mode,
-operations, timeout, failure policy); any change of the configuration needs a
-new approval. See [Type-bound webhooks](/docs/features/operator-framework/ecosystem#type-bound-webhooks).
+operations, timeout, failure policy); **any change of the configuration needs a
+new approval.** See [Type-bound webhooks](/docs/features/operator-framework/ecosystem#type-bound-webhooks).
 
 [`norca object-kind inspect`](/docs/commands/object-kind/inspect) shows the
 webhooks and their approvals.

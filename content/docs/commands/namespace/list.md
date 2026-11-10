@@ -6,7 +6,7 @@ upstream:
   path: "website/content/docs/commands/namespace/list.mdx"
 ---
 
-The `namespace list` command is used list available namespaces.
+The `namespace list` command is used to list available namespaces.
 
 ## Usage
 
@@ -66,9 +66,9 @@ has an associated capability.
 
 ## List Options
 
-- `-json` : Output the namespaces in their JSON format.
+- `-json`: Output the namespaces in their JSON format.
 
-- `-t` : Format and display the namespaces using a Go template.
+- `-t`: Format and display the namespaces using a Go template.
 
 ## Examples
 

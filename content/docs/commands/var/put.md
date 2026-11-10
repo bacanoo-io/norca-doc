@@ -19,9 +19,9 @@ Variable metadata and items can be supplied using a [variable
 specification][varspec], by using command arguments, or by a combination of the
 two techniques. An entire variable specification can be provided to the command
 via standard input (stdin) by setting the first argument to "-" or from a file
-by using an @-prefixed path to a variable specification file. When providing
+by using an @-prefixed path to a variable specification file. **When providing
 variable data via stdin, you must provide the `-in` flag with the format of the
-specification, which must be either "hcl" or "json".
+specification**, which must be either "hcl" or "json".
 
 Items to be stored in the variable can be supplied using the specification, as a
 series of key-value pairs, or both. The value for a key-value pair can be a
@@ -29,8 +29,8 @@ string, an @-prefixed file reference, or a '-' to get the value from stdin. Item
 values provided from file references or stdin are consumed as-is with no
 additional processing and do not require the input format to be specified.
 
-Values supplied as command line arguments supersede values provided in any
-variable specification piped into the command or loaded from file. If ACLs are
+**Values supplied as command line arguments supersede values provided in any
+variable specification piped into the command or loaded from file.** If ACLs are
 enabled, this command requires the `variables:write` capability for the
 destination namespace and path. See the [ACL policy][] documentation for
 details.
@@ -40,7 +40,7 @@ details.
 Variable paths are restricted to [RFC3986][] URL-safe characters that don't
 conflict with the use of the characters `@` and `.` in template blocks. This
 includes alphanumeric characters and the special characters `-`, `_`, `~`, and
-`/`. Paths may be up to 128 bytes long. The following regex matches the allowed
+`/`. **Paths may be up to 128 bytes long.** The following regex matches the allowed
 paths: `^[a-zA-Z0-9-_~/]{1,128}$`
 
 The keys for the items in a variable may contain any character, but keys
@@ -50,7 +50,7 @@ template engine. Instead, they require the use of the `index` template function
 to directly access their values. This does not impact cases where the keys and
 values are read using the `range` function.
 
-Variable items are restricted to 64KiB in size. This limit is calculated by
+**Variable items are restricted to 64KiB in size.** This limit is calculated by
 taking the sum of the length in bytes of all of the unencrypted keys and values.
 
 ## General Options

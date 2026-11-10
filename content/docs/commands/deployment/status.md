@@ -179,8 +179,9 @@ $ norca deployment status -monitor e45
     web         false        1        1       1        0          2021-06-09T15:59:58-07:00
 ```
 
-**Please note**: The library used for updating terminal output in place currently isn't fully 
-Windows compatible so there may be some formatting differences (different margins, no spinner 
-indicating deployment is in progress).
+> [!NOTE]
+> **Please note**: The library used for updating terminal output in place currently isn't fully 
+> Windows compatible so there may be some formatting differences (different margins, no spinner 
+> indicating deployment is in progress).
 
 [`auto_revert`]: /docs/job-specification/update#auto_revert

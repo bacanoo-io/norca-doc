@@ -19,7 +19,7 @@ The `secret import` command copies secrets into the built-in secret store of the
   Variable below it) into a secret of the same path; `-move` deletes the Variable after it was copied.
 
 By default, secrets that exist already are skipped, and new secrets are written only if they still don't
-exist, so a secret written meanwhile is never overwritten. Values are never printed: the command prints the
+exist, so **a secret written meanwhile is never overwritten**. **Values are never printed**: the command prints the
 source and target paths and versions of each secret, and a summary.
 
 If ACLs are enabled, this command requires the `write-secret` capability (and `list-secrets` for

@@ -8,14 +8,14 @@ upstream:
 
 The `tls cert create` command is used to create certificates to be used for
 TLS encryption for your Norca cluster. You can then copy these to your
-servers and clients. This command will not automatically update the
-configuration of the agents.
+servers and clients. **This command will not automatically update the
+configuration of the agents.**
 
 ## Usage
 
 Usage: `norca tls cert create [options]`
 
-#### Command Options
+## Command Options
 
 - `-additional-dnsname=<string>`: Provide an additional dnsname for Subject
   Alternative Names. `localhost` is always included. This flag may be provided

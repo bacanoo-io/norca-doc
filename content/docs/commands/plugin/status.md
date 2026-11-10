@@ -105,9 +105,12 @@ Nodes Healthy        = 1
 Nodes Expected       = 1
 ```
 
-Full status information of a plugin with `-verbose` flag. Note that this example
-shows a plugin that has all supported capabilities. Most plugins will support a
-subset of these capabilities. Topology fields are also controlled by the plugin.
+Full status information of a plugin with `-verbose` flag.
+
+> [!NOTE]
+> Note that this example
+> shows a plugin that has all supported capabilities. Most plugins will support a
+> subset of these capabilities. Topology fields are also controlled by the plugin.
 
 ```shell
 $ norca plugin [-type csi] -verbose status ebs-prod

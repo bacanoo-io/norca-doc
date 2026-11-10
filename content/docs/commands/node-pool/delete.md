@@ -6,7 +6,7 @@ upstream:
   path: "website/content/docs/commands/node-pool/delete.mdx"
 ---
 
-The `node pool delete` command is used delete a node pool.
+The `node pool delete` command is used to delete a node pool.
 
 ## Usage
 
@@ -17,7 +17,7 @@ norca node pool delete [options] <node-pool>
 If ACLs are enabled, this command requires a token with the 'delete'
 capability in a `node_pool` policy that matches the node pool being targeted.
 
-You cannot delete a node pool that has nodes or non-terminal jobs. In federated
+**You cannot delete a node pool that has nodes or non-terminal jobs.** In federated
 clusters, you cannot delete a node pool that has nodes or non-terminal jobs in
 any of the federated regions.
 

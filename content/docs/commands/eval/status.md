@@ -21,19 +21,19 @@ evaluation reaches a terminal state.
 norca eval status [options] <evaluation>
 ```
 
-An evaluation ID or prefix must be provided. If there is an exact match, the
+An evaluation ID or prefix must be provided. If there is an exact match,
 the status will be shown. Otherwise, a list of matching evaluations and
 information will be displayed.
 
 If the `-monitor` flag is passed, an interactive monitoring session will be
 started in the terminal. It is safe to exit the monitor at any time using
-ctrl+c. The command will exit when the given evaluation reaches a terminal
-state (completed or failed). Exit code 0 is returned on successful
+`ctrl+c`. The command will exit when the given evaluation reaches a terminal
+state (completed or failed). **Exit code 0** is returned on successful
 evaluation, and if there are no scheduling problems. If there are
 job placement issues encountered (unsatisfiable constraints,
-resource exhaustion, etc), then the exit code will be 2. Any other
+resource exhaustion, etc), then the **exit code will be 2**. Any other
 errors, including client connection issues or internal errors, are
-indicated by exit code 1.
+indicated by **exit code 1**.
 
 ## General Options
 

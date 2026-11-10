@@ -6,13 +6,13 @@ upstream:
   path: "website/content/docs/commands/eval/delete.mdx"
 ---
 
-The `eval delete` command is used to delete evaluations. It should be used
+The `eval delete` command is used to delete evaluations. **It should be used
 cautiously and only in outage situations where there is a large backlog of
-evaluations not being processed. During most normal and outage scenarios,
+evaluations not being processed.** During most normal and outage scenarios,
 Norca's reconciliation and state management will handle evaluations as needed.
 
-The eval broker is expected to be paused prior to running this command and
-un-paused after. These actions can be performed by the
+**The eval broker is expected to be paused prior to running this command and
+un-paused after.** These actions can be performed by the
 [`operator scheduler get-config`][scheduler_get_config]
 and [`operator scheduler set-config`][scheduler_set_config] commands respectively.
 
@@ -81,9 +81,12 @@ When ACLs are enabled, this command requires a `management` token.
 
 - `-filter`: Specifies an expression used to filter evaluations by for
   deletion. When using this flag, it is advisable to ensure the syntax is
-  correct using the eval list command first. Note that deleting evals by filter
-  is imprecise: for sets of evals larger than a single raft log batch, evals can
-  be inserted behind the cursor and therefore be missed.
+  correct using the `eval list` command first.
+
+  > [!NOTE]
+  > Note that deleting evals by filter
+  > is imprecise: for sets of evals larger than a single raft log batch, evals can
+  > be inserted behind the cursor and therefore be missed.
 
 - `-yes`: Bypass the confirmation prompt if an evaluation ID was not provided.
 

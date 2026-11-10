@@ -72,34 +72,34 @@ capability.
 - `-scheduler-algorithm` - Specifies whether scheduler binpacks or spreads
   allocations on available nodes. Must be one of `["binpack"|"spread"]`.
 
-- `-memory-oversubscription` - When true, tasks may exceed their reserved memory
+- `-memory-oversubscription` - When `true`, tasks may exceed their reserved memory
   limit, if the client has excess memory capacity. Tasks must specify [`memory_max`]
   to take advantage of memory oversubscription. Must be one of `[true|false]`.
 
-- `-reject-job-registration` - When true, the server will return permission denied
+- `-reject-job-registration` - When `true`, the server will return permission denied
   errors for job registration, job dispatch, and job scale APIs, unless the ACL
-  token for the request is a management token. If ACLs are disabled, no user
-  will be able to register jobs. This allows operators to shed load from automated
+  token for the request is a management token. **If ACLs are disabled, no user
+  will be able to register jobs.** This allows operators to shed load from automated
   processes during incident response. Must be one of `[true|false]`.
 
-- `-pause-eval-broker` - When set to true, the eval broker which usually runs on
+- `-pause-eval-broker` - When set to `true`, the eval broker which usually runs on
   the leader will be disabled. This will prevent the scheduler workers from
   receiving new work. Must be one of `[true|false]`.
 
 - `-preempt-batch-scheduler` - Specifies whether preemption for batch jobs
-  is enabled. Note that if this is set to true, then batch jobs can preempt any
+  is enabled. Note that if this is set to `true`, then batch jobs can preempt any
   other jobs. Must be one of `[true|false]`.
 
 - `-preempt-service-scheduler` - Specifies whether preemption for service jobs
-  is enabled. Note that if this is set to true, then service jobs can preempt any
+  is enabled. Note that if this is set to `true`, then service jobs can preempt any
   other jobs. Must be one of `[true|false]`.
 
 - `-preempt-sysbatch-scheduler` - Specifies whether preemption for system batch
-  jobs is enabled. Note that if this is set to true, then system batch jobs can
+  jobs is enabled. Note that if this is set to `true`, then system batch jobs can
   preempt any other jobs. Must be one of `[true|false]`.
 
 - `-preempt-system-scheduler` - Specifies whether preemption for system jobs
-  is enabled. Note that if this is set to true, then system jobs can preempt any
+  is enabled. Note that if this is set to `true`, then system jobs can preempt any
   other jobs. Must be one of `[true|false]`.
 
 ## Examples

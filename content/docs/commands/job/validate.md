@@ -19,13 +19,13 @@ norca job validate <file>
 
 The `job validate` command requires a single argument, specifying the path to a
 file containing an HCL [job specification]. This file will be read and the job
-checked for any problems. If the supplied path is "-", the job file is read from
+checked for any problems. If the supplied path is `"-"`, the job file is read from
 STDIN. Otherwise it is read from the file at the supplied path or downloaded and
 read from URL specified. Norca downloads the job file using [`go-getter`] and
 supports `go-getter` syntax.
 
-On successful validation, exit code 0 will be returned, otherwise an exit code
-of 1 indicates an error.
+On successful validation, **exit code 0** will be returned, otherwise an **exit code
+of 1** indicates an error.
 
 The run command will set the `vault_token` of the job based on the following
 precedence, going from highest to lowest: the `-vault-token` flag, the
@@ -85,8 +85,8 @@ capability for the job's namespace.
 
 ## Validate Options
 
-- `-json`: Parses the job file as JSON. If the outer object has a Job field,
-  such as from "norca job inspect" or "norca run -output", the value of the
+- `-json`: Parses the job file as JSON. If the outer object has a `Job` field,
+  such as from `"norca job inspect"` or `"norca run -output"`, the value of the
   field is used as the job.
 
 - `-hcl1`: If set, HCL1 parser is used for parsing the job spec. Takes
@@ -94,7 +94,7 @@ capability for the job's namespace.
 
 - `-hcl2-strict`: Whether an error should be produced from the HCL2 parser where
   a variable has been supplied which is not defined within the root variables.
-  Defaults to true, but ignored if `-hcl1` is defined.
+  Defaults to `true`, but ignored if `-hcl1` is defined.
 
 - `-vault-token`: Used to validate if the user submitting the job has
   permission to run the job according to its Vault policies. A Vault token must
@@ -103,8 +103,8 @@ capability for the job's namespace.
   Vault token is added to the jobspec before sending to the Norca servers. This
   allows passing the Vault token without storing it in the job file. This
   overrides the token found in the `$VAULT_TOKEN` environment variable and the
-  [`vault_token`] field in the job file. This token is cleared from the job
-  after validating and cannot be used within the job executing environment. Use
+  [`vault_token`] field in the job file. **This token is cleared from the job
+  after validating and cannot be used within the job executing environment.** Use
   the `vault` block when templating in a job with a Vault token.
 
 - `-vault-namespace`: If set, the passed Vault namespace is stored in the job

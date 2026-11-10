@@ -22,9 +22,9 @@ norca operator debug [options]
 This command accepts comma separated `server-id` and `node-id` IDs for
 monitoring and pprof profiling. If IDs are provided, the command will
 monitor logs for the `duration`, saving a snapshot of Norca state
-every `interval`. Captured logs and configurations are subjected to
+every `interval`. **Captured logs and configurations are subjected to
 redaction, but may still contain sensitive information and the archive
-contents should be reviewed before sharing.
+contents should be reviewed before sharing.**
 
 If an `output` path is provided, `debug` will create a timestamped
 directory in that path instead of an archive. By default, the command
@@ -37,8 +37,8 @@ If ACLs are enabled, this command will require a token with the 'node:read'
 capability to run. In order to collect information, the token will also
 require the 'agent:read' and 'operator:read' capabilities, as well as the
 'list-jobs' capability for all namespaces. To collect pprof profiles the
-token will also require 'agent:write', or enable_debug configuration set to
-true.
+token will also require 'agent:write', or `enable_debug` configuration set to
+`true`.
 
 ## General Options
 
@@ -103,7 +103,7 @@ true.
   monitored. The default is `true`.
 
 - `-max-nodes=<count>`: Cap the maximum number of client nodes included
-  in the capture. Defaults to 10, set to 0 for unlimited.
+  in the capture. Defaults to `10`, set to `0` for unlimited.
 
 - `-node-class=<node-class>`: Filter client nodes based on node class.
 
@@ -112,11 +112,11 @@ true.
   "all" to select all nodes (up to count = max-nodes). Defaults to `all`.
 
 - `-pprof-duration=<duration>`: Duration for pprof
-  collection. Defaults to 1s or `-duration`, whichever is less.
+  collection. Defaults to `1s` or `-duration`, whichever is less.
 
 - `-pprof-interval=<pprof-interval>`: The interval between pprof
     collections. Set interval equal to duration to capture a single
-    snapshot. Defaults to 250ms or `-pprof-duration`, whichever is
+    snapshot. Defaults to `250ms` or `-pprof-duration`, whichever is
     less.
 
 - `-server-id=<server1>,<server2>`: Comma separated list of Norca server names to
@@ -135,7 +135,7 @@ true.
 
 - `-event-index=<index>`: Specifies the index to start streaming events from.
   If the requested index is no longer in the buffer the stream will start at
-  the next available index. Defaults to 0.
+  the next available index. Defaults to `0`.
 
 - `-verbose`: Enable verbose output
 

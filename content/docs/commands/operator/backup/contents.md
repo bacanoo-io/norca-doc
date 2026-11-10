@@ -7,7 +7,7 @@ weight: 4
 
 The `operator backup contents` command browses the content of a backup. The
 server downloads the backup, decrypts it with the given age identity and loads
-it into a separate in-memory state; the running cluster is not touched.
+it into a separate in-memory state; **the running cluster is not touched**.
 Variables are listed with their key names only, never their values; secrets of
 the built-in secret store with their paths, metadata and value hashes, never
 their values.

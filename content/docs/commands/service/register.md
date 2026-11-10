@@ -15,12 +15,12 @@ catalog, the built-in DNS and the Consul-compatible API like the services of all
 norca service register [options] <service_name>
 ```
 
-The command takes the name of the service. Exactly one of `-address` and `-alias` is required.
+The command takes the name of the service. **Exactly one of `-address` and `-alias` is required.**
 
 An external service is kept alive by a TTL check that the registrant renews with
 [`norca service ttl`](/docs/commands/service/ttl), or by `http` and `tcp` checks that the client agent the
-command talks to runs (the registration is then owned by that client node). When its checks are
-critical for longer than `-deregister-critical-after`, it is deregistered. A service without a TTL check
+command talks to runs (the registration is then owned by that client node). **When its checks are
+critical for longer than `-deregister-critical-after`, it is deregistered.** A service without a TTL check
 that is not registered through a client agent with `http` or `tcp` checks is static, and requires
 operator write in addition.
 

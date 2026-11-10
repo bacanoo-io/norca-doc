@@ -7,8 +7,8 @@ upstream:
 ---
 
 The `var list` command returns a list of [variable][] paths accessible to the
-current user, optionally filtered to paths containing a provided prefix. Do not
-encode sensitive information in variable paths. The variable's items are not
+current user, optionally filtered to paths containing a provided prefix. **Do not
+encode sensitive information in variable paths.** The variable's items are not
 accessible via this command.
 
 When using pagination, the next page token is provided as part of the output of
@@ -91,7 +91,7 @@ documentation for details.
   with the `-template` option. Defaults to "table" when stdout is a terminal and
   to "json" when stdout is redirected.
 
-- `-template` `(string: "")` Template to render output with. Required when
+- `-template` `(string: "")`: Template to render output with. Required when
   output is "go-template".
 
 ## Examples
@@ -142,7 +142,7 @@ default    nomad/jobs/variable/www        2022-08-23T10:24:45-04:00
 Next page token: default.nomad/jobs/variable/www/nginx
 ```
 
-To fetch the next page :
+To fetch the next page:
 
 ```shell
 $ norca var list -per-page=3 \

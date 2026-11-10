@@ -145,8 +145,8 @@ via CLI arguments. The `agent` command accepts the following arguments:
   $ norca agent -retry-join "127.0.0.1:4648"
   ```
 
-  `retry-join` can be defined as a command line flag only for servers. Clients
-  can configure `retry-join` only in configuration files.
+  **`retry-join` can be defined as a command line flag only for servers. Clients
+  can configure `retry-join` only in configuration files.**
 
 - `-retry-max`: Similar to the [retry_max] config option.
 
@@ -158,12 +158,12 @@ via CLI arguments. The `agent` command accepts the following arguments:
 - `-state-dir=<path>`: Equivalent to the Client [state_dir] config
   option.
 
-- `-vault-enabled`: Whether to enable or disabled Vault integration.
+- `-vault-enabled`: Whether to enable or disable Vault integration.
 
 - `-vault-address=<addr>`: The address to communicate with Vault.
 
 - `-vault-token=<token>`: The Vault token used to derive tokens. Only needs to
-  be set on Servers. Overrides the Vault token read from the VAULT_TOKEN
+  be set on Servers. Overrides the Vault token read from the `VAULT_TOKEN`
   environment variable.
 
 - `-vault-create-from-role=<role>`: The role name to create tokens for tasks
@@ -181,8 +181,8 @@ via CLI arguments. The `agent` command accepts the following arguments:
 - `-vault-key-file=<path>`: The path to the private key for Vault communication.
 
 - `-vault-namespace=<namespace>`: The Vault namespace used for the integration.
-  Required for servers and clients. Overrides the Vault namespace read from the
-  VAULT_NAMESPACE environment variable.
+  **Required for servers and clients.** Overrides the Vault namespace read from the
+  `VAULT_NAMESPACE` environment variable.
 
 - `-vault-tls-skip-verify`: A boolean that determines whether to skip SSL
   certificate verification.

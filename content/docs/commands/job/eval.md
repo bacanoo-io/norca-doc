@@ -79,8 +79,8 @@ not used.
 - `-force-reschedule`: `force-reschedule` is used to force placement of failed
   allocations. If this is set, failed allocations that are past their reschedule
   limit, and those that are scheduled to be replaced at a future time are placed
-  immediately. This option only places failed allocations if the task group has
-  rescheduling enabled.
+  immediately. **This option only places failed allocations if the task group has
+  rescheduling enabled.**
 
 - `-detach`: Return immediately instead of monitoring. A new evaluation ID
   will be output, which can be used to examine the evaluation using the

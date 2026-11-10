@@ -78,8 +78,8 @@ $ norca status -address=https://remote-address:4646
 ```
 
 The provided address must be reachable from your local machine. There are a
-variety of ways to accomplish this (VPN, SSH Tunnel, etc). If the port is
-exposed to the public internet it is highly recommended to configure TLS.
+variety of ways to accomplish this (VPN, SSH Tunnel, etc). **If the port is
+exposed to the public internet it is highly recommended to configure TLS.**
 
 ### Environment Variables
 

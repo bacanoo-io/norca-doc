@@ -60,9 +60,9 @@ norca acl auth-method list [options]
 
 ## List Options
 
-- `-json` : Output the ACL auth-methods in a JSON format.
+- `-json`: Output the ACL auth-methods in a JSON format.
 
-- `-t` : Format and display the ACL auth-methods using a Go template.
+- `-t`: Format and display the ACL auth-methods using a Go template.
 
 ## Examples
 

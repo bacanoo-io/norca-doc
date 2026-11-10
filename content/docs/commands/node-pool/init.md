@@ -20,8 +20,8 @@ When no filename is supplied, a default filename of "pool.norca.hcl" or
 
 Both templates can be applied as they are with
 [`node pool apply`](/docs/commands/node-pool/apply). They have no scheduler
-configuration: Norca rejects a node pool with a `scheduler_config` block (JSON
-`SchedulerConfiguration`), so the HCL template only explains that in a comment
+configuration: **Norca rejects a node pool with a `scheduler_config` block (JSON
+`SchedulerConfiguration`)**, so the HCL template only explains that in a comment
 and the JSON template leaves the field out. The scheduling algorithm and memory
 oversubscription are set for the whole cluster with
 [`norca operator scheduler set-config`](/docs/commands/operator/scheduler/set-config).

@@ -6,7 +6,7 @@ upstream:
   path: "website/content/docs/commands/namespace/apply.mdx"
 ---
 
-The `namespace apply` command is used create or update a namespace.
+The `namespace apply` command is used to create or update a namespace.
 
 ## Usage
 
@@ -71,11 +71,11 @@ replicated to all federated regions.
 
 ## Apply Options
 
-- `-quota` : An optional quota to apply to the namespace.
+- `-quota`: An optional quota to apply to the namespace.
 
-- `-description` : An optional human readable description for the namespace.
+- `-description`: An optional human readable description for the namespace.
 
-- `-json` : Parse the input as a JSON namespace specification.
+- `-json`: Parse the input as a JSON namespace specification.
 
 ## Examples
 
@@ -93,6 +93,7 @@ $ norca namespace apply -quota= api-prod
 ```
 
 Create a namespace from a file:
+
 ```shell
 $ cat namespace.hcl
 name        = "dev"

@@ -78,8 +78,8 @@ run the command with a job prefix instead of the exact job ID.
 - `-p`: Display the differences between each job and its predecessor.
 - `-full`: Display the full job definition for each version.
 - `-version`: Display only the history for the given version.
-- `-json` : Output the job versions in its JSON format.
-- `-t` : Format and display the job versions using a Go template.
+- `-json`: Output the job versions in its JSON format.
+- `-t`: Format and display the job versions using a Go template.
 
 ## Examples
 

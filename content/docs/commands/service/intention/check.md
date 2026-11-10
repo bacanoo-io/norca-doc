@@ -18,7 +18,7 @@ norca service intention check [options] <source> <destination>
 The source is `<service>` (in the namespace of the destination) or `<namespace>/<service>`. The namespace
 of the destination is `-namespace`, `NORCA_NAMESPACE` (or `NORCA_NAMESPACE`), or `default`.
 
-The command exits with `0` when the connection is allowed and `2` when it is denied (`1` on errors), so
+The command exits with **`0` when the connection is allowed and `2` when it is denied** (`1` on errors), so
 it can be used in scripts.
 
 When ACLs are enabled, this command requires a token with the `read-job` capability for the namespace.

@@ -17,16 +17,17 @@ norca fmt [flags] paths ...
 ```
 
 Formats Norca agent configuration and job file to a canonical format. If a path
-is a directory, it will recursively format all files with .nomad and .hcl
+is a directory, it will recursively format all files with `.nomad` and `.hcl`
 extensions in the directory.
 
-If you provide a single dash (-) as argument, fmt will read from standard input
+If you provide a single dash (-) as argument, `fmt` will read from standard input
 (STDIN) and output the processed output to standard output (STDOUT).
 
-Note that, this command will check the syntax against
-[HCL2](https://github.com/hashicorp/hcl/blob/hcl2/README.md), the second
-generation of Hashicorp Configuration Language. Running this command with
-deprecated HCL1 jobspec will result in errors.
+> [!NOTE]
+> Note that, this command will check the syntax against
+> [HCL2](https://github.com/hashicorp/hcl/blob/hcl2/README.md), the second
+> generation of Hashicorp Configuration Language. **Running this command with
+> deprecated HCL1 jobspec will result in errors.**
 
 ## Format Options:
 

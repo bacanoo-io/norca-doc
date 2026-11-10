@@ -6,7 +6,7 @@ upstream:
   path: "website/content/docs/commands/alloc/restart.mdx"
 ---
 
-The `alloc restart` command allows a user to perform an in place restart of an
+The `alloc restart` command allows a user to perform an in place restart of
 an entire allocation or individual task.
 
 ## Usage

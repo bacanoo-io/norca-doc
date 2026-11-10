@@ -12,7 +12,7 @@ The `object-kind delete` command deletes an object kind.
 norca object-kind delete [options] <group>/<Kind>
 ```
 
-A kind that still has objects can't be deleted; delete its objects first.
+**A kind that still has objects can't be deleted; delete its objects first.**
 
 If ACLs are enabled, this command requires a token with the `write` capability
 of the `operator` policy.

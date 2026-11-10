@@ -23,7 +23,7 @@ norca job dispatch [options] <parameterized job> [input source]
 ```
 
 Dispatch creates an instance of a parameterized job. A data payload to the
-dispatched instance can be provided via stdin by using "-" for the input source
+dispatched instance can be provided via stdin by using `"-"` for the input source
 or by specifying a path to a file. Metadata can be supplied by using the meta
 flag one or more times.
 
@@ -31,17 +31,17 @@ The payload has a **size limit of 16384 bytes (16KiB)**.
 
 An optional idempotency token can be specified to prevent dispatching more than
 one instance of the same job. The token can have any value and will be matched
-with existing jobs. If an instance with the same token already exists, the job
-will not be dispatched.
+with existing jobs. **If an instance with the same token already exists, the job
+will not be dispatched.**
 
 Upon successful creation, the dispatched job ID will be printed and the
 triggered evaluation will be monitored. This can be disabled by supplying the
 detach flag.
 
-On successful job submission and scheduling, exit code 0 will be returned. If
+On successful job submission and scheduling, **exit code 0** will be returned. If
 there are job placement issues encountered (unsatisfiable constraints, resource
-exhaustion, etc), then the exit code will be 2. Any other errors, including
-client connection issues or internal errors, are indicated by exit code 1.
+exhaustion, etc), then the **exit code will be 2**. Any other errors, including
+client connection issues or internal errors, are indicated by **exit code 1**.
 
 When ACLs are enabled, this command requires a token with the `dispatch-job`
 capability for the job's namespace. The `list-jobs` capability is required to
@@ -103,11 +103,11 @@ dispatching parameterized jobs.
 
 ## Dispatch Options
 
-- `-meta`: Meta takes a key/value pair separated by "=". The metadata key will
+- `-meta`: Meta takes a key/value pair separated by `"="`. The metadata key will
   be merged into the job's metadata. The job may define a default value for the
   key which is overridden when dispatching. The flag can be provided more than
-  once to inject multiple metadata key/value pairs. Arbitrary keys are not
-  allowed. The parameterized job must allow the key to be merged.
+  once to inject multiple metadata key/value pairs. **Arbitrary keys are not
+  allowed. The parameterized job must allow the key to be merged.**
 
 - `-detach`: Return immediately instead of monitoring. A new evaluation ID
   will be output, which can be used to examine the evaluation using the

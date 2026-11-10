@@ -6,7 +6,7 @@ description: "The \"secret\" command groups subcommands for the secrets of the b
 
 The `secret` command (Norca) groups subcommands for the secrets of the
 [built-in secret store](/docs/features/secrets). Secrets are versioned key/value items kept encrypted on
-the servers. Their values are returned only by an explicit, audited read; listings, the metadata and the
+the servers. **Their values are returned only by an explicit, audited read**; listings, the metadata and the
 event stream show paths, metadata and a keyed hash of the value.
 
 ## Usage

@@ -4,8 +4,8 @@ linkTitle: "secret undelete"
 description: "The \"secret undelete\" command restores soft deleted versions of a secret (Norca)."
 ---
 
-The `secret undelete` command restores soft deleted versions of a secret. Destroyed versions can't be
-restored.
+The `secret undelete` command restores soft deleted versions of a secret. **Destroyed versions can't be
+restored.**
 
 If ACLs are enabled, this command requires the `write-secret` capability for the path.
 

@@ -14,11 +14,14 @@ The `acl bootstrap` command is used to bootstrap the initial ACL token.
 norca acl bootstrap [options]
 ```
 
-The `acl bootstrap` command can be used in two ways: 
+The `acl bootstrap` command can be used in two ways:
+
 - If you provide no arguments it will return a system generated bootstrap token.
 - If you would like to provide an operator generated token it is possible to provide the token
-using a file `acl bootstrap [path]`. The Token can be read from stdin by setting the path to "-". 
-Please make sure you secure this token in an apropriate manner as it could be written to your terminal history.
+  using a file `acl bootstrap [path]`. The Token can be read from stdin by setting the path to `"-"`.
+
+  > [!WARNING]
+  > Please make sure you secure this token in an appropriate manner as it could be written to your terminal history.
 
 ## General Options
 
@@ -66,8 +69,8 @@ Please make sure you secure this token in an apropriate manner as it could be wr
 
 ## Bootstrap Options
 
-- `-json` : Output the bootstrap response in JSON format.
-- `-t` : Format and display the deployments using a Go template.
+- `-json`: Output the bootstrap response in JSON format.
+- `-t`: Format and display the deployments using a Go template.
 
 ## Examples
 
@@ -88,7 +91,8 @@ Modify Index = 7
 
 Bootstrap the initial token with provided token:
 
-root.token file
+`root.token` file
+
 ```shell
 2b778dd9-f5f1-6f29-b4b4-9a5fa948757a
 ```

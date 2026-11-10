@@ -64,11 +64,11 @@ The `acl token create` command requires no arguments.
 
 - `-name`: Sets the human readable name for the ACL token.
 
-- `-type`: Sets the type of token. Must be one of "client" (default), or
-  "management".
+- `-type`: Sets the type of token. Must be one of `"client"` (default), or
+  `"management"`.
 
 - `-global`: Toggles the global mode of the token. Global tokens are replicated
-  to all regions. Defaults false.
+  to all regions. Defaults `false`.
 
 - `-policy`: Specifies a policy to associate with the token. Can be specified
   multiple times, but only with client type tokens.
@@ -80,10 +80,10 @@ The `acl token create` command requires no arguments.
   times.
 
 - `-ttl`: Specifies the time-to-live of the created ACL token. This takes the
-  form of a time duration such as "5m" and "1h". By default, tokens will be
-  created without a TTL and therefore never expire.
+  form of a time duration such as `"5m"` and `"1h"`. **By default, tokens will be
+  created without a TTL and therefore never expire.**
 
-- `-json`:Output the ACL token information in JSON format.
+- `-json`: Output the ACL token information in JSON format.
 
 - `-t`: Format and display the ACL token information using a Go template.
 

@@ -73,8 +73,8 @@ The `acl auth-method update` command requires an existing method's name.
 - `-default`: Specifies whether this auth method should be treated as a default
   one in case no auth method is explicitly specified for a login command.
 
-- `-config`: Auth method [configuration](/docs/api/acl/auth-methods#config) in JSON format. May be prefixed with '@'
-  to indicate that the value is a file path to load the config from. '-' may also
+- `-config`: Auth method [configuration](/docs/api/acl/auth-methods#config) in JSON format. May be prefixed with `'@'`
+  to indicate that the value is a file path to load the config from. `'-'` may also
   be given to indicate that the config is available on stdin.
 
 - `-json`: Output the ACL auth method in a JSON format.

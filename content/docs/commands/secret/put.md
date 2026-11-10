@@ -17,7 +17,7 @@ Items are given as arguments:
 | `-` | All items, read from standard input as a JSON object of strings |
 | `<item>=<value>` | The argument itself |
 
-Values given as plain arguments end up in the shell history and the process list, and the command warns
+**Values given as plain arguments end up in the shell history and the process list**, and the command warns
 about them; prefer `@<file>` or standard input. Standard input can be used once per command.
 
 If ACLs are enabled, this command requires the `write-secret` capability for the path, and

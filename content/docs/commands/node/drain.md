@@ -22,18 +22,18 @@ to their [`migrate`][migrate] block until the drain's deadline is reached.
 > `norca job status` to see the state of the budget of a job.
 
 By default the `node drain` command blocks until a node is done draining and
-all allocations have terminated. Canceling the `node drain` command _will not_
-cancel the drain. Drains may be canceled by using the `-disable` parameter
+all allocations have terminated. **Canceling the `node drain` command _will not_
+cancel the drain.** Drains may be canceled by using the `-disable` parameter
 below.
 
-When draining more than one node at a time, it is recommended you first
+**When draining more than one node at a time, it is recommended you first
 disable [scheduling eligibility][eligibility] on all nodes that will be
-drained. For example if you are decommissioning an entire class of nodes,
+drained.** For example if you are decommissioning an entire class of nodes,
 first run `node eligibility -disable` on all of their node IDs, and then run
 `node drain -enable`. This will ensure allocations drained from the first node
 are not placed on another node about to be drained.
 
-The [node status] command compliments this nicely by providing the current drain
+The [node status] command complements this nicely by providing the current drain
 status of a given node.
 
 See the [`migrate` block](/docs/job-specification/migrate) for how allocations
@@ -116,8 +116,8 @@ capability.
 
 - `-force`: Remove allocations off the node immediately, regardless of the
   allocation's [`migrate`][] block. This will include system jobs and CSI
-  plugins if `-ignore-system` is not also set, and is not safe for use with CSI
-  node plugins if the volumes are not being detached externally (for example, a
+  plugins if `-ignore-system` is not also set, and **is not safe for use with CSI
+  node plugins if the volumes are not being detached externally** (for example, a
   cloud VM is being terminated).
 
 - `-no-deadline`: No deadline allows the allocations to drain off the node,

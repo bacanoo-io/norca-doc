@@ -7,12 +7,12 @@ upstream:
 ---
 
 The `operator gossip keyring remove` command removes the given key
-from the cluster. This operation may only be performed on keys which
-are not currently the primary key.
+from the cluster. **This operation may only be performed on keys which
+are not currently the primary key.**
 
-This command can only be run against server nodes. It returns 0 if all nodes
+This command can only be run against server nodes. It returns `0` if all nodes
 reply and there are no errors. If any node fails to reply or reports failure,
-the exit code will be 1.
+the exit code will be `1`.
 
 If ACLs are enabled, this command requires a token with the `agent:write`
 capability.

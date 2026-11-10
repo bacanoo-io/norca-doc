@@ -97,7 +97,7 @@ When ACLs are enabled, this command requires a token with the `read-logs`,
   optionally `-job` and `-task`, both stdout and stderr logs will be followed.
 
 - `-tail`: Show the logs contents with offsets relative to the end of the logs.
-  If no offset is given, -n is defaulted to 10.
+  If no offset is given, `-n` is defaulted to 10.
 
 - `-n`: Sets the tail location in best-efforted number of lines relative to the
   end of the logs.
@@ -105,9 +105,10 @@ When ACLs are enabled, this command requires a token with the `read-logs`,
 - `-c`: Sets the tail location in number of bytes relative to the end of the
   logs.
 
-Note that the `-no-color` option applies to Norca's own output. If the task's
-logs include terminal escape sequences for color codes, Norca will not remove
-them.
+> [!NOTE]
+> Note that the `-no-color` option applies to Norca's own output. If the task's
+> logs include terminal escape sequences for color codes, Norca will not remove
+> them.
 
 ## Examples
 

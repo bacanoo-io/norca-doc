@@ -79,7 +79,7 @@ capability.
   The default is `false`.
 
 - `-node-id`: Specifies the client node-id to stream logs from. If no
-  node-id is given the Norca server from the -address flag will be used.
+  node-id is given the Norca server from the `-address` flag will be used.
 
 - `-server-id`: Specifies the Norca server id to stream logs from. Accepts
   server names from `norca server members` and also a special `leader` option

@@ -20,8 +20,8 @@ JSON in the API form with `-json` or a `.json` extension.
 
 The server fills in the default values of the kind's schema, validates the
 object against the schema and the kind's rules (and its approved webhooks), and
-increases the generation if the spec changed. The status written by controllers
-is kept. Labels, `managed_by` and owners are replaced by the values in the file;
+increases the generation if the spec changed. **The status written by controllers
+is kept.** Labels, `managed_by` and owners are replaced by the values in the file;
 finalizers in the file are added to the stored ones.
 
 If ACLs are enabled, this command requires a token with the `write` capability

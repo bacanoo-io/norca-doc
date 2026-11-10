@@ -40,6 +40,7 @@ passcode = my-long-passcode
 ```
 
 Update a value:
+
 ```shell
 $ norca var get secret/creds | norca var put -in=json -out=table -v - user=dba
 Reading whole JSON variable specification from stdin

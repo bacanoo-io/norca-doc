@@ -6,8 +6,8 @@ description: "The \"operator seal-status\" command shows the keyring seal of the
 
 The `operator seal-status` command (Norca) shows the [keyring seal](/docs/features/secrets/seal) of the
 region and, for every server, whether it is sealed, the progress of its unseal and the state of the secret
-store core. A sealed server serves everything that needs no decryption and rejects Variables, workload
-identity signing, mTLS issuance and the secret store.
+store core. **A sealed server serves everything that needs no decryption and rejects Variables, workload
+identity signing, mTLS issuance and the secret store.**
 
 During a [rewrap](/docs/commands/operator/keyring-rewrap) the output also shows the rewrap, the servers
 that are done and the servers that are sealed and must be unsealed with the new shares afterwards. A secret

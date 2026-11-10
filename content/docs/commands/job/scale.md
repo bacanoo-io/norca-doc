@@ -15,7 +15,7 @@ a Norca task group.
 norca job scale [options] <job> <group> <count>
 ```
 
-The `job scale` commands requires at least two arguments and potentially three
+The `job scale` command requires at least two arguments and potentially three
 depending on the job specification. The first argument will be the job ID of the
 job you wish to scale. If the job contains a single task group, you can omit
 including the task group name as the second argument and the command will perform
@@ -25,7 +25,7 @@ the job specification.
 
 Scale will issue a request to update the matched job and then invoke an interactive
 monitor that exits automatically once the scheduler has processed the request.
-It is safe to exit the monitor early using ctrl+c.
+It is safe to exit the monitor early using `ctrl+c`.
 
 When ACLs are enabled, this command requires a token with the
 `read-job-scaling` and either the `scale-job` or `submit-job` capabilities

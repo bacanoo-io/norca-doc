@@ -12,7 +12,7 @@ receive placements and run new allocations. Nodes that have their scheduling
 eligibility disabled are ineligible for new placements.
 
 The [`node drain`][drain] command automatically disables eligibility. Disabling
-a drain restore eligibility by default.
+a drain restores eligibility by default.
 
 Disable scheduling eligibility is useful when draining a set of nodes: first
 disable eligibility on each node that will be drained. Then drain each node.

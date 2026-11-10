@@ -77,8 +77,8 @@ run the command with a job prefix instead of the exact job ID.
 ## Inspect Options
 
 - `-version`: Display only the job at the given job version.
-- `-json` : Output the job in its JSON format.
-- `-t` : Format and display the job using a Go template.
+- `-json`: Output the job in its JSON format.
+- `-t`: Format and display the job using a Go template.
 
 ## Examples
 

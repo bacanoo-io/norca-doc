@@ -6,7 +6,7 @@ upstream:
   path: "website/content/docs/commands/eval/list.mdx"
 ---
 
-The `eval list` command is used list all evaluations.
+The `eval list` command is used to list all evaluations.
 
 ## Usage
 

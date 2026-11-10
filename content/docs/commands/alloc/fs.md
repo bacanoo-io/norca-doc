@@ -102,7 +102,7 @@ When ACLs are enabled, this command requires a token with the `read-fs`,
   rather to wait for additional output.
 
 - `-tail`: Show the files contents with offsets relative to the end of the file.
-  If no offset is given, -n is defaulted to 10.
+  If no offset is given, `-n` is defaulted to 10.
 
 - `-n`: Sets the tail location in best-efforted number of lines relative to the
   end of the file.

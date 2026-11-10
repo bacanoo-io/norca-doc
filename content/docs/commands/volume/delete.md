@@ -20,8 +20,8 @@ norca volume delete [options] [volume]
 
 The `volume delete` command requires a single argument, specifying the ID of
 volume to be deleted. The volume must still be [registered] with Norca in
-order to be deleted. Deleting will fail if the volume is still in use by an
-allocation or in the process of being unpublished. If the volume no longer
+order to be deleted. **Deleting will fail if the volume is still in use by an
+allocation or in the process of being unpublished.** If the volume no longer
 exists, this command will silently return without an error.
 
 When ACLs are enabled, this command requires a token with the

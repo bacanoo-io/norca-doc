@@ -24,7 +24,7 @@ displayed.
 
 Stop will issue a request to deregister the matched jobs and then invoke an
 interactive monitor that exits automatically once the scheduler has processed
-the requests. It is safe to exit the monitor early using ctrl+c.
+the requests. It is safe to exit the monitor early using `ctrl+c`.
 
 When ACLs are enabled, this command requires a token with the `submit-job`
 and `read-job` capabilities for the job's namespace. The `list-jobs`
@@ -93,19 +93,20 @@ job IDs.
 
 - `-yes`: Automatic yes to prompts.
 
-- `-purge`: Purge is used to stop the job and purge it from the system. If not
+- `-purge`: Purge is used to stop the job and purge it from the system. **If not
   set, the job will still be queryable and will be purged by the garbage
-  collector.
+  collector.**
 
-- `-global`
-  Stop a [multi-region] job in all its regions. By default, `job stop` will
+- `-global`: Stop a [multi-region] job in all its regions. By default, `job stop` will
   stop only a single region at a time. Ignored for single-region jobs.
 
-- `-no-shutdown-delay`
-  Ignore the group and task [`shutdown_delay`] configuration so that
+- `-no-shutdown-delay`: Ignore the group and task [`shutdown_delay`] configuration so that
   there is no delay between service deregistration and task
-  shutdown. Note that using this flag will result in failed network
-  connections to the allocations being stopped.
+  shutdown.
+
+  > [!WARNING]
+  > Note that using this flag will result in failed network
+  > connections to the allocations being stopped.
 
 ## Examples
 

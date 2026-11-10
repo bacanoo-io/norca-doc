@@ -5,8 +5,8 @@ description: "The service ttl command renews the TTL checks of an external servi
 ---
 
 The `service ttl` command (Norca) renews the TTL checks of an
-[external service](/docs/features/service-discovery/external-services), or sets their status. A TTL check
-that is not renewed within its TTL turns `critical`.
+[external service](/docs/features/service-discovery/external-services), or sets their status. **A TTL check
+that is not renewed within its TTL turns `critical`.**
 
 ## Usage
 

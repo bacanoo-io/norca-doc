@@ -80,15 +80,15 @@ capability for the service's namespace.
 
 - `-filter`: Specifies an expression used to filter query results.
 
-- `-json` : Output the service registrations in JSON format.
+- `-json`: Output the service registrations in JSON format.
 
-- `-t` : Format and display the service registrations using a Go template.
+- `-t`: Format and display the service registrations using a Go template.
 
-- `-verbose` : Display full information, including the datacenter and (Norca) the
+- `-verbose`: Display full information, including the datacenter and (Norca) the
   readiness and health of each instance and the table of its checks with their roles, states and
   output.
 
-- `-healthy` : (Norca) Only show healthy instances, and those of services that
+- `-healthy`: (Norca) Only show healthy instances, and those of services that
   publish instances that are not ready (`discovery { include_not_ready = true }`).
   See the [health-based catalog](/docs/features/service-discovery/catalog).
 

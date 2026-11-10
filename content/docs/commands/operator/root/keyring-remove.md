@@ -7,8 +7,8 @@ upstream:
 ---
 
 The `operator root keyring remove` command removes an encryption key from the
-cluster. This operation may only be performed on keys that are not the active
-key.
+cluster. **This operation may only be performed on keys that are not the active
+key.**
 
 If ACLs are enabled, this command requires a management token.
 

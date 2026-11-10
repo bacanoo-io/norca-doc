@@ -6,8 +6,8 @@ description: "The service apply command registers the external services declared
 
 The `service apply` command (Norca) registers or updates the
 [external services](/docs/features/service-discovery/external-services) declared in a file. The file is
-kept in version control like any other configuration; the command is idempotent, so running it again with
-the same file changes nothing.
+kept in version control like any other configuration; **the command is idempotent, so running it again with
+the same file changes nothing.**
 
 ## Usage
 
@@ -17,7 +17,7 @@ norca service apply [options] [-f <file>]
 
 The file is read from `-f`, from the one argument, or from standard input with `-`. It holds one or more
 `external_service` blocks (HCL), or with `-json` the JSON form of the API. The whole file is checked by
-the servers before anything is registered, so a file with one invalid block registers nothing.
+the servers before anything is registered, so **a file with one invalid block registers nothing.**
 
 ```hcl
 external_service "orders-db" {
@@ -46,10 +46,10 @@ external_service "billing-db" {
 }
 ```
 
-The command prints `created`, `updated` or `unchanged` for every block. It never removes anything; use
+The command prints `created`, `updated` or `unchanged` for every block. **It never removes anything**; use
 [`norca service deregister`](/docs/commands/service/deregister) for that.
 
-A service declared in a file stays until it is deregistered: `deregister_critical_after` defaults to `0`
+**A service declared in a file stays until it is deregistered**: `deregister_critical_after` defaults to `0`
 for it (it is `1h` for a service registered with `service register`). Set it to remove a service whose
 checks are critical for too long.
 
@@ -88,7 +88,7 @@ The label is the name of the service.
 `method`, `header`, `body`, `tls_skip_verify`, `tls_server_name`, `tcp`, `interval`, `timeout` and
 `initial_status`, with the meaning of the [API](/docs/api/external-services#payload).
 
-The `http` and `tcp` checks of a declared service need a `checked_by` block. The servers choose the client
+**The `http` and `tcp` checks of a declared service need a `checked_by` block.** The servers choose the client
 node that runs them among the ready, eligible nodes that match `node_pool` (empty: every pool) and
 `datacenters` (patterns such as `eu-*`; empty: every datacenter), and move them to another node when that
 node goes down or stops reporting. A service with only `ttl` checks, or no check, needs no `checked_by`.

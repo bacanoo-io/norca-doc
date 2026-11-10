@@ -7,7 +7,7 @@ upstream:
 ---
 
 The `server join` command joins the local server to one or more Norca servers.
-Joining is only required for server nodes, and only needs to succeed against
+**Joining is only required for server nodes**, and only needs to succeed against
 one or more of the provided addresses. Once joined, the gossip layer will
 handle discovery of the other server nodes in the cluster.
 
@@ -19,8 +19,8 @@ norca server join [options] <addr> [<addr>...]
 
 One or more server addresses are required. If multiple server addresses are
 specified, then an attempt will be made to join each one. If one or more nodes
-are joined successfully, the exit code will be 0. Otherwise, the exit code will
-be 1.
+are joined successfully, the **exit code will be 0**. Otherwise, the **exit code will
+be 1**.
 
 ## General Options
 

@@ -10,8 +10,8 @@ The `operator client-state` command generates a representation of the
 stored client state in JSON format.
 
 The client state is a Badger database in `<data_dir>/client/state`. The
-command reads it only while no agent uses the data directory: stop the
-client first.
+command reads it only while no agent uses the data directory: **stop the
+client first**.
 
 ## Usage
 

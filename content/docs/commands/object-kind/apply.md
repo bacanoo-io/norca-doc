@@ -20,8 +20,8 @@ file relative to the specification (for example the JSON Schema).
 
 The server compiles the JSON Schema and the CEL rules and rejects the kind if
 one of them is invalid. When the schema, the rules or the schema version change,
-the stored objects are checked against the new kind: a change that would make
-stored objects invalid is rejected, unless the version is raised with a
+the stored objects are checked against the new kind: **a change that would make
+stored objects invalid is rejected**, unless the version is raised with a
 migration that converts them (the leader then migrates them in the background).
 `-dry-run` shows the report.
 

@@ -60,8 +60,8 @@ norca acl token list
 
 ## List Options
 
-- `-json` : Output the tokens in their JSON format.
-- `-t` : Format and display the tokens using a Go template.
+- `-json`: Output the tokens in their JSON format.
+- `-t`: Format and display the tokens using a Go template.
 
 ## Examples
 

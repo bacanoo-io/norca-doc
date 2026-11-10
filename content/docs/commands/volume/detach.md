@@ -16,12 +16,13 @@ norca volume detach [options] [volume] [node]
 ```
 
 The `volume detach` command requires two arguments, specifying the ID of the
-volume to be detached and the node to detach it from. Detaching will fail if
-the volume is still in use by an allocation.
+volume to be detached and the node to detach it from. **Detaching will fail if
+the volume is still in use by an allocation.**
 
-Note that you can use a node ID prefix just as you can with other Norca
-commands, but if the node has been garbage collected, you may need to pass the
-full node ID.
+> [!NOTE]
+> Note that you can use a node ID prefix just as you can with other Norca
+> commands, but if the node has been garbage collected, you may need to pass the
+> full node ID.
 
 When ACLs are enabled, this command requires a token with the
 `csi-write-volume` and `csi-read-volume` capabilities for the volume's

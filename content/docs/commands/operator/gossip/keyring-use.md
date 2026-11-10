@@ -10,9 +10,9 @@ The `operator gossip keyring use` command changes the encryption key
 used for gossip. The key must already be installed before this
 operation can succeed.
 
-This command can only be run against server nodes. It returns 0 if all nodes
+This command can only be run against server nodes. It returns `0` if all nodes
 reply and there are no errors. If any node fails to reply or reports failure,
-the exit code will be 1.
+the exit code will be `1`.
 
 If ACLs are enabled, this command requires a token with the `agent:write`
 capability.

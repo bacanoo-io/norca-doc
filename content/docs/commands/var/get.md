@@ -79,7 +79,7 @@ documentation for details.
   with the `-template` option. Defaults to "table" when stdout is a terminal and
   to "json" when stdout is redirected.
 
-- `-template` `(string: "")` Template to render output with. Required when
+- `-template` `(string: "")`: Template to render output with. Required when
   output is "go-template".
 
 ## Examples

@@ -6,7 +6,7 @@ upstream:
   path: "website/content/docs/commands/alloc/signal.mdx"
 ---
 
-The `alloc signal` command allows a user to perform an in place signal of an
+The `alloc signal` command allows a user to perform an in place signal of
 an entire allocation or individual task.
 
 ## Usage

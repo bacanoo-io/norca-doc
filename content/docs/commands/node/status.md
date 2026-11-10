@@ -130,7 +130,8 @@ $ norca node status -quiet
 f35be281-85a5-d1e6-d268-6e8a6f0684df
 ```
 
-**NOTE**: `-quiet` cannot be used in conjunction with `-verbose` or `-json`.
+> [!NOTE]
+> **NOTE**: `-quiet` cannot be used in conjunction with `-verbose` or `-json`.
 
 List view, with running allocations:
 

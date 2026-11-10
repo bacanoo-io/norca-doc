@@ -75,8 +75,8 @@ description below for specific usage information and requirements.
 
 - `-update-servers`: Updates the client's server list using the provided
   arguments. Multiple server addresses may be passed using multiple arguments.
-  When updating the servers list, you must specify ALL of the server nodes you
-  wish to configure. The set is updated atomically. It is an error to specify
+  **When updating the servers list, you must specify ALL of the server nodes you
+  wish to configure.** The set is updated atomically. It is an error to specify
   this flag without any server addresses. If you do _not_ specify a port for each
   server address, the default port `4647` will be used.
 

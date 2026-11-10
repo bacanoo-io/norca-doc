@@ -6,7 +6,7 @@ upstream:
   path: "website/content/docs/commands/namespace/delete.mdx"
 ---
 
-The `namespace delete` command is used delete a namespace.
+The `namespace delete` command is used to delete a namespace.
 
 ## Usage
 
@@ -18,7 +18,7 @@ The `namespace delete` command requires the name of the namespace to be deleted.
 
 If ACLs are enabled, this command requires a management ACL token.
 
-You cannot delete a namespace that has non-terminal jobs. In federated clusters,
+**You cannot delete a namespace that has non-terminal jobs.** In federated clusters,
 you cannot delete a namespace that has non-terminal jobs in any of the federated
 regions.
 
@@ -68,7 +68,7 @@ regions.
 
 ## Examples
 
-Delete a namespace
+Delete a namespace:
 
 ```shell
 $ norca namespace delete api-prod

@@ -155,7 +155,7 @@ Create Index = 14
 Modify Index = 14
 ```
 
-Create a new ACL Binding Rule where the selector uses a mathing against a
+Create a new ACL Binding Rule where the selector uses a matching against a
 single `ClaimMapping` which uses `owner` as its value:
 
 ```shell

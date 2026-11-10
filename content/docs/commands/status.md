@@ -18,8 +18,8 @@ The status command accepts any Norca identifier or identifier prefix as its sole
 argument. The command detects the type of the identifier and routes to the
 appropriate status command to display more detailed output.
 
-If the ID is omitted, the command lists out all of the existing jobs. This is
-for backwards compatibility and should not be relied on.
+If the ID is omitted, the command lists out all of the existing jobs. **This is
+for backwards compatibility and should not be relied on.**
 
 ## General Options
 

@@ -60,9 +60,9 @@ norca acl role list [options]
 
 ## List Options
 
-- `-json` : Output the ACL roles in a JSON format.
+- `-json`: Output the ACL roles in a JSON format.
 
-- `-t` : Format and display the ACL roles using a Go template.
+- `-t`: Format and display the ACL roles using a Go template.
 
 ## Examples
 

@@ -41,11 +41,11 @@ those groups are restarted.
 When rescheduling, the current allocations are stopped triggering the Norca
 scheduler to create replacement allocations that may be placed in different
 clients. The command waits until the new allocations have client status `ready`
-before proceeding with the remaining batches. Services health checks are not
-taken into account.
+before proceeding with the remaining batches. **Services health checks are not
+taken into account.**
 
-By default the command restarts all running tasks in-place with one allocation
-per batch.
+**By default the command restarts all running tasks in-place with one allocation
+per batch.**
 
 When ACLs are enabled, this command requires a token with the
 `alloc-lifecycle` and `read-job` capabilities for the job's namespace. The
@@ -123,13 +123,16 @@ of the exact job ID.
 
 - `-no-shutdown-delay`: Ignore the group and task [`shutdown_delay`][]
   configuration so there is no delay between service deregistration and task
-  shutdown or restart. Note that using this flag will result in failed network
-  connections to the allocation being restarted.
+  shutdown or restart.
+
+  > [!WARNING]
+  > Note that using this flag will result in failed network
+  > connections to the allocation being restarted.
 
 - `-reschedule`: If set, allocations are stopped and rescheduled instead of
   restarted in-place. Since the group is not modified the restart does not
-  create a new deployment, and so values defined in [`update`][] blocks, such
-  as [`max_parallel`][], are not taken into account. This option cannot be used
+  create a new deployment, and so **values defined in [`update`][] blocks, such
+  as [`max_parallel`][], are not taken into account**. This option cannot be used
   with `-task`. Only jobs of type `batch`, `service`, and `system` can be
   rescheduled.
 

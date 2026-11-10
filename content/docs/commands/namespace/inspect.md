@@ -64,7 +64,7 @@ that has a capability associated with the namespace.
 
 ## Inspect Options
 
-- `-t` : Format and display the namespace using a Go template.
+- `-t`: Format and display the namespace using a Go template.
 
 ## Examples
 

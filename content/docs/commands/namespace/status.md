@@ -64,8 +64,9 @@ that has a capability associated with the namespace.
 
 ## Status Options
 
-- `-json` : Output the namespace status in its JSON format.
-- `-t` : Format and display the namespace status using a Go template.
+- `-json`: Output the namespace status in its JSON format.
+
+- `-t`: Format and display the namespace status using a Go template.
 
 ## Examples
 
@@ -100,6 +101,7 @@ $ norca namespace status -json default
     "Name": "default",
     "Quota": ""
 }
+```
 
 Or use the `-t` flag to format and display the status using a Go template:
 

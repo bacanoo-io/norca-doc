@@ -7,7 +7,7 @@ description: "The pack diff command shows the drift of a release from its live r
 The `pack diff` command compares the deployed revision of a
 [release](/docs/features/packages/releases#drift-detection) with the live state of its resources.
 Resources that were deleted or changed outside the release are listed, the `Drifted` condition of the
-release is updated, and the command exits with `2`. Drift is never corrected automatically; upgrade or
+release is updated, and the command exits with `2`. **Drift is never corrected automatically**; upgrade or
 roll back to restore the revision.
 
 ## Usage

@@ -91,5 +91,5 @@ app   1h0m0s  24h0m0s  schema
 
 ## secret engine delete
 
-Deletes an engine. An engine with live leases can't be deleted: revoke them first with
+Deletes an engine. **An engine with live leases can't be deleted**: revoke them first with
 [`norca secret lease revoke -engine`](/docs/commands/secret/lease#secret-lease-revoke). Requires `write-secret-engine`.

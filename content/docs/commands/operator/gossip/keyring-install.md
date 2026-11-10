@@ -10,9 +10,9 @@ The `operator gossip keyring install` command is used to install a new
 encryption key used for gossip. This will broadcast the new key to all
 members in the cluster.
 
-This command can only be run against server nodes. It returns 0 if all nodes
+This command can only be run against server nodes. It returns `0` if all nodes
 reply and there are no errors. If any node fails to reply or reports failure,
-the exit code will be 1.
+the exit code will be `1`.
 
 If ACLs are enabled, this command requires a token with the `agent:write`
 capability.
