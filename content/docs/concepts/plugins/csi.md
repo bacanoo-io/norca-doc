@@ -119,7 +119,7 @@ until the volume has been claimed and is ready.**
 If the volume's plugin requires a controller, the server will send an
 RPC to any Norca client where that controller is running. The Norca
 client will forward this request over the controller plugin's gRPC
-socket. The controller plugin will make the request volume available
+socket. The controller plugin will make the requested volume available
 to the node that needs it.
 
 Once the controller is done (or if there's no controller required),

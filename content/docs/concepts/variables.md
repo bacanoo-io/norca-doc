@@ -17,7 +17,7 @@ your task `template`s. The contents of these variables are encrypted
 and replicated between servers via raft. Access to variables is controlled by
 ACL policies, and tasks have implicit ACL policies that allow them to access
 their own variables. You can create, read, update, or delete variables via the
-command line, the Nomad API, or in the Norca web UI.
+command line, the Norca API, or in the Norca web UI.
 
 > [!NOTE]
 > Note that **the Variables feature is intended for small pieces of configuration

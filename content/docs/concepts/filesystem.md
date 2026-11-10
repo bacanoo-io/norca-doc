@@ -61,7 +61,7 @@ allocation directory like the one below.
   the task. Tasks in a task group can't read each other's task working
   directory. Depending on the task driver's [filesystem isolation mode], a
   task may not be able to access the task working directory. Within the
-  `task/` directory are three standard directories:
+  `«taskname»/` directory are four standard directories:
 
   - **«taskname»/local/**: This directory is the location provided to the task as the
     `NORCA_TASK_DIR`. Note this is not the same as the "task working
@@ -236,22 +236,22 @@ job "example" {
         target   = "/etc/redis.d"
         readonly = true
       }]
+    }
 
-      template {
-        destination = "${NORCA_SECRETS_DIR}/redis.conf"
-        data        = <<EOT
+    template {
+      destination = "${NORCA_SECRETS_DIR}/redis.conf"
+      data        = <<EOT
 {{ with secret "secrets/data/redispass" }}
 requirepass {{- .Data.data.passwd -}}{{end}}
 EOT
 
-      }
     }
   }
 }
 ```
 
 > [!NOTE]
-> Note that relative mount source path are relative to the task working
+> Note that relative mount source paths are relative to the task working
 > directory, so to bind the `NORCA_ALLOC_DIR` as a mount source, you will need
 > to use a relative path that traverses up into the allocation working directory
 > (ex. `source = "../alloc"`).

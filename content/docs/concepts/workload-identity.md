@@ -109,7 +109,7 @@ norca acl policy apply \
 {{< /tab >}}
 {{< /tabs >}}
 
-[allocation]: /docs/concepts/architecture#allocation
+[allocation]: /docs/glossary#allocation
 [identity-block]: /docs/job-specification/identity/
 [plan applier]: /docs/concepts/scheduling/scheduling/
 [JSON Web Token (JWT)]: https://datatracker.ietf.org/doc/html/rfc7519

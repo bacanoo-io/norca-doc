@@ -76,7 +76,7 @@ jobs. Since these tasks are managed by Norca, they can take advantage of job
 updating, service discovery, monitoring, and more.
 
 The `sysbatch` scheduler will preempt lower priority tasks running on a node if there
-is not enough capacity to place the job. See preemption details on how tasks that
+is not enough capacity to place the job. See [preemption] details on how tasks that
 get preempted are chosen.
 
 Sysbatch jobs are intended to run until successful completion, explicitly stopped

@@ -95,38 +95,38 @@ recommendations accordingly.
     authentication](https://en.wikipedia.org/wiki/Mutual_authentication) with
     security properties to prevent the following problems:
 
-  * Unauthorized access because both server and clients must provide valid TLS
-    [X.509](https://en.wikipedia.org/wiki/X.509) certificates signed by the same
-    valid [CA](https://en.wikipedia.org/wiki/Certificate_authority) in order to
-    communicate within the cluster.
+    - Unauthorized access because both server and clients must provide valid TLS
+      [X.509](https://en.wikipedia.org/wiki/X.509) certificates signed by the same
+      valid [CA](https://en.wikipedia.org/wiki/Certificate_authority) in order to
+      communicate within the cluster.
 
-  * Observing or tampering communication between nodes is thwarted due to the
-    traffic being encrypted using the well known network security protocol
-    [TLS](https://en.wikipedia.org/wiki/Transport_Layer_Security) version 1.2,
-    with a [configurable minimal
-    version](/docs/configuration/tls#tls_min_version).
-    Both server and client agents must be configured to validate each other's
-    certificates to ensure mTLS is actually enabled. This requires appropriate
-    certificates to be distributed to servers, clients, machines, or operators
-    for things like CLI usage. It is recommended to use
-    Vault
-    to securely manage the certificate creation and rotation for nodes.
+    - Observing or tampering communication between nodes is thwarted due to the
+      traffic being encrypted using the well known network security protocol
+      [TLS](https://en.wikipedia.org/wiki/Transport_Layer_Security) version 1.2,
+      with a [configurable minimal
+      version](/docs/configuration/tls#tls_min_version).
+      Both server and client agents must be configured to validate each other's
+      certificates to ensure mTLS is actually enabled. This requires appropriate
+      certificates to be distributed to servers, clients, machines, or operators
+      for things like CLI usage. It is recommended to use
+      Vault
+      to securely manage the certificate creation and rotation for nodes.
 
-  * Agent role misconfiguration is prevented using the X.509
-    [SAN](https://en.wikipedia.org/wiki/Subject_Alternative_Name) extension.
-    This is essentially a domain name that is used to identify and verify a
-    node's region and role name are configured as expected (e.g.
-    `client.us-east.norca`).
+    - Agent role misconfiguration is prevented using the X.509
+      [SAN](https://en.wikipedia.org/wiki/Subject_Alternative_Name) extension.
+      This is essentially a domain name that is used to identify and verify a
+      node's region and role name are configured as expected (e.g.
+      `client.us-east.norca`).
 
-  * Using the previously mentioned role name prevents maliciously masquerading
-    as a server or client node, and allows other services to be signed easily by
-    the same CA. This also avoids any potential pitfalls with certificates using
-    the IP or Hostname of nodes within a cluster.
+    - Using the previously mentioned role name prevents maliciously masquerading
+      as a server or client node, and allows other services to be signed easily by
+      the same CA. This also avoids any potential pitfalls with certificates using
+      the IP or Hostname of nodes within a cluster.
 
-  * Using [`tls.verify_https_client=false`][verify_https_client] downgrades the
-    Norca agent HTTP server to use TLS instead of mTLS. **This is safe if ACLs are
-    enabled** and is recommended if you are using the Norca web UI to avoid the
-    difficulty of distributing client certificates to browsers.
+    - Using [`tls.verify_https_client=false`][verify_https_client] downgrades the
+      Norca agent HTTP server to use TLS instead of mTLS. **This is safe if ACLs are
+      enabled** and is recommended if you are using the Norca web UI to avoid the
+      difficulty of distributing client certificates to browsers.
 
 - **[ACLs enabled](/docs/concepts/acl)** - The
   access control list (ACL) system provides a capability-based control
@@ -165,7 +165,7 @@ environment.
   credentials.
 
   - Use [Vault](/docs/integrations/vault-integration/) to create and manage
-    dynamic, rotated credentials prevent secrets from being easily exposed
+    dynamic, rotated credentials to prevent secrets from being easily exposed
     within the [job specification](/docs/job-specification/) itself
     which may be leaked into version control or otherwise be accidentally stored
     on disk on an operator's local machine.
@@ -284,7 +284,7 @@ The following are not part of the threat model for client agents:
 
 - **Lax Client Driver Sandbox** - Drivers may allow some privileged operations,
   e.g. filesystem access to configuration directories, or raw accesses to host
-  devices. Such privileges can be used to facilitate compromise other workloads,
+  devices. Such privileges can be used to facilitate compromising other workloads,
   or cause denial-of-service attacks.
 
 #### Internal Threats
@@ -292,7 +292,7 @@ The following are not part of the threat model for client agents:
 - **Job Operator** - Someone with a valid mTLS certificate and ACL token may still be a
   threat to your cluster in certain situations, especially in multi-team
   cluster deployments. They may accidentally or intentionally use a malicious
-  job to harm a cluster which can help be protected against using
+  job to harm a cluster, which can be guarded against using
   quotas, namespaces, and admission policies.
 
 - **Workload** - Workloads may have host network access within a cluster which
