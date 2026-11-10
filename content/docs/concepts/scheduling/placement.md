@@ -24,8 +24,8 @@ their jobs. The [`affinity`][job_affinity] block specifies a soft requirement
 on certain node properties, meaning allocations for the job have a preference
 for some nodes, but may be placed elsewhere if the rules can't be matched,
 while the [`constraint`][job_constraint] block creates hard requirements and
-allocations can only be placed in nodes that match these rules. Job placement
-fails if a constraint cannot be satisfied.
+allocations can only be placed in nodes that match these rules. **Job placement
+fails if a constraint cannot be satisfied.**
 
 These rules can reference intrinsic node characteristics, which are called
 [node attributes][] and are automatically detected by Norca, static values
@@ -33,11 +33,11 @@ defined in the agent configuration file by cluster administrators, or dynamic
 values defined after the agent starts.
 
 One restriction of using affinities and constraints is that they only express
-relationships from jobs to nodes, so it is not possible to use them to restrict
-a node to only receive allocations for specific jobs.
+relationships from jobs to nodes, so **it is not possible to use them to restrict
+a node to only receive allocations for specific jobs.**
 
-Use affinities and constraints when some jobs have certain node preferences or
-requirements but it is acceptable to have other jobs sharing the same nodes.
+**Use affinities and constraints when some jobs have certain node preferences or
+requirements but it is acceptable to have other jobs sharing the same nodes.**
 
 The sections below describe the node values that can be configured and used in
 job affinity and constraint rules.
@@ -70,11 +70,11 @@ fault tolerance and infrastructure isolation.
 It is defined in the agent configuration file using the
 [`datacenter`][config_datacenter] parameter and, unlike affinities and
 constraints, datacenters are opt-in at the job level, meaning that a job only
-places allocations in the datacenters it uses, and, more importantly, only jobs
-in a given datacenter are allowed to place allocations in those nodes.
+places allocations in the datacenters it uses, and, more importantly, **only jobs
+in a given datacenter are allowed to place allocations in those nodes.**
 
-Given the strong connotation of a geographical location, use datacenters to
-represent where a node resides rather than its intended use. The
+Given the strong connotation of a geographical location, **use datacenters to
+represent where a node resides rather than its intended use.** The
 [`spread`][job_spread] block can help achieve fault tolerance across
 datacenters.
 
@@ -96,8 +96,8 @@ support), or by functionality (databases, ingress proxy, applications).
 Node pools are also a first-class concept and can hold additional [metadata and
 configuration][spec_node_pool].
 
-Use node pools when there is a need to restrict and reserve certain nodes for
-specific workloads.
+**Use node pools when there is a need to restrict and reserve certain nodes for
+specific workloads.**
 
 Refer to the [Node Pools][concept_np] concept page for more information.
 

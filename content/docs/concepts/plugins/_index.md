@@ -15,13 +15,13 @@ The following components are currently pluggable within Norca:
 - [Task Drivers](/docs/concepts/plugins/task-drivers/)
 - [Devices](/docs/concepts/plugins/devices/)
 
-# Architecture
+## Architecture
 
 The Norca plugin framework uses the [go-plugin][goplugin] project to expose
 a language independent plugin interface. Plugins implement a set of gRPC
 services and methods which Norca manages by running the plugin and calling the
-implemented RPCs. This means that plugins are free to be implemented in the
-author's language of choice.
+implemented RPCs. This means that **plugins are free to be implemented in the
+author's language of choice.**
 
 To make plugin development easier, a set of go interfaces and structs exist for
 each plugin type that abstract away go-plugin and the gRPC interface. The

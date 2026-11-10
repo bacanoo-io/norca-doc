@@ -58,6 +58,8 @@ desire a more comprehensive treatment, the full specification is available in th
 We will, however, attempt to provide a high level description which may be useful
 for building a mental model.
 
+### Node states and leader election
+
 Raft nodes are always in one of three states: follower, candidate, or leader. All
 nodes initially start out as a follower. In this state, nodes can accept log entries
 from a leader and cast votes. If no entries are received for some time, nodes
@@ -67,6 +69,8 @@ The leader must accept new log entries and replicate to all the other followers.
 In addition, if stale reads are not acceptable, all queries must also be performed on
 the leader.
 
+### Log replication
+
 Once a cluster has a leader, it is able to accept new log entries. A client can
 request that a leader append a new log entry (from Raft's perspective, a log entry
 is an opaque binary blob). The leader then writes the entry to durable storage and
@@ -74,6 +78,8 @@ attempts to replicate to a quorum of followers. Once the log entry is considered
 _committed_, it can be _applied_ to a finite state machine. The finite state machine
 is application specific; in Norca's case, we use
 [MemDB](https://github.com/hashicorp/go-memdb) to maintain cluster state.
+
+### Snapshots and log compaction
 
 Obviously, it would be undesirable to allow a replicated log to grow in an unbounded
 fashion. Raft provides a mechanism by which the current state is snapshotted and the
@@ -85,7 +91,9 @@ disk usage while also minimizing time spent replaying logs. One of the advantage
 using MemDB is that it allows Norca to continue accepting new transactions even while
 old state is being snapshotted, preventing any availability issues.
 
-Consensus is fault-tolerant up to the point where quorum is available.
+### Quorum and fault tolerance
+
+**Consensus is fault-tolerant up to the point where quorum is available.**
 If a quorum of nodes is unavailable, it is impossible to process log entries or reason
 about peer membership. For example, suppose there are only 2 peers: A and B. The quorum
 size is also 2, meaning both nodes must agree to commit a log entry. If either A or B
@@ -95,10 +103,12 @@ _unavailability_. At this point, manual intervention would be required to remove
 either A or B and to restart the remaining node in bootstrap mode.
 
 A Raft cluster of 3 nodes can tolerate a single node failure while a cluster
-of 5 can tolerate 2 node failures. The recommended configuration is to either
-run 3 or 5 Norca servers per region. This maximizes availability without
+of 5 can tolerate 2 node failures. **The recommended configuration is to either
+run 3 or 5 Norca servers per region.** This maximizes availability without
 greatly sacrificing performance. The [deployment table](#deployment_table) below
 summarizes the potential cluster size options and the fault tolerance of each.
+
+### Performance
 
 In terms of performance, Raft is comparable to Paxos. Assuming stable leadership,
 committing a log entry requires a single round trip to half of the cluster.
@@ -106,7 +116,7 @@ Thus, performance is bound by disk I/O and network latency.
 
 ## Raft in Norca
 
-Only Norca server nodes participate in Raft and are part of the peer set. All
+**Only Norca server nodes participate in Raft and are part of the peer set.** All
 client nodes forward requests to servers. The clients in Norca only need to know
 about their allocations and query that information from the servers, while the
 servers need to maintain the global state of the cluster.
@@ -121,8 +131,8 @@ and applied to the FSM, the transaction is complete.
 
 Because of the nature of Raft's replication, performance is sensitive to network
 latency. For this reason, each region elects an independent leader and maintains
-a disjoint peer set. Data is partitioned by region, so each leader is responsible
-only for data in their region. When a request is received for a remote region,
+a disjoint peer set. **Data is partitioned by region, so each leader is responsible
+only for data in their region.** When a request is received for a remote region,
 the request is forwarded to the correct leader. This design allows for lower latency
 transactions and higher availability without sacrificing consistency.
 
@@ -155,7 +165,7 @@ The two read modes are:
 ## Deployment Table ((#deployment_table))
 
 Below is a table that shows quorum size and failure tolerance for various
-cluster sizes. The recommended deployment is either 3 or 5 servers. A single
+cluster sizes. **The recommended deployment is either 3 or 5 servers.** A single
 server deployment is _**highly**_ discouraged as data loss is inevitable in a
 failure scenario.
 

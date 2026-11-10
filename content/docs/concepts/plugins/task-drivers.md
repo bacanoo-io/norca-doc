@@ -13,14 +13,14 @@ driver source][lxcdriver].
 ## Authoring Task Driver Plugins
 
 Authoring a task driver (shortened to driver in this documentation) in Norca
-consists of implementing the DriverPlugin interface and adding
-a main package to launch the plugin. A driver plugin is long-lived and its
-lifetime is not bound to the Norca client. This means that the Norca client can
+consists of implementing the `DriverPlugin` interface and adding
+a main package to launch the plugin. **A driver plugin is long-lived and its
+lifetime is not bound to the Norca client.** This means that the Norca client can
 be restarted without restarting the driver. Norca will ensure that one
 instance of the driver is running, meaning if the driver crashes or otherwise
 terminates, Norca will launch another instance of it.
 
-Drivers should maintain as little state as possible. State for a task is stored
+**Drivers should maintain as little state as possible.** State for a task is stored
 by the Norca client on task creation. This enables a pattern where the driver
 can maintain an in-memory state of the running tasks, and if necessary the
 Norca client can recover tasks into the driver state.
@@ -117,14 +117,14 @@ For task driver plugin authors there are 2 important new behaviors when
    it.
 
 These behaviors are meant to keep remote tasks running even when the Norca
-client managing them is shutdown. Remote tasks are stopped when the job is
-explicitly stopped like traditional tasks.
+client managing them is shutdown. **Remote tasks are stopped when the job is
+explicitly stopped like traditional tasks.**
 
 ### `Fingerprint(context.Context) (<-chan *Fingerprint, error)`
 
 This function is called by the client when the plugin is started. It allows the
 driver to indicate its health to the client. The channel returned should
-immediately send an initial Fingerprint, then send periodic updates at an
+immediately send an initial `Fingerprint`, then send periodic updates at an
 interval that is appropriate for the driver until the context is canceled.
 
 The fingerprint consists of a `HealthState` and `HealthDescription` to inform
@@ -159,21 +159,21 @@ A `*DriverNetwork` can optionally be returned to describe the network of the
 task if it is modified by the driver. An example of this is in the Docker
 driver where tasks can be attached to a specific Docker network.
 
-If an error occurs, it is expected that the driver will cleanup any created
-resources prior to returning the error.
+If an error occurs, **it is expected that the driver will cleanup any created
+resources prior to returning the error.**
 
 #### Logging
 
-Norca handles all rotation and plumbing of task logs. In order for task stdout
+Norca handles all rotation and plumbing of task logs. **In order for task stdout
 and stderr to be received by Norca, they must be written to the correct
-location. Prior to starting the task through the driver, the Norca client
+location.** Prior to starting the task through the driver, the Norca client
 creates FIFOs for stdout and stderr. These paths are given to the driver in the
 `TaskConfig`. The [`fifo` package][fifopackage] can be used to support
 cross platform writing to these paths.
 
 #### TaskHandle Schema Versioning
 
-A `Version` field is available on the TaskHandle struct to facilitate backwards
+A `Version` field is available on the `TaskHandle` struct to facilitate backwards
 compatible recovery of tasks. This field is opaque to Norca, but allows the
 driver to handle recover tasks that were created by an older version of the
 plugin.
@@ -186,7 +186,7 @@ previously started if the driver does not recognize the task ID. During task
 recovery, Norca calls `RecoverTask` passing the `TaskHandle` that was
 returned by the `StartTask` function. If no error was returned, it is
 expected that the driver can now operate on the task by referencing the task
-ID. If an error occurs, the Norca client will mark the task as `lost`.
+ID. **If an error occurs, the Norca client will mark the task as `lost`.**
 
 ### `WaitTask(context.Context, id string) (<-chan *ExitResult, error)`
 
@@ -201,14 +201,14 @@ The `StopTask` function is expected to stop a running task by sending the given
 signal to it. If the task does not stop during the given timeout, the driver
 must forcefully kill the task.
 
-`StopTask` does not clean up resources of the task or remove it from the
-driver's internal state. A call to `WaitTask` after `StopTask` is valid and
+**`StopTask` does not clean up resources of the task or remove it from the
+driver's internal state.** A call to `WaitTask` after `StopTask` is valid and
 should be handled.
 
 ### `DestroyTask(taskID string, force bool) error`
 
 The `DestroyTask` function cleans up and removes a task that has terminated. If
-force is set to true, the driver must destroy the task even if it is still
+`force` is set to `true`, the driver must destroy the task even if it is still
 running. If `WaitTask` is called after `DestroyTask`, it should return
 `drivers.ErrTaskNotFound` as no task state should exist after `DestroyTask` is
 called.
@@ -236,6 +236,7 @@ event loop and publishing mechanism for use in the `TaskEvents` function.
 
 ### `SignalTask(taskID string, signal string) error`
 
+> [!NOTE]
 > Optional - can be skipped by embedding `drivers.DriverSignalTaskNotSupported`
 
 The `SignalTask` function is used by drivers which support sending OS signals
@@ -244,6 +245,7 @@ and is listed as a capability in the driver `Capabilities` struct.
 
 ### `ExecTask(taskID string, cmd []string, timeout time.Duration) (*ExecTaskResult, error)`
 
+> [!NOTE]
 > Optional - can be skipped by embedding `drivers.DriverExecTaskNotSupported`
 
 The `ExecTask` function is used by the Norca client to execute commands inside

@@ -5,7 +5,7 @@ upstream:
   path: "website/content/docs/concepts/plugins/base.mdx"
 ---
 
-The base plugin is a special plugin type implemented by all plugins. It allows
+**The base plugin is a special plugin type implemented by all plugins.** It allows
 for common plugin operations such as defining a configuration schema and
 version information.
 
@@ -49,7 +49,7 @@ which is given to all plugins.
 against. The full documentation of the different hcl attribute types can be
 found on the [hclspec godoc][hclspec].
 
-For a basic example, lets look at the driver configuration for the raw_exec
+For a basic example, let's look at the driver configuration for the `raw_exec`
 driver:
 
 ```hcl
@@ -64,7 +64,7 @@ job "example" {
 ```
 
 The `config` block is what is validated against the `hclspec.Spec`. It has two
-keys, command which takes a string attribute and args which takes an array
+keys, `command` which takes a string attribute and `args` which takes an array
 attribute. The corresponding `*hclspec.Spec` would be:
 
 ```go

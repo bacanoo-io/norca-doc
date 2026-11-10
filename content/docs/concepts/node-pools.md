@@ -47,8 +47,8 @@ client {
 ```
 
 To help streamline this process, nodes can create node pools on demand. If a
-client configuration references a node pool that does not exist yet, Norca
-creates the node pool automatically on client registration.
+client configuration references a node pool that does not exist yet, **Norca
+creates the node pool automatically on client registration.**
 
 > [!NOTE]
 > This behavior does not apply to clients in non-authoritative regions. Refer
@@ -65,8 +65,8 @@ job "app-dev" {
 }
 ```
 
-Similarly to the `namespace` attribute, the node pool must exist beforehand,
-otherwise the job registration results in an error. Only nodes in the given
+Similarly to the `namespace` attribute, **the node pool must exist beforehand,
+otherwise the job registration results in an error.** Only nodes in the given
 node pool are considered for placement. If none are available the deployment
 is kept as pending until a client is added to the node pool.
 
@@ -77,8 +77,8 @@ from the authoritative region to all non-authoritative regions, and requests to
 create or modify a new node pool are forwarded from non-authoritative to the
 authoritative region.
 
-Since the replication data only flows in one direction, clients in
-non-authoritative regions are not able to create node pools on demand.
+Since the replication data only flows in one direction, **clients in
+non-authoritative regions are not able to create node pools on demand.**
 
 A client in a non-authoritative region that references a node pool that does
 not exist yet is kept in the `initializing` status until the node pool is
@@ -86,8 +86,8 @@ created and replicated to all regions.
 
 ## Built-in Node Pools
 
-In addition to the user generated node pools Norca automatically creates two
-built-in node pools that cannot be deleted nor modified.
+In addition to the user generated node pools Norca automatically creates **two
+built-in node pools that cannot be deleted nor modified.**
 
 - `default`: Node pools are an optional feature of Norca. The `node_pool`
   attribute in both the client configuration and job files are optional. When
@@ -96,8 +96,8 @@ built-in node pools that cannot be deleted nor modified.
 - `all`: In some situations, it is useful to be able to run a job across all
   clients in a cluster, regardless of their node pool configuration. For these
   scenarios the job may use the built-in `all` node pool which always includes
-  all clients registered in the cluster. Unlike other node pools, the `all`
-  node pool can only be used in jobs and not in client configuration.
+  all clients registered in the cluster. Unlike other node pools, **the `all`
+  node pool can only be used in jobs and not in client configuration.**
 
 ## Multi-region Jobs
 
@@ -157,6 +157,9 @@ jobs, and the built-in `all` node pool can be used for the jobs that must run
 in every client. To keep them organized, all jobs are registered in the same
 `infra` namespace.
 
+{{< tabs >}}
+{{< tab name="ingress-proxy" >}}
+
 ```hcl
 job "ingress-proxy" {
   namespace = "infra"
@@ -164,6 +167,9 @@ job "ingress-proxy" {
   # ...
 }
 ```
+
+{{< /tab >}}
+{{< tab name="csi-controller" >}}
 
 ```hcl
 job "csi-controller" {
@@ -173,6 +179,9 @@ job "csi-controller" {
 }
 ```
 
+{{< /tab >}}
+{{< tab name="csi-nodes" >}}
+
 ```hcl
 job "csi-nodes" {
   namespace = "infra"
@@ -180,6 +189,9 @@ job "csi-nodes" {
   # ...
 }
 ```
+
+{{< /tab >}}
+{{< tab name="maintenance" >}}
 
 ```hcl
 job "maintenance" {
@@ -191,6 +203,9 @@ job "maintenance" {
   # ...
 }
 ```
+
+{{< /tab >}}
+{{< /tabs >}}
 
 Use positive and negative constraints to fine-tune placements when targeting
 the built-in `all` node pool.

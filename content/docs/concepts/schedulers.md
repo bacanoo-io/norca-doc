@@ -20,7 +20,7 @@ nodes increases scheduling time but provides greater guarantees about the
 optimality of a job placement, which given the service workload is highly
 desirable.
 
-Service jobs are intended to run until explicitly stopped by an operator. If a
+**Service jobs are intended to run until explicitly stopped by an operator.** If a
 service task exits it is considered a failure and handled according to the job's
 [restart] and [reschedule] blocks.
 
@@ -34,14 +34,14 @@ the set of nodes that meet the job's constraints it uses the power of two
 choices described in Berkeley's [Sparrow] scheduler to limit the number of nodes
 that are ranked.
 
-Batch jobs are intended to run until they exit successfully. Batch tasks that
+**Batch jobs are intended to run until they exit successfully.** Batch tasks that
 exit with an error are handled according to the job's [restart] and [reschedule]
 blocks.
 
 ## System
 
-The `system` scheduler is used to register jobs that should be run on all
-clients that meet the job's constraints. The `system` scheduler is also invoked
+**The `system` scheduler is used to register jobs that should be run on all
+clients that meet the job's constraints.** The `system` scheduler is also invoked
 when clients join the cluster or transition into the ready state. This means
 that all registered `system` jobs will be re-evaluated and their tasks will be
 placed on the newly available nodes if the constraints are met.
@@ -55,9 +55,9 @@ The system scheduler will preempt eligible lower priority tasks running on a
 node if there isn't enough capacity to place a system job.  See [preemption]
 for details on how tasks that get preempted are chosen.
 
-Systems jobs are intended to run until explicitly stopped either by an operator
-or [preemption]. If a system task exits it is considered a failure and handled
-according to the job's [restart] block; system jobs do not have rescheduling.
+**System jobs are intended to run until explicitly stopped either by an operator
+or [preemption].** If a system task exits it is considered a failure and handled
+according to the job's [restart] block; **system jobs do not have rescheduling.**
 
 When used with node pools, system jobs run on all nodes of the pool used by the
 job. The built-in node pool `all` allows placing allocations on all clients in
@@ -65,8 +65,8 @@ the cluster.
 
 ## System Batch
 
-The `sysbatch` scheduler is used to register jobs that should be run to completion
-on all clients that meet the job's constraints. The `sysbatch` scheduler will
+**The `sysbatch` scheduler is used to register jobs that should be run to completion
+on all clients that meet the job's constraints.** The `sysbatch` scheduler will
 schedule jobs similarly to the `system` scheduler, but like a `batch` job once a
 task exits successfully it is not restarted on that client.
 
@@ -83,10 +83,10 @@ Sysbatch jobs are intended to run until successful completion, explicitly stoppe
 by an operator, or evicted through [preemption]. Sysbatch tasks that exit with an
 error are handled according to the job's [restart] block.
 
- Like the `batch` scheduler, task groups in system batch jobs may have a `count`
- greater than 1 to control how many instances are run. Instances that cannot be
- immediately placed will be scheduled when resources become available,
- potentially on a node that has already run another instance of the same job.
+Like the `batch` scheduler, task groups in system batch jobs may have a `count`
+greater than 1 to control how many instances are run. Instances that cannot be
+immediately placed will be scheduled when resources become available,
+potentially on a node that has already run another instance of the same job.
 
 [borg]: https://research.google.com/pubs/pub43438.html
 [parameterized]: /docs/job-specification/parameterized/

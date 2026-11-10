@@ -49,8 +49,9 @@ granularity may change depending on your team's use case where rigorous roles
 can be accurately defined and managed with [ACL](/docs/concepts/acl) policies
 and roles.
 
-It's important to note that there's no traditional concept of a user
-within Norca itself.
+> [!IMPORTANT]
+> It's important to note that **there's no traditional concept of a user
+> within Norca itself.**
 
 - **System Administrator** - This is someone who has access to the underlying
   infrastructure to a Norca cluster. Often she has access to SSH or RDP
@@ -123,8 +124,8 @@ recommendations accordingly.
     the IP or Hostname of nodes within a cluster.
 
   * Using [`tls.verify_https_client=false`][verify_https_client] downgrades the
-    Norca agent HTTP server to use TLS instead of mTLS. This is safe if ACLs are
-    enabled and is recommended if you are using the Norca web UI to avoid the
+    Norca agent HTTP server to use TLS instead of mTLS. **This is safe if ACLs are
+    enabled** and is recommended if you are using the Norca web UI to avoid the
     difficulty of distributing client certificates to browsers.
 
 - **[ACLs enabled](/docs/concepts/acl)** - The
@@ -139,8 +140,8 @@ recommendations accordingly.
   - This feature allows for a cluster to be shared by
     multiple teams within a company. Using this logical separation is important
     for multi-tenant clusters to prevent users without access to that namespace
-    from conflicting with each other. This requires ACLs to be enabled in order
-    to be enforced.
+    from conflicting with each other. **This requires ACLs to be enabled in order
+    to be enforced.**
 
 - **[Admission control](/docs/features/admission-control)** - Admission
   policies enforce further restrictions on the jobs that operators submit. They
@@ -247,7 +248,7 @@ The following are not part of the threat model for server agents:
   the `shares` [keyring seal](/docs/features/secrets/seal), the root keys and the
   key of the secret store are wrapped by an unseal key that is held only in
   memory, so a copied data directory does not decrypt Variables, secrets or the
-  mTLS CA key. With the default `aead` seal it does.
+  mTLS CA key. **With the default `aead` seal it does.**
 
 - **Access (read or write) to the Norca configuration directory** - Access to
   Norca's configuration file(s) directory can enable and disable features for
@@ -312,12 +313,12 @@ The following are not part of the threat model for client agents:
 
 #### External Threats
 
-There are two main components to consider to for external threats in a Norca cluster:
+There are two main components to consider for external threats in a Norca cluster:
 
 - **Server agent** - Internal cluster leader elections and replication is
   managed via Raft between server agents encrypted in transit. However,
-  information about the server is stored unencrypted at rest in the agent's
-  data directory. This may contain sensitive information such as ACL tokens
+  **information about the server is stored unencrypted at rest in the agent's
+  data directory.** This may contain sensitive information such as ACL tokens
   and TLS certificates.
 
 - **Client agent** - Client-to-server communication within a cluster is

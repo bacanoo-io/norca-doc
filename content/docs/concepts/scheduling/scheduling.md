@@ -24,16 +24,18 @@ is a declarative description of tasks to run which are bounded by constraints
 and require resources. Tasks can be scheduled on nodes in the cluster running
 the Norca client. The mapping of tasks in a job to clients is done using
 allocations. An allocation is used to declare that a set of tasks in a job
-should be run on a particular node. Scheduling is the process of determining
-the appropriate allocations and is done as part of an evaluation.
+should be run on a particular node. **Scheduling is the process of determining
+the appropriate allocations and is done as part of an evaluation.**
 
-An evaluation is created any time the external state, either desired or
-emergent, changes. The desired state is based on jobs, meaning the desired
+**An evaluation is created any time the external state, either desired or
+emergent, changes.** The desired state is based on jobs, meaning the desired
 state changes if a new job is submitted, an existing job is updated, or a job
 is deregistered. The emergent state is based on the client nodes, and so we
 must handle the failure of any clients in the system. These events trigger the
 creation of a new evaluation, as Norca must _evaluate_ the state of the world
 and reconcile it with the desired state.
+
+## Evaluation lifecycle
 
 This diagram shows the flow of an evaluation through Norca:
 
@@ -50,11 +52,15 @@ flowchart LR
   S -->|"update status, ack"| B
 ```
 
+### Evaluation broker
+
 The lifecycle of an evaluation begins with an event causing the evaluation to
 be created. Evaluations are created in the `pending` state and are enqueued
-into the evaluation broker. There is a single evaluation broker which runs on
-the leader server. The evaluation broker is used to manage the queue of pending
+into the evaluation broker. **There is a single evaluation broker which runs on
+the leader server.** The evaluation broker is used to manage the queue of pending
 evaluations, provide priority ordering, and ensure at least once delivery.
+
+### Scheduling workers and schedulers
 
 Norca servers run scheduling workers, defaulting to one per CPU core, which are
 used to process evaluations. The workers dequeue evaluations from the broker,
@@ -71,8 +77,10 @@ generally the scheduler needs to first reconcile the desired state with the
 real state to determine what must be done. New allocations need to be placed
 and existing allocations may need to be updated, migrated, or stopped.
 
-Placing allocations is split into two distinct phases, feasibility checking and
-ranking. In the first phase the scheduler finds nodes that are feasible by
+### Feasibility checking and ranking
+
+**Placing allocations is split into two distinct phases, feasibility checking and
+ranking.** In the first phase the scheduler finds nodes that are feasible by
 filtering nodes in datacenters and node pools not used by the job, unhealthy
 nodes, those missing necessary drivers, and those failing the specified
 constraints.
@@ -88,11 +96,13 @@ density while reducing the probability of correlated failures.
 Once the scheduler has ranked enough nodes, the highest ranking node is
 selected and added to the allocation plan.
 
+### Plan queue
+
 When planning is complete, the scheduler submits the plan to the leader which
 adds the plan to the plan queue. The plan queue manages pending plans, provides
 priority ordering, and allows Norca to handle concurrency races. Multiple
 schedulers are running in parallel without locking or reservations, making
-Norca optimistically concurrent. As a result, schedulers might overlap work on
+**Norca optimistically concurrent.** As a result, schedulers might overlap work on
 the same node and cause resource over-subscription. The plan queue allows the
 leader node to protect against this and do partial or complete rejections of a
 plan.
@@ -101,6 +111,8 @@ As the leader processes plans, it creates allocations when there is no conflict
 and otherwise informs the scheduler of a failure in the plan result. The plan
 result provides feedback to the scheduler, allowing it to terminate or explore
 alternate plans if the previous plan was partially or completely rejected.
+
+### Completing the evaluation
 
 Once the scheduler has finished processing an evaluation, it updates the status
 of the evaluation and acknowledges delivery with the evaluation broker. This

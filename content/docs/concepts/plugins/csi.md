@@ -11,7 +11,7 @@ this to allow scheduling tasks with externally created storage
 volumes. Storage plugins are third-party plugins that conform to the
 [Container Storage Interface (CSI)][csi-spec] specification.
 
-Storage plugins are created dynamically as Norca jobs, unlike device
+**Storage plugins are created dynamically as Norca jobs**, unlike device
 and task driver plugins that need to be installed and configured on
 each client. Each dynamic plugin type has its own type-specific job
 spec block; currently there is only the `csi_plugin` type. Norca
@@ -35,8 +35,8 @@ documentation][csi-drivers-list]. Spec-compliant plugins should work with Norca.
 However, it is possible a plugin vendor has implemented their plugin to make
 Kubernetes API calls, or is otherwise non-compliant with the CSI
 specification. In those situations the plugin may not function correctly in a
-Norca environment. You should verify plugin compatibility with Norca before
-deploying in production.
+Norca environment. **You should verify plugin compatibility with Norca before
+deploying in production.**
 
 A CSI plugin task requires the [`csi_plugin`][csi_plugin] block:
 
@@ -49,30 +49,36 @@ csi_plugin {
 }
 ```
 
-There are three **types** of CSI plugins. **Controller Plugins**
-communicate with the storage provider's APIs. For example, for a job
-that needs an AWS EBS volume, Norca will tell the controller plugin
-that it needs a volume to be "published" to the client node, and the
-controller will make the API calls to AWS to attach the EBS volume to
-the right EC2 instance. **Node Plugins** do the work on each client
-node, like creating mount points. **Monolith Plugins** are plugins
-that perform both the controller and node roles in the same
-instance. Not every plugin provider has or needs a controller; that's
+There are three **types** of CSI plugins.
+
+- **Controller Plugins**
+  communicate with the storage provider's APIs. For example, for a job
+  that needs an AWS EBS volume, Norca will tell the controller plugin
+  that it needs a volume to be "published" to the client node, and the
+  controller will make the API calls to AWS to attach the EBS volume to
+  the right EC2 instance.
+- **Node Plugins** do the work on each client
+  node, like creating mount points.
+- **Monolith Plugins** are plugins
+  that perform both the controller and node roles in the same
+  instance.
+
+Not every plugin provider has or needs a controller; that's
 specific to the provider implementation.
 
 Plugins mount and unmount volumes but are not in the data path once
 the volume is mounted for a task. Plugin tasks are needed when tasks
-using their volumes stop, so plugins should be left running on a Norca
-client until all tasks using their volumes are stopped. The `norca
+using their volumes stop, so **plugins should be left running on a Norca
+client until all tasks using their volumes are stopped.** The `norca
 node drain` command handles this automatically by stopping plugin
 tasks last.
 
-Typically, you should run node plugins as Norca `system` jobs so they
+Typically, **you should run node plugins as Norca `system` jobs** so they
 can mount volumes on any client where they are running. Controller
 plugins can create and attach volumes anywhere they can communicate
 with the storage provider's API, so they can usually be run as
-`service` jobs. You should always run more than one controller plugin
-allocation for high availability.
+`service` jobs. **You should always run more than one controller plugin
+allocation for high availability.**
 
 Norca exposes a Unix domain socket named `csi.sock` inside each CSI
 plugin task, and communicates over the gRPC protocol expected by the
@@ -90,7 +96,7 @@ CSI plugins report their health like other Norca jobs. If the plugin
 crashes or otherwise terminates, Norca will launch it again using the
 same `restart` and `reschedule` logic used for other jobs. If plugins
 are unhealthy, Norca will mark the volumes they manage as
-"unscheduable".
+"unschedulable".
 
 Storage plugins don't have any responsibility (or ability) to monitor
 the state of tasks that claim their volumes. Norca sends mount and
@@ -107,8 +113,8 @@ The Norca scheduler decides whether a given client can run an
 allocation based on whether it has a node plugin present for the
 volume. But before a task can use a volume the client needs to "claim"
 the volume for the allocation. The client makes an RPC call to the
-server and waits for a response; the allocation's tasks won't start
-until the volume has been claimed and is ready.
+server and waits for a response; **the allocation's tasks won't start
+until the volume has been claimed and is ready.**
 
 If the volume's plugin requires a controller, the server will send an
 RPC to any Norca client where that controller is running. The Norca

@@ -18,7 +18,7 @@ GPU plugin](https://github.com/hashicorp/nomad-device-nvidia).
 ## Authoring Device Plugins
 
 Authoring a device plugin in Norca consists of implementing the
-DevicePlugin interface alongside
+`DevicePlugin` interface alongside
 a main package to launch the plugin.
 
 The [device plugin skeleton project][skeletonproject] exists to help bootstrap
@@ -27,12 +27,12 @@ necessary for a device plugin, along with detailed comments.
 
 ### Lifecycle and State
 
-A device plugin is long-lived. Norca will ensure that one instance of the plugin is
-running. If the plugin crashes or otherwise terminates, Norca will launch another
+A device plugin is long-lived. **Norca will ensure that one instance of the plugin is
+running.** If the plugin crashes or otherwise terminates, Norca will launch another
 instance of it.
 
-However, unlike [task drivers](/docs/concepts/plugins/task-drivers/), device plugins do not currently
-have an interface for persisting state to the Norca client. Instead, the device
+However, unlike [task drivers](/docs/concepts/plugins/task-drivers/), **device plugins do not currently
+have an interface for persisting state to the Norca client.** Instead, the device
 plugin API emphasizes fingerprinting devices and reporting their status. After
 helping to provision a task with a scheduled device, a device plugin does not
 have any responsibility (or ability) to monitor the task.
@@ -59,7 +59,7 @@ scheduling; that is, they will have identical attributes.
 
 The `Stats` [function][statsfn] returns a channel on which the plugin should
 emit device statistics, at the specified interval, until either an error is
-encountered or the specified context is cancelled. The `StatsReponse` object
+encountered or the specified context is cancelled. The `StatsResponse` object
 allows dimensioned statistics to be returned for each device in a device group.
 
 ### `Reserve(deviceIDs []string) (*ContainerReservation, error)`

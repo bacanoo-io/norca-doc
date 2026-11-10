@@ -12,7 +12,7 @@ this to allow scheduling tasks with purpose-created or specialty network
 configurations. Network plugins are third-party plugins that conform to the
 [Container Network Interface (CNI)][cni_spec] specification.
 
-Network plugins need to be installed and configured on each client. The Norca
+**Network plugins need to be installed and configured on each client.** The Norca
 installation instructions recommend installing the [CNI
 reference plugins][cni_ref] because certain Norca networking features, like
 `bridge` network mode and Consul service mesh, leverage them to provide an
@@ -26,8 +26,8 @@ binaries and CNI configuration files.
 Spec-compliant plugins should work with Norca, however, it's possible a plugin
 vendor has implemented their plugin to make non-standard API calls, or it is
 otherwise non-compliant with the CNI specification. In those situations the
-plugin may not function correctly in a Norca environment. You should verify
-plugin compatibility with Norca before deploying in production.
+plugin may not function correctly in a Norca environment. **You should verify
+plugin compatibility with Norca before deploying in production.**
 
 CNI plugins are installed and configured on a per-client basis. Norca consults
 the path given in the client's [`cni_path`][] to find CNI plugin executables.

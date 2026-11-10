@@ -19,7 +19,7 @@ with a few minor adaptations. There are more details about [Serf's protocol here
 
 ## Gossip in Norca
 
-Norca makes use of a single global WAN gossip pool that all servers participate in.
+**Norca makes use of a single global WAN gossip pool that all servers participate in.**
 Membership information provided by the gossip pool allows servers to perform cross region
 requests. The integrated failure detection allows Norca to gracefully handle an entire region
 losing connectivity, or just a single server in a remote region. The gossip protocol

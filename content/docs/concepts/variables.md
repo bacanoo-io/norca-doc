@@ -19,13 +19,14 @@ ACL policies, and tasks have implicit ACL policies that allow them to access
 their own variables. You can create, read, update, or delete variables via the
 command line, the Nomad API, or in the Norca web UI.
 
-Note that the Variables feature is intended for small pieces of configuration
-data needed by workloads. Because writing to the Norca state store uses
-resources needed by Norca, it is not well-suited for large or fast-changing
-data. For example, do not store batch job results as Variables - these should be
-stored in an external database. Variables are also not intended to be a full
-replacement for HashiCorp Vault. Unlike Vault, Norca stores the root encryption
-key on the servers. See [Key Management][] for details.
+> [!NOTE]
+> Note that **the Variables feature is intended for small pieces of configuration
+> data needed by workloads.** Because writing to the Norca state store uses
+> resources needed by Norca, it is not well-suited for large or fast-changing
+> data. For example, do not store batch job results as Variables - these should be
+> stored in an external database. Variables are also not intended to be a full
+> replacement for HashiCorp Vault. **Unlike Vault, Norca stores the root encryption
+> key on the servers.** See [Key Management][] for details.
 
 ## ACL for Variables
 
@@ -38,8 +39,8 @@ Path definitions may also include wildcard symbols, also called globs, allowing
 a single path policy definition to apply to a set of paths within that
 namespace. For example, the policy below allows full access to variables at all
 paths in the "dev" namespace that are prefixed with "project/" (including child
-paths) but only read access to paths prefixed with "system/". Note that the glob
-can match an empty string and all other characters. This policy grants read
+paths) but only read access to paths prefixed with "system/". **Note that the glob
+can match an empty string and all other characters.** This policy grants read
 access to paths prefixed with "system/" but not a path named "system" (without a
 trailing slash).
 
@@ -72,8 +73,8 @@ The available capabilities for Variables are as follows:
 | list       | List the metadata but not contents of Variables at this path.                                                         |
 | destroy    | Delete Variables at this path.                                                                                        |
 
-With ACLs enabled, only ACL tokens and workload identities give access to
-Variables. The secret
+**With ACLs enabled, only ACL tokens and workload identities give access to
+Variables.** The secret
 ID of a client node is not an ACL token and is denied, so a script or tool
 that reads Variables needs a token with a policy like the one above. See
 [client node identity](/docs/concepts/acl#client-node-identity).
@@ -160,7 +161,7 @@ norca acl policy apply \
 ```
 
 Priority of policies and automatic task access to variables is similar to the
-[ACL policy namespace rules][]. The most specific rule for a path applies, so a
+[ACL policy namespace rules][]. **The most specific rule for a path applies**, so a
 rule for an exact path in a workload-attached policy overrides the automatic
 task access to variables, but a wildcard rule does not.
 
@@ -181,14 +182,16 @@ namespace "*" {
 }
 ```
 
-The task will have read/list access to its own variables `nomad/jobs/example`,
-`nomad/jobs/example/web`, and `nomad/jobs/example/web/httpd` in the namespace
-`prod`, because those are more specific than the wildcard rule that denies
-access. The task will have list access to `nomad/jobs` in any namespace, because
-that path is more specific than the automatic task access to the `nomad/jobs`
-variable. And the task will not have access to `nomad/jobs/example` (or below)
-in namespaces other than `prod`, because the automatic access rule does not
-apply.
+- The task will have read/list access to its own variables `nomad/jobs/example`,
+  `nomad/jobs/example/web`, and `nomad/jobs/example/web/httpd` in the namespace
+  `prod`, because those are more specific than the wildcard rule that denies
+  access.
+- The task will have list access to `nomad/jobs` in any namespace, because
+  that path is more specific than the automatic task access to the `nomad/jobs`
+  variable.
+- And the task will not have access to `nomad/jobs/example` (or below)
+  in namespaces other than `prod`, because the automatic access rule does not
+  apply.
 
 See [Workload Associated ACL Policies] for more details.
 

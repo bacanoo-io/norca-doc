@@ -48,6 +48,8 @@ accepting jobs from users, managing clients, and [computing task placements](/do
 Each region may have clients from multiple datacenters, allowing a small number of servers
 to handle very large clusters.
 
+### Multiple regions
+
 In some cases, for either availability or scalability, you may need to run multiple
 regions. Norca supports federating multiple regions together into a single cluster.
 At a high level, this setup looks like this:
@@ -72,7 +74,9 @@ Regions are fully independent from each other, and do not share jobs, clients, o
 state. They are loosely-coupled using a gossip protocol, which allows users to
 submit jobs to any region or query the state of any region transparently. Requests
 are forwarded to the appropriate server to be processed and the results returned.
-Data is _not_ replicated between regions.
+**Data is _not_ replicated between regions.**
+
+### Servers and consensus
 
 The servers in each region are all part of a single consensus group. This means
 that they work together to elect a single leader which has extra duties. The leader
@@ -81,10 +85,12 @@ concurrent, meaning all servers participate in making scheduling decisions in pa
 The leader provides the additional coordination necessary to do this safely and
 to ensure clients are not oversubscribed.
 
-Each region is expected to have either three or five servers. This strikes a balance
+**Each region is expected to have either three or five servers.** This strikes a balance
 between availability in the case of failure and performance, as consensus gets
-progressively slower as more servers are added. However, there is no limit to the number
-of clients per region.
+progressively slower as more servers are added. However, **there is no limit to the number
+of clients per region.**
+
+### Clients
 
 Clients are configured to communicate with their regional servers and communicate
 using remote procedure calls (RPC) to register themselves, send heartbeats for liveness,
@@ -93,11 +99,13 @@ with the servers to provide the resources available, attributes, and installed d
 Servers use this information for scheduling decisions and create allocations to assign
 work to clients.
 
+### Jobs and scheduling
+
 Users make use of the Norca CLI or API to submit jobs to the servers. A job represents
 a desired state and provides the set of tasks that should be run. The servers are
 responsible for scheduling the tasks, which is done by finding an optimal placement for
 each task such that resource utilization is maximized while satisfying all constraints
-specified by the job. Resource utilization is maximized by bin packing, in which
+specified by the job. **Resource utilization is maximized by bin packing**, in which
 the scheduling tries to make use of all the resources of a machine without
 exhausting any dimension. Job constraints can be used to ensure an application is
 running in an appropriate environment. Constraints can be technical requirements based

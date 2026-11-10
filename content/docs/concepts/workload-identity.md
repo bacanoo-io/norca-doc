@@ -22,8 +22,8 @@ includes the following identity claims:
 
 ## Using Workload Identity
 
-While Norca always creates and uses workload identities internally, the JWT is
-not exposed to tasks by default.
+While Norca always creates and uses workload identities internally, **the JWT is
+not exposed to tasks by default.**
 
 To expose Workload Identity to tasks, add an [`identity`][identity-block] block
 to your jobspec:
@@ -44,7 +44,7 @@ task "example" {
 
 ## Default Workload ACL Policy
 
-By default, a Workload Identity has access to a implicit ACL policy. This policy
+By default, a Workload Identity has access to an implicit ACL policy. This policy
 grants access to Norca Variables associated with the job, group, and task, as
 described in [Task Access to Variables][]. The implicit policy also allows
 access to list or read any Norca service registration as with the [List Services
@@ -55,8 +55,8 @@ API][] or [Read Service API][].
 You can associate additional ACL policies with workload identities by passing
 the `-job`, `-group`, and `-task` flags to `norca acl policy apply`. When Norca
 resolves a workload identity claim, it will automatically include policies that
-match. If no matching policies exist, the workload identity does not have any
-additional capabilities.
+match. **If no matching policies exist, the workload identity does not have any
+additional capabilities.**
 
 For example, to allow a workload access to secrets from the namespace "shared",
 you can create the following policy file:
@@ -71,6 +71,9 @@ namespace "shared" {
 }
 ```
 
+{{< tabs >}}
+{{< tab name="Task" >}}
+
 You can then apply this policy to a specific task:
 
 ```shell
@@ -78,6 +81,9 @@ norca acl policy apply \
    -namespace default -job example -group cache -task redis \
    redis-policy ./policy.hcl
 ```
+
+{{< /tab >}}
+{{< tab name="Group" >}}
 
 You can also apply this policy to all tasks in the group by omitting the `-task`
 flag:
@@ -88,6 +94,9 @@ norca acl policy apply \
    redis-policy ./policy.hcl
 ```
 
+{{< /tab >}}
+{{< tab name="Job" >}}
+
 And you can apply this policy to all groups in the job by omitting both the
 `-group` and `-task` flag:
 
@@ -96,6 +105,9 @@ norca acl policy apply \
    -namespace default -job example \
    redis-policy ./policy.hcl
 ```
+
+{{< /tab >}}
+{{< /tabs >}}
 
 [allocation]: /docs/concepts/architecture#allocation
 [identity-block]: /docs/job-specification/identity/

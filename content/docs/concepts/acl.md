@@ -15,8 +15,8 @@ Single Sign-On (SSO) ACL capabilities.
 
 Policies consist of a set of rules defining the capabilities or actions to be
 granted. For example, a `readonly` policy might only grant the ability to list
-and inspect running jobs, but not to submit new ones. No permissions are
-granted by default, making Norca a default-deny system.
+and inspect running jobs, but not to submit new ones. **No permissions are
+granted by default, making Norca a default-deny system.**
 
 Each policy comprises one or more rules. The rules define the capabilities of a
 Norca ACL token for accessing the objects in a Norca cluster, objects like
@@ -35,15 +35,15 @@ Requests to Norca are authenticated using a bearer token. Each ACL token has a
 public Accessor ID which is used to name a token and a Secret ID which is used
 to make requests to Norca. The Secret ID is provided using a request header
 (`X-Nomad-Token`) and is used to authenticate the caller. Tokens are either
-management or client types. The `management` tokens are effectively "root" in
-the system and can perform any operation. The `client` tokens are associated
+management or client types. **The `management` tokens are effectively "root" in
+the system and can perform any operation.** The `client` tokens are associated
 with one or more ACL policies or roles which grant specific capabilities.
 
 When ACL tokens are created, they can be optionally marked as `Global`. This
 causes them to be created in the authoritative region and replicated to all
 other regions. Otherwise, tokens are created locally in the region the request
-was made and not replicated. `Local` tokens cannot be used for cross-region
-requests since they are not replicated between regions.
+was made and not replicated. **`Local` tokens cannot be used for cross-region
+requests** since they are not replicated between regions.
 
 ### Workload Identity
 
@@ -55,7 +55,7 @@ this topic.
 ### Client Node Identity
 
 Every client node has a secret ID of its own, which it sends with its requests
-to the servers. The node secret ID is not an ACL token. With ACLs enabled, the
+to the servers. **The node secret ID is not an ACL token.** With ACLs enabled, the
 servers accept it only on the requests a client makes for its own work:
 registering the node and its heartbeats, reading the node's allocations and
 reporting their status, deriving Vault and service identity tokens, CSI volume
@@ -67,12 +67,12 @@ own: it can drain only its own node (for
 [`drain_on_shutdown`](/docs/configuration/client#drain_on_shutdown-block)) and
 remove only the service registrations of its own node.
 
-Every other endpoint denies a request authenticated with a node secret ID with
-`403 Permission denied`, as it denies a request whose token can't be resolved.
+**Every other endpoint denies a request authenticated with a node secret ID with
+`403 Permission denied`**, as it denies a request whose token can't be resolved.
 This includes jobs, nodes, Variables, the secret store, the seal, the keyring,
 the operator endpoints (Raft, Autopilot, scheduler, snapshots) and backups.
-Scripts and tools must use an ACL token, and tasks use their workload
-identity. A request without any token is still evaluated with the policies of
+**Scripts and tools must use an ACL token, and tasks use their workload
+identity.** A request without any token is still evaluated with the policies of
 the anonymous token. With ACLs disabled, nothing changes.
 
 ### Auth Method
@@ -94,9 +94,9 @@ are evaluated during each login attempt.
 A successful selector match between an SSO provider claim and a binding rule
 will result in the generated ACL token having the identified ACL role or policy
 assigned to it. If the `BindType` parameter is `management`, the ACL token
-generated will be a `management` token, rather than a client token. This
+generated will be a `management` token, rather than a client token. **This
 matcher supersedes role or policy assignments, and therefore should be used
-with caution.
+with caution.**
 
 ## Replication
 

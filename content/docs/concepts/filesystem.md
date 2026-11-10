@@ -43,7 +43,7 @@ allocation directory like the one below.
   "allocation working directory", which is the top-level directory. All tasks
   in a task group can read and write to the `alloc/` directory. But the full host
   path may differ depending on the task driver's [filesystem isolation mode], so
-  tasks should always used the `NORCA_ALLOC_DIR` environment variable
+  **tasks should always use the `NORCA_ALLOC_DIR` environment variable**
   to find this path rather than relying on the specific implementation of the
   [`none`](#none-isolation), [`chroot`](#chroot-isolation), or [`image`](#image-isolation)
   modes. Within the `alloc/` directory are three standard directories:
@@ -70,7 +70,7 @@ allocation directory like the one below.
   - **«taskname»/private/**: This directory is used by Norca to store private files
     related to the allocation, such as Vault tokens, that are not shared with tasks
     when using [`image` isolation](#image-isolation). The contents of files in this
-    directory cannot be read by the `norca alloc fs` command or the via Norca's
+    directory cannot be read by the `norca alloc fs` command or via Norca's
     API.
 
     > [!WARNING]
@@ -207,12 +207,13 @@ alloc  boot  dev  home  lib64  media  opt   root  sbin     srv  tmp  var
 bin    data  etc  lib   local  mnt    proc  run   secrets  sys  usr
 ```
 
-Note that because the three directories are bind-mounted into the container
-filesystem, nothing written outside those three directories elsewhere in the
-allocation working directory will be accessible inside the container. This
-means templates, artifacts, and dispatch payloads for tasks with `image`
-isolation must be written into the `NORCA_ALLOC_DIR`, `NORCA_TASK_DIR`, or
-`NORCA_SECRETS_DIR`.
+> [!NOTE]
+> Note that because the three directories are bind-mounted into the container
+> filesystem, **nothing written outside those three directories elsewhere in the
+> allocation working directory will be accessible inside the container.** This
+> means templates, artifacts, and dispatch payloads for tasks with `image`
+> isolation must be written into the `NORCA_ALLOC_DIR`, `NORCA_TASK_DIR`, or
+> `NORCA_SECRETS_DIR`.
 
 To work around this limitation, you can use the task driver's mounting
 capabilities to mount one of the three directories to another location in the
@@ -249,10 +250,11 @@ EOT
 }
 ```
 
-Note that relative mount source path are relative to the task working
-directory, so to bind the `NORCA_ALLOC_DIR` as a mount source, you will need
-to use a relative path that traverses up into the allocation working directory
-(ex. `source = "../alloc"`).
+> [!NOTE]
+> Note that relative mount source path are relative to the task working
+> directory, so to bind the `NORCA_ALLOC_DIR` as a mount source, you will need
+> to use a relative path that traverses up into the allocation working directory
+> (ex. `source = "../alloc"`).
 
 ### `chroot` isolation
 
@@ -415,8 +417,8 @@ container, you'll see that the task has access to the entire root
 filesystem. The `NORCA_ALLOC_DIR`, `NORCA_TASK_DIR`, and `NORCA_SECRETS_DIR`
 point to the filepath on the host, not a path anchored in the task working
 directory. And the task is running as `root`, because the Norca client agent
-is running as `root`. This is why the `raw_exec` driver is disabled by
-default.
+is running as `root`. **This is why the `raw_exec` driver is disabled by
+default.**
 
 ```shell
 $ norca alloc exec 87ec7d12 /bin/sh
@@ -437,16 +439,16 @@ The other contents of the allocation working directory depend on what features
 the job specification uses. The allocation working directory is populated by
 other features in a specific order:
 
-- The allocation working directory is created.
-- The ephemeral disk data is [migrated] from any previous allocation.
-- [CSI volumes] are staged.
-- Then, for each task:
-  - Task working directories are created.
-  - [Dispatch payloads] are written.
-  - [Artifacts] are downloaded.
-  - [Templates] are rendered.
-  - The task is started by the task driver, which includes all bind mounts and
-    [volume mounts].
+1. The allocation working directory is created.
+2. The ephemeral disk data is [migrated] from any previous allocation.
+3. [CSI volumes] are staged.
+4. Then, for each task:
+   1. Task working directories are created.
+   2. [Dispatch payloads] are written.
+   3. [Artifacts] are downloaded.
+   4. [Templates] are rendered.
+   5. The task is started by the task driver, which includes all bind mounts and
+      [volume mounts].
 
 Dispatch payloads, artifacts, and templates are written to the task working
 directory before a task can start because the resulting files may be binary or
@@ -454,8 +456,8 @@ image run by the task. For example, an `artifact` can be used to download a
 Docker image or .jar file, or a `template` can be used to render a shell
 script that's run by `exec`.
 
-The `artifact` and `template` blocks write their data to a destination
-relative to the task working directory, not the `NORCA_TASK_DIR`. For task
+**The `artifact` and `template` blocks write their data to a destination
+relative to the task working directory, not the `NORCA_TASK_DIR`.** For task
 drivers with `image` filesystem isolation, this means the `destination` field
 path should be prefixed with either `NORCA_TASK_DIR` or
 `NORCA_SECRETS_DIR`. Otherwise, the file will not be visible from inside the
@@ -470,8 +472,8 @@ as required, and making a volume claim to the Norca server.
 The behavior of the `volume_mount` block is controlled by the task driver. The
 client builds a mount configuration describing the host volume or CSI volume
 and passes it to the task driver to execute. Because the task driver mounts
-the volume, it is not possible to have `artifact`, `template`, or
-`dispatch_payload` blocks write to a volume.
+the volume, **it is not possible to have `artifact`, `template`, or
+`dispatch_payload` blocks write to a volume.**
 
 [artifacts]: /docs/job-specification/artifact/
 [csi volumes]: /docs/concepts/plugins/csi/
