@@ -99,7 +99,7 @@ with it, made in the same code.
 
 ## Similarity audit
 
-On 2026-11-02 the clean room code was compared with the HashiCorp code it must
+On 2026-11-08 the clean room code was compared with the HashiCorp code it must
 not be derived from, using [Dolos](https://github.com/dodona-edu/dolos) 2.10.0
 (syntax-tree based plagiarism detection, Ghent University). The comparison ran
 in a throwaway container that received the Norca checkout read-only, fetched
@@ -109,16 +109,17 @@ looked at code of a flagged pair.
 
 | Property | Value |
 | --- | --- |
-| Norca | `main` at `e98a2f58b` |
+| Norca | `main` at `a72e87685` (the history rebuilt on 2026-11-08) |
 | BUSL files | the 45 files of Nomad v1.6.5 with a BUSL-1.1 header |
 | BSL release | Nomad v1.11.3 (`173ab08a0`) |
 | Threshold | 0.4 (share of the two files covered by common fragments) |
 
 **Clean room fixes** (the lines each commit of the table above added to a file,
 against the lines HashiCorp added to the same file between v1.6.5 and v1.11.3):
-1221 pairs; above the threshold only the generated msgpack codec
-(`structs.generated.go`), which is generated from the structure definitions.
-Every hand-written file scored 0.26 or lower.
+2346 pairs; above the threshold only the generated msgpack codec
+(`structs.generated.go`, 0.507 and 0.427), which is generated from the
+structure definitions. Every hand-written file scored 0.261 or lower. The run
+of 2026-11-02 (`main` at `e98a2f58b`, 1221 pairs) gave the same picture.
 
 **Replacements of the BUSL files** (each BUSL file against the Norca files of
 its directory): Dolos compares syntax, so files of the same shape score high
@@ -127,10 +128,11 @@ baseline, the highest score of HashiCorp's own MPL files of v1.6.5 against the
 same BUSL file (short Ember files reach 0.8 to 1.0 against each other), and a
 second, character-level comparison of each replacement with the file it
 replaces, which also counts names, literals and comments. **No Norca file
-scored above both the threshold and the baseline.** The 103 pairs at or above
-the threshold are Norca files that resemble a BUSL file less than HashiCorp's
-own MPL files do (Ember acceptance tests and page objects, baseline 0.565 and
-1.000).
+scored above both the threshold and the baseline.** Of the 102 pairs at or
+above the threshold, 85 are HashiCorp's own MPL files of v1.6.5, one is the
+restored MPL file below, and 16 are Norca files that resemble a BUSL file less
+than HashiCorp's own MPL files do (Ember acceptance tests and page objects,
+baseline 0.565 and 1.000).
 
 **Restored MPL code.** `e2e/rescheduling/rescheduling.go` (0.497 against
 `e2e/rescheduling/rescheduling_test.go`) is not a clean room file: it is

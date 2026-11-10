@@ -181,7 +181,7 @@ The script needs git, bash and (for the last check) Go. It fetches the upstream 
 
 <!-- REUSE-IgnoreEnd -->
 
-Result on 2026-11-01 (`main`): every check passes; 45 BUSL-1.1 files left out of the import, 3577 modified upstream files, each with a Norca copyright line.
+Result on 2026-11-10 (`main` at `6519a59f8`): every check passes; 45 BUSL-1.1 files left out of the import, 3943 modified upstream files, each with a Norca copyright line.
 
 The other license checks run in CI (`.github/workflows/compliance.yml`) and can be run locally as well: `reuse lint` at the repository root (REUSE marking), `make check-notices` in `norca/` (third-party notices and allowed licenses), and `go-licenses check ./...` in each Go module. The `snippet-scan` job checks the files added or modified by each push and pull request with [SCANOSS](https://www.scanoss.com) against its open source knowledge base (only file fingerprints are sent) and fails on a file or snippet match under a GPL, AGPL, LGPL, SSPL, EUPL, OSL or CC-BY-SA license; locally: `pip install scanoss`, `scanoss-py scan -o results.json <directory>`.
 
