@@ -12,7 +12,7 @@ Please see the [Consensus Protocol Guide] for more information about Raft consen
 
 ## Read Raft Configuration
 
-This endpoint queries the status of a client node registered with Norca.
+This endpoint queries the Raft configuration of the servers.
 
 | Method | Path                              | Produces           |
 | ------ | --------------------------------- | ------------------ |
@@ -58,7 +58,7 @@ $ curl \
 
 #### Field Reference
 
-- `Index` `(int)` - The `Index` value is the Raft corresponding to this
+- `Index` `(int)` - The `Index` value is the Raft index corresponding to this
   configuration. The latest configuration may not yet be committed if changes
   are in flight.
 

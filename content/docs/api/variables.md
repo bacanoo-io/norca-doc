@@ -42,7 +42,7 @@ The table below shows this endpoint's support for [blocking queries] and
   an index prefix. This is specified as a query string parameter.
 
 - `next_token` `(string: "")` - This endpoint supports paging. The `next_token`
-  parameter accepts a string which identifies the next expected job. This value
+  parameter accepts a string which identifies the next expected variable. This value
   can be obtained from the `X-Nomad-NextToken` header from the previous
   response.
 
@@ -124,7 +124,7 @@ $ curl \
   "CreateIndex": 1457,
   "ModifyIndex": 1457,
   "CreateTime": 1662061225600373000,
-  "ModifyTime": 1662061225600373000
+  "ModifyTime": 1662061225600373000,
   "Items": {
     "user": "me",
     "password": "passw0rd1"
@@ -143,9 +143,9 @@ This endpoint creates or updates a variable.
 The table below shows this endpoint's support for [blocking queries] and
 [required ACLs].
 
-| Blocking Queries | ACL Required                                                                                |
-|------------------|---------------------------------------------------------------------------------------------|
-| `NO`             | `namespace:* variables:write`<br />The read capability on the variable's namespace and path |
+| Blocking Queries | ACL Required                                                                                 |
+|------------------|----------------------------------------------------------------------------------------------|
+| `NO`             | `namespace:* variables:write`<br />The write capability on the variable's namespace and path |
 
 ### Parameters
 
@@ -157,7 +157,7 @@ The table below shows this endpoint's support for [blocking queries] and
   `0`, the variable is only created if it does not already exist.** This paradigm
   allows check-and-set style updates.
 
-## Restrictions
+### Restrictions
 
 Variable paths are restricted to [RFC3986][] URL-safe characters that don't
 conflict with the use of the characters `@` and `.` in template blocks. This

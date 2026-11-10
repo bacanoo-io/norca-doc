@@ -566,7 +566,7 @@ The `Task` object supports the following keys:
 
   - `AddressMode`: Specifies what address (host or driver-specific) this
     service should advertise. This setting is supported in Docker since
-    Nomad 0.6 and rkt since Nomad 0.7. Valid options are:
+    Nomad 0.6. Valid options are:
 
     - `auto` - Allows the driver to determine whether the host or driver
       address should be used. Defaults to `host` and only implemented by
@@ -577,7 +577,7 @@ The `Task` object supports the following keys:
       in a port map. A numeric port may be specified since port maps aren't
       required by all network plugins. Useful for advertising SDN and
       overlay network addresses. Task will fail if driver network cannot be
-      determined. Only implemented for Docker and rkt.
+      determined. Only implemented for Docker.
 
     - `host` - Use the host IP and port.
 
@@ -873,7 +873,7 @@ The `Constraint` object supports the following keys:
 
 - `RTarget` - Specifies the value to compare the attribute against.
   This can be a literal value, another attribute or a regular expression if
-  the `Operator` is in `"regexp"` mode.
+  the `Operand` is in `"regexp"` mode.
 
 - `Operand` - Specifies the test to be performed on the two targets. It takes on the
   following values:
@@ -923,7 +923,7 @@ The `Affinity` object supports the following keys:
 
 - `RTarget` - Specifies the value to compare the attribute against.
   This can be a literal value, another attribute or a regular expression if
-  the `Operator` is in `"regexp"` mode.
+  the `Operand` is in `"regexp"` mode.
 
 - `Operand` - Specifies the test to be performed on the two targets. It takes on the
   following values:
@@ -1220,7 +1220,7 @@ The `Scaling` object supports the following keys:
   This must be larger than `Min`. Attempts to set the task group `Count` above `Max` will result in a 400
   error during job registration.
 
-- `Enabled` - An optional boolean (default: `true`). This indicates to the autoscaler that this
+- `Enabled` - An optional boolean (default: `true`). If `false`, this indicates to the autoscaler that this
   scaling policy should be ignored. It is intended to allow autoscaling to be temporarily disabled
   for a task group.
 

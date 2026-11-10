@@ -27,8 +27,8 @@ The table below shows this endpoint's support for
 
 When ACLs are enabled, requests must have a token valid for `node:read`,
 `node_pool:read`, or `namespace:read-jobs` roles. If the token is only valid
-for a portion of these capabilities, then results will include results
-including only data readable with the given token.
+for a portion of these capabilities, then the results will include only data
+readable with the given token.
 
 ### Parameters
 
@@ -146,8 +146,8 @@ The table below shows this endpoint's support for
 
 When ACLs are enabled, requests must have a token valid for `node:read`,
 `node_pool:read`, `plugin:read`, or `namespace:read-jobs` roles. If the token
-is only valid for a portion of these capabilities, then results will include
-results including only data readable with the given token.
+is only valid for a portion of these capabilities, then the results will include
+only data readable with the given token.
 
 ### Parameters
 
@@ -159,7 +159,7 @@ results including only data readable with the given token.
   prefix operates. Contexts can be: `"jobs"`, `"allocs"`, `"nodes"`, `"node_pools"`,
   `"plugins"`, or `"all"`, where `"all"` means every context will be searched.
   - When `"all"` is selected, additional prefix matches will be included for the
-    `"deployments"`, `"evals"`, and `"volumes"` types.
+    `"deployment"`, `"evals"`, and `"volumes"` types.
   - When searching in the `"jobs"`
     context, results that fuzzy match `"groups"`, `"services"`, `"tasks"`, `"images"`,
     `"commands"`, and `"classes"` are also included in the results.
@@ -167,7 +167,7 @@ results including only data readable with the given token.
 ### Scope
 
 Fuzzy match results are accompanied with a `Scope` field which is used to uniquely
-identify the matched object, in a way that the Nomad API can be queried again for
+identify the matched object, in a way that the Norca API can be queried again for
 additional information. The data provided by scope varies depending on the type
 of matched object, described below.
 

@@ -59,9 +59,9 @@ $ curl \
 
 This endpoint reads a specific service.
 
-| Method | Path                     | Produces           |
-| ------ | ------------------------ | ------------------ |
-| `GET`  | `/service/:service_name` | `application/json` |
+| Method | Path                        | Produces           |
+| ------ | --------------------------- | ------------------ |
+| `GET`  | `/v1/service/:service_name` | `application/json` |
 
 The table below shows this endpoint's support for
 [blocking queries](/docs/api#blocking-queries), [consistency modes](/docs/api#consistency-modes) and

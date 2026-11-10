@@ -554,7 +554,7 @@ $ curl \
   associated with this allocation.
 
 - `TaskStates` - A map of tasks to their current state and the latest events
-  that have effected the state. `TaskState` objects contain the following
+  that have affected the state. `TaskState` objects contain the following
   fields:
 
   - `State`: The task's current state. It can have one of the following
@@ -612,7 +612,7 @@ $ curl \
 
     - `Restart Signaled` - The task was signaled to be restarted.
 
-    - `Signaling` - The task was is being sent a signal.
+    - `Signaling` - The task is being sent a signal.
 
     - `Sibling Task Failed` - A task in the same task group failed.
 
@@ -715,7 +715,7 @@ The table below shows this endpoint's support for
   `disruption budget exceeded: task group "web" has 2 healthy allocations and requires 2`.
   Retry later.
 
-**All servers of the region must run Norca 0.1.0 or later.** A successful eviction
+A successful eviction
 is published on the event stream with the type `AllocationEvicted` (topics
 `Allocation` and `Evaluation`).
 
@@ -928,9 +928,9 @@ Request and response frames encompass the full range of terminal emulator inputs
 The endpoint is used to read all services registered within Norca belonging to the passed
 allocation ID.
 
-| Method | Path                             | Produces           |
-| ------ | -------------------------------- | ------------------ |
-| `GET`  | `/allocation/:alloc_id/services` | `application/json` |
+| Method | Path                                | Produces           |
+| ------ | ----------------------------------- | ------------------ |
+| `GET`  | `/v1/allocation/:alloc_id/services` | `application/json` |
 
 The table below shows this endpoint's support for
 [blocking queries](/docs/api#blocking-queries), [consistency modes](/docs/api#consistency-modes) and
@@ -942,7 +942,7 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `:alloc_id` `(string: <required>)` - Specifies the service name. This is
+- `:alloc_id` `(string: <required>)` - Specifies the allocation ID. This is
   specified as part of the path.
 
 - `namespace` `(string: "default")` - Specifies the target namespace.
@@ -983,17 +983,17 @@ $ curl \
 The endpoint is used to read all health checks registered within Norca belonging
 to the passed allocation ID.
 
-| Method | Path                           | Produces           |
-| ------ | ------------------------------ | ------------------ |
-| `GET`  | `/allocation/:alloc_id/checks` | `application/json` |
+| Method | Path                              | Produces           |
+| ------ | --------------------------------- | ------------------ |
+| `GET`  | `/v1/allocation/:alloc_id/checks` | `application/json` |
 
 The table below shows this endpoint's support for
-[blocking queries](/docs/api#blocking-queries), [consistency modes](/docs/api#consistency-modes) and
+[blocking queries](/docs/api#blocking-queries) and
 [required ACLs](/docs/api#acls).
 
-| Blocking Queries | ACL Required          |
-| ---------------- | --------------------- |
-| `NO`             | `namespace:read-job`` |
+| Blocking Queries | ACL Required         |
+| ---------------- | -------------------- |
+| `NO`             | `namespace:read-job` |
 
 ### Parameters
 

@@ -12,9 +12,9 @@ The `/scaling/policies` and `/scaling/policy/` endpoints are used to list and vi
 
 This endpoint returns the scaling policies from all jobs.
 
-| Method | Path                | Produces           |
-| ------ | ------------------- | ------------------ |
-| `GET`  | `/scaling/policies` | `application/json` |
+| Method | Path                   | Produces           |
+| ------ | ---------------------- | ------------------ |
+| `GET`  | `/v1/scaling/policies` | `application/json` |
 
 The table below shows this endpoint's support for
 [blocking queries](/docs/api#blocking-queries), [consistency modes](/docs/api#consistency-modes) and
@@ -85,9 +85,9 @@ $ curl \
 
 This endpoint reads a specific scaling policy.
 
-| Method | Path                         | Produces           |
-| ------ | ---------------------------- | ------------------ |
-| `GET`  | `/scaling/policy/:policy_id` | `application/json` |
+| Method | Path                            | Produces           |
+| ------ | ------------------------------- | ------------------ |
+| `GET`  | `/v1/scaling/policy/:policy_id` | `application/json` |
 
 The table below shows this endpoint's support for
 [blocking queries](/docs/api#blocking-queries), [consistency modes](/docs/api#consistency-modes) and

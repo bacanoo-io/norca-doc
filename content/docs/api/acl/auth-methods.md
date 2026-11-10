@@ -27,11 +27,11 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `Name` `(string: <required>)` - Names is the identifier of the ACL Auth
-  Method.  The name can contain alphanumeric characters, dashes, and underscores.
+- `Name` `(string: <required>)` - Name is the identifier of the ACL Auth
+  Method.  The name can contain alphanumeric characters and dashes.
   **This name must be unique and must not exceed 128 characters.**
 
-- `Type` `(string: <required>)` - ACL Auth Role SSO identifier.
+- `Type` `(string: <required>)` - ACL Auth Method SSO identifier.
 
 - `TokenLocality` `(string: <required>)` - Defines whether the ACL Auth Method
   creates a local or global token when performing SSO login. This field must be
@@ -185,12 +185,12 @@ queries](/docs/api#blocking-queries) and [required ACLs](/docs/api#acls).
 
 ### Parameters
 
-- `Name` `(string: <required>)` - Names is the identifier of the ACL Auth
-  Method.  The name can contain alphanumeric characters, dashes, and underscores.
+- `Name` `(string: <required>)` - Name is the identifier of the ACL Auth
+  Method.  The name can contain alphanumeric characters and dashes.
   **This name must be unique and must not exceed 128 characters.**
 
-- `Type` `(string: <required>)` - ACL Auth Role SSO identifier. Currently, the
-  only supported Type is "OIDC."
+- `Type` `(string: <required>)` - ACL Auth Method SSO identifier. Currently, the
+  supported types are "OIDC" and "JWT".
 
 - `TokenLocality` `(string: "")` - Defines whether the ACL Auth Method
   creates a local or global token when performing SSO login. This field must be

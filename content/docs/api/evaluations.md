@@ -39,7 +39,7 @@ The table below shows this endpoint's support for
 - `per_page` `(int: 0)` - Specifies a maximum number of evaluations to
   return for this request. **If omitted, the response is not
   paginated.** The `ID` of the last evaluation in the response can be
-  used as the `last_token` of the next request to fetch additional
+  used as the `next_token` of the next request to fetch additional
   pages.
 
 - `filter` `(string: "")` - Specifies the [expression](/docs/api#filtering)

@@ -32,7 +32,7 @@ The table below shows this endpoint's support for
   string parameter and is used before any `filter` expression is applied.
 
 - `namespace` `(string: "default")` - Specifies the target namespace.
-  Specifying `*` will return all evaluations across all authorized namespaces.
+  Specifying `*` will return all deployments across all authorized namespaces.
   This parameter is used before any `filter` expression is applied.
 
 - `next_token` `(string: "")` - This endpoint supports paging. The
@@ -43,7 +43,7 @@ The table below shows this endpoint's support for
 - `per_page` `(int: 0)` - Specifies a maximum number of deployments to
   return for this request. **If omitted, the response is not
   paginated.** The `ID` of the last deployment in the response can be
-  used as the `last_token` of the next request to fetch additional
+  used as the `next_token` of the next request to fetch additional
   pages.
 
 - `filter` `(string: "")` - Specifies the [expression](/docs/api#filtering)
@@ -478,10 +478,10 @@ The table below shows this endpoint's support for
   as part of the path and the JSON payload.
 
 - `HealthyAllocationIDs` `(array<string>: nil)` - Specifies the set of
-  allocation that should be marked as healthy.
+  allocations that should be marked as healthy.
 
 - `UnhealthyAllocationIDs` `(array<string>: nil)` - Specifies the set of
-  allocation that should be marked as unhealthy.
+  allocations that should be marked as unhealthy.
 
 ### Sample Payload
 

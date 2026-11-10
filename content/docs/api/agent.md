@@ -734,7 +734,7 @@ go tool trace trace
 
 ## Fetch all scheduler worker's status
 
-The `/agent/schedulers` endpoint allow Norca operators to inspect the state of
+The `/agent/schedulers` endpoint allows Norca operators to inspect the state of
 a Norca server agent's scheduler workers.
 
 | Method | Path                | Produces           |

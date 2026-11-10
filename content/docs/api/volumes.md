@@ -32,7 +32,7 @@ The table below shows this endpoint's support for
   string parameter. **Returns an empty list if omitted.**
 
 - `node_id` `(string: "")` - Specifies a string to filter volumes
-  based on an Node ID prefix. Because the value is decoded to bytes,
+  based on a Node ID prefix. Because the value is decoded to bytes,
   the prefix must have an even number of hexadecimal characters
   (0-9a-f). This is specified as a query string parameter.
 
@@ -553,7 +553,7 @@ The table below shows this endpoint's support for
   `next_token` parameter accepts a string returned in a previous response's
   `NextToken` field to request the next page of results.
 
-- `per_page` `(int: <required>)` - Specifies a maximum number of snapshots to
+- `per_page` `(int: <required>)` - Specifies a maximum number of volumes to
   return for this request. The response will include a `NextToken` field that
   can be passed to the next request to fetch additional pages.
 
@@ -719,7 +719,7 @@ The table below shows this endpoint's support for
 | `YES`            | `namespace:csi-list-volume` |
 
 This endpoint accepts a `X-Nomad-CSI-Secrets` header to set secrets
-for deleting the snapshot as comma-separated key-value pairs (see the
+for listing the snapshots as comma-separated key-value pairs (see the
 example below). These secrets will be merged with any secrets already
 stored when the CSI snapshot was created.
 

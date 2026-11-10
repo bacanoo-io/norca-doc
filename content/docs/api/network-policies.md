@@ -12,9 +12,6 @@ the CLI is described in the
 [network policy specification](/docs/other-specifications/network-policy); the
 API uses the JSON form below.
 
-**All write endpoints require every server of the region to run Norca 0.1.0 or
-later.**
-
 ## Policy Objects
 
 A network policy:

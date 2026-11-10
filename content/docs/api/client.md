@@ -57,11 +57,11 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `:node_id` `(string: <optional>)` - Specifies the node to query.
+- `node_id` `(string: <optional>)` - Specifies the node to query.
   This is required when the endpoint is being accessed via a server. Defaults
-  to the node receiving the request otherwise. This is specified as part of
-  the URL.  **Note, this must be the _full_ node ID, not the short 8-character
-  one.** This must be specified as part of the path (`?node_id=...`).
+  to the node receiving the request otherwise. **Note, this must be the _full_
+  node ID, not the short 8-character one.** This is specified as a query string
+  parameter (`?node_id=...`).
 
 ### Sample Request
 
@@ -96,8 +96,6 @@ Formatted by appending `?pretty` above.
 }
 ```
 
-### Sample Request
-
 ## Update Dynamic Node Metadata
 
 This endpoint updates dynamic Node metadata on a specific Client agent. Since
@@ -122,12 +120,11 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `NodeID` or `:node_id` `(string: <optional>)` - Specifies the node to query.
+- `NodeID` or `node_id` `(string: <optional>)` - Specifies the node to query.
   This is required when the endpoint is being accessed via a server. Defaults
-  to the node receiving the request otherwise. This is specified as part of
-  the URL.  **Note, this must be the _full_ node ID, not the short 8-character
-  one.** This may be specified as part of the path (`?node_id=...`) or request
-  (`NodeID: "..."`).
+  to the node receiving the request otherwise. **Note, this must be the _full_
+  node ID, not the short 8-character one.** This may be specified as a query
+  string parameter (`?node_id=...`) or in the request body (`NodeID: "..."`).
 
 - `Meta` `(object: <required>)` - Specifies the Node metadata keys to update.
   Only specified keys are updated.

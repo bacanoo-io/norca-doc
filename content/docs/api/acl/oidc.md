@@ -66,7 +66,7 @@ $ curl \
 
 ## Complete OIDC Authentication
 
-This endpoint creates an ACL Role. The request is always forwarded to the
+This endpoint creates an ACL Token. The request is always forwarded to the
 authoritative region.
 
 | Method | Path                         | Produces           |

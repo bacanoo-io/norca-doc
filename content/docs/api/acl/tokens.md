@@ -13,7 +13,7 @@ For more details about ACLs, see the [ACL concepts](/docs/concepts/acl) page.
 
 This endpoint is used to bootstrap the ACL system and provide the initial management token.
 An operator created token can be provided in the body of the request to bootstrap the cluster
-if required. If no header is provided the cluster will return a generated management token.
+if required. If no token is provided the cluster will return a generated management token.
 The provided token should be presented in a UUID format.
 This request is always forwarded to the authoritative region. **It can only be invoked once
 until a bootstrap reset is performed.**

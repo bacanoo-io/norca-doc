@@ -332,7 +332,7 @@ $ curl \
       "CIDR": "10.199.0.200/24",
       "ReservedPorts": "8080,8081"
     }
-  }
+  },
   "ID": "1ac61e33-a465-2ace-f63f-cffa1285e7eb",
   "LastDrain": {
     "AccessorID": "4e1b7ce1-f8aa-d7ff-09f1-55c3a0fd3988",
@@ -510,6 +510,33 @@ $ curl \
   "TLSEnabled": false
 }
 ```
+
+#### Field Reference
+
+- `Events` - A list of the last 10 node events for this node. A node event is a
+  high level concept of noteworthy events for a node.
+
+  Each node event has the following fields:
+
+  - `Message` - The specific message for the event, detailing what occurred.
+
+  - `Subsystem` - The subsystem where the node event took place. Subsystems
+    include:
+
+    - `Drain` - The Norca server draining subsystem.
+
+    - `Driver` - The Norca client driver subsystem.
+
+    - `Heartbeat` - Either Norca client or server heartbeating subsystem.
+
+    - `Cluster` - Norca server cluster management subsystem.
+
+  - `Details` - Any further details about the event, formatted as a key/value
+    pair.
+
+  - `Timestamp` - Each node event has an ISO 8601 timestamp.
+
+  - `CreateIndex` - The Raft index at which the event was committed.
 
 ## List Node Allocations
 
@@ -1134,30 +1161,3 @@ $ curl \
   "NodeModifyIndex": 3742
 }
 ```
-
-#### Field Reference
-
-- `Events` - A list of the last 10 node events for this node. A node event is a
-  high level concept of noteworthy events for a node.
-
-  Each node event has the following fields:
-
-  - `Message` - The specific message for the event, detailing what occurred.
-
-  - `Subsystem` - The subsystem where the node event took place. Subsystems
-    include:
-
-    - `Drain` - The Norca server draining subsystem.
-
-    - `Driver` - The Norca client driver subsystem.
-
-    - `Heartbeat` - Either Norca client or server heartbeating subsystem.
-
-    - `Cluster` - Norca server cluster management subsystem.
-
-  - `Details` - Any further details about the event, formatted as a key/value
-    pair.
-
-  - `Timestamp` - Each node event has an ISO 8601 timestamp.
-
-  - `CreateIndex` - The Raft index at which the event was committed.

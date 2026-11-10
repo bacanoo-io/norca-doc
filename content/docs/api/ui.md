@@ -47,8 +47,7 @@ This page shows an overview of a specific job. Details include name, status, typ
 priority, allocation statuses, and task groups. Additionally, if there is a running
 deployment for the job, it will be shown on the overview.
 
-This page shows an overview of a specific job. The exact information shown varies
-based on the type of job.
+The exact information shown varies based on the type of job.
 
 - **Service Job** - Includes job metadata (name, status, priority, namespace), allocation
   statuses, placement failures, active deployment, task groups, and evaluations.
@@ -205,7 +204,7 @@ description of the event.
 
 This page will show either a directory listing of a path or the file at a path, depending on whether or not the path is a directory. Specifying no file path will show the root of the allocation file system. The file system is also navigable from the UI. Each entry in the directory listing will include the file size (assuming a file) and the last modified time.
 
-If the file is text based, the UI will render the text inline and the stream the file contents as it updates. If the file is a well-known image format, the image will be rendered inline. In all other cases, the UI will prompt a download link.
+If the file is text based, the UI will render the text inline and then stream the file contents as it updates. If the file is a well-known image format, the image will be rendered inline. In all other cases, the UI will prompt a download link.
 
 | Path                                      | Produces    |
 | ----------------------------------------- | ----------- |
@@ -242,7 +241,7 @@ to `stderr`.
 
 This page will show either a directory listing of a path or the file at a path, depending on whether or not the path is a directory. Specifying no file path will show the root of the task file system (which is within the allocation file system). The file system is also navigable from the UI. Each entry in the directory listing will include the file size (assuming a file) and the last modified time.
 
-If the file is text based, the UI will render the text inline and the stream the file contents as it updates. If the file is a well-known image format, the image will be rendered inline. In all other cases, the UI will prompt a download link.
+If the file is text based, the UI will render the text inline and then stream the file contents as it updates. If the file is a well-known image format, the image will be rendered inline. In all other cases, the UI will prompt a download link.
 
 | Path                                      | Produces    |
 | ----------------------------------------- | ----------- |

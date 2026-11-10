@@ -178,7 +178,7 @@ $ curl \
 
 - `Healthy` is whether all the servers are currently healthy.
 
-- `FailureTolerance` is the number of redundant healthy servers that could be
+- `FailureTolerance` is the number of redundant healthy servers that could
   fail without causing an outage (this would be 2 in a healthy cluster of 5
   servers).
 

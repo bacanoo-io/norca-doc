@@ -571,6 +571,14 @@ retained.
 | ------ | ------------------------------ | ------------------ |
 |`GET`   | `/v1/job/:job_id/submission`   | `application/json` |
 
+The table below shows this endpoint's support for
+[blocking queries](/docs/api#blocking-queries) and
+[required ACLs](/docs/api#acls).
+
+| Blocking Queries | ACL Required         |
+| ---------------- | -------------------- |
+| `YES`            | `namespace:read-job` |
+
 ### Parameters
 
 - `:job_id` `(string: <required>)` - Specifies the ID of the job. This is
@@ -1828,7 +1836,8 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `JobID` `(string: <required>)` - Specifies the ID of the job (as specified
-  in the job file during submission). This is specified as part of the path.
+  in the job file during submission). This is specified as part of the payload
+  and must match the `:job_id` in the path.
 
 - `JobVersion` `(integer: 0)` - Specifies the job version to revert to.
 
@@ -1893,7 +1902,8 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `JobID` `(string: <required>)` - Specifies the ID of the job (as specified
-  in the job file during submission). This is specified as part of the path.
+  in the job file during submission). This is specified as part of the payload
+  and must match the `:job_id` in the path.
 
 - `JobVersion` `(integer: 0)` - Specifies the job version to set the stability on.
 
@@ -2515,9 +2525,9 @@ This is the same payload as returned by job update.
 
 The endpoint is used to read all services registered within Norca belonging to the passed job ID.
 
-| Method | Path                    | Produces           |
-| ------ | ----------------------- | ------------------ |
-| `GET`  | `/job/:job_id/services` | `application/json` |
+| Method | Path                       | Produces           |
+| ------ | -------------------------- | ------------------ |
+| `GET`  | `/v1/job/:job_id/services` | `application/json` |
 
 The table below shows this endpoint's support for
 [blocking queries](/docs/api#blocking-queries), [consistency modes](/docs/api#consistency-modes) and
