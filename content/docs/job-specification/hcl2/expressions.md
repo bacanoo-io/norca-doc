@@ -1,6 +1,6 @@
 ---
 title: "Expressions"
-description: "HCL allows the use of expressions to access data exported by sources and to transform and combine that data to produce other values."
+description: "HCL allows the use of expressions to access data such as input variables and local values and to transform and combine that data to produce other values."
 upstream:
   path: "website/content/docs/job-specification/hcl2/expressions.mdx"
 ---
@@ -247,9 +247,9 @@ set.
 
 ## `dynamic` blocks
 
-Within top-level block constructs like sources, expressions can usually be used
+Within blocks such as `task` or `network`, expressions can usually be used
 only when assigning a value to an argument using the `name = expression` or
-`key = expression` form. This covers many uses, but some source types include
+`key = expression` form. This covers many uses, but some blocks include
 repeatable _nested blocks_ in their arguments, which do not accept expressions:
 
 ```hcl
@@ -336,7 +336,7 @@ The iterator object (`port` in the example above) has two attributes:
 - `value` is the value of the current element.
 
 **The `for_each` value must be a map or set with one element per desired nested
-block.** If you need to declare resource instances based on a nested data
+block.** If you need to declare nested blocks based on a nested data
 structure or combinations of elements from multiple data structures you can use
 expressions and functions to derive a suitable value. For some common examples
 of such situations, see the

@@ -31,7 +31,7 @@ job "docs" {
 
 Norca supports downloading `http`, `https`, `git`, `hg` and `S3` artifacts. If
 these artifacts are archived (`zip`, `tgz`, `bz2`, `xz`), they are
-automatically unarchived before the starting the task.
+automatically unarchived before starting the task.
 
 ## `artifact` Parameters
 
@@ -207,7 +207,7 @@ This example uses path-based notation on a publicly-accessible bucket:
 
 ```hcl
 artifact {
-  source = "s3://my-bucket-example.s3-us-west-2.amazonaws.com/my_app.tar.gz"
+  source = "s3://s3-us-west-2.amazonaws.com/my-bucket-example/my_app.tar.gz"
 }
 ```
 

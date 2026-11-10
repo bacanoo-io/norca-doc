@@ -88,7 +88,7 @@ config {
 ```
 
 The value assigned to a variable can be accessed only from expressions within
-the folder where it was declared.
+the job file where it was declared.
 
 > [!NOTE]
 > Note that **a block label (such as the job ID
@@ -123,8 +123,8 @@ The type constructors allow you to specify complex types such as collections:
 
 The keyword `any` may be used to indicate that any type is acceptable. For more
 information on the meaning and behavior of these different types, as well as
-detailed information about automatic conversion of complex types, see Type
-Constraints.
+detailed information about automatic conversion of complex types, see [Types and
+Values](/docs/job-specification/hcl2/expressions#types-and-values).
 
 - If both the `type` and `default` arguments are specified, the given default
   value must be convertible to the specified type.
@@ -204,7 +204,7 @@ $ norca job run -var="image_id=nginx:1.19" example.norca.hcl
 The `-var` option can be used any number of times in a single command.
 
 If you plan to assign variables via the command line, we strongly recommend that
-you at least set a default type instead of using empty blocks; this helps the
+you at least set a type instead of using empty blocks; this helps the
 HCL parser understand what is being set. **Otherwise, the interpreter will assume
 that any variable set on the command line is a string.**
 

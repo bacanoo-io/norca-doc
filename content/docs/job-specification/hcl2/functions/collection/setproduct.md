@@ -60,7 +60,7 @@ argument in turn.
 
 There is an example of the common usage of this function above. There are some
 other situations that are less common when hand-writing but may arise in
-reusable folder situations.
+reusable job files.
 
 If any of the arguments is empty then the result is always empty itself,
 similar to how multiplying any number by zero gives zero:
@@ -129,7 +129,7 @@ used in a `for_each` argument, and `setproduct` can be a useful helper function
 for the situation where you want to find all unique combinations of elements in
 a number of different collections.
 
-For example, consider a folder that declares variables like the following:
+For example, consider a job file that declares variables like the following:
 
 ```hcl
 variable "networks" {

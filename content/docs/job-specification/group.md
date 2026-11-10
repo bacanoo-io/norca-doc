@@ -43,7 +43,7 @@ job "docs" {
   most 8 `colocate` and `separate` blocks per group.
 
 - `count` `(int)` - Specifies the number of instances that should be running
-  under for this group. This value must be non-negative. This defaults to the
+  for this group. This value must be non-negative. This defaults to the
   `min` value specified in the [`scaling`](/docs/job-specification/scaling/)
   block, if present; otherwise, this defaults to `1`.
 
@@ -97,7 +97,7 @@ job "docs" {
   would fail health checks once they receive a shutdown signal. Alternatively,
   `shutdown_delay` may be set to give in-flight requests time to complete
   before shutting down. A group level `shutdown_delay` will run regardless
-  if there are any defined group [services](/docs/job-specification/group#service)
+  of whether there are any defined group [services](/docs/job-specification/group#service)
   and only applies to these services. In addition, tasks may have their own
   [`shutdown_delay`](/docs/job-specification/task#shutdown_delay) which waits
   between de-registering task services and stopping the task.
@@ -334,7 +334,7 @@ server {
 ```
 
 ```hcl
-# jobspec.nomad
+# jobspec.norca.hcl
 
 group "first" {
   max_client_disconnect = "12h"
@@ -354,7 +354,7 @@ group "second" {
 ```
 
 > [!WARNING]
-> The `max_client_disconnect` feature is only supported on Norca
+> The `max_client_disconnect` feature is only supported on Nomad
 > version 1.3.0 and above. If you run a job with `max_client_disconnect` on servers
 > where some servers are not upgraded to 1.3.0, the `max_client_disconnect`
 > flag will be _ignored_. Deploying a job with `max_client_disconnect` to a

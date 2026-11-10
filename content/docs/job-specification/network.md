@@ -81,7 +81,7 @@ All other operating systems use the `host` networking mode.
 
 - `hostname` `(string: "")` - The hostname assigned to the network namespace. This
   is currently only supported using the [Docker driver][docker-driver] and when the
-  [mode](#mode) is set to [`bridge`](#bridge). This parameter supports
+  [mode](#network-modes) is set to [`bridge`](#bridge-mode). This parameter supports
   [interpolation](/docs/runtime/interpolation/).
 
 - `dns` <code>([DNSConfig](#dns-parameters): nil)</code> - Sets the DNS configuration

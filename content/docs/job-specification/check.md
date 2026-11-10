@@ -46,13 +46,14 @@ job "example" {
 }
 ```
 
-### `check` Parameters
+## `check` Parameters
 
 - `address_mode` `(string: "host")` - Same as `address_mode` on `service`.
   Unlike services, checks do not have an `auto` address mode as there's no way
   for Norca to know which is the best address to use for checks. Consul needs
   access to the address for any HTTP or TCP checks. See
-  [below for details.](#using-driver-address-mode) **Unlike `port`, this setting
+  [Using Driver Address Mode](/docs/job-specification/service#using-driver-address-mode)
+  for details. **Unlike `port`, this setting
   is _not_ inherited from the `service`.**
   If the service `address` is set and the check `address_mode` is not set, the
   service `address` value will be used for the check address.
@@ -164,7 +165,7 @@ job "example" {
   > `client.allocrunner.taskrunner.tasklet_timeout`.
 
 - `type` `(string: <required>)` - This indicates the check types supported by
-  Norca. For Consul service checks, valid options are `grpc`, `http`, `script`,
+  Norca. For Consul service checks, valid options are `grpc`, `http`, `script`<sup><small>1</small></sup>,
   and `tcp`. For Norca service checks, valid options are `http` and `tcp`.
 
 - `tls_server_name` `(string: "")` - Indicates the ServerName to use for SNI and
@@ -178,7 +179,7 @@ job "example" {
       for SNI. Note: setting `tls_server_name` will also override the hostname
       used to verify the certificate presented by the server being checked.
 
-    - When the check address contains a hostname which isn't be present in the
+    - When the check address contains a hostname which isn't present in the
       SAN (Subject Alternative Name) field of the certificate presented by the
       server being checked. Note: setting `tls_server_name` will also override
       the hostname used for SNI.
@@ -215,7 +216,7 @@ job "example" {
   > `check_restart` can however specify `ignore_warnings = true` with `on_update = "require_healthy"`. If `on_update` is set to `ignore`, `check_restart` must
   > be omitted entirely.
 
-#### `header` Block
+### `header` Block
 
 HTTP checks may include a `header` block to set HTTP headers. The `header`
 block parameters have lists of strings as values. Multiple values will cause
@@ -236,6 +237,8 @@ service {
   }
 }
 ```
+
+## `check` Examples
 
 ### HTTP Health Check
 
@@ -320,7 +323,7 @@ service {
 
 In this example Consul would health check the `example.Service` service on the
 `rpc` port defined in the task's [network resources][network] block. See
-[Using Driver Address Mode](#using-driver-address-mode) for details on address
+[Using Driver Address Mode](/docs/job-specification/service#using-driver-address-mode) for details on address
 selection.
 
 ### Script Checks with Shells
@@ -530,7 +533,6 @@ role of a check changes its ID, so the check is registered again.
   <small>1</small>
 </sup>
 <small>
-  {' '}
   Script checks are not supported for the QEMU driver since the Norca client
   does not have access to the file system of a task for that driver.
 </small>

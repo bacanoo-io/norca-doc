@@ -96,7 +96,7 @@ restricted only to nodes that meet the constraint's criteria.
   values](/docs/runtime/interpolation#interpreted_node_vars).
 
 - `weight` `(integer: 50)` - Specifies a weight for the affinity. The weight is used
-  during scoring and must be an integer between -100 to 100. **Negative weights act as
+  during scoring and must be an integer between -100 and 100. **Negative weights act as
   anti affinities**, causing nodes that match them to be scored lower. Weights can be used
   when there is more than one affinity to express relative preference across them.
 
@@ -116,7 +116,7 @@ affinity {
 - `"regexp"` - Specifies a regular expression affinity against the attribute.
   The syntax of the regular expressions accepted is the same general syntax used
   by Perl, Python, and many other languages. More precisely, it is the syntax
-  accepted by RE2 and described at in the [Google RE2
+  accepted by RE2 and described in the [Google RE2
   syntax](https://golang.org/s/re2syntax).
 
   ```hcl
@@ -245,14 +245,6 @@ affinity {
 }
 ```
 
-[job]: /docs/job-specification/job/ 'Norca job Job Specification'
-[group]: /docs/job-specification/group/ 'Norca group Job Specification'
-[client-meta]: /docs/configuration/client#meta 'Norca meta Job Specification'
-[task]: /docs/job-specification/task/ 'Norca task Job Specification'
-[interpolation]: /docs/runtime/interpolation/ 'Norca interpolation'
-[node-variables]: /docs/runtime/interpolation#node-variables- 'Norca interpolation-Node variables'
-[constraint]: /docs/job-specification/constraint/ 'Norca Constraint job Specification'
-
 ### Placement Details
 
 Operators can run `norca alloc status -verbose` to get more detailed information on various
@@ -273,9 +265,17 @@ f2aa8b59-96b8-202f-2258-d98c93e360ab  0.225    -0.6               0             
 
 The placement score is affected by the following factors.
 
-- `bin-packing` - Scores nodes according to how well they fit requirements. Optimizes for using minimal number of nodes.
+- `binpack` - Scores nodes according to how well they fit requirements. Optimizes for using minimal number of nodes.
 - `job-anti-affinity` - A penalty added for additional instances of the same job on a node, used to avoid having too many instances
   of a job on the same node.
 - `node-reschedule-penalty` - Used when the job is being rescheduled. Norca adds a penalty to avoid placing the job on a node where
   it has failed to run before.
 - `node-affinity` - Used when the criteria specified in the `affinity` block matches the node.
+
+[job]: /docs/job-specification/job/ 'Norca job Job Specification'
+[group]: /docs/job-specification/group/ 'Norca group Job Specification'
+[client-meta]: /docs/configuration/client#meta 'Norca meta Job Specification'
+[task]: /docs/job-specification/task/ 'Norca task Job Specification'
+[interpolation]: /docs/runtime/interpolation/ 'Norca interpolation'
+[node-variables]: /docs/runtime/interpolation#node-variables- 'Norca interpolation-Node variables'
+[constraint]: /docs/job-specification/constraint/ 'Norca Constraint job Specification'

@@ -54,7 +54,7 @@ job "docs" {
 In the above example, the task is requesting two GPUs, from the Nvidia vendor,
 but is not specifying the specific model required. Instead it is placing a hard
 constraint that the device has at least 2 GiB of memory and that it would prefer
-to use GPUs that have at least 4 GiB. This examples shows how expressive the
+to use GPUs that have at least 4 GiB. This example shows how expressive the
 `device` block can be.
 
 > [!WARNING]
@@ -104,7 +104,7 @@ follows:
   <tbody>
     <tr>
       <td>
-        <code>{'${device.ids}'}</code>
+        <code>${device.ids}</code>
       </td>
       <td>Comma separated list of device IDs in the group</td>
       <td>
@@ -113,7 +113,7 @@ follows:
     </tr>
     <tr>
       <td>
-        <code>{'${device.type}'}</code>
+        <code>${device.type}</code>
       </td>
       <td>The type of device</td>
       <td>
@@ -122,7 +122,7 @@ follows:
     </tr>
     <tr>
       <td>
-        <code>{'${device.vendor}'}</code>
+        <code>${device.vendor}</code>
       </td>
       <td>The device's vendor</td>
       <td>
@@ -131,7 +131,7 @@ follows:
     </tr>
     <tr>
       <td>
-        <code>{'${device.model}'}</code>
+        <code>${device.model}</code>
       </td>
       <td>The device's model</td>
       <td>
@@ -140,13 +140,11 @@ follows:
     </tr>
     <tr>
       <td>
-        <code>
-          ${'{'}device.attr.&lt;property&gt;{'}'}
-        </code>
+        <code>${device.attr.&lt;property&gt;}</code>
       </td>
       <td>Property of the device</td>
       <td>
-        <code>{'${device.attr.memory} => 8 GiB'}</code>
+        <code>${device.attr.memory} =&gt; 8 GiB</code>
       </td>
     </tr>
   </tbody>
@@ -239,7 +237,7 @@ device "nvidia/gpu" {}
 
 ### Multiple Nvidia GPU
 
-This example schedules a task with a two Nvidia GPU made available.
+This example schedules a task with two Nvidia GPUs made available.
 
 ```hcl
 device "nvidia/gpu" {
@@ -300,7 +298,7 @@ device "nvidia/gpu" {
   affinity {
     attribute = "${device.attr.memory}"
     operator  = ">="
-    value     = "1500 MiB"
+    value     = "1536 MiB"
     weight    = 75
   }
 }

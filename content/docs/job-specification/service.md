@@ -77,7 +77,7 @@ Connect][connect] integration.
   check associated with the service. This can be specified multiple times to
   define multiple checks for the service. At this time, a check using the Norca
   provider supports `tcp` and `http` checks. The Consul integration supports
-  the `grpc`, `http`, `script`<sup><small>1</small></sup>, and `tcp` checks.
+  the `grpc`, `http`, `script`, and `tcp` checks.
 
 - `connect` - Configures the [Consul Connect][connect] integration. Only
   available on group services and where `provider = "consul"`.

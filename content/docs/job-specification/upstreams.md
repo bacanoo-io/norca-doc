@@ -87,9 +87,6 @@ job "countdash" {
 - `local_bind_socket_path` - `(string: "")` - The path at which to bind a Unix domain socket listener.
 - `mesh_gateway` <code>([mesh_gateway][mesh_gateway_param]: nil)</code> - Configures the mesh gateway
   behavior for connecting to this upstream.
-- `config` `(map: nil)` - Upstream configuration that is opaque to Norca and passed
-  directly to Consul. See Consul Connect documentation
-  for details. Keys and values support [runtime variable interpolation][interpolation].
 
 ### `mesh_gateway` Parameters
 

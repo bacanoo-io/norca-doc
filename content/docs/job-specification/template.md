@@ -479,7 +479,7 @@ to render the template if the variable list query returns blank/empty data.
 
 #### `nomadVar`
 
-These functions can be used to a read Norca variable, assuming the task has
+These functions can be used to read a Norca variable, assuming the task has
 access rights to the variable based on the task's [workload identity]. **If the
 path does not exist or the caller does not have access to it, the `template`
 renderer will block until the path is available.** To avoid blocking, wrap

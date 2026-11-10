@@ -170,8 +170,8 @@ job "example" {
 }
 ```
 
-The job that results from this job specification has two task groups, each one
-named for each of the two volumes. Each allocation has its own volume.
+The job that results from this job specification has two allocations of the
+`cache` task group. Each allocation has its own volume.
 
 ```shell
 $ norca job status example
@@ -180,20 +180,20 @@ ID            = example
 
 Allocations
 ID        Node ID   Task Group  Version  Desired  Status   Created  Modified
-81d32909  352c6926  cache-1     0        run      running  4s ago   3s ago
-ce6fbfc8  352c6926  cache-0     0        run      running  4s ago   3s ago
+81d32909  352c6926  cache       0        run      running  4s ago   3s ago
+ce6fbfc8  352c6926  cache       0        run      running  4s ago   3s ago
 
 $ norca volume status 'test-volume[0]'
 ...
 Allocations
 ID        Node ID   Task Group  Version  Desired  Status   Created  Modified
-ce6fbfc8  352c6926  cache-0     0        run      running  29s ago  18s ago
+ce6fbfc8  352c6926  cache       0        run      running  29s ago  18s ago
 
 $ norca volume status 'test-volume[1]'
 ...
 Allocations
 ID        Node ID   Task Group  Version  Desired  Status   Created  Modified
-81d32909  352c6926  cache-0     0        run      running  29s ago  18s ago
+81d32909  352c6926  cache       0        run      running  29s ago  18s ago
 ```
 
 [volume_mount]: /docs/job-specification/volume_mount/ 'Norca volume_mount Job Specification'

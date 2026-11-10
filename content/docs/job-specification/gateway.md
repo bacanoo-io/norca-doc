@@ -55,18 +55,18 @@ service {
   services tagged addresses should be bound to listeners in addition to the default
   listener address.
 - `envoy_gateway_bind_addresses` <code>(map<string|[address]>: nil)</code> - A map of additional addresses to be bound.
-  The keys to this map are the same of the listeners to be created and the values are
+  The keys to this map are the same as the names of the listeners to be created and the values are
   a map with two keys - `address` and `port`, that combined make the address to bind the
   listener to. These are bound in addition to the default address.
   If `bridge` networking is in use, this map is automatically populated with additional
   listeners enabling the Envoy proxy to work from inside the network namespace.
 
-```
-envoy_gateway_bind_addresses "<service>" {
-  address = "0.0.0.0"
-  port    = <port>
-}
-```
+  ```
+  envoy_gateway_bind_addresses "<service>" {
+    address = "0.0.0.0"
+    port    = <port>
+  }
+  ```
 
 - `envoy_gateway_no_default_bind` `(bool: false)` - Prevents binding to the default
   address of the gateway service. This should be used with one of the other options
@@ -237,7 +237,7 @@ job "ingress-demo" {
   datacenters = ["dc1"]
 
   # This group will have a task providing the ingress gateway automatically
-  # created by Nomad. The ingress gateway is based on the Envoy proxy being
+  # created by Norca. The ingress gateway is based on the Envoy proxy being
   # managed by the docker driver.
   group "ingress-group" {
 
@@ -261,7 +261,7 @@ job "ingress-demo" {
 
           # Consul gateway [envoy] proxy options.
           proxy {
-            # The following options are automatically set by Nomad if not
+            # The following options are automatically set by Norca if not
             # explicitly configured when using bridge networking.
             #
             # envoy_gateway_no_default_bind = true
@@ -276,7 +276,7 @@ job "ingress-demo" {
 
           # Consul Ingress Gateway Configuration Entry.
           ingress {
-            # Nomad will automatically manage the Configuration Entry in Consul
+            # Norca will automatically manage the Configuration Entry in Consul
             # given the parameters in the ingress block.
             #
             # Additional options are documented at
@@ -379,7 +379,7 @@ job "countdash-terminating" {
         gateway {
           # Consul gateway [envoy] proxy options.
           proxy {
-            # The following options are automatically set by Nomad if not explicitly
+            # The following options are automatically set by Norca if not explicitly
             # configured with using bridge networking.
             #
             # envoy_gateway_no_default_bind = true
@@ -393,7 +393,7 @@ job "countdash-terminating" {
 
           # Consul Terminating Gateway Configuration Entry.
           terminating {
-            # Nomad will automatically manage the Configuration Entry in Consul
+            # Norca will automatically manage the Configuration Entry in Consul
             # given the parameters in the terminating block.
             #
             # Additional options are documented at
@@ -473,8 +473,8 @@ job "countdash-mesh-one" {
       mode = "bridge"
 
       # A mesh gateway will require a host_network configured on at least one
-      # Nomad client that can establish cross-datacenter connections. Nomad will
-      # automatically schedule the mesh gateway task on compatible Nomad clients.
+      # Norca client that can establish cross-datacenter connections. Norca will
+      # automatically schedule the mesh gateway task on compatible Norca clients.
       port "mesh_wan" {
         host_network = "public"
       }
@@ -495,7 +495,7 @@ job "countdash-mesh-one" {
 
           # Consul gateway [envoy] proxy options.
           proxy {
-            # The following options are automatically set by Nomad if not explicitly
+            # The following options are automatically set by Norca if not explicitly
             # configured with using bridge networking.
             #
             # envoy_gateway_no_default_bind = true
@@ -582,8 +582,8 @@ job "countdash-mesh-two" {
       mode = "bridge"
 
       # A mesh gateway will require a host_network configured for at least one
-      # Nomad client that can establish cross-datacenter connections. Nomad will
-      # automatically schedule the mesh gateway task on compatible Nomad clients.
+      # Norca client that can establish cross-datacenter connections. Norca will
+      # automatically schedule the mesh gateway task on compatible Norca clients.
       port "mesh_wan" {
         host_network = "public"
       }
@@ -604,7 +604,7 @@ job "countdash-mesh-two" {
 
           # Consul gateway [envoy] proxy options.
           proxy {
-            # The following options are automatically set by Nomad if not explicitly
+            # The following options are automatically set by Norca if not explicitly
             # configured with using bridge networking.
             #
             # envoy_gateway_no_default_bind = true

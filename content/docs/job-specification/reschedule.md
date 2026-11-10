@@ -1,7 +1,7 @@
 ---
 title: "reschedule Block"
 linkTitle: "reschedule"
-description: "The \"reschedule\" block specifies the group's rescheduling strategy upon allocation failures. Norca will only attempt to reschedule failed allocations on to another node only after any local [restarts](/nomad/docs/job-specification/restart) have been exceeded."
+description: "The \"reschedule\" block specifies the group's rescheduling strategy upon allocation failures. Norca will only attempt to reschedule failed allocations on to another node only after any local [restarts](/docs/job-specification/restart/) have been exceeded."
 upstream:
   path: "website/content/docs/job-specification/reschedule.mdx"
 ---

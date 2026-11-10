@@ -67,11 +67,11 @@ If `cores` and `cpu` are both defined in the same resource block, **validation o
 ### Memory
 
 This example specifies the task requires 2 GB of RAM to operate. 2 GB is the
-equivalent of 2000 MB:
+equivalent of 2048 MB:
 
 ```hcl
 resources {
-  memory = 2000
+  memory = 2048
 }
 ```
 

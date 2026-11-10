@@ -29,7 +29,7 @@ locals {
 }
 ```
 
-With the above local value expressions, configuration elsewhere in the folder
+With the above local value expressions, configuration elsewhere in the job file
 can refer to `local.normalized_value` attributes without the need to repeatedly
 check for and handle absent attributes that would otherwise produce errors.
 
@@ -62,7 +62,7 @@ it encountered.
 
 We strongly suggest using `try` only in special local values whose expressions
 perform normalization, so that the error handling is confined to a single
-location in the folder and the rest of the folder can just use straightforward
+location in the job file and the rest of the job file can just use straightforward
 references to the normalized structure and thus be more readable for future
 maintainers.
 

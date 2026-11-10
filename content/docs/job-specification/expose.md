@@ -218,7 +218,7 @@ check {
 
 [network-to]: /docs/job-specification/network#to
 [expose-path]: /docs/job-specification/expose#path-1
-[expose]: /docs/job-specification/service#expose
+[expose]: /docs/job-specification/check#expose
 [path]: /docs/job-specification/expose#path-parameters 'Norca Expose Path Parameters'
 [port]: /docs/job-specification/network#port-parameters 'Norca Port Parameters'
 [network_interface]: /docs/configuration/client#network_interface

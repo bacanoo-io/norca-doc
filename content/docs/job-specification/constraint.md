@@ -157,7 +157,7 @@ constraint {
 - `"regexp"` - Specifies a regular expression constraint against the attribute.
   The syntax of the regular expressions accepted is the same general syntax used
   by Perl, Python, and many other languages. More precisely, it is the syntax
-  accepted by RE2 and described at in the [Google RE2
+  accepted by RE2 and described in the [Google RE2
   syntax](https://golang.org/s/re2syntax).
 
   ```hcl
@@ -309,7 +309,6 @@ constraint {
 
 [job]: /docs/job-specification/job/ 'Norca job Job Specification'
 [group]: /docs/job-specification/group/ 'Norca group Job Specification'
-[client-meta]: /docs/configuration/client#meta 'Norca meta Job Specification'
 [task]: /docs/job-specification/task/ 'Norca task Job Specification'
 [interpolation]: /docs/runtime/interpolation/ 'Norca interpolation'
 [node-variables]: /docs/runtime/interpolation#node-variables- 'Norca interpolation-Node variables'

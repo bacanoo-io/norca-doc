@@ -1,7 +1,7 @@
 ---
 title: "HCL2"
 linkTitle: "Configuration Language"
-description: "Noamd uses text files to describe infrastructure and to set variables. These text files are called Norca job specifications and are written in the HCL language."
+description: "Norca uses text files to describe infrastructure and to set variables. These text files are called Norca job specifications and are written in the HCL language."
 upstream:
   path: "website/content/docs/job-specification/hcl2/index.mdx"
 ---
@@ -17,7 +17,7 @@ messages for invalid jobs.
 
 ## HCL Parsing Context
 
-The [Nomad API uses JSON][jobs-api], not HCL, to represent Norca jobs.
+The [Norca API uses JSON][jobs-api], not HCL, to represent Norca jobs.
 When running commands like `norca job run` and `norca job plan`, the Norca CLI
 parses HCL and ultimately converts it to JSON. Because this parsing happens locally
 (i.e., where the operator is running the CLI) before job submission, there are some
@@ -125,7 +125,7 @@ use the map assignment syntax if the keys aren't valid:
 
 ```hcl
 sysctl = {
-  "net.core.somaxconn/docs/drivers/docker#sysctl" = "16384"
+  "net.core.somaxconn" = "16384"
 }
 ```
 

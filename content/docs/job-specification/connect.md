@@ -191,8 +191,8 @@ job "countdash" {
 ### Using a Gateway
 
 The following is an example service block for creating and using a connect ingress
-gateway. It includes a gateway service definition and an api service fronted by
-the gateway. Once running, the gateway can be used to reach the api service by first
+gateway. It includes a gateway service definition for an api service named
+`uuid-api` (the api service itself is not shown). Once running, the gateway can be used to reach the api service by first
 looking up the gateway Consul DNS address, e.g.
 
 ```
@@ -235,8 +235,6 @@ job "ingress-demo" {
   }
 }
 ```
-
-### Limitations
 
 [gateway]: /docs/job-specification/gateway/
 

@@ -45,7 +45,7 @@ any of these fields, please use the navigation to dive deeper.
 # job declaration per job file.
 job "docs" {
   # Specify this job should run in the region named "us". Regions
-  # are defined by the Nomad servers' configuration.
+  # are defined by the Norca servers' configuration.
   region = "us"
 
   # Spread the tasks in this job between us-west-1 and us-east-1.
@@ -83,11 +83,11 @@ job "docs" {
       }
     }
 
-    # The service block tells Nomad how to register this service
+    # The service block tells Norca how to register this service
     # with Consul for service discovery and monitoring.
     service {
       # This tells Consul to monitor the service on the port
-      # labelled "http". Since Nomad allocates high dynamic port
+      # labelled "http". Since Norca allocates high dynamic port
       # numbers, we use labels to refer to them.
       port = "http"
 
@@ -102,7 +102,7 @@ job "docs" {
     # Create an individual task (unit of work). This particular
     # task utilizes a Docker container to front a web application.
     task "frontend" {
-      # Specify the driver to be "docker". Nomad supports
+      # Specify the driver to be "docker". Norca supports
       # multiple drivers.
       driver = "docker"
 

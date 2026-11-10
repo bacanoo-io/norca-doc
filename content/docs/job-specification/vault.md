@@ -40,7 +40,7 @@ to the secret directory at `secrets/vault_token` and by injecting a `VAULT_TOKEN
 environment variable. If the Norca cluster is [configured](/docs/configuration/vault#namespace)
 to use Vault Namespaces,
 a `VAULT_NAMESPACE` environment variable will be injected whenever `VAULT_TOKEN` is set.
-This behavior can be altered using the `env` and `file` parameters.
+This behavior can be altered using the `env` and `disable_file` parameters.
 
 If Norca is unable to renew the Vault token (perhaps due to a Vault outage or
 network error), the client will attempt to retrieve a new Vault token. If successful, the
@@ -75,7 +75,7 @@ with Vault as well.**
 - `env` `(bool: true)` - Specifies if the `VAULT_TOKEN` and `VAULT_NAMESPACE`
   environment variables should be set when starting the task.
 
-- `disable_file` `(bool: false)` - Specifies if the Vault token should be
+- `disable_file` `(bool: false)` - Specifies if the Vault token should not be
   written to `secrets/vault_token`.
 
   > [!WARNING]
@@ -140,10 +140,10 @@ the task itself:
 
 ```hcl
 vault {
-  policies    = ["tls-policy", "nomad-job-policy"]
-  change_mode = "noop"
-  env         = false
-  file        = false
+  policies     = ["tls-policy", "nomad-job-policy"]
+  change_mode  = "noop"
+  env          = false
+  disable_file = true
 }
 
 template {

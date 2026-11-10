@@ -43,7 +43,7 @@ Sometimes your input data structure isn't naturally in a suitable shape for
 use in a `for_each` argument, and `flatten` can be a useful helper function
 when reducing a nested data structure into a flat one.
 
-For example, consider a folder that declares a variable like the following:
+For example, consider a job file that declares a variable like the following:
 
 ```hcl
 variable "networks" {

@@ -1,12 +1,12 @@
 ---
 title: "Local Values"
-description: "Local values assign a name to an expression that can then be used multiple times within a folder."
+description: "Local values assign a name to an expression that can then be used multiple times within a job file."
 upstream:
   path: "website/content/docs/job-specification/hcl2/locals.mdx"
 ---
 
 Local values assign a name to an expression, that can then be used multiple
-times within a folder.
+times within a job file.
 
 If [variables](/docs/job-specification/hcl2/variables/) are analogous to
 function arguments then _local values_ are comparable to a function's local

@@ -55,7 +55,7 @@ please see the [`norca alloc logs`][logs-command] command.
   the total amount of disk space needed to retain the rotated set of files,
   **Norca will return a validation error when a job is submitted.**
 
-- `disabled` `(bool: false)` - Specifies that log collection should be enabled for
+- `disabled` `(bool: false)` - Specifies that log collection should be disabled for
   this task. If set to `true`, the task driver will attach stdout/stderr of the
   task to `/dev/null` (or `NUL` on Windows). You should only disable log
   collection if your application has some other way of emitting logs, such as
