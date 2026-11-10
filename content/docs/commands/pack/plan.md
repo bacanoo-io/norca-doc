@@ -35,11 +35,11 @@ This command takes the [operation options](/docs/commands/pack#operation-options
 
 - `--diff` `(default: true)` - Show the diff between the remote and the planned job.
 
-- `--exit-code-error=<int>` `(default: 255)` - Exit code when there is an error. Also set by `NORCA_PACK_PLAN_EXIT_CODE_ERROR` (or `NORCA_PACK_PLAN_EXIT_CODE_ERROR`); the flag takes precedence.
+- `--exit-code-error=<int>` `(default: 255)` - Exit code when there is an error. Also set by `NORCA_PACK_PLAN_EXIT_CODE_ERROR`; the flag takes precedence.
 
-- `--exit-code-makes-changes=<int>` `(default: 1)` - Exit code when the plan shows changes. Also set by `NORCA_PACK_PLAN_EXIT_CODE_MAKES_CHANGES` (or `NORCA_PACK_PLAN_EXIT_CODE_MAKES_CHANGES`).
+- `--exit-code-makes-changes=<int>` `(default: 1)` - Exit code when the plan shows changes. Also set by `NORCA_PACK_PLAN_EXIT_CODE_MAKES_CHANGES`.
 
-- `--exit-code-no-changes=<int>` `(default: 0)` - Exit code when the plan shows no changes. Also set by `NORCA_PACK_PLAN_EXIT_CODE_NO_CHANGES` (or `NORCA_PACK_PLAN_EXIT_CODE_NO_CHANGES`).
+- `--exit-code-no-changes=<int>` `(default: 0)` - Exit code when the plan shows no changes. Also set by `NORCA_PACK_PLAN_EXIT_CODE_NO_CHANGES`.
 
 - `--lock=<string>` `(default: verify)` - How to handle the `pack.lock` file of the pack:
   - `verify` checks the digests of the pack and its vendored dependencies if the pack has a lock file,
@@ -47,7 +47,7 @@ This command takes the [operation options](/docs/commands/pack#operation-options
   - `update` (re)writes the lock file of a pack in a local directory,
   - and `ignore` skips the check.
 
-  Also set by `NORCA_PACK_LOCK` (or `NORCA_PACK_LOCK`). See [pack.lock](/docs/features/packages/supply-chain#packlock).
+  Also set by `NORCA_PACK_LOCK`. See [pack.lock](/docs/features/packages/supply-chain#packlock).
 
 - `--policy-override` `(default: false)` - Has no effect: Norca has no Sentinel policies, and [admission policies](/docs/features/admission-control) cannot be overridden. Accepted for compatibility.
 

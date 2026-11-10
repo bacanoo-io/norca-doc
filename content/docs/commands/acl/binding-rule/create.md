@@ -77,10 +77,10 @@ via flags detailed below.
   > `ListClaimMappings`), the key that we match against has to be prefixed with
   > `value.`
 
-- `-bind-type`: Specifies adjusts how this binding rule is applied at login time
+- `-bind-type`: Specifies how this binding rule is applied at login time
   to internal Norca objects. Valid options are `role`, `policy`, and `management`.
 
-- `-bind-name`: Specifies is the target of the binding used on selector match.
+- `-bind-name`: Specifies the target of the binding used on selector match.
   This can be lightly templated using HIL `${foo}` syntax. If the bind type is
   set to `management`, this should not be set.
 

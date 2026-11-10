@@ -73,7 +73,7 @@ that has a capability associated with the namespace.
 View the status of a namespace:
 
 ```shell
-$ norca namespace status default
+$ norca namespace status api-prod
 Name            = api-prod
 Description     = Prod API servers
 Quota           = prod
@@ -106,6 +106,6 @@ $ norca namespace status -json default
 Or use the `-t` flag to format and display the status using a Go template:
 
 ```shell-session
-$ norca namespace status -t {{.Description}} default
+$ norca namespace status -t '{{.Description}}' default
 Default shared namespace
 ```

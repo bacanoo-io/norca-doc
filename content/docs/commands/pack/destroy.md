@@ -28,7 +28,7 @@ This command takes the [operation options](/docs/commands/pack#operation-options
 
 ## Destroy options
 
-- `--client-side` `(default: false)` - Destroy the jobs of the pack from the client, as Nomad Pack does, even if the pack was installed as a release. Also set by `NORCA_PACK_CLIENT_SIDE` (or `NORCA_PACK_CLIENT_SIDE`).
+- `--client-side` `(default: false)` - Destroy the jobs of the pack from the client, as Nomad Pack does, even if the pack was installed as a release. Also set by `NORCA_PACK_CLIENT_SIDE`.
 
 - `--detach` `(default: false)` - Return immediately instead of monitoring the evaluation. The evaluation ID can be inspected with `norca eval status`.
 

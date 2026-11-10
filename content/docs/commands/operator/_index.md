@@ -23,6 +23,8 @@ Usage: `norca operator <subcommand> <subcommand> [options]`
 Run `norca operator <subcommand>` with no arguments for help on that subcommand.
 The following subcommands are available:
 
+- [`operator api`](/docs/commands/operator/api) - Query Norca's HTTP API
+
 - [`operator autopilot get-config`][get-config] - Display the current Autopilot
   configuration
 
@@ -37,6 +39,9 @@ The following subcommands are available:
 
 - [`operator metrics-store status`](/docs/commands/operator/metrics-store/status) -
   (Norca) Display the state of the metrics store of a server
+
+- [`operator client-state`](/docs/commands/operator/client-state) - Dump the
+  Norca client state
 
 - [`operator consul-kv migrate`](/docs/commands/operator/consul-kv/migrate) -
   (Norca) Copy the Consul KV from Variables to the system bus
@@ -59,11 +64,22 @@ The following subcommands are available:
 - [`operator keyring rewrap`](/docs/commands/operator/keyring-rewrap) - (Norca)
   Move the keyring to another seal
 
+- [`operator metrics`](/docs/commands/operator/metrics) - Retrieve Norca metrics
+
+- [`operator raft info`](/docs/commands/operator/raft/info) - Display info of
+  the raft log
+
 - [`operator raft list-peers`][list] - Display the current Raft peer
   configuration
 
 - [`operator raft remove-peer`][remove] - Remove a Norca server from the Raft
   configuration
+
+- [`operator raft logs`](/docs/commands/operator/raft/logs) - Display raft log
+  content
+
+- [`operator raft state`](/docs/commands/operator/raft/state) - Display raft
+  server state
 
 - [`operator root keyring list`][root_keyring_list] - List available root encryption keys
 
@@ -85,6 +101,9 @@ The following subcommands are available:
 - [`operator snapshot restore`][snapshot-restore] - Restores a snapshot of the Norca server state
 
 - [`operator snapshot inspect`][snapshot-inspect] - Inspects a snapshot of the Norca server state
+
+- [`operator snapshot state`](/docs/commands/operator/snapshot/state) - Displays
+  information about a Norca snapshot file
 
 - [`operator unseal`](/docs/commands/operator/unseal) - (Norca) Enter an unseal
   share on a server

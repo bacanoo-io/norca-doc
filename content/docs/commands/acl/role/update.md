@@ -83,7 +83,7 @@ The `acl role update` command requires an existing role's ID.
 
 ## Examples
 
-Update an existing ACL token:
+Update an existing ACL role:
 
 ```shell
 $ norca acl role update -name="example-acl-role-updated" a53b0095-c28a-6181-0586-807b82e665e4

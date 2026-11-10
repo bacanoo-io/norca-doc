@@ -30,7 +30,7 @@ This command takes the [operation options](/docs/commands/pack#operation-options
   - `update` (re)writes the lock file of a pack in a local directory,
   - and `ignore` skips the check.
 
-  Also set by `NORCA_PACK_LOCK` (or `NORCA_PACK_LOCK`). See [pack.lock](/docs/features/packages/supply-chain#packlock).
+  Also set by `NORCA_PACK_LOCK`. See [pack.lock](/docs/features/packages/supply-chain#packlock).
 
 - `--no-format` `(default: false)` - Do not format the rendered templates before printing them.
 

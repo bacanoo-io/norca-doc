@@ -15,9 +15,9 @@ For example for the following environment:
 
 ```
 NORCA_TOKEN=d4434353-c797-19e4-a14d-4068241f86a4
-NORCA_CACERT=$HOME/.nomad/ca.pem
-NORCA_CLIENT_CERT=$HOME/.nomad/cli.pem
-NORCA_CLIENT_KEY=$HOME/.nomad/client-key.pem
+NORCA_CACERT=$HOME/.norca/ca.pem
+NORCA_CLIENT_CERT=$HOME/.norca/client.pem
+NORCA_CLIENT_KEY=$HOME/.norca/client-key.pem
 NORCA_TLS_SERVER_NAME=client.global.norca
 NORCA_ADDR=https://remote.client123.internal:4646
 ```
@@ -33,9 +33,9 @@ Performing the same request using the external `curl` tool would require:
 
 ```
 curl \
-  --cacert "$HOME/.nomad/ca.pem" \
-  --cert "$HOME/.nomad/client.pem" \
-  --key "$HOME/.nomad/client-key.pem" \
+  --cacert "$HOME/.norca/ca.pem" \
+  --cert "$HOME/.norca/client.pem" \
+  --key "$HOME/.norca/client-key.pem" \
   --connect-to "client.global.norca:4646:remote.client123.internal:4646" \
   -H "X-Nomad-Token: ${NORCA_TOKEN}" \
   https://client.global.norca:4646/v1/jobs

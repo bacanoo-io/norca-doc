@@ -94,8 +94,7 @@ via CLI arguments. The `agent` command accepts the following arguments:
 
 - `-dev`: Start the agent in development mode. This enables a pre-configured
   dual-role agent (client + server) which is useful for developing or testing
-  Norca. No other configuration is required to start the agent in this mode,
-  but you may pass an optional comma-separated list of mode configurations:
+  Norca. No other configuration is required to start the agent in this mode.
 
 - `-dev-connect`: Start the agent in development mode, but bind to a public
   network interface rather than localhost for using Consul Connect. This mode
@@ -173,8 +172,7 @@ via CLI arguments. The `agent` command accepts the following arguments:
   Vault server SSL certificate.
 
 - `-vault-ca-path=<path>`: Path to a directory of PEM-encoded CA cert files used
-  to verify the Vault server SSL certificate.Whether to enable or disabled Vault
-  integration.
+  to verify the Vault server SSL certificate.
 
 - `-vault-cert-file=<path>`: The path to the certificate for Vault communication.
 

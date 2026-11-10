@@ -75,7 +75,7 @@ and `read-job` capabilities for the deployment's namespace.
 
 - `-detach`: Return immediately instead of monitoring. A new evaluation ID
   will be output, which can be used to examine the evaluation using the
-  [eval status] command
+  [eval status] command.
 
 - `-verbose`: Show full information.
 

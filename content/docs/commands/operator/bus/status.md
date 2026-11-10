@@ -40,7 +40,7 @@ capability.
 
 ```shell-session
 $ norca operator bus status
-Server       = nomad-1.global
+Server       = norca-1.global
 Cluster      = global
 Mode         = clustered
 Client URL   = nats://10.0.0.11:4649
@@ -49,7 +49,7 @@ TLS          = true
 Started      = 2026-10-30T19:02:11Z
 
 JetStream
-Meta Leader  = nomad-2.global
+Meta Leader  = norca-2.global
 Cluster Size = 3
 Streams      = 2
 Consumers    = 1
@@ -59,13 +59,13 @@ Storage      = 2.1 MiB of 4.0 GiB
 
 Streams
 Name                 Replicas  Leader          Messages  Size     Max Age  Max Bytes
-NORCA_EVENTS_global  3         nomad-2.global  4125      2.1 MiB  72h0m0s  1.0 GiB
-NORCA_PACK_PUSHES    3         nomad-2.global  2         412 B    24h0m0s  64 MiB
+NORCA_EVENTS_global  3         norca-2.global  4125      2.1 MiB  72h0m0s  1.0 GiB
+NORCA_PACK_PUSHES    3         norca-2.global  2         412 B    24h0m0s  64 MiB
 
 Routes
 Server          Address         Direction  RTT
-nomad-2.global  10.0.0.12:4650  out        412µs
-nomad-3.global  10.0.0.13:4650  in         388µs
+norca-2.global  10.0.0.12:4650  out        412µs
+norca-3.global  10.0.0.13:4650  in         388µs
 
 Connections
 Total           = 4
@@ -79,5 +79,5 @@ Bytes In/Out    = 1.2 MiB / 1.1 MiB
 Another server of the region:
 
 ```shell-session
-$ norca operator bus status -server nomad-3.global
+$ norca operator bus status -server norca-3.global
 ```

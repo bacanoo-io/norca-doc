@@ -6,8 +6,8 @@ upstream:
   path: "website/content/docs/commands/alloc/stop.mdx"
 ---
 
-The `alloc stop` command allows a user to perform an in-place restart of an
-entire allocation or individual task.
+The `alloc stop` command stops an existing allocation. When the allocation
+has been shut down, it is rescheduled.
 
 ## Usage
 

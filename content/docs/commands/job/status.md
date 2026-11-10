@@ -85,8 +85,8 @@ run the command with a job prefix instead of the exact job ID.
 
 - `-evals`: Display the evaluations associated with the job.
 
-- `-short`: Display short output. Used only when a single node is being queried.
-  Drops verbose node allocation data from the output.
+- `-short`: Display short output. Used only when a single job is being queried.
+  Drops verbose information about allocations.
 
 - `-verbose`: Show full information. Allocation create and modify times are
   shown in `yyyy/mm/dd hh:mm:ss` format.

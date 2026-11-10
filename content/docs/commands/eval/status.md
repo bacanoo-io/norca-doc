@@ -88,10 +88,7 @@ indicated by **exit code 1**.
 
 - `-monitor`: Monitor an outstanding evaluation
 - `-verbose`: Show full information.
-- `-json` : Output a list of all evaluations in JSON format. This
-  behavior is deprecated and has been replaced by `norca eval list
-  -json`. In Nomad 1.4.0 the behavior of this option will change to
-  output only the selected evaluation in JSON.
+- `-json` : Output the evaluation in its JSON format.
 - `-t` : Format and display evaluation using a Go template.
 
 ## Examples

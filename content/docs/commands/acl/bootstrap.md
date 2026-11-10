@@ -70,7 +70,7 @@ The `acl bootstrap` command can be used in two ways:
 ## Bootstrap Options
 
 - `-json`: Output the bootstrap response in JSON format.
-- `-t`: Format and display the deployments using a Go template.
+- `-t`: Format and display the bootstrap response using a Go template.
 
 ## Examples
 

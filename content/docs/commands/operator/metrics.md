@@ -62,8 +62,8 @@ norca operator metrics [options]
 
 - `-pretty`: Pretty prints the JSON output
 - `-format <format>`: Specify output format (`prometheus`)
-- `-json`: Output the allocation in its JSON format.
-- `-t`: Format and display allocation using a Go template.
+- `-json`: Output the metrics in their JSON format.
+- `-t`: Format and display the metrics using a Go template.
 
 ## Output
 

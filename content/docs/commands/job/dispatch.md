@@ -111,7 +111,7 @@ dispatching parameterized jobs.
 
 - `-detach`: Return immediately instead of monitoring. A new evaluation ID
   will be output, which can be used to examine the evaluation using the
-  [eval status] command
+  [eval status] command.
 
 - `-idempotency-token`: Optional identifier used to prevent more than one
   instance of the job from being dispatched.
@@ -194,7 +194,6 @@ Dispatch with an id prefix:
 
 ```shell
 $ norca job dispatch -id-prefix-template=config1 video-encode video-config1.json
-Jb
 Dispatched Job ID = video-encode/dispatch-config1-1485379325-cb38d00d
 Evaluation ID     = 31199841
 

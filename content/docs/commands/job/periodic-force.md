@@ -79,7 +79,7 @@ not used.
   Overrides the `NORCA_TOKEN` environment variable if set.
 
 
-## Run Options
+## Periodic Force Options
 
 - `-detach`: Return immediately instead of monitoring. A new evaluation ID
   will be output, which can be used to examine the evaluation using the

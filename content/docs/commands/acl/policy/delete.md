@@ -1,12 +1,12 @@
 ---
 title: "Command: acl policy delete"
 linkTitle: "acl policy delete"
-description: "The policy delete command is used to delete an existing ACL policies."
+description: "The policy delete command is used to delete an existing ACL policy."
 upstream:
   path: "website/content/docs/commands/acl/policy/delete.mdx"
 ---
 
-The `acl policy delete` command is used to delete an existing ACL policies.
+The `acl policy delete` command is used to delete an existing ACL policy.
 
 ## Usage
 

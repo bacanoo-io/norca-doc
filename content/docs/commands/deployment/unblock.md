@@ -8,7 +8,7 @@ upstream:
 
 The `deployment unblock` command is used to manually mark a blocked
 multiregion deployment as successful. A blocked deployment is a multiregion
-deployment within a region that has completed within a region but is waiting
+deployment within a region that has completed but is waiting
 on the other federated regions. The `deployment unblock` command can be used
 in cases where a failed peer region is unable to communicate its failed
 deployment status to other regions to force a deployment to complete.

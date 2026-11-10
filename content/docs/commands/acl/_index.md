@@ -28,7 +28,7 @@ subcommands are available:
 - [`acl binding-rule list`][bindingrulelist] - List available ACL binding rules
 - [`acl binding-rule update`][bindingruleupdate] - Update existing ACL binding rule
 - [`acl policy apply`][policyapply] - Create or update ACL policies
-- [`acl policy delete`][policydelete] - Delete an existing ACL policies
+- [`acl policy delete`][policydelete] - Delete an existing ACL policy
 - [`acl policy info`][policyinfo] - Fetch information on an existing ACL policy
 - [`acl policy list`][policylist] - List available ACL policies
 - [`acl role create`][rolecreate] - Create a new ACL role

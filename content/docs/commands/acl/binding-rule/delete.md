@@ -62,7 +62,7 @@ The `acl binding-rule delete` command requires an existing rule's ID.
 
 ## Examples
 
-Delete an existing ACL Auth Method:
+Delete an existing ACL binding rule:
 
 ```shell
 $ norca acl binding-rule delete 698fdad6-dcb3-79dd-dc72-b43374057dea

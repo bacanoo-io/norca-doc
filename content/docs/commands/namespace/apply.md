@@ -1,7 +1,7 @@
 ---
 title: "Command: namespace apply"
 linkTitle: "namespace apply"
-description: "The namespace apply command is used create or update a namespace."
+description: "The namespace apply command is used to create or update a namespace."
 upstream:
   path: "website/content/docs/commands/namespace/apply.mdx"
 ---

@@ -11,7 +11,7 @@ The `node pool list` command is used to list existing node pools.
 ## Usage
 
 ```plaintext
-norca node pool list [options] <node-pool>
+norca node pool list [options]
 ```
 
 If ACLs are enabled, this command requires a management token to view all node
@@ -141,11 +141,6 @@ $ norca node pool list -t '{{range .}}{{.Name}} [{{.Meta.env}}] - {{.Description
 all [<no value>] - Node pool with all nodes in the cluster.
 default [<no value>] - Default node pool.
 dev [development] - Node pool for dev workloads.
-prod [production] - Node pool for production workloads.
-```
-
-```shell
-$ norca node pool info -t "{{.Name}} [{{.Meta.env}}] - {{.Description}}" prod
 prod [production] - Node pool for production workloads.
 ```
 

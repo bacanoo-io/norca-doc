@@ -27,7 +27,7 @@ supports `go-getter` syntax.
 On successful validation, **exit code 0** will be returned, otherwise an **exit code
 of 1** indicates an error.
 
-The run command will set the `vault_token` of the job based on the following
+The validate command will set the `vault_token` of the job based on the following
 precedence, going from highest to lowest: the `-vault-token` flag, the
 `$VAULT_TOKEN` environment variable and finally the value in the job file.
 

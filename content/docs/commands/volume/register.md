@@ -22,8 +22,8 @@ norca volume register [options] [file]
 
 The `volume register` command requires a single argument, specifying the path
 to a file containing a valid [volume specification][volume_specification]. This
-file will be read and the job will be submitted to Norca for scheduling. If the
-supplied path is "-", the job file is read from STDIN. Otherwise it is read
+file will be read and the volume will be registered with Norca. If the
+supplied path is "-", the volume file is read from STDIN. Otherwise it is read
 from the file at the supplied path.
 
 When ACLs are enabled, this command requires a token with the
@@ -114,7 +114,7 @@ Specification][volume_specification] page.
 Not all fields can be updated after the volume is registered:
 
 * The `capacity_min` and `capacity_max` fields can be updated, so long as the
-  volumes existing capacity fits within that range. The actual capacity of the
+  volume's existing capacity fits within that range. The actual capacity of the
   volume is unchanged.
 * The `capability` blocks can be added or removed, but only if the capability is
   not currently in use by a mounted volume.

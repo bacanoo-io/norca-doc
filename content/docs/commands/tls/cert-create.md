@@ -13,7 +13,9 @@ configuration of the agents.**
 
 ## Usage
 
-Usage: `norca tls cert create [options]`
+```plaintext
+norca tls cert create [options]
+```
 
 ## Command Options
 

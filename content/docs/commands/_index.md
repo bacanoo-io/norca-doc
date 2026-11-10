@@ -101,7 +101,7 @@ flags.
 
 - `NORCA_HTTP_AUTH` - (Optional) This allows users to supply "Basic" HTTP
   authentication scheme ([RFC 7617](https://tools.ietf.org/html/rfc7617))
-  information in environments where the Nomad API is behind an authenticating
+  information in environments where the Norca API is behind an authenticating
   proxy server.
 
 #### ACL Environment Variables

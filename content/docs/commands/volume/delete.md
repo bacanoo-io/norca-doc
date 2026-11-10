@@ -84,4 +84,4 @@ When ACLs are enabled, this command requires a token with the
 ## Delete Options
 
 - `-secret`: Secrets to pass to the plugin to delete the
-  snapshot. Accepts multiple flags in the form `-secret key=value`
+  volume. Accepts multiple flags in the form `-secret key=value`

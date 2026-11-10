@@ -40,7 +40,7 @@ The project contains:
 
 - `-cluster-scoped`: Make the kind cluster-scoped instead of namespaced.
 
-- `-sdk`: The `nomad` directory of a Norca checkout. `go.mod` then replaces the
+- `-sdk`: The `norca` directory of a Norca checkout. `go.mod` then replaces the
   SDK and API modules with its `controller` and `api` directories; without it the
   replace directives are left for you to fill in, and the command prints a
   warning.

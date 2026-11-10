@@ -41,7 +41,7 @@ capability.
 
 ```shell-session
 $ norca operator metrics-store status
-Server            = nomad-1.global
+Server            = norca-1.global
 Partitions        = 14 (12 on disk)
 Disk              = 46 MiB of 4.0 GiB
 Series            = 960 of 50000

@@ -60,7 +60,7 @@ The `acl token update` command requires an existing token's accessor ID.
   Overrides the `NORCA_TOKEN` environment variable if set.
 
 
-## Create Options
+## Update Options
 
 - `-name`: Sets the human readable name for the ACL token.
 

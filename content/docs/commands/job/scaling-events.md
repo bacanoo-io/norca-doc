@@ -6,7 +6,7 @@ upstream:
   path: "website/content/docs/commands/job/scaling-events.mdx"
 ---
 
-The `job scaling-events` command is used display the recent scaling events for
+The `job scaling-events` command is used to display the recent scaling events for
 a given job.
 
 ## Usage

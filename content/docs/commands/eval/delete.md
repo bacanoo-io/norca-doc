@@ -12,9 +12,9 @@ evaluations not being processed.** During most normal and outage scenarios,
 Norca's reconciliation and state management will handle evaluations as needed.
 
 **The eval broker is expected to be paused prior to running this command and
-un-paused after.** These actions can be performed by the
-[`operator scheduler get-config`][scheduler_get_config]
-and [`operator scheduler set-config`][scheduler_set_config] commands respectively.
+un-paused after.** Both actions can be performed by the
+[`operator scheduler set-config`][scheduler_set_config] command, with
+`-pause-eval-broker=true` and `-pause-eval-broker=false` respectively.
 
 ## Usage
 
@@ -96,7 +96,7 @@ Delete an evaluation using its ID:
 
 ```shell
 $ norca eval delete 9ecffbba-73be-d909-5d7e-ac2694c10e0c
-Successfuly deleted 1 evaluation
+Successfully deleted 1 evaluation
 ```
 
 Delete all evaluations with status `pending` for the `example` job:
@@ -105,7 +105,7 @@ Delete all evaluations with status `pending` for the `example` job:
 $ norca eval delete -filter='Status == "pending" and JobID == "example"'
 Are you sure you want to delete 3 evals? [y/N] y
 
-Successfuly deleted 3 evaluations
+Successfully deleted 3 evaluations
 ```
 
 Delete all evaluations for the `system` and `service` whilst skipping all
@@ -113,8 +113,7 @@ prompts:
 
 ```shell
 $ norca eval delete -filter='Scheduler == "system" or Scheduler == "service"' -yes
-Successfuly deleted 23 evaluations
+Successfully deleted 23 evaluations
 ```
 
-[scheduler_get_config]: /docs/commands/operator/scheduler/get-config/
 [scheduler_set_config]: /docs/commands/operator/scheduler/set-config/

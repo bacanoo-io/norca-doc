@@ -166,7 +166,7 @@ changed, another user has modified the job and the plan's results are
 potentially invalid.
 ```
 
-Increase the count of an existing without sufficient cluster capacity:
+Increase the count of an existing job without sufficient cluster capacity:
 
 ```shell
 $ norca job plan example.norca.hcl

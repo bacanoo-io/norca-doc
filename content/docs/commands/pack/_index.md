@@ -129,33 +129,33 @@ Environment variables named `NORCA_PACK_VAR_<variable>` set variables as well.
 
 The commands that talk to the cluster take these options:
 
-- `--address=<addr>` - The address of the Norca server. Overrides the `NORCA_ADDR` (or `NORCA_ADDR`)
+- `--address=<addr>` - The address of the Norca server. Overrides the `NORCA_ADDR`
   environment variable if set.
 
 - `--namespace=<namespace>` - The namespace for queries and actions bound to a namespace, and the
-  namespace of releases. Overrides `NORCA_NAMESPACE` (or `NORCA_NAMESPACE`) if set.
+  namespace of releases. Overrides `NORCA_NAMESPACE` if set.
 
 - `--region=<region>` - The region of the servers to forward commands to, and the region of
-  releases. Overrides `NORCA_REGION` (or `NORCA_REGION`) if set.
+  releases. Overrides `NORCA_REGION` if set.
 
 - `--ca-cert=<path>` - Path to a PEM encoded CA cert file to verify the Norca server TLS certificate.
-  Overrides `NORCA_CACERT` (or `NORCA_CACERT`) if set.
+  Overrides `NORCA_CACERT` if set.
 
 - `--client-cert=<path>` - Path to a PEM encoded client certificate for TLS authentication to the
   Norca server. Must also specify `--client-key`. Overrides `NORCA_CLIENT_CERT` (or
   `NORCA_CLIENT_CERT`) if set.
 
 - `--client-key=<path>` - Path to an unencrypted PEM encoded private key matching the client
-  certificate from `--client-cert`. Overrides `NORCA_CLIENT_KEY` (or `NORCA_CLIENT_KEY`) if set.
+  certificate from `--client-cert`. Overrides `NORCA_CLIENT_KEY` if set.
 
 - `--tls-server-name=<name>` - The server name to use as the SNI host when connecting via TLS.
-  Overrides `NORCA_TLS_SERVER_NAME` (or `NORCA_TLS_SERVER_NAME`) if set.
+  Overrides `NORCA_TLS_SERVER_NAME` if set.
 
 - `--tls-skip-verify` - Do not verify the TLS certificate. This is highly not recommended.
-  Verification is also skipped if `NORCA_SKIP_VERIFY` (or `NORCA_SKIP_VERIFY`) is set.
+  Verification is also skipped if `NORCA_SKIP_VERIFY` is set.
 
 - `--token=<token>` - The SecretID of an ACL token to authenticate API requests with. Overrides
-  `NORCA_TOKEN` (or `NORCA_TOKEN`) if set.
+  `NORCA_TOKEN` if set.
 
 ## OCI registry options
 
@@ -183,7 +183,7 @@ options:
 
 | Variable | Meaning |
 | --- | --- |
-| `NORCA_ADDR`, `NORCA_TOKEN`, `NORCA_NAMESPACE`, `NORCA_REGION`, ... | Cluster address and credentials, as for every `norca` command (`NORCA_*` names are accepted as a fallback) |
+| `NORCA_ADDR`, `NORCA_TOKEN`, `NORCA_NAMESPACE`, `NORCA_REGION`, ... | Cluster address and credentials, as for every `norca` command |
 | `NORCA_PACK_VAR_<variable>` | Value of a pack variable |
 | `NORCA_PACK_ALLOW_UNSET_VARS` | Same as `--allow-unset-vars` |
 | `NORCA_PACK_PLAN_EXIT_CODE_NO_CHANGES`, `NORCA_PACK_PLAN_EXIT_CODE_MAKES_CHANGES`, `NORCA_PACK_PLAN_EXIT_CODE_ERROR` | Exit codes of `pack plan` |
