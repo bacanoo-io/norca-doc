@@ -248,6 +248,31 @@ The renewals of the tasks are spread by the jitter, but a CA rotation reaches ev
 once: all tasks with `change_mode = "restart"` restart within seconds of each other. Run more than one
 instance of such services, or use a signal if the application can reload its certificate.
 
+### Templates
+
+A [template](/docs/job-specification/template) of a task can read the files too: in templates the
+variables `NORCA_MTLS_CERT_FILE`, `NORCA_MTLS_KEY_FILE` and `NORCA_MTLS_CA_FILE` name the files on the
+client that renders them (the task itself sees its own paths, `/secrets/mtls/...` in a container), and the
+certificate is issued before the templates are rendered. The client renders the template again when it
+renews the certificate, after the template's `wait`, and its `change_mode` applies. This writes the
+certificate into the configuration of an application that takes it as content, for example the
+dynamic configuration of Traefik (the [traefik pack](/docs/features/packages/registry#traefik) does so
+with `mtls_backends`):
+
+```hcl
+template {
+  destination = "secrets/client.yml"
+  change_mode = "noop"
+  perms       = "0600"
+  data        = <<EOT
+certificate: |
+{{ file (env "NORCA_MTLS_CERT_FILE") | trimSpace | indent 2 }}
+key: |
+{{ file (env "NORCA_MTLS_KEY_FILE") | trimSpace | indent 2 }}
+EOT
+}
+```
+
 ## Configuration reference
 
 | Key | Type | Default | Description |

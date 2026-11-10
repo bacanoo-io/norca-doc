@@ -91,7 +91,7 @@ updating and air-gapped use are described in
 | [otel-collector](#otel-collector) | 0.1.1 | 0.1.0 | The OpenTelemetry Collector (contrib, Apache-2.0) on every node: host, Norca agent, NATS, RustFS, Forgejo, mTLS gateway, Consul and PostgreSQL metrics found through the native catalog, an OTLP receiver for the applications, export to OpenObserve trusting Norca's CA |
 | [postgres](#postgres) | 0.1.0 | 0.1.0 | A single PostgreSQL server (PostgreSQL License, referenced, never shipped): data on a host volume, superuser, application databases and a `pg_monitor` role from the built-in secret store, optional TLS with Norca's workload certificates, optional periodic dumps to S3 |
 | [rustfs](#rustfs) | 0.2.0 | 0.2.0 | RustFS (Apache-2.0) as the S3 store of the Norca backups: single node or distributed, credentials from the built-in secret store, host volumes, health check roles, optional bucket creation, optional OTLP metrics |
-| [traefik](#traefik) | 0.1.0 | – | Traefik Proxy (MIT, the official image) as the edge router of a region: entrypoints for HTTP, HTTPS, TCP and UDP edited as a table in the install form, certificates from the built-in secret store applied without a restart, routes from the tags of the native catalog and static configuration; examples for web, WebSocket, gRPC and TCP (Norca 0.3.0) |
+| [traefik](#traefik) | 0.2.0 | – | Traefik Proxy (MIT, the official image) as the edge router of a region: entrypoints for HTTP, HTTPS, TCP and UDP edited as a table in the install form, certificates from the built-in secret store applied without a restart, routes from the tags of the native catalog and static configuration; examples for web, WebSocket, gRPC and TCP (Norca 0.3.0) |
 
 The *Version* column shows the pack versions on the registry's `main` branch; the `v0.1.0` tag
 contains `mtls-gateway` 0.2.0 (its printed upstream example lacks the label of the `upstream`
@@ -430,6 +430,14 @@ catalog. The registry's `examples/traefik/` has it for a website over HTTPS (`we
 (`websocket.hcl`), gRPC to h2c backends (`grpc.hcl`) and raw TCP with TLS passthrough and UDP
 (`tcp.hcl`).
 
+With `mtls`, Traefik gets a workload certificate of [native mTLS](/docs/features/native-mtls) and
+presents it to the backends of `mtls_backends`: one servers transport `mtls-<name>` per backend, which
+trusts the trust bundle and checks the backend's DNS name `<service>.service.<namespace>.norca`. A route
+uses it with the tags `traefik.http.services.<svc>.loadbalancer.server.scheme=https` and
+`...serversTransport=mtls-<name>@file`, and an intention from the service named after the job lets
+Traefik in (`norca service intention create -allow traefik api`). The renewed certificate is applied
+without a restart. HTTP backends only (gRPC and WebSocket over HTTPS too); example `mtls.hcl`.
+
 | Variable | Default | |
 | --- | --- | --- |
 | `job_type`, `count` | `service`, `2` | `system`: one per node of the node pool |
@@ -437,6 +445,7 @@ catalog. The registry's `examples/traefik/` has it for a website over HTTPS (`we
 | `network_mode`, `host_network` | `host`, `""` | where the ports are bound |
 | `admin_port`, `dashboard`, `metrics` | `8080`, `false`, `false` | the admin entrypoint |
 | `tls_certificates`, `tls_min_version` | `[]`, `VersionTLS12` | secrets with the items cert and key |
+| `mtls`, `mtls_backends` | `false`, `[]` | native mTLS to the backends |
 | `catalog_enabled`, `catalog_namespaces` | `true`, `["default"]` | routing by service tags |
 | `dynamic_config` | `""` | static routes (YAML) |
 | `image` | `docker.io/library/traefik:v3.7.16` | the official image |
