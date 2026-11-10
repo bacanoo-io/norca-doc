@@ -180,7 +180,7 @@ grained namespace capabilities:
 
 **If you provide both a `policy` and `capabilities` list, the capabilities are
 merged.** For example, the policy below adds the `submit-job` capability to the `read`
-policy disposition, which provides the `list-job` and `read-job` capabilities:
+policy disposition, which provides the `list-jobs` and `read-job` capabilities:
 
 ```hcl
 # Allow reading jobs and submitting jobs, without allowing access
@@ -397,7 +397,7 @@ fine-grained `capabilities` field.
 The `policy` field for node pool rules can have one of the following values.
 
 - `read` allows node pools to be listed and read but not modified.
-- `write` allows node pools to be read, create, updated, and deleted.
+- `write` allows node pools to be read, created, updated, and deleted.
 - `deny` forbids node pools to be read or modified. Deny takes precedence when
   multiple policies are associated with a token.
 
@@ -451,7 +451,7 @@ The `policy` field for the agent rule can have one of the following values:
 ## Operator rules
 
 The `operator` rule controls access to the [Operator API][api_operator] such
-raft or scheduler configuration. The operator rule is optional, but you can
+as raft or scheduler configuration. The operator rule is optional, but you can
 specify only one operator rule per ACL Policy.
 
 ```hcl
@@ -593,7 +593,7 @@ capabilities are merged.
 > [!WARNING]
 > Host Volume policies are applied when attempting to _use_ a volume.
 > Regardless of this configuration, users with access to the Node API will be able
-> to list available volumes using the `norca node status` command or API call. .
+> to list available volumes using the `norca node status` command or API call.
 
 ## Plugin rules
 

@@ -11,7 +11,7 @@ broader Norca community and you are committed to maintaining the plugin,
 please file a PR to add your plugin to this page. For details on authoring a
 device plugin, please refer to the [plugin authoring guide][plugin_guide].
 
-Below is a list of community-support task drivers you can use with Norca:
+Below is a list of community-supported device plugins you can use with Norca:
 
 - [USB][usb]
 

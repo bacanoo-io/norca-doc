@@ -118,7 +118,7 @@ The `podman` driver implements the following [capabilities](/docs/concepts/plugi
   }
   ```
 
-- `command` - (Optional) The command to run when starting the container.
+- <a id="command"></a>`command` - (Optional) The command to run when starting the container.
 
   ```hcl
   config {
@@ -293,7 +293,7 @@ The `podman` driver implements the following [capabilities](/docs/concepts/plugi
   }
   ```
 
-- `network_mode` - (Optional) Set the [network mode][network-mode] for the
+- <a id="network_mode"></a>`network_mode` - (Optional) Set the [network mode][network-mode] for the
   container. By default the task uses the network stack defined in the task
   group [`network`][nomad_group_network] block. If the groups network behavior
   is also undefined, it will fallback to `bridge` in rootful mode or
@@ -440,7 +440,7 @@ namespace via `network_mode = "task:server"`.
 
 Reference [`examples/jobs/nats_pod.nomad`].
 
-A slightly different setup is demonstrated in this job. It reassembles more
+A slightly different setup is demonstrated in this job. It resembles more
 closely the idea of a `pod` by starting a `pause` task, named `pod` via a
 [`prestart`] sidecar hook.
 
@@ -464,7 +464,7 @@ namespace which is created and managed by Norca itself. Refer to Norca's
 The Podman plugin has options which may be customized in the agent's
 configuration file.
 
-- `disable_log_collection` `(bool: false)` - Setting this to `true` will
+- <a id="disable_log_collection"></a>`disable_log_collection` `(bool: false)` - Setting this to `true` will
   disable Norca logs collection of Podman tasks. If you don't rely on Norca log
   capabilities and exclusively use host based log aggregation, you may consider
   this option to disable Norca log collection overhead. **Beware that you also
@@ -514,21 +514,7 @@ configuration file.
   running as `root` or a cgroup V1 system, and
   `unix://run/user/<USER_ID>/podman/io.podman` for rootless cgroup V2 systems.
 
-- `disable_log_collection` `(bool: false)` - Setting this to `true` will
-  disable Norca logs collection of Podman tasks. If you don't rely on Norca log
-  capabilities and exclusively use host based log aggregation, you may consider
-  this option to disable Norca log collection overhead. Beware to you also lose
-  automatic log rotation.
-
-  ```hcl
-  plugin "nomad-driver-podman" {
-    config {
-      disable_log_collection = false
-    }
-  }
-  ```
-
-- `client_http_timeout` `(string: "60s")` - Default timeout used by
+- <a id="client_http_timeout"></a>`client_http_timeout` `(string: "60s")` - Default timeout used by
   `http.Client` requests.
 
   ```hcl

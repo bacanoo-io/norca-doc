@@ -51,7 +51,7 @@ The following examples only show the `capability` blocks. Remember that the
 
 ### Multiple capabilities
 
-This examples shows a volume that must satisfy multiple capability
+This example shows a volume that must satisfy multiple capability
 requirements.
 
 ```hcl

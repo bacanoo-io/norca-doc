@@ -5,8 +5,7 @@ weight: 19
 ---
 
 The design documents describe how each Norca feature is meant to work, why, and in which phases it is
-built. They were written before and during the implementation and moved here from the `docs/design/`
-directory of the [Norca repository](https://github.com/bacanoo-io/norca). Each one starts with a status
+built. They were written before and during the implementation. Each one starts with a status
 marker: *Plan*, *In progress* or *Implemented*. The status of the features themselves is in the
 [feature table](/docs/features); the feature pages describe what is available today.
 

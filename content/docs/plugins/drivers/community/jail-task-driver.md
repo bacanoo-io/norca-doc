@@ -72,36 +72,35 @@ are supported.
 
 - `Rctl` - (Optional) Set resource limits on the jail, for a list of currently supported parameters, please refer to the [Parameter Documentation][parameter-doc].
 
-      	* `Vmemoryuse`   - (Optional) Address space limit,in bytes
-      	* `Cputime`      - (Optional) CPU time, in seconds
-      	* `Datasize`     - (Optional)  data	size, in bytes
-      	* `Stacksize`    - (Optional   stack size, in bytes
-      	* `Coredumpsize` - (Optional)	   core	dump size, in bytes
-      	* `Memoryuse`    - (Optional)	   resident set size, in bytes
-      	* `Memorylocked` - (Optional)	   locked memory, in bytes
-      	* `Maxproc`      - (Optional)		   number of processes
-      	* `Openfiles`    - (Optional)	   file	descriptor table size
-      	* `Vmemoryuse`   - (Optional) 	   address space limit,in bytes
-      	* `Pseudoterminals`  - (Optional)	   number of PTYs
-      	* `Swapuse`  - (Optional)		   swap	space that may be reserved or used, in bytes
-      	* `Nthr`  - (Optional)		   number of threads
-      	* `Msgqqueued`  - (Optional) 	   number of queued SysV messages
-      	* `Msgqsize`  - (Optional)	   SysV	message	queue size, in bytes
-      	* `Nmsgq`  - (Optional)		   number of SysV message queues
-      	* `Nsem`  - (Optional)		   number of SysV semaphores
-      	* `Nsemop`  - (Optional)		   number of SysV semaphores modified in a single semop(2) call
-      	* `Nshm`  - (Optional)		   number of SysV shared memory	segments
-      	* `Shmsize`  - (Optional)		   SysV	shared memory size, in bytes
-      	* `Wallclock`  - (Optional)	   wallclock time, in seconds
-      	* `Pcpu`  - (Optional)		   %CPU, in percents of	a single CPU core
-      	* `Readbps`  - (Optional)		   filesystem reads, in	bytes per second
-      	* `Writebps`  - (Optional)	   filesystem writes, in bytes per second
-      	* `Readiops`  - (Optional)	   filesystem reads, in	operations per second
-      	* `Writeiops`  - (Optional)	   filesystem writes, in operations per	second
+  - `Vmemoryuse` - (Optional) Address space limit,in bytes
+  - `Cputime` - (Optional) CPU time, in seconds
+  - `Datasize` - (Optional) data size, in bytes
+  - `Stacksize` - (Optional) stack size, in bytes
+  - `Coredumpsize` - (Optional) core dump size, in bytes
+  - `Memoryuse` - (Optional) resident set size, in bytes
+  - `Memorylocked` - (Optional) locked memory, in bytes
+  - `Maxproc` - (Optional) number of processes
+  - `Openfiles` - (Optional) file descriptor table size
+  - `Pseudoterminals` - (Optional) number of PTYs
+  - `Swapuse` - (Optional) swap space that may be reserved or used, in bytes
+  - `Nthr` - (Optional) number of threads
+  - `Msgqqueued` - (Optional) number of queued SysV messages
+  - `Msgqsize` - (Optional) SysV message queue size, in bytes
+  - `Nmsgq` - (Optional) number of SysV message queues
+  - `Nsem` - (Optional) number of SysV semaphores
+  - `Nsemop` - (Optional) number of SysV semaphores modified in a single semop(2) call
+  - `Nshm` - (Optional) number of SysV shared memory segments
+  - `Shmsize` - (Optional) SysV shared memory size, in bytes
+  - `Wallclock` - (Optional) wallclock time, in seconds
+  - `Pcpu` - (Optional) %CPU, in percents of a single CPU core
+  - `Readbps` - (Optional) filesystem reads, in bytes per second
+  - `Writebps` - (Optional) filesystem writes, in bytes per second
+  - `Readiops` - (Optional) filesystem reads, in operations per second
+  - `Writeiops` - (Optional) filesystem writes, in operations per second
 
 ## Networking
 
-The job spec could specify the `Ip4addr` parameter to add the jail's ip address to an specific interface at jail
+The job spec could specify the `Ip4_addr` parameter to add the jail's ip address to a specific interface at jail
 startup or the `Vnet` parameter to create a virtual network stack. Please refer to [JAIL(8)][jail(8)] for more details.
 
 - `vnet jail` - Example taken from Lucas, Michael W. FreeBSD Mastery: Jails (IT Mastery Book 15).
@@ -136,7 +135,7 @@ startup or the `Vnet` parameter to create a virtual network stack. Please refer 
 - 64-bit FreeBSD 12.0-RELEASE host
 - The FreeBSD's Norca binary
 - The jail-task-driver binary placed in the [plugin_dir][plugin_dir] directory.
-- If resource control is going be used then [RACCT][racct-doc] must be enabled
+- If resource control is going to be used then [RACCT][racct-doc] must be enabled
 
 [jail-task-driver]: https://github.com/cneira/jail-task-driver/releases
 [jail-task-guide]: https://github.com/cneira/jail-task-driver#installation

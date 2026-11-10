@@ -197,7 +197,7 @@ Backups are protected in two layers: storage-side encryption (for example S3 SSE
 
 | Mode | How it works | Restore from the UI | When recommended |
 | --- | --- | --- | --- |
-| `kms` | Envelope encryption: a new data key per backup, wrapped by the cloud's KMS. The server is granted only the `GenerateDataKey` and `Decrypt` permissions. | Yes, the server can decrypt through the KMS | Default, for day-to-day operation |
+| `kms` | Envelope encryption: a new data key per backup, wrapped by the cloud's KMS. The server is granted only the `GenerateDataKey` and `Decrypt` permissions. | Yes, the server can decrypt through the KMS | For day-to-day operation (reserved, not implemented yet; `age` is the default) |
 | `age` | The `age` format, public-key encryption. The server knows only the public key; the private key is offline, for example in a vault. | Only if the private key is supplied temporarily for the restore (from the CLI, or in the configuration of a server designated for this) | For a disaster recovery copy that not even a compromised cluster can decrypt |
 
 **Recommended combination:** the primary destination in `kms` mode (for browsing and restoring from the UI), the secondary destination, in another cloud, in `age` mode. A compromised region can then reach its own KMS backups but not the disaster recovery copy. For this, the `encryption` block can also be specified per destination.

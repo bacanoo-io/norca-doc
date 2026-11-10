@@ -25,7 +25,7 @@ This driver is based on the Norca [Java driver](/docs/drivers/java/).
 3. Create a plugin dir (unless you already have one for your Norca installation): `mkdir plugins`
 4. Copy the corresponding binary from the `bin` folder, for example: `cp ./bin/java-rookout-linux-x64 plugins/java-rookout`
 5. Make sure that the driver has execution permission: `chmod +x ./plugins/java-rookout`
-6. When running the Norca agent, be sure to set the plugins dir accordingly, for example: `sudo nomad agent -dev -plugin-dir=/home/user/rookout-nomad-driver/plugins`
+6. When running the Norca agent, be sure to set the plugins dir accordingly, for example: `sudo norca agent -dev -plugin-dir=/home/user/rookout-nomad-driver/plugins`
 
 ## Task Configuration
 

@@ -50,7 +50,7 @@ The IIS task driver supports the following parameters:
   - `hostname` (string) - (Optional) IIS hostname for a binding.
   - `ipaddress` (string) - (Optional). `*` (default). IIS allows a binding to specify the IP Address being sent out.
   - `resource_port` (string) - (Optional) Use a label from an established network block port. It is recommended to use this approach over using `port`.
-  - `port` (number) - (Optional) Specify a static port to use for the website. A port must be specified between `resource_port` or `port`. Ports set this way will not be recognized by nomad.
+  - `port` (number) - (Optional) Specify a static port to use for the website. A port must be specified between `resource_port` or `port`. Ports set this way will not be recognized by Norca.
   - `type` (string) - (Optional) Specifies which binding type IIS should use such as `http` or `https`.
   - `cert_hash` (string) - (Optional) For SSL support, supply the cert hash here of a cert installed on the system.
 
@@ -71,7 +71,7 @@ relies on IIS to manage the networking for Windows IIS website tasks.
 
 - The Norca IIS driver binary ([build instructions][nomad-driver-iis])
 
-## Plugin Options ((#plugin_options))
+## Plugin Options {#plugin_options}
 
 - `enabled` - The `IIS` driver may be disabled on hosts by setting this option to `false` (defaults to `true`).
 
@@ -82,7 +82,7 @@ syntax][plugin] is shown below:
 
 ```hcl
 plugin "win_iis" {
-  client {
+  config {
     enabled = true
     stats_interval = "30s"
   }

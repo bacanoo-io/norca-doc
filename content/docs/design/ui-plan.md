@@ -10,7 +10,7 @@ status: "In progress"
 
 Norca's UI gets a new information architecture, an overview dashboard, cross-region views, and pages for the planned features (backup, packages, objects, quotas, admission, networking, scaling, multiregion deployment). The visual base is Tabler (MIT), through our own Ember component layer. The visual mockup is the clickable realization of this plan, with real Tabler CSS.
 
-In the mockup, the UI's working name is **Norca**. The "Nomad" name is a trademark; for public distribution the product name must be finalized together with the rebranding.
+In the mockup, the UI's name is **Norca**, the product name decided on 2026-10-24 (see the open questions).
 
 ## Contents
 

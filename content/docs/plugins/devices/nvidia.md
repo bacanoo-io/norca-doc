@@ -86,7 +86,7 @@ The Nvidia device plugin is used to expose Nvidia GPUs to Norca.
 
 ## Runtime Environment
 
-The `nvidia-gpu` device plugin exposes the following environment variables:
+The `nomad-device-nvidia` device plugin exposes the following environment variables:
 
 - `NVIDIA_VISIBLE_DEVICES` - List of Nvidia GPU IDs available to the task.
 

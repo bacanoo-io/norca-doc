@@ -49,7 +49,7 @@ by Norca, and handles mTLS communication to the counting service.
 
 ### Consul
 
-The Consul service mesh integration with Norca requires Consul 1.6 or
+The Consul service mesh integration with Norca requires Consul 1.8 or
 later. The Consul agent can be
 run in dev mode with the following command:
 

@@ -6,10 +6,10 @@ upstream:
   path: "website/content/plugins/devices/index.mdx"
 ---
 
-Norca has a plugin system for defining task drivers. External device driver
+Norca has a plugin system for defining device drivers. External device driver
 plugins will have the same user experience as built in devices.
 
-Below is a list of official external task drivers you can use with Norca:
+Below is a list of official external device plugins you can use with Norca:
 
 - [Nvidia][nvidia]
 

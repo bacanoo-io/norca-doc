@@ -178,7 +178,7 @@ config {
 }
 ```
 
-- `host_network` ((#host_network)) - (Optional) `true` or `false` (default)
+- <a id="host_network"></a>`host_network` - (Optional) `true` or `false` (default)
   Enable host network. This is equivalent to `--net=host` in docker.
 
 ```hcl
@@ -359,7 +359,7 @@ A [`service`] block can be added to your job spec, to enable service discovery.
 
 The service block instructs Norca to register a service with Consul.
 
-## Authentication ((#authentication))
+## Authentication {#authentication}
 
 `auth` block allow you to set credentials for your private registry e.g. if you want
 to pull an image from a private repository in docker hub.
@@ -378,7 +378,7 @@ auth {
 }
 ```
 
-## Plugin Options ((#plugin_options))
+## Plugin Options {#plugin_options}
 
 - `enabled` - (Optional) The `containerd` driver may be disabled on hosts by
   setting this option to `false` (defaults to `true`).

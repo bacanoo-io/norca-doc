@@ -38,7 +38,7 @@ The `usb` device plugin exposes the following environment variables:
 In order to use the `usb` device plugin the following prerequisites must be
 met:
 
-1. GNU/Linux i368/amd64/armv7/arm64 (Other Architectures and OS may work but
+1. GNU/Linux i386/amd64/armv7/arm64 (Other Architectures and OS may work but
    have not been tested)
 2. [libusb-1.0](https://github.com/libusb/libusb/wiki) installed
 
@@ -112,7 +112,7 @@ page](https://gitlab.com/CarbonCollins/nomad-usb-device-plugin/-/issues/new?issu
 
 For a full list of available class, subclass, and protocol codes you can see
 the [usb-if-defined-class-codes](https://www.usb.org/defined-class-codes) page
-on the usb
+on the USB-IF website.
 
 ### USB Vendors & Products
 

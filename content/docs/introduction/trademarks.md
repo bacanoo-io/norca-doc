@@ -16,8 +16,8 @@ only to describe the origin of the code, compatibility, or integrations with tho
 - The name of the project, the binary and the branding do not contain these names. The binary is
   `norca`; `nomad` is only a documented [compatibility alias](/docs/introduction/compatibility#the-norca-binary-and-the-nomad-alias)
   that users can create themselves.
-- "Nomad" is kept where it names a compatibility interface: the Nomad 1.6.5 HTTP API, the `NORCA_*`
-  environment variables, the `X-Nomad-Token` header, metric names and the `nomad` service provider.
+- "Nomad" is kept where it names a compatibility interface: the Nomad 1.6.5 HTTP API, the
+  `X-Nomad-Token` header, metric names and the `nomad` service provider.
 - No logos, icons or design of HashiCorp products are used, in this site or in the Norca web UI.
 - Features of Norca are not named after HashiCorp products and are not described as versions of
   HashiCorp Enterprise features.

@@ -10,7 +10,7 @@ volumes using the [`volume create`] and [`volume register`] commands and the
 [`PUT /v1/volume/csi/:volume_id/create`][api_volume_create] and [`PUT
 /v1/volume/csi/:volume_id`][api_volume_register] API endpoints.
 
-Some attributes are only be supported by specific operation, while others may
+Some attributes are only supported by specific operations, while others may
 have a different meaning for each action, so read the documentation for each
 attribute carefully. The section [Differences Between Create and
 Register](#differences-between-create-and-register) provides a summary of the
@@ -80,25 +80,25 @@ parameters {
 - `type` `(string: <required>)` - The type of volume. Currently only `"csi"`
   is supported.
 
-- `external_id` `(string: <required>)` - The ID of the physical volume from
+- <a id="external_id"></a>`external_id` `(string: <required>)` - The ID of the physical volume from
   the storage provider. For example, the volume ID of an AWS EBS volume or
   Digital Ocean volume. Only allowed on **volume registration**.
 
 - `plugin_id` `(string: <required>)` - The ID of the [CSI plugin][csi_plugin]
   that manages this volume.
 
-- `snapshot_id` `(string: <optional>)` - If the storage provider supports
+- <a id="snapshot_id"></a>`snapshot_id` `(string: <optional>)` - If the storage provider supports
   snapshots, the external ID of the snapshot to restore when creating this
   volume. If omitted, the volume will be created from scratch. The
   `snapshot_id` cannot be set if the `clone_id` field is set. Only allowed on
   **volume creation**.
 
-- `clone_id` `(string: <optional>)` - If the storage provider supports cloning,
+- <a id="clone_id"></a>`clone_id` `(string: <optional>)` - If the storage provider supports cloning,
   the external ID of the volume to clone when creating this volume. If omitted,
   the volume will be created from scratch. The `clone_id` cannot be set if the
   `snapshot_id` field is set. Only allowed on **volume creation**.
 
-- `capacity_min` `(string: <optional>)` - Option for requesting a minimum
+- <a id="capacity_min"></a>`capacity_min` `(string: <optional>)` - Option for requesting a minimum
   capacity, in bytes. The capacity of a volume may be the physical size of a
   disk, or a quota, depending on the storage provider. The specific size of the
   resulting volume will be somewhere between `capacity_min` and `capacity_max`;
@@ -107,7 +107,7 @@ parameters {
   value. Accepts human-friendly suffixes such as `"100GiB"`. This field may not
   be supported by all storage providers. Only allowed on **volume creation**.
 
-- `capacity_max` `(string: <optional>)` - Option for requesting a maximum
+- <a id="capacity_max"></a>`capacity_max` `(string: <optional>)` - Option for requesting a maximum
   capacity, in bytes. The capacity of a volume may be the physical size of a
   disk, or a quota, depending on the storage provider. The specific size of the
   resulting volume will be somewhere between `capacity_min` and `capacity_max`;
@@ -137,7 +137,7 @@ parameters {
   details of these parameters are specific to each storage provider, so consult
   the specific plugin documentation for more information.
 
-- `context` <code>(map<string|string>:nil)</code> - An optional key-value map
+- <a id="context"></a>`context` <code>(map<string|string>:nil)</code> - An optional key-value map
   of strings passed directly to the CSI plugin to validate the volume. The
   details of these parameters are specific to each storage provider, so consult
   the specific plugin documentation for more information. Only allowed on
@@ -164,7 +164,7 @@ The `volume register` command allows updating a volume definition. **But not all
 fields can be updated after the volume is registered:**
 
 * The `capacity_min` and `capacity_max` fields can be updated, so long as the
-  volumes existing capacity fits within that range. The actual capacity of the
+  volume's existing capacity fits within that range. The actual capacity of the
   volume is unchanged.
 * The `capability` blocks can be added or removed, but only if the capability is
   not currently in use by a mounted volume.

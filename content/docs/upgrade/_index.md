@@ -15,12 +15,12 @@ outage. However, there are some restrictions to be aware of before upgrading:
   Upgrading 2 point releases (for example, from v1.4.0 to v1.6.0) may work but
   is untested and unsupported. For upgrades between Norca versions, see [upgrades](/docs/operations/upgrades).
 
-  - **Norca does _not_ support downgrading at this time.** Downgrading clients
-    requires draining allocations and removing the [data directory][data_dir].
-    Downgrading servers safely requires re-provisioning the cluster.
+- **Norca does _not_ support downgrading at this time.** Downgrading clients
+  requires draining allocations and removing the [data directory][data_dir].
+  Downgrading servers safely requires re-provisioning the cluster.
 
-  - New features are unlikely to work correctly until all nodes have been
-    upgraded.
+- New features are unlikely to work correctly until all nodes have been
+  upgraded.
 
 - When upgrading a Norca Client, if it takes longer than the
   [`heartbeat_grace`][heartbeat_grace] (10s by default) period to restart, all

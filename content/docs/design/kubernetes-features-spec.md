@@ -36,7 +36,7 @@ Code references are to the Nomad v1.6.5 source code and were verified at the tim
 
 ## Common principles
 
-**State in Raft.** Every new object (quota, admission policy, network rule, disruption budget) goes through the Raft log into the memdb state store (`norca/state/schema.go`). No separate database is needed. The rationale is in the SQLite section of the development plan.
+**State in Raft.** Every new object (quota, admission policy, network rule, disruption budget) goes through the Raft log into the memdb state store (`norca/state/schema.go`). No separate database is needed.
 
 **New Raft message types.** The new write operations get new `MessageType` values at the end of the existing enumeration in `norca/structs/structs.go`. Old servers can ignore an unknown type for messages marked with the `IgnoreUnknownTypeFlag` (128) bit. The new types must be sent with this flag wherever ignoring them is safe.
 
@@ -651,7 +651,7 @@ Level C is dropped: node-to-node identity comes from native mTLS (see the decisi
 
 ### Decision point
 
-Phase 5 of [consul-independence-plan.md](/docs/design/consul-independence-plan) (native mTLS, `ServiceIntention`) solves the main problem of level C, identifying the sender in the presence of address translation, on a certificate basis. Its first two steps (per-region CA, workload certificates in "app" mode, `ServiceIntention` objects and the `api/mtls` Go library) are implemented; enforcement without application changes waits for the Envoy sidecar (step 3). Once it is done, instead of the IP-based variant of level C, node-to-node control is built on native mTLS, and network rules can narrow to levels A and B (egress and local ingress).
+Phase 5 of [consul-independence-plan.md](/docs/design/consul-independence-plan) (native mTLS, `ServiceIntention`) solves the main problem of level C, identifying the sender in the presence of address translation, on a certificate basis. Its three steps (per-region CA, workload certificates in "app" mode, `ServiceIntention` objects and the `api/mtls` Go library; enforcement without application changes through the Envoy sidecar of step 3) are implemented. With it, instead of the IP-based variant of level C, node-to-node control is built on native mTLS, and network rules can narrow to levels A and B (egress and local ingress).
 
 If Consul stays part of the stack, allocation-level control between nodes is already solved by Consul intentions on an identity basis, and level C can be dropped. In that case levels A and B (egress and local ingress) are still useful as a complement, because Consul controls only the traffic passing through the proxy.
 

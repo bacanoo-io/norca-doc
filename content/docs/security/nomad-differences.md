@@ -6,8 +6,7 @@ weight: 1
 ---
 
 Norca keeps the API and the ACL system of Nomad v1.6.5, but two of its access checks are stricter.
-Both matter only with ACLs enabled. Scripts and tools written for a Nomad v1.6.5 cluster may need a
-different token when they run against Norca.
+Both matter only with ACLs enabled.
 
 | Difference | What to do |
 | --- | --- |
@@ -29,7 +28,7 @@ workload identities. Requests without a token are still evaluated with the anony
 [client node identity](/docs/concepts/acl#client-node-identity).
 
 **What to do:** scripts, tools and integrations that send a node secret ID as `X-Nomad-Token` (or
-`NORCA_TOKEN`/`NORCA_TOKEN`) need an ACL token with a policy for what they do; tasks use their
+`NORCA_TOKEN`) need an ACL token with a policy for what they do; tasks use their
 [workload identity](/docs/concepts/workload-identity). The clients' own use of their secret ID
 (registration, allocation updates, service registrations, intentions, mTLS certificates, the catalog
 of the built-in DNS server, drain on shutdown) works as before.

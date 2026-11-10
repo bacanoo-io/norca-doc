@@ -61,7 +61,7 @@ The `docker` driver supports the following configuration in the job spec. **Only
   config {
     args = [
       "-bind", "${NORCA_PORT_http}",
-      "${nomad.datacenter}",
+      "${node.datacenter}",
       "${MY_ENV}",
       "${meta.foo}",
     ]
@@ -379,7 +379,7 @@ config {
   ```hcl
   config {
     volumes = [
-      # Use named volume created outside nomad.
+      # Use named volume created outside Norca.
       "name-of-the-volume:/path/in/container"
     ]
     # Name of the Docker Volume Driver used by the container
@@ -644,7 +644,7 @@ client {
 plugin "docker" {
   config {
     auth {
-      # Nomad will prepend "docker-credential-" to the helper value and call
+      # Norca will prepend "docker-credential-" to the helper value and call
       # that script name.
       helper = "ecr-login"
     }
@@ -654,7 +654,7 @@ plugin "docker" {
 
 > [!CAUTION]
 > **Be Careful!** At this time these credentials are stored in Norca in plain
-> text. Secrets management will be added in a later release.
+> text.
 
 ## Networking
 
@@ -808,7 +808,7 @@ For example, on Ubuntu you can use the `usermod` command to add the `norca`
 user to the `docker` group so you can run Norca without root:
 
 ```shell
-$ sudo usermod -G docker -a nomad
+$ sudo usermod -G docker -a norca
 ```
 
 For the best performance and security features you should use recent versions
@@ -832,9 +832,9 @@ plugin "docker" {
     }
 
     tls {
-      cert = "/etc/nomad/nomad.pub"
-      key  = "/etc/nomad/nomad.pem"
-      ca   = "/etc/nomad/nomad.cert"
+      cert = "/etc/norca/norca.pub"
+      key  = "/etc/norca/norca.pem"
+      ca   = "/etc/norca/norca.cert"
     }
 
     extra_labels = ["job_name", "job_id", "task_group_name", "task_name", "namespace", "node_name", "node_id"]
@@ -1134,8 +1134,8 @@ job "docs" {
   # Require docker version higher than 1.2.
   constraint {
     attribute = "${attr.driver.docker.version}"
-    operator  = ">"
-    version   = "1.2"
+    operator  = "version"
+    value     = "> 1.2"
   }
 }
 ```

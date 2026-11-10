@@ -95,7 +95,7 @@ task "virtual" {
   }
 
   # Specifying an artifact is required with the "qemu"
-  # driver. This is the # mechanism to ship the image to be run.
+  # driver. This is the mechanism to ship the image to be run.
   artifact {
     source = "https://internal.file.server/linux.img"
 
@@ -103,6 +103,7 @@ task "virtual" {
       checksum = "md5:123445555555555"
     }
   }
+}
 ```
 
 ## Capabilities
@@ -137,7 +138,7 @@ Here is an example of using these properties in a job file:
 job "docs" {
   # Only run this job where the qemu version is higher than 1.2.3.
   constraint {
-    attribute = "${driver.qemu.version}"
+    attribute = "${attr.driver.qemu.version}"
     operator  = ">"
     value     = "1.2.3"
   }

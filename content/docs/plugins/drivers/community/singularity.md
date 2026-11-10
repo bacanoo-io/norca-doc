@@ -72,7 +72,7 @@ The `Singularity` driver supports the following configuration in the job spec:
   }
   ```
 
-- [`binds`][bind] - (Optional) A user-bind path specification. This spec has the format `src[:dest[:opts]]`, where `src` and
+- [`bind`][bind] - (Optional) A user-bind path specification. This spec has the format `src[:dest[:opts]]`, where `src` and
   `dest` are outside and inside paths. If `dest` is not given, it is set equal to `src`.
   Mount options ('opts') may be specified as `'ro'` (read-only) or `'rw'` (read/write, which
   is the default). Multiple bind paths can be given by a comma separated list.
@@ -139,7 +139,7 @@ The `Singularity` driver requires the following:
 - The Singularity driver binary placed in the [plugin_dir][plugin_dir] directory.
 - [`Singularity`][singularity] v3.1.1+ to be installed
 
-## Plugin Options ((#plugin_options))
+## Plugin Options {#plugin_options}
 
 - `enabled` - The `Singularity` driver may be disabled on hosts by setting this option to `false` (defaults to `true`).
 
@@ -152,7 +152,7 @@ syntax][plugin] is shown below:
 plugin "nomad-driver-Singularity" {
   config {
     enabled = true
-    singularity_path = "/var/lib/singularity"
+    singularity_cache = "/var/lib/singularity"
   }
 }
 ```
@@ -169,8 +169,7 @@ The `Singularity` driver will set the following client attributes:
 
 ## Resource Isolation
 
-This driver supports CPU and memory isolation via the `Singularity` cgroups feature. Network
-isolation is supported via `--net` and `--network` feature (Singularity v3.1.1+ required).
+This driver supports CPU and memory isolation via the `Singularity` cgroups feature.
 
 [singularity-driver]: https://github.com/sylabs/nomad-driver-singularity
 [singularity_man]: https://linuxcontainers.org/Singularity/manpages/man5/Singularity.container.conf.5.html#lbAM

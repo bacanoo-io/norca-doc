@@ -74,7 +74,7 @@ The `nspawn` driver supports the following configuration in the job spec:
   settings defined in this block. Structure is documented below.
 
 - [`pivot_root`](https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html#--pivot-root=) -
-  (Optional) Pivot the specified directory to the be containers root directory.
+  (Optional) Pivot the specified directory to be the container's root directory.
 
 - [`resolv_conf`](https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html#--resolv-conf=) -
   (Optional) Configure how `/etc/resolv.conf` is handled inside the container.

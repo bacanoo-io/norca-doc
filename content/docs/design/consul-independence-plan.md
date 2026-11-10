@@ -6,7 +6,7 @@ status: "In progress"
 
 **Status:** In progress · 2026-10-25 (phases 1–4 and 6 implemented; phase 5, native mTLS: steps 1–3 implemented, tested against Envoy 1.39 and 1.40) · Starting point: Nomad v1.6.5 (MPL 2.0) · Related documents: [development plan](/docs/design/development-plan), [kubernetes-features-spec.md](/docs/design/kubernetes-features-spec)
 
-One of Nomad's biggest practical drawbacks is that service discovery, DNS and the service mesh require Consul to be installed and operated separately. **The goal is that most users no longer need Consul**, while external tools built on the Consul API (Traefik, Prometheus and many others) keep working unchanged or through a native Nomad integration. Anyone who needs a full service mesh can still use Consul, but Nomad installs and manages it.
+One of Nomad's biggest practical drawbacks is that service discovery, DNS and the service mesh require Consul to be installed and operated separately. **The goal is that most users no longer need Consul**, while external tools built on the Consul API (Traefik, Prometheus and many others) keep working unchanged or through a native Nomad integration. Anyone who needs a full service mesh can still use Consul, but Norca installs and manages it.
 
 ## Contents
 
@@ -141,7 +141,7 @@ Every Nomad client runs a DNS server that answers from the native catalog, so ap
 ### How it works
 
 - **Local cache:** the client keeps the catalog for its own region up to date by subscribing to the existing `Service` event topic, so a DNS answer does not require a server request. For requests aimed at another region it caches for a short time.
-- **Reachability:** the client listens on `127.0.0.1:8600` (Consul's default DNS port, which also simplifies migration). In `bridge` network mode the client automatically writes the bridge address as the nameserver into the allocations' `resolv.conf`, for the `.nomad` (and optionally `.consul`) zone. **Deferred (decided 2026-10-24):** `resolv.conf` has no port field and cannot be restricted to one zone, so this would need a root-owned listener on `<bridge IP>:53` with mandatory upstream recursors — an architecture change. For now workloads reach the catalog through templates, the Task API and environment variables, and the DNS server is used on the host.
+- **Reachability:** the client listens on `127.0.0.1:8600` (Consul's default DNS port, which also simplifies migration). In `bridge` network mode the client automatically writes the bridge address as the nameserver into the allocations' `resolv.conf`, for the `.norca` (and optionally `.consul`) zone. **Deferred (decided 2026-10-24):** `resolv.conf` has no port field and cannot be restricted to one zone, so this would need a root-owned listener on `<bridge IP>:53` with mandatory upstream recursors — an architecture change. For now workloads reach the catalog through templates, the Task API and environment variables, and the DNS server is used on the host.
 - **Recursion:** requests outside its own zone are forwarded to the configured recursive nameservers, or rejected.
 - **TTL:** default 5 s, configurable.
 - **Authorization:** for DNS answers the client uses a configured read-only token, which can be restricted per namespace.
@@ -463,7 +463,7 @@ The `consul` pack of the pack registry (`packs/consul/` of the [Norca pack regis
 - Provisional defaults (reversible): `consul_version = "2.1.0"`, `datacenter = "dc1"`, `image_registry = "docker.io"` without a default digest, `snapshot_upload_image = "docker.io/amazon/aws-cli:2.27.0"`, hourly snapshots.
 - Not included: automatic certificate renewal and key rotation (a later Consul operator), WAN federation between regions, a DNS token for Consul DNS.
 
-README feature table row after the merge: "Service discovery without Consul: native mTLS, managed Consul install" — managed Consul install available (phase 6: `consul` pack installing the official, user-accepted BSL release with automated gossip/TLS/ACL bootstrap, rolling upgrades and S3 snapshots); native mTLS (phase 5) still planned.
+README feature table row after the merge: "Service discovery without Consul: native mTLS, managed Consul install" — managed Consul install available (phase 6: `consul` pack installing the official, user-accepted BSL release with automated gossip/TLS/ACL bootstrap, rolling upgrades and S3 snapshots); native mTLS (phase 5) available (steps 1–3 implemented).
 
 ## Migration from Consul
 

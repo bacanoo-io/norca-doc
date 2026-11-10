@@ -211,9 +211,9 @@ Here is an example of using these properties in a job file:
 
 ```hcl
 job "docs" {
-  # Only run this job where the rkt version is higher than 0.8.
+  # Only run this job where the rkt version is higher than 1.2.
   constraint {
-    attribute = "${driver.rkt.version}"
+    attribute = "${attr.driver.rkt.version}"
     operator  = ">"
     value     = "1.2"
   }

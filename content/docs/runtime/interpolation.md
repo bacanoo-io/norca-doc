@@ -1,15 +1,9 @@
 ---
 title: "Variable Interpolation"
-description: "Learn about the Norca's interpolation and interpreted variables."
+description: "Learn about Norca's interpolation and interpreted variables."
 upstream:
   path: "website/content/docs/runtime/interpolation.mdx"
 ---
-
-Norca supports interpreting two classes of variables: node attributes and
-runtime environment variables. Node attributes are interpretable in constraints,
-task environment variables, and certain driver fields. Runtime environment
-variables are not interpretable in constraints because they are only defined
-once the scheduler has placed them on a particular node.
 
 Norca supports interpreting two classes of variables: [node attributes](#interpreted_node_vars)
 and [runtime environment variables](#interpreted_env_vars). Node attributes are
@@ -82,7 +76,9 @@ EOT
 }
 ```
 
-## Node Attributes ((#interpreted_node_vars, #node-variables-))
+<a id="node-variables-"></a><a id="node-attributes"></a>
+
+## Node Attributes {#interpreted_node_vars}
 
 Below is a full listing of node attributes that are interpretable. These
 attributes are interpreted by **both** constraints and within the task and
@@ -137,7 +133,7 @@ job "docs" {
   # This will restrict the job to only run on clients with 4 or more cores.
   # Note: you may also declare a resource requirement for CPU for a task.
   constraint {
-    attribute = "${cpu.numcores}"
+    attribute = "${attr.cpu.numcores}"
     operator  = ">="
     value     = "4"
   }
@@ -150,7 +146,7 @@ job "docs" {
 }
 ```
 
-## Environment Variables ((#interpreted_env_vars))
+## Environment Variables {#interpreted_env_vars}
 
 The following are runtime environment variables that describe the environment
 the task is running in. These are only defined once the task has been placed on
@@ -160,7 +156,7 @@ Environment variables should be enclosed in brackets `${...}` for
 interpolation or accessed using the `env` function inside the template
 block—`{{env "..."}}`
 
-### Dots in Variables ((#dots_in_vars))
+### Dots in Variables {#dots_in_vars}
 
 Norca interprets dots in names as object notation. **This causes names that have
 multiple consecutive dots to be considered invalid.** For example, an environment

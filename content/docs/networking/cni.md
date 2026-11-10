@@ -1,7 +1,7 @@
 ---
 title: "Container Network Interface (CNI)"
 linkTitle: "CNI"
-description: "Learn about Norca's runtime environment variables, interpolation, caveats, and more."
+description: "Learn how Norca uses Container Network Interface (CNI) plugins to schedule tasks with specialty network configurations."
 upstream:
   path: "website/content/docs/networking/cni.mdx"
 ---

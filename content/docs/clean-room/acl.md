@@ -11,7 +11,7 @@ The review looked for places where a token or a client node can read or
 change data it is not entitled to: release revisions, backup browsing, the
 system bus and its Consul KV bucket, the event stream and network policies. It
 reported **six findings, all valid and all fixed.** Paths are relative to the
-`nomad` directory of the norca repository. See the
+`nomad` directory (`norca` since 2026-11-02) of the norca repository. See the
 [section page](/docs/clean-room) for the process.
 
 | ID | Finding | Verdict | Commit |

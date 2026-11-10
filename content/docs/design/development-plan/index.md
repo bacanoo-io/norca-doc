@@ -24,7 +24,7 @@ For multi-cloud operation the plan proposes one federated region per cloud with 
 
 The plan also includes S3-based, per-region scheduled backup and restore (encrypted backups copied to multiple clouds, with selective and full restore managed from the UI); its detailed plan is in a separate document: [backup-restore-plan.md](/docs/design/backup-restore-plan).
 
-The plan also aims at Consul independence: a native catalog driven by health, built-in DNS, a Consul-compatible read layer for tools built on the Consul API (for example Traefik, Prometheus), external service registration and native mTLS. Discovery is topology-aware (same datacenter and region preferred, with regional failover), and a DNS alias can also be given for external services. Consul remains optional only for the full service mesh, installed by Nomad. Details: [consul-independence-plan.md](/docs/design/consul-independence-plan).
+The plan also aims at Consul independence: a native catalog driven by health, built-in DNS, a Consul-compatible read layer for tools built on the Consul API (for example Traefik, Prometheus), external service registration and native mTLS. Discovery is topology-aware (same datacenter and region preferred, with regional failover), and a DNS alias can also be given for external services. Consul remains optional only for the full service mesh, installed by Norca through the `consul` pack. Details: [consul-independence-plan.md](/docs/design/consul-independence-plan).
 
 Package management builds on Nomad Pack: the package format and the command-line tool stay, while Helm-level capabilities (a release object with revisions, rollback, non-job resources, atomic installation, hooks, tests, OCI registry, signing) are provided by the server side of Norca. Details: [package-management-plan.md](/docs/design/package-management-plan).
 
@@ -76,8 +76,6 @@ The autoscaler codebase is about 21,600 lines (without tests). It also has its o
 The scaler is a new `norca/autoscaler` package running on the leader server, which starts and stops with leadership in the same way as the deployment watcher or the drainer (`establishLeadership` / `revokeLeadership`, `norca/leader.go`).
 
 ![target architecture · leader subsystem, 6 components](images/01-target-architecture.svg)
-
-target architecture · leader subsystem, 6 components
 
 The evaluator receives the policies from the policy manager and the metrics from the collector and the plugins, and sends its decision through the executor to the existing `Job.Scale` path. This is the only point where the scaler writes to Raft.
 
@@ -220,8 +218,6 @@ Adopting seven Kubernetes features is justified. The first wave (quotas, event s
 
 ![K8s features · value × effort, 7 items](images/02-kubernetes-features.svg)
 
-K8s features · value × effort, 7 items
-
 | \#  | Feature (Kubernetes equivalent)                                  | Starting point in Nomad 1.6.5                                                                                                                                                        | Implementation                                                                                                                                                            | Relation to the autoscaler                                                                           |
 |-----|------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
 | 1   | Namespace quotas (ResourceQuota, LimitRange)                     | Empty OSS stubs: `NewQuotaIterator` (`scheduler/stack_oss.go`), `evaluatePlanQuota` (`norca/plan_apply_oss.go`), `allocQuota` (`norca/fsm_oss.go`); the `/v1/quota*` API returns 501 today | Quota object per namespace (CPU, memory, allocation count), task-level default and maximum, rejection already at submission; the structure of the existing quota API is kept | Prerequisite for phase 2: scaling up to the quota ceiling                                            |
@@ -255,8 +251,6 @@ Proposed setup: one federated Norca region per cloud, a WireGuard mesh underneat
 
 *In the figure the Consul layer is optional: by default service-to-service traffic is handled by native mTLS; Consul is needed only for a full mesh, with the current official version (see phase 6 of the Consul independence plan).*
 
-multi-cloud topology · 3 regions, 4 layers
-
 **The outage of one cloud affects only its own region**, because every region has its own Raft. The connection between regions does not need to be low-latency.
 
 | Layer                           | Solution                                                                                              | License                 |
@@ -269,7 +263,7 @@ multi-cloud topology · 3 regions, 4 layers
 
 **Cross-region failover:** service discovery prefers the local datacenter and region, and if there is no healthy instance in the local region, it switches to the regions in the `failover` list of the `discovery` block (Consul independence plan, phase 2). Cloud load balancers are managed by the first sample operator of the operator framework, the LoadBalancer operator (Kubernetes item 8).
 
-**The role of Consul:** in this setup Consul is optional. Service discovery, DNS and serving the tools built on the Consul API are provided by the native catalog and the compatibility layer, and in the longer term the encrypted traffic between regions by native mTLS. Consul is needed only for a full service mesh, installed by Nomad ([consul-independence-plan.md](/docs/design/consul-independence-plan)).
+**The role of Consul:** in this setup Consul is optional. Service discovery, DNS and serving the tools built on the Consul API are provided by the native catalog and the compatibility layer, and in the longer term the encrypted traffic between regions by native mTLS. Consul is needed only for a full service mesh, installed by Norca through the `consul` pack ([consul-independence-plan.md](/docs/design/consul-independence-plan)).
 
 **Alternative (one region, clients in several clouds):** simpler, and with the `spread` block jobs can be distributed across clouds, but the control plane is tied to one cloud. If it fails, running allocations keep running, but no new scheduling takes place.
 
@@ -348,8 +342,6 @@ Details: [ui-plan.md](/docs/design/ui-plan). Clickable mockup with the real Tabl
 The work proceeds in four phases that build on each other, and every phase can be released separately. **After phase 1 the external autoscaler can already be stopped;** the later phases improve quality and efficiency. We deliberately give no durations, because they depend on the team size and on the answers to the open questions.
 
 ![roadmap · 4 phases, 3 gates](images/04-roadmap.svg)
-
-roadmap · 4 phases, 3 gates
 
 | Phase               | Affected Norca files                                                                                                                                                                                   | Adopted or modified autoscaler parts                                                                                                                   | Acceptance criteria (proposed)                                                                                                                                                  |
 |---------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

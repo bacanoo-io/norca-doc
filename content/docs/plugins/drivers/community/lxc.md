@@ -99,6 +99,8 @@ The `lxc` driver supports the following configuration in the job spec:
   }
   ```
 
+- `distro` - (Optional) The name of the distribution. By default this is set by the template.
+
 - `release` - (Optional) The name/version of the distribution. By default this is set by the template.
 
 - `arch` - (Optional) The architecture of the container. By default this is set by the template.

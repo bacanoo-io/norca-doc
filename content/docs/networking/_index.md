@@ -323,11 +323,6 @@ assigned random port numbers and so **Norca service discovery with DNS uses
 - [Service Mesh][service mesh]
 - [Container Network Interface][cni]
 
-## Additional resources
-
-- [Understanding Networking in Norca - Karan Sharma](https://mrkaran.dev/posts/nomad-networking-explained/)
-- [Understanding Norca Networking Patterns - Luiz Aoqui, HashiTalks: Canada 2021](https://www.youtube.com/watch?v=wTA5HxB_uuk)
-
 [`bridge_network_name`]: /docs/configuration/client#bridge_network_name
 [`bridge`]: /docs/job-specification/network#bridge
 [`infra_image`]: /docs/drivers/docker#infra_image
@@ -335,7 +330,7 @@ assigned random port numbers and so **Norca service discovery with DNS uses
 [`min_dynamic_port`]: /docs/configuration/client#min_dynamic_port
 [`static`]: /docs/job-specification/network#static
 [`template`]: /docs/job-specification/template#template-examples
-[allocation]: /docs/concepts/architecture#allocation
+[allocation]: /docs/glossary#allocation
 [cni]: /docs/networking/cni/
 [cni_bridge]: https://www.cni.dev/plugins/current/main/bridge/
 [consul_service_mesh]: /docs/integrations/consul-connect/
