@@ -24,8 +24,8 @@ Norca adds two task group blocks for this:
 Allocations are selected by the `meta` of their job and task group, which act as
 labels. "Close" is defined by a topology domain (`scope`): the node, the
 datacenter (one per availability zone), a node attribute or any node `meta`
-value. Each rule is either a hard
-rule (`required = true`, a feasibility filter) or a weighted preference
+value. Each rule is either **a hard
+rule** (`required = true`, a feasibility filter) or **a weighted preference**
 (`weight`, a score).
 
 The idea comes from Kubernetes (inter-pod affinity and anti-affinity, with label
@@ -73,17 +73,17 @@ flowchart TB
   match in the node's domain, minus the weights of the `separate` rules with a
   match, divided by the sum of the absolute weights. The score is normalized like
   the node affinity score and combined with the other scores (bin packing,
-  spread, job anti-affinity). A preference never overrides a required rule or a
-  resource filter.
+  spread, job anti-affinity). **A preference never overrides a required rule or a
+  resource filter.**
 - **Explanation.** A node filtered by a required rule is recorded in the
   placement metrics under the rule's name, for example
   `separate {app=cache} by ${node.datacenter}`, so `norca job status` and
   `norca job plan` show why a placement failed. The preference score appears as
   `alloc-affinity` in the placement scores of `norca alloc status -verbose`.
 
-The rules apply only at placement time. Running allocations are never moved
+**The rules apply only at placement time.** Running allocations are never moved
 because a rule is no longer satisfied, and in-place updates are never turned
-into destructive updates by the rules. The rules are not symmetric: if job A
+into destructive updates by the rules. **The rules are not symmetric**: if job A
 separates from job B, job B can still be placed next to job A unless it has its
 own rule.
 
@@ -168,11 +168,12 @@ job "cache" {
 }
 ```
 
-With `required = true` and fewer datacenters than replicas, the remaining replicas
-cannot be placed: the evaluation is blocked and `norca job status` shows the
-rule that filtered the nodes. When the number of instances can exceed the
-number of domains (for example under the autoscaler), use a preference instead,
-as `example/03-three-node/test-app.hcl` does for `test-app`.
+> [!IMPORTANT]
+> With `required = true` and fewer datacenters than replicas, **the remaining replicas
+> cannot be placed**: the evaluation is blocked and `norca job status` shows the
+> rule that filtered the nodes. When the number of instances can exceed the
+> number of domains (for example under the autoscaler), **use a preference instead**,
+> as `example/03-three-node/test-app.hcl` does for `test-app`.
 
 ## Configuration reference
 

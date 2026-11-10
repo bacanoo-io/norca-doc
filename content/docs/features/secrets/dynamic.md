@@ -45,7 +45,7 @@ sequenceDiagram
 - **Engines.** A `SecretEngine` of a namespace names the service of its operator and its **roles**, with
   their `ttl`, `max_ttl`, a `config` passed to the operator, and the `params` a job may send. Engines
   are kept in Raft. An engine can be created before its operator runs. Everything in an engine is
-  stored in Raft and shown to readers, so `config` must hold nothing secret.
+  stored in Raft and shown to readers, so **`config` must hold nothing secret.**
 - **Requests.** A task asks for a credential with a [`secret`](/docs/job-specification/secret) block that
   names the engine and a role. The client requests a lease with the task's workload identity. The leader
   writes the **lease** to Raft first, so that the next leader can revoke a credential if the leader goes
@@ -53,7 +53,7 @@ sequenceDiagram
   client delivers it like any secret.
 - **Leases.** A lease records the engine, the role, the task (namespace, job, group, task, allocation,
   node), the issue time, `ttl`, `max_ttl`, the current expiry, the revocation state and the operator's
-  reference of the credential. It never holds the credential. A lease belongs to one task: tasks of an
+  reference of the credential. **It never holds the credential.** A lease belongs to one task: tasks of an
   allocation don't share credentials.
 - **Renewal.** The client renews the lease at half of its remaining time; a renewal extends it by the
   role's `ttl`, never beyond `max_ttl` after its creation, and reaches the operator. When the lease can't be
@@ -112,8 +112,8 @@ secret "db" {
   after a restart of the client.
 - `fallback_recover = "signal"` keeps asking while the task runs, every `fallback_recover_interval`
   (10s by default), and applies `change_mode` when a credential is delivered.
-- The fallback stays valid all the time, and all the tasks share it, so give it fewer rights than the
-  dynamic credentials. A task on a fallback has a `secret db: provider fallback` task event, an audited read
+- The fallback stays valid all the time, and all the tasks share it, so **give it fewer rights than the
+  dynamic credentials.** A task on a fallback has a `secret db: provider fallback` task event, an audited read
   of the static secret, and counts in the metric `nomad.client.secrets.fallback`.
 
 The task needs a `secret_access` grant for the fallback path as well.
@@ -374,8 +374,8 @@ A task gets the items `username`, `password`, `host`, `port`, `database` and `ur
 | Renew or revoke a lease (a task) | the workload identity of the task the lease belongs to |
 
 `read-secret-engine` and `write-secret-engine` are namespace capabilities, not part of the `read` or
-`write` shorthands, and not valid in `secret` path rules. Credentials are created for workload identities
-only, never for ACL tokens. Engine and lease events of the `Secret` topic are visible with
+`write` shorthands, and not valid in `secret` path rules. **Credentials are created for workload identities
+only, never for ACL tokens.** Engine and lease events of the `Secret` topic are visible with
 `read-secret-engine`.
 
 ## Configuration

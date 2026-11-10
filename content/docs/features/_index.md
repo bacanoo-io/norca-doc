@@ -9,7 +9,7 @@ Every feature below is built into the `norca` binary, except the deployer (`norc
 control plane. Features that
 write new kinds of data to Raft are enabled once every server of the region runs a Norca version that
 supports them ([version gate](/docs/introduction/compatibility#version-gate-of-the-norca-features)).
-Only features marked *Available* can be used; the others are being built.
+**Only features marked *Available* can be used**; the others are being built.
 
 | Feature | Status | Page |
 | --- | --- | --- |

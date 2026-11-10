@@ -15,8 +15,8 @@ from one declarative plan (YAML or HCL), so a cluster can be created,
 extended, upgraded and shrunk by editing the plan and running it again.
 
 It is a separate single binary that runs on the operator's machine (Linux,
-macOS or Windows) and reaches the nodes over SSH; nothing has to be
-preinstalled on them, and they need no internet access.
+macOS or Windows) and reaches the nodes over SSH; **nothing has to be
+preinstalled on them, and they need no internet access.**
 
 ## How it works
 
@@ -26,9 +26,12 @@ norca-deployer plan  -c cluster-deploy.yaml   # what would change (dry run)
 norca-deployer apply -c cluster-deploy.yaml   # install or update, safe to run again
 ```
 
-`apply` compares every node with the plan and changes only what differs.
-Changed servers restart one at a time, and the deployer waits until each is
-healthy, has a leader and sees all Raft peers; clients restart in batches.
+**`apply` compares every node with the plan and changes only what differs.**
+
+- Changed servers restart one at a time, and the deployer waits until each is
+  healthy, has a leader and sees all Raft peers;
+- clients restart in batches.
+
 After the cluster is up it writes the bootstrap secrets, ACL policies and pack
 registries, and deploys the packs of the plan.
 

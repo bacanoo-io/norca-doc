@@ -82,7 +82,7 @@ At least one of `lower_bound` or `upper_bound` must be defined. If
 within bounds. Similarly, if `upper_bound` is not defined, any value above
 `lower_bound` will be considered within bounds.
 
-One, and only one, of `delta`, `percentage`, or `value` must be defined. These
+**One, and only one, of `delta`, `percentage`, or `value` must be defined.** These
 rules are validated when the job is submitted.
 
 [policy_group]: /docs/features/autoscaler/reference/policy#check-options

@@ -21,7 +21,7 @@ service mesh part, mutual TLS between services, is covered by [native mTLS](/doc
 ## How it works
 
 Discovery has four tiers. Each one builds on the native catalog stored in the servers' Raft state, and
-the first three are part of Norca; the fourth is an external product that Norca can install.
+**the first three are part of Norca; the fourth is an external product that Norca can install.**
 
 | Tier | What it is | Typical consumers | Default |
 | --- | --- | --- | --- |
@@ -56,8 +56,8 @@ flowchart LR
 ```
 
 Solid arrows are native integrations; dashed arrows are tools that only know Consul and read the
-Consul-compatible API instead of a Consul agent. A tool that supports Norca's native API (the Nomad API
-1.6.5 compatible `/v1/service` endpoints) should use it; the Consul-compatible API is for those that
+Consul-compatible API instead of a Consul agent. **A tool that supports Norca's native API (the Nomad API
+1.6.5 compatible `/v1/service` endpoints) should use it**; the Consul-compatible API is for those that
 don't.
 
 On top of the tiers:
@@ -140,10 +140,10 @@ curl 'http://127.0.0.1:8500/v1/health/service/test-app?passing'
 - All four phases of the design that concern discovery (health-based catalog, DNS with topology-aware
   routing, the Consul-compatible read layer, external services with the Consul agent write endpoints)
   are implemented, as is the `consul` pack.
-- The DNS server listens on the host. Workloads in `bridge` networking do not get it as their
-  nameserver automatically; they find services through templates, the Task API or an address of the
+- The DNS server listens on the host. **Workloads in `bridge` networking do not get it as their
+  nameserver automatically**; they find services through templates, the Task API or an address of the
   host that they can reach.
-- The Consul-compatible API is not a Consul agent: Consul KV, sessions, prepared queries, Connect and
+- **The Consul-compatible API is not a Consul agent**: Consul KV, sessions, prepared queries, Connect and
   every other endpoint answer `501 Not Implemented`.
 
 ## Design

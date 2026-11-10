@@ -14,12 +14,12 @@ native catalog of Nomad v1.6.5 has nothing comparable.
 In Norca, a `discovery` block on a service tells every consumer of the catalog how to choose among its
 instances: prefer the caller's datacenter, then the rest of the region, and fall back to other regions in
 a given order when the local region has no healthy instance. An overflow rule keeps a small datacenter
-from receiving all the traffic of a large region. The preference is off by default (`prefer = "none"`).
+from receiving all the traffic of a large region. **The preference is off by default (`prefer = "none"`).**
 
 ## How it works
 
-**The datacenter is the failure domain.** Norca has two topology levels, region and datacenter. Model one
-availability zone (or rack, or site) as one datacenter: set `datacenter` in the agent configuration of
+**The datacenter is the failure domain.** Norca has two topology levels, region and datacenter. **Model one
+availability zone (or rack, or site) as one datacenter**: set `datacenter` in the agent configuration of
 every node of that zone.
 
 ```hcl
@@ -38,7 +38,7 @@ sorted into tiers:
 | `"datacenter"` | Same datacenter as the caller | Rest of the region |
 | `"region"`, `"none"` | Every instance of the region, unsorted | – |
 
-The first tier is always returned. The second tier is added while the instances of the first are fewer
+**The first tier is always returned.** The second tier is added while the instances of the first are fewer
 than `min_local` (at least one), **or** fewer than `overflow_fraction` of all eligible instances (the
 overflow rule). With `overflow_fraction = 0` only `min_local` decides.
 
@@ -63,8 +63,8 @@ flowchart TB
 servers that register the job, `server { native_service_discovery { default_overflow_fraction } }`
 (0.2 unless configured). The servers fill it in at job registration, so the stored job, `norca job
 inspect` and the plan diff show the concrete value. Each region's servers apply their own setting, so a
-multiregion job can resolve to different fractions in different regions; set `overflow_fraction` in the
-job for a uniform value. The setting is reloaded on `SIGHUP` and applies to registrations from then on:
+multiregion job can resolve to different fractions in different regions; **set `overflow_fraction` in the
+job for a uniform value.** The setting is reloaded on `SIGHUP` and applies to registrations from then on:
 a job that leaves the fraction unset shows the change in `norca job plan` and gets a new version when it
 is submitted again.
 
@@ -79,8 +79,9 @@ is submitted again.
 | [Native mTLS](/docs/features/native-mtls) sidecar upstreams | Yes |
 | Tools that read the whole catalog (Traefik `nomad` provider, Prometheus `nomad_sd_configs`) | No: they receive every instance |
 
-For an edge proxy such as Traefik, run one instance per datacenter (with `datacenters` set to that
-datacenter) or let it read the Consul-compatible API from a client of its datacenter with `near=_agent`.
+> [!NOTE]
+> For an edge proxy such as Traefik, run one instance per datacenter (with `datacenters` set to that
+> datacenter) or let it read the Consul-compatible API from a client of its datacenter with `near=_agent`.
 
 ## Example
 

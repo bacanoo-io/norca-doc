@@ -55,8 +55,8 @@ The query selects the series with parameters:
 | `class` | the node class; empty (the default) covers all the nodes of the datacenter and pool |
 | `op` | `avg` (the default) is the mean of the sample intervals in the query window, `max` their largest maximum |
 
-A series that is not selected is the series with an empty label, so name `dc` and
-`pool` for the gauge you mean. The value is a single data point for the query
+A series that is not selected is the series with an empty label, so **name `dc` and
+`pool` for the gauge you mean.** The value is a single data point for the query
 window (`query_window`; an `instant` query reads the latest two minutes). A query
 for a series that has no samples in the window fails with an error that names the
 series, and `on_error` of the check decides what the autoscaler does then.

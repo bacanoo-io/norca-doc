@@ -18,7 +18,7 @@ unchanged:
   own client agent**, in `VAULT_TOKEN` and `secrets/vault_token`, and `VAULT_ADDR` points to that
   endpoint. Applications that use a Vault SDK read their KV secrets from the built-in store.
 
-The endpoint implements KV reads only. It is not a Vault: everything else answers with a clear "not
+**The endpoint implements KV reads only. It is not a Vault**: everything else answers with a clear "not
 supported by the built-in secret store" error.
 
 ## How it works
@@ -52,7 +52,7 @@ Configured rules replace the defaults. For example, `vault_kv "kv/data/" { path 
 `kv/data/db/pg` read the secret `apps/db/pg`. Paths of dynamic engines (`<mount>/creds/<role>`,
 `<mount>/static-creds/<role>`, `<mount>/sts/<role>`) fail with "requires a Vault/OpenBao provider or the
 built-in dynamic engine, which is used with a secret block naming the engine and the role"; unmapped
-paths fail as well. Neither falls back. The [built-in dynamic engine](/docs/features/secrets/dynamic)
+paths fail as well. **Neither falls back.** The [built-in dynamic engine](/docs/features/secrets/dynamic)
 delivers its credentials (NATS credentials files) through `secret` blocks only: a credential must be
 renewed and revoked with its task, which a template call or the Vault-compatible endpoint can't do.
 
@@ -91,7 +91,7 @@ the store is unavailable.
   networking mode asks for a token, on the bridge gateway address (the first address of the client's
   `bridge_network_subnet`). It starts listening at the first token request, so agents without such tasks
   open no port. Tasks in other network namespaces (Docker's own bridge, CNI networks) can't reach it.
-  There is no TLS: the traffic never leaves the host.
+  **There is no TLS: the traffic never leaves the host.**
 - **Tokens.** A token belongs to one task of one allocation. It is valid while its task runs and is
   renewed by the client up to `token_ttl` (default 1 hour). It is never written to the client state; after
   an agent restart, the token in `secrets/vault_token` of a task that still runs is adopted again. Tokens of

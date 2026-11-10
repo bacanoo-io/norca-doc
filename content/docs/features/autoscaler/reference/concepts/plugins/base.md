@@ -13,7 +13,7 @@ providing a set of common operations.
 #### `PluginInfo() (*PluginInfo, error)`
 
 A `PluginInfo` contains metadata about the plugin. For example,
-the Prometheus APM plugin returns the following;
+the Prometheus APM plugin returns the following:
 
 ```go
 PluginInfo{

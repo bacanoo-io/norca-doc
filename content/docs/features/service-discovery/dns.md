@@ -12,7 +12,7 @@ contain `*.service.consul` names. Nomad v1.6.5 has no DNS interface for its nati
 Every Norca client can run a DNS server that answers `<service>.service.norca` names from the native
 catalog, with A, AAAA and SRV records of the healthy instances, ordered by topology and with regional
 failover. Optionally it answers `*.service.consul` names as well, so existing configurations keep
-working during a migration. The server is off by default.
+working during a migration. **The server is off by default.**
 
 ## How it works
 
@@ -45,8 +45,8 @@ order). SRV queries return one record per instance with its port; the target is
 host name, such as an [external service](/docs/features/service-discovery/external-services) of kind
 `alias`, is answered with a CNAME record; a name has a CNAME only when no instance has an IP address.
 
-**Which instances.** Only healthy instances (and those of services with
-`discovery { include_not_ready = true }`) are returned. In the client's own region they are selected by
+**Which instances.** **Only healthy instances** (and those of services with
+`discovery { include_not_ready = true }`) **are returned.** In the client's own region they are selected by
 the [topology preference](/docs/features/service-discovery/topology) of the service; when the region
 has none, the regions of the service's `failover` list are tried in order. A service without eligible
 instances answers `NXDOMAIN`.
@@ -63,8 +63,8 @@ five minutes is dropped. Services of other regions are read through region forwa
 
 **Authorization.** The cache reads the catalog with the `token` of the `dns` block, or with the
 identity of the node, which can read the services of every namespace of its region. Other regions don't
-accept the identity of a node: when ACLs are enabled and names of other regions must resolve, set a
-`token` that is valid in every region (a global token with `read-job`).
+accept the identity of a node: **when ACLs are enabled and names of other regions must resolve, set a
+`token` that is valid in every region** (a global token with `read-job`).
 
 **TTL.** Answers and the negative-cache TTL of the SOA record use `ttl` (default 5 seconds).
 
@@ -114,8 +114,8 @@ client.
 
 ## Limits and status
 
-- The server listens on the host (by default on the loopback address). Workloads in `bridge` networking
-  do not get it as their nameserver; the design deferred that, as `resolv.conf` has no port field and
+- The server listens on the host (by default on the loopback address). **Workloads in `bridge` networking
+  do not get it as their nameserver**; the design deferred that, as `resolv.conf` has no port field and
   cannot be limited to one zone. Workloads use templates, the Task API or environment variables
   instead.
 - No PTR, TXT or other record types; DNSSEC is not supported.

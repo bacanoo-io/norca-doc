@@ -51,9 +51,9 @@ pack {
 }
 ```
 
-Applying a release grants no extra permissions: the token needs `operator`
+**Applying a release grants no extra permissions**: the token needs `operator`
 write for the kind, `acl` write for the policy and the admission permissions
-for admission policies. A kind can only be deleted when it has no objects, so
+for admission policies. **A kind can only be deleted when it has no objects**, so
 delete the objects first (the controller removes their resources through the
 finalizer) and then uninstall the release.
 
@@ -135,8 +135,8 @@ return webhook.ListenAndServeTLS(ctx, ":8443", "cert.pem", "key.pem", mux)
 
 Registering a general admission webhook is reserved for the server
 configuration. A type-bound webhook is limited to one kind, but its URL still
-receives every write of that kind, so the servers call it only after an
-administrator approved it:
+receives every write of that kind, so **the servers call it only after an
+administrator approved it**:
 
 - A kind written with a management token (or with ACLs disabled) approves its
   webhooks at once.
@@ -171,7 +171,7 @@ migration {
   `m.omit(["a", "b"])` removes keys. An empty `spec` keeps the spec; an empty
   `status` keeps the status, and a `status` that returns an empty map drops it
   (the controller writes it again).
-- The version starts at 1 and can never be lowered.
+- **The version starts at 1 and can never be lowered.**
 - Every kind write that changes the schema, the rules, the version or the
   migration checks all stored objects (migration for objects at an older
   version, defaults, schema validation). A write that would leave stored

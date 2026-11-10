@@ -5,8 +5,8 @@ weight: 2
 ---
 
 Several Norca features take their idea from Kubernetes, where the concept has proven useful for
-operating many teams' workloads on one cluster. Norca does not run or embed Kubernetes and contains no
-Kubernetes code: the design and the implementation of these features are Norca's own, built on the
+operating many teams' workloads on one cluster. **Norca does not run or embed Kubernetes and contains no
+Kubernetes code**: the design and the implementation of these features are Norca's own, built on the
 Nomad v1.6.5 data model (namespaces, jobs, task groups, allocations, Raft state, the event stream and
 ACLs).
 

@@ -10,8 +10,8 @@ description: "ServiceIntention objects allow or deny connections between service
 Mutual TLS proves who is on the other end of a connection; it does not decide whether that peer may
 connect. A `ServiceIntention` is that decision: it allows or denies connections from a source service to
 a destination service. Envoy sidecars enforce intentions on every inbound connection, and applications
-in [app mode](/docs/features/native-mtls/app-mode) enforce them with the `api/mtls` Go library. Without
-an intention that allows it, a connection is denied.
+in [app mode](/docs/features/native-mtls/app-mode) enforce them with the `api/mtls` Go library. **Without
+an intention that allows it, a connection is denied.**
 
 ## How it works
 
@@ -60,16 +60,20 @@ For example, with these intentions in namespace `apps`:
 | `probe -> test-api` | allow |
 | `dev/* -> test-api` | deny |
 
-a connection from `apps/probe` to `test-api` is allowed (exact destination, source namespace and source
-service), from `apps/web` to `test-api` is denied (only `*/* -> *` matches), and from `dev/probe` to
-`test-api` is denied (`dev/* -> test-api`).
+a connection
 
-**Regional scope.** Intentions are stored in the Raft state of one region and are not replicated from the
+- from `apps/probe` to `test-api` is **allowed** (exact destination, source namespace and source
+  service),
+- from `apps/web` to `test-api` is **denied** (only `*/* -> *` matches),
+- and from `dev/probe` to
+  `test-api` is **denied** (`dev/* -> test-api`).
+
+**Regional scope.** **Intentions are stored in the Raft state of one region and are not replicated** from the
 authoritative region, unlike ACL policies, tokens, namespaces and quotas. A write goes to the region of the
 request (`-region`), and the sidecars and applications of a region enforce the intentions stored there.
 For a connection across regions, the intentions of the **destination** region decide. The source of an
 intention has no region: it matches the source service in every region whose certificates the destination
-trusts. To apply the same rules everywhere, create them in each region.
+trusts. **To apply the same rules everywhere, create them in each region.**
 
 **Propagation.** Sidecars follow the intentions of their namespace with blocking queries; a change applies
 to new connections within about a second. Established connections keep running until Envoy has drained

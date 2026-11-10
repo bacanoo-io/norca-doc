@@ -107,7 +107,7 @@ and `uninstall` work on it.
 | `status.lastSyncedAt`, `status.lastGoodSyncAt` | The last sync attempt and the last successful one |
 | `status.packs`, `status.packCount` | The packs found, one entry per version |
 
-A sync replaces the cache only when it succeeded: after a failed sync the registry is `Error`, the
+**A sync replaces the cache only when it succeeded**: after a failed sync the registry is `Error`, the
 catalog keeps the packs of the last good sync, and they can still be installed. A server that becomes
 leader fetches the registries again before it serves their packs (the status counts the successful
 syncs in `syncGeneration`, and the cache records the generation it was fetched for).
@@ -215,12 +215,12 @@ doesn't have blocks the install until it is fixed (Variable secrets are entered 
 ### Secrets
 
 A variable with a `secret` block is a secret input: its value becomes an item of the Variable the block
-names (a Variable the pack declares in a `*.var.hcl.tpl` template), applied by the servers but never
-stored in the release and never rendered into the templates. On an upgrade, a secret left empty keeps
+names (a Variable the pack declares in a `*.var.hcl.tpl` template), applied by the servers but **never
+stored in the release and never rendered into the templates**. On an upgrade, a secret left empty keeps
 the stored item. This also holds for `norca pack run --var`.
 
 Variables with secret-like names but without a `secret` block are recorded as `(redacted)` in the
-release, but rendered into the templates like any variable; an upgrade from the form asks for them
+release, but **rendered into the templates like any variable**; an upgrade from the form asks for them
 again.
 
 ## CLI installs

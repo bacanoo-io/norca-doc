@@ -42,11 +42,11 @@ Lists share filtering, column selection and a region column in All regions mode;
 policies are edited in a unified HCL/JSON editor. Highlights per feature:
 
 - **Secrets:** the secrets of a namespace with versions, metadata, the jobs that reference a path and recent
-  audit records; values are read only on an explicit **Reveal** (an audited read), kept only in the page and
+  audit records; **values are read only on an explicit *Reveal*** (an audited read), kept only in the page and
   dropped on Hide or navigation. A secret's page shows its expiry, its rotation interval with the time
   the rotation of the current version is due, and its rotation job, and warns when the value expired or
   the rotation is due. The seal status of every server is shown here and in the dashboard's
-  federation strip. Unsealing stays in the CLI. See [secret store](/docs/features/secrets).
+  federation strip. **Unsealing stays in the CLI.** See [secret store](/docs/features/secrets).
 - **Backups:** backup list, browsing, comparison, restore with an age identity, schedules. See
   [backup and restore](/docs/features/backup-restore).
 - **Objects and type definitions:** object pages with lifecycle, webhook approval and limits. See the
@@ -65,7 +65,7 @@ the stream reports a change there and falls back to polling while the stream is 
 
 The UI is embedded into the `norca` binary when it is built with the `ui` Go build tag. `make` sets the tag
 unless the `NORCA_NO_UI` environment variable is set, and `make prerelease` builds the UI before embedding
-it. A binary built without the tag serves no UI. At run time the UI is
+it. **A binary built without the tag serves no UI.** At run time the UI is
 controlled with the agent's [`ui`](/docs/configuration/ui) block.
 
 ## Example
@@ -98,7 +98,7 @@ described in the [`ui` block reference](/docs/configuration/ui).
 | --- | --- |
 | [`norca ui`](/docs/commands/ui) | Open the UI in a browser, optionally at a job, allocation or node |
 
-The UI uses the public [HTTP API](/docs/api) only.
+**The UI uses the public [HTTP API](/docs/api) only.**
 
 ## Limits and status
 

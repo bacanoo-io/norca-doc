@@ -26,7 +26,7 @@ on it.
 | `shares` | A random unseal key split into Shamir shares | Sealed until `threshold` shares are entered with `norca operator unseal` | Production |
 | `aead` | A key-encrypting key stored next to the key (the Nomad behaviour) | Unsealed | Development and migration only; the agent logs a warning |
 
-Without a `keyring` block the server uses the `aead` seal. The KMS seals (`awskms`, `gcpckms`, `scwkms`)
+**Without a `keyring` block the server uses the `aead` seal.** The KMS seals (`awskms`, `gcpckms`, `scwkms`)
 and the `transit` seal of the design are not implemented: a configuration that names them is rejected
 with "not implemented yet". Only one seal can be configured.
 
@@ -71,8 +71,8 @@ yields nothing usable. With the `aead` seal the keys travel as in Nomad.
 3. At completion the wraps of the old seal are dropped. After a `shares` to `shares` rewrap (a rekey) the
    old shares stop working; servers that did not take part must be unsealed with the **new** shares.
 
-A rewrap to `shares` prints the new shares once; they are stored nowhere. A rewrap does not rotate the
-keys: after leaving `aead`, rotate the root keys with
+**A rewrap to `shares` prints the new shares once; they are stored nowhere.** **A rewrap does not rotate the
+keys**: after leaving `aead`, rotate the root keys with
 [`norca operator root keyring rotate -full`](/docs/commands/operator/root/keyring-rotate), since copies of
 old key files or backups may still hold the keys unprotected.
 
@@ -155,7 +155,7 @@ federation strip. Unsealing is done with the CLI only.
   `shares`, `shares` to `aead`), recovery of a restored store.
 - Not available: the `awskms`, `gcpckms`, `scwkms` and `transit` seals, and a second seal next to the
   first. The server TLS identity stays on disk, as in Nomad.
-- With `shares`, losing more than `shares - threshold` shares makes the keys unrecoverable. Keep the
+- With `shares`, **losing more than `shares - threshold` shares makes the keys unrecoverable.** Keep the
   `age`-encrypted backups described in [backup and restore](/docs/features/backup-restore) as a second
   recovery path.
 

@@ -104,7 +104,7 @@ the node that runs them. Without a `namespace` the service is registered in the 
 
 **Secrets:** a Variables template lists the names of secret items in `secret_items` and must not give
 them values. Their values come from `--var-secret=<variable path>:<item>=<value>` (repeatable) and are
-written to the Variable but never stored in the release; an upgrade or rollback without
+written to the Variable but **never stored in the release**; an upgrade or rollback without
 `--var-secret` keeps the stored values.
 
 **Requirements:** `metadata.hcl` can state what the pack needs from the servers; the servers reject
@@ -245,7 +245,7 @@ Every pack of the dependency tree can have its own schema; its values are those 
 such as `app.redis`, names it in errors). The release request carries the schemas and the effective
 values, the servers validate them again with the same validator as the schemas of object kinds (so
 releases applied through the API keep to the schemas too) and store the schemas in the revision
-(`spec.variablesSchemas`; a rollback keeps them). The effective values are never stored, as they can
+(`spec.variablesSchemas`; a rollback keeps them). **The effective values are never stored**, as they can
 contain secrets; the revision keeps only the redacted overrides as before. Schemas must be
 self-contained (`#/$defs/...` references only) and are limited to 64 KiB per release. A schema that
 doesn't compile is rejected when the pack is loaded.
@@ -340,7 +340,7 @@ the install and its global region. An install has at most 32 regions.
   reverse order, the global region last; `uninstall` alone uninstalls the local release and warns that
   the install has other regions.
 
-The token must be valid in every region: with ACLs, use a global token.
+**The token must be valid in every region: with ACLs, use a global token.**
 
 ## Atomic mode and production namespaces
 
@@ -403,8 +403,8 @@ job "[[ meta "pack.name" . ]]-smoke-test" {
 After every apply the servers record a hash of each resource's content (without indexes, times and
 status fields). `norca pack diff <release> --live` and a check on the leader every 5 minutes compare
 the live resources with these hashes: deleted or changed resources set the `Drifted` condition and
-publish a `ReleaseDrifted` event on the `CustomObject` event topic. Drift is never corrected
-automatically; upgrade or roll back to restore the revision.
+publish a `ReleaseDrifted` event on the `CustomObject` event topic. **Drift is never corrected
+automatically**; upgrade or roll back to restore the revision.
 
 ## Ownership
 
@@ -458,7 +458,7 @@ namespace "apps" {
 }
 ```
 
-Applying a release grants nothing else: every resource is written with the caller's own token, so
+**Applying a release grants nothing else: every resource is written with the caller's own token**, so
 someone who can't write ACL policies can't install a pack containing one. Reading the content of a
 revision (`/revision/:n`) also needs `read-job` in the namespace, as it contains job specifications.
 

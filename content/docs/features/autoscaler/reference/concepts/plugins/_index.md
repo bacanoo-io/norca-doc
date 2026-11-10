@@ -27,11 +27,11 @@ External plugins are separate executables in the server's
 a language-independent plugin interface: plugins implement a set of gRPC services
 and methods which the server manages by running the plugin and calling the
 implemented RPCs. The handshake, the gRPC services and the messages are those of
-the plugin SDK of the external autoscaler (version 0.6), so existing APM and
-strategy plugin binaries built with that SDK run unchanged.
+the plugin SDK of the external autoscaler (version 0.6), so **existing APM and
+strategy plugin binaries built with that SDK run unchanged.**
 
 Each external plugin runs in its own process. A plugin that crashes, hangs or
-fails to start only fails the checks that use it, and it is started again on its
+fails to start **only fails the checks that use it**, and it is started again on its
 next use with an exponential backoff (from 1 second up to 2 minutes). Plugin
 processes run while the server is the leader and the autoscaler is enabled.
 

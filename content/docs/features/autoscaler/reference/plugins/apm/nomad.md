@@ -22,8 +22,8 @@ query is read from the store, at its 30 second resolution, instead of from the
 leader's memory.
 
 `nomad-apm` is the default `source` of a check. It needs no `apm` block and no
-ACL token, but it needs the system bus: without it the clients report no usage
-and the checks of this source return an error.
+ACL token, but **it needs the system bus: without it the clients report no usage
+and the checks of this source return an error.**
 
 > [!NOTE]
 > The window is kept in the memory of the leader. After a leader change the new

@@ -43,9 +43,10 @@ rollout logic; Norca implements them with its own design.
 4. Regions that a previous version listed but the new one does not are
    stopped.
 
-`norca job revert` registers the reverted version only in the region where it
-runs, because the stored job of a region is already interpolated for it. The
-next submission of the multiregion job registers a new version in all regions.
+> [!NOTE]
+> **`norca job revert` registers the reverted version only in the region where it
+> runs**, because the stored job of a region is already interpolated for it. The
+> next submission of the multiregion job registers a new version in all regions.
 
 ### Staged rollout
 
@@ -81,11 +82,15 @@ sequenceDiagram
 - When the deployments of all regions are blocked (or successful), each blocked
   region is unblocked and becomes `successful`.
 - When a deployment fails, its watcher fails the other regions according to
-  `on_failure`: the regions after it by default, all of them with `fail_all`,
-  none with `fail_local`. Each region follows the `auto_revert` of its own
+  `on_failure`:
+  - the regions after it by default,
+  - all of them with `fail_all`,
+  - none with `fail_local`.
+
+  Each region follows the `auto_revert` of its own
   `update` block.
 
-Every step is derived from the deployments stored in the regions, so a new
+**Every step is derived from the deployments stored in the regions**, so a new
 leader continues where the old one stopped, and repeating a step has no
 effect. Pending and blocked deployments poll their peer regions with a backoff
 (from 1 second up to 30 seconds), so a step that could not be taken during a
@@ -93,7 +98,7 @@ network partition is taken when the regions can reach each other again.
 
 ### Manual control
 
-When a region can't be reached, the rollout waits. An operator can take any
+**When a region can't be reached, the rollout waits.** An operator can take any
 step by hand, in the region of the deployment:
 
 | Situation | Command |
@@ -107,9 +112,9 @@ step by hand, in the region of the deployment:
 
 The registration in the other regions and the cross-region calls of the
 deployment watchers carry the ACL token that submitted the job. With ACLs
-enabled, a multiregion job must therefore be submitted with a **global** token
+enabled, **a multiregion job must therefore be submitted with a *global* token**
 (`norca acl token create -global ...`), which the authoritative region
-replicates to all regions; a local token is rejected. The token needs
+replicates to all regions; **a local token is rejected.** The token needs
 `submit-job` in the job's namespace in every region.
 
 ### Communication
@@ -133,8 +138,8 @@ flowchart LR
 ```
 
 The regions talk over the server RPC port (4647) with region-specific server
-certificates, typically inside a VPN between the clouds. Nothing in the
-rollout uses NATS; the [system bus](/docs/features/system-bus) of each region only
+certificates, typically inside a VPN between the clouds. **Nothing in the
+rollout uses NATS**; the [system bus](/docs/features/system-bus) of each region only
 keeps its deployment events for observation.
 
 ## Example

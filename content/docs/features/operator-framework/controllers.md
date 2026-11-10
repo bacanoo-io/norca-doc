@@ -61,8 +61,8 @@ type Reconciler interface {
 
 A non-nil error retries the key with backoff; a positive `requeueAfter`
 reconciles it again after the delay (for example to poll an external system).
-The object may no longer exist when `Reconcile` runs, so it reads the current
-state from the cache instead of relying on what triggered it. A simplified
+**The object may no longer exist when `Reconcile` runs, so it reads the current
+state from the cache instead of relying on what triggered it.** A simplified
 version of the LoadBalancer reconciler (`ensure` and `cleanup` stand for the
 provider calls of the sample):
 
@@ -268,7 +268,7 @@ of an operator installs the kind, this policy and the job together.
 
 A controller keeps something else running: jobs, load balancers, databases,
 and, for an operator that scales nodes, the nodes themselves. It has to be
-there when the thing it keeps is gone or changing, so it must not depend on it.
+there when the thing it keeps is gone or changing, so **it must not depend on it.**
 These rules hold for every controller and for the provider applications it
 calls:
 

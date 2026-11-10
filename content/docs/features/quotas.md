@@ -22,8 +22,8 @@ ask for too much.
 
 The idea comes from Kubernetes (ResourceQuota and LimitRange). The design and
 implementation are Norca's own: quotas are attached to namespaces, limits
-are set per region, and over-quota placements wait as blocked evaluations
-instead of being rejected.
+are set per region, and **over-quota placements wait as blocked evaluations
+instead of being rejected.**
 
 ## How it works
 
@@ -50,8 +50,8 @@ flowchart LR
 - **Scheduling.** The scheduler places allocations only while they fit into the
   remaining quota. The remaining placements become a blocked evaluation marked
   with the quota, and `norca job run` shows `Quota limit hit` with the exhausted
-  dimension. The plan applier makes the final check, so parallel schedulers
-  cannot exceed a quota together. A plan that keeps or reduces the usage of an
+  dimension. The plan applier makes the final check, so **parallel schedulers
+  cannot exceed a quota together.** A plan that keeps or reduces the usage of an
   over-committed quota (for example after the limit was lowered) is allowed.
 - **Usage.** The usage is updated in the same Raft transaction as the
   allocations, so it is always consistent. It counts the reserved resources of
@@ -65,7 +65,7 @@ flowchart LR
   larger than `variables_limit` is rejected.
 - **Regions.** Quota specifications are written in the authoritative region and
   replicated to the other regions; each region enforces its own `limit` block
-  and tracks its own usage. A region without a `limit` block is not limited.
+  and tracks its own usage. **A region without a `limit` block is not limited.**
 - **Events.** The `Quota` topic of the [event stream](/docs/features/event-stream)
   publishes changes of quota specifications and `QuotaExhausted` and
   `QuotaFreed` events when a dimension becomes exhausted or available again.
@@ -134,8 +134,9 @@ Region  CPU Usage    Memory Usage  Memory Max Usage  Variables Usage  Allocation
 global  1500 / 4000  1536 / 4096   1536 / inf        0 / 50           6 / 30
 ```
 
-A quota must exist before a namespace refers to it, and a quota that is still
-attached to a namespace cannot be deleted.
+> [!NOTE]
+> **A quota must exist before a namespace refers to it, and a quota that is still
+> attached to a namespace cannot be deleted.**
 
 ## Configuration reference
 
@@ -155,7 +156,7 @@ The full reference is the [quota specification](/docs/other-specifications/quota
 | `task_max` | block | none | Maximum `cpu`, `cores`, `memory`, `memory_max` of a task. |
 | `enforce` | string | `"schedule"` | `schedule` or `submit`. |
 
-A limit of `0` means unlimited and a negative limit disallows any usage.
+**A limit of `0` means unlimited and a negative limit disallows any usage.**
 
 ## CLI and API
 
@@ -171,8 +172,8 @@ A limit of `0` means unlimited and a negative limit disallows any usage.
 
 ACL: reading quotas needs `quota { policy = "read" }`, writing them
 `quota { policy = "write" }` (or a management token). Only the quota capability
-is checked: a token that can read quotas sees every quota specification and its
-usage, also of namespaces it has no access to. `norca quota status -json`
+is checked: **a token that can read quotas sees every quota specification and its
+usage, also of namespaces it has no access to.** `norca quota status -json`
 outputs only the specification; `norca quota inspect` (without `-json`) outputs
 the specification with the usage of every region.
 

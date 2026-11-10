@@ -57,8 +57,8 @@ flowchart LR
 ```
 
 The loop is level-based: `Reconcile` reads the current state of the object and
-of what it owns, and does whatever brings them in line with the spec. It must be
-idempotent, because the same key is reconciled again after errors, after a
+of what it owns, and does whatever brings them in line with the spec. **It must be
+idempotent**, because the same key is reconciled again after errors, after a
 requeue delay, after changes of owned jobs, and on the periodic
 resynchronization. The status records the `observedGeneration`, so anyone can
 tell whether the controller has acted on the latest spec.

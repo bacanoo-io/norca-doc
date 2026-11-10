@@ -16,7 +16,7 @@ Norca builds this into the scheduler. Every region runs its own certificate auth
 task group with an `mtls` service receive a short-lived X.509 certificate whose SPIFFE ID names their
 namespace, job and group, and whose DNS names name their services. `ServiceIntention` objects allow or
 deny connections between services. The certificate can be used by the application itself, by an Envoy
-sidecar that Norca injects and configures, or by a gateway that connects regions. No Consul is involved.
+sidecar that Norca injects and configures, or by a gateway that connects regions. **No Consul is involved.**
 
 ## How it works
 
@@ -24,7 +24,7 @@ sidecar that Norca injects and configures, or by a gateway that connects regions
 the trust domain as URI SAN (`spiffe://<trust-domain>`). The CA certificate and key are stored in Raft,
 the key encrypted with the active root key of the keyring, like Variables: it is replicated to every
 server, included in every snapshot and [backup](/docs/features/backup-restore), and decryptable after a
-full restore. The CA is rotated automatically after two thirds of its lifetime (default 5 years), when
+full restore. **The CA is rotated automatically** after two thirds of its lifetime (default 5 years), when
 the trust domain changes, or on request (`PUT /v1/mtls/ca/rotate`); a retired CA stays in the trust
 bundle until the certificates it signed have expired.
 
@@ -35,7 +35,7 @@ is verified per trust domain: a CA is trusted only for the trust domain in its o
 
 **Workload certificates.** For each task of a group with an `mtls` service, the client generates a key
 pair and sends only a certificate signing request, with the task's workload identity, to the servers.
-The servers derive the identity from the allocation, never from the request:
+**The servers derive the identity from the allocation, never from the request:**
 
 - URI SAN: `spiffe://<trust-domain>/ns/<namespace>/job/<job>/group/<group>`;
 - DNS SANs, for every mtls service of the group: `<service>.service.<namespace>.norca`,
@@ -72,11 +72,11 @@ sequenceDiagram
 
 **Authorization.** [Service intentions](/docs/features/native-mtls/intentions) allow or deny connections
 from a source service to a destination service. They are evaluated when a connection is set up, from the
-SPIFFE ID and DNS names of the peer certificate; without a matching intention a connection is denied.
+SPIFFE ID and DNS names of the peer certificate; **without a matching intention a connection is denied.**
 
 **Connection path.** Inside a region, the sidecar of the client connects to the sidecar of the server
 directly. Across regions, it connects to the gateway of the destination region, which forwards the TLS
-stream unterminated, so mTLS stays end to end and the intentions of the destination region decide.
+stream unterminated, so **mTLS stays end to end** and the intentions of the destination region decide.
 
 ```mermaid
 flowchart LR
@@ -162,11 +162,11 @@ tasks also read client node meta (the Envoy image, see
 - All three steps of the design are implemented: the CA and app mode, intentions with the Go library,
   and the Envoy sidecar with upstreams and the cross-region gateway. The sidecar and gateway are tested
   with Envoy 1.39 and 1.40.
-- TCP only: there is no HTTP routing, no retries and no L7 intentions.
+- **TCP only**: there is no HTTP routing, no retries and no L7 intentions.
 - `mtls` blocks require `provider = "nomad"`. The namespace, the job ID and the names of groups with
   mtls services must be valid SPIFFE path segments (letters, digits, `.`, `-`, `_`). A service name that
   is interpolated at runtime is left out of the certificate, so intentions can't refer to it.
-- Enabling or disabling `mtls` on a group is a destructive update.
+- **Enabling or disabling `mtls` on a group is a destructive update.**
 - Every server of the region must run Norca to use `mtls` blocks.
 
 ## Design

@@ -52,9 +52,9 @@ policy {
 
 The checks are all executed at the same time during a policy evaluation and
 they can generate conflicting scaling actions. In a scenario like this, the
-autoscaler iterates over the results and chooses the safest option, which is
+autoscaler iterates over the results and **chooses the safest option, which is
 defined as the action that results in retaining the most capacity of the
-resource.
+resource.**
 
 In a scenario where two checks return different desired scaling directions, the
 following logic is applied.
@@ -88,7 +88,7 @@ following:
 - `ScaleIn and ScaleNone => ScaleNone`
 - `ScaleNone and ScaleNone => ScaleNone`
 
-To fix this problem, the correlated checks need to be set to the same `group`.
+To fix this problem, **the correlated checks need to be set to the same `group`.**
 The autoscaler then computes a single scaling action for the entire group
 by applying a slightly different logic:
 

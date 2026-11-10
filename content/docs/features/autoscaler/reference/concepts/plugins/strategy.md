@@ -22,8 +22,8 @@ server's `plugin_dir` and reference it with a `strategy` block of the
 name of that block as their `strategy`.
 
 The servers can only validate the parameters of the built-in strategies at job
-submission. The parameters of an external strategy are passed to the plugin
-unchecked, as strings.
+submission. **The parameters of an external strategy are passed to the plugin
+unchecked, as strings.**
 
 ## Strategy Plugin API
 

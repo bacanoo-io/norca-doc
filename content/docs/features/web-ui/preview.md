@@ -6,8 +6,8 @@ description: "A clickable static mockup of the Web UI v2 plan, with example data
 ---
 
 This is a clickable mockup of the [Web UI v2 plan](/docs/features/web-ui/plan): plain HTML, CSS and a
-little JavaScript, with no server and no network access. It is not the Norca UI and not connected to a
-cluster. All data is example data of one region with 8 datacenters, 5 servers and about 350 client nodes;
+little JavaScript, with no server and no network access. **It is not the Norca UI and not connected to a
+cluster.** All data is example data of one region with 8 datacenters, 5 servers and about 350 client nodes;
 every name, ID and address is made up, and the clock is fixed, so "4m ago" means the same on every page.
 
 **The mockup shows the direction, not the specification.** It does not show everything the API and the

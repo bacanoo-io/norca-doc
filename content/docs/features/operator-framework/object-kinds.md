@@ -44,8 +44,8 @@ kind "LoadBalancer" {
 
 Registering or changing a kind needs `operator` write. The servers compile the
 schema and the rules when the kind is written, and reject the kind if one of
-them is invalid. A kind with objects cannot change between namespaced and
-cluster-scoped, and cannot be deleted until its objects are gone.
+them is invalid. **A kind with objects cannot change between namespaced and
+cluster-scoped, and cannot be deleted until its objects are gone.**
 
 ### Namespaced and cluster-scoped kinds
 
@@ -172,8 +172,8 @@ The stored object has these parts:
 | Event log | The last 20 events (`Ready`, `ProvisioningFailed`, `Scaled`) | controllers (`write-events`) and the server |
 
 The `Generation` increases on every change of the spec. A controller copies the
-generation it acted on to `status.observedGeneration`; when the two are equal and
-the `Ready` condition is `True`, the object is up to date and healthy. The
+generation it acted on to `status.observedGeneration`; **when the two are equal and
+the `Ready` condition is `True`, the object is up to date and healthy.** The
 conditions follow a fixed shape (`type`, `status` of `True`, `False` or
 `Unknown`, `reason`, `message`, `lastTransitionTime`); `Ready`, `Progressing`
 and `Degraded` are the standard types.

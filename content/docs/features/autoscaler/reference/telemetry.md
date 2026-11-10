@@ -12,8 +12,8 @@ server's telemetry: they are configured with the agent's
 [`telemetry` block](/docs/configuration/telemetry), are available from the
 [`/v1/metrics`](/docs/api/metrics) endpoint, and are dumped to `stderr` when
 the agent receives `USR1` (on Windows `BREAK`) like every other agent metric.
-There is no separate autoscaler process and no separate telemetry
-configuration.
+**There is no separate autoscaler process and no separate telemetry
+configuration.**
 
 The metrics are emitted by the leader, which runs the autoscaler. With the
 default telemetry settings their names start with `nomad.nomad.autoscaler.`.

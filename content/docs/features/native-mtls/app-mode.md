@@ -29,8 +29,8 @@ secrets directory:
 The certificate carries the URI SAN `spiffe://<trust-domain>/ns/<namespace>/job/<job>/group/<group>`
 and the DNS names `<service>.service.<namespace>.norca`, `<service>.service.<namespace>.<region>.norca`
 (and `<service>.service.norca` in the `default` namespace) of the group's mtls services. The client
-replaces the files at two thirds of the lifetime and after a CA rotation; an application must re-read
-them (the Go library does so), or be signaled or restarted by the client with `change_mode` (see
+replaces the files at two thirds of the lifetime and after a CA rotation; **an application must re-read
+them** (the Go library does so), or be signaled or restarted by the client with `change_mode` (see
 [Reacting to renewals](#reacting-to-renewals)).
 
 An application in app mode should:
@@ -180,8 +180,8 @@ create the intention that allows it, for example `norca service intention create
 
 The client renews the certificate at about two thirds of its lifetime (16 hours, minus up to 72 minutes
 of jitter, with the default `leaf_cert_ttl` of 24 hours), re-issues it right after a CA rotation, and
-rewrites the bundle when a CA is added or retired. The files are replaced atomically. An application that
-reloads them itself (the Go library does) needs nothing else. One that reads them only when it starts
+rewrites the bundle when a CA is added or retired. The files are replaced atomically. **An application that
+reloads them itself (the Go library does) needs nothing else.** One that reads them only when it starts
 tells the client with `change_mode` what to do with the running task:
 
 ```hcl
@@ -244,9 +244,10 @@ The options (`change_mode`, `change_signal`, `change_on`) are described in the
 - **Placement and updates:** the signals are added to the implied `${attr.os.signals}` constraint of the
   task, like template signals. Changing these options is an in-place update.
 
-The renewals of the tasks are spread by the jitter, but a CA rotation reaches every task of the region at
-once: all tasks with `change_mode = "restart"` restart within seconds of each other. Run more than one
-instance of such services, or use a signal if the application can reload its certificate.
+> [!WARNING]
+> The renewals of the tasks are spread by the jitter, but **a CA rotation reaches every task of the region at
+> once: all tasks with `change_mode = "restart"` restart within seconds of each other.** Run more than one
+> instance of such services, or use a signal if the application can reload its certificate.
 
 ### Templates
 
@@ -298,7 +299,7 @@ EOT
   seconds when a certificate or the bundle is used. Otherwise `change_mode` signals or restarts the task;
   there is no `script` change mode and no configurable splay.
 - The module path of the Go package is `github.com/bacanoo-io/norca/norca/api`.
-- An `Authorizer` denies connections that no intention matches unless `DefaultAllow` is set.
+- **An `Authorizer` denies connections that no intention matches unless `DefaultAllow` is set.**
 
 ## Design
 

@@ -37,8 +37,8 @@ stateDiagram-v2
 - An object has at most 32 finalizers. Names start and end with a letter or
   digit and may contain `.`, `_`, `/` and `-`.
 
-Because the finalizer is stored on the object, cleanup also happens when the
-controller was down at the time of the deletion: it finds the object marked
+Because the finalizer is stored on the object, **cleanup also happens when the
+controller was down at the time of the deletion**: it finds the object marked
 when it starts again.
 
 ## Owners and garbage collection
@@ -73,7 +73,7 @@ flowchart TB
   M -->|"orphan"| O["Remove object (after finalizers)"] --> K["Owned objects and jobs stay"]
 ```
 
-- Owned jobs are stopped, not purged; the job garbage collector purges them
+- **Owned jobs are stopped, not purged**; the job garbage collector purges them
   later.
 - An object is deleted only when all its custom object owners are gone.
 - Owned objects are deleted like a `background` deletion, so their own

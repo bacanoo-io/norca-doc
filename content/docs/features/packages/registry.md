@@ -16,8 +16,8 @@ build their install form in the [web UI catalog](/docs/features/packages/catalog
 
 The packs and the documentation of the registry are licensed under the Mozilla Public License 2.0.
 The software the packs install keeps its own license. The packs **reference** that software (images,
-release archives) by name, tag and optionally digest; they never include it, and the registry
-distributes none of it. Consul in particular is BSL 1.1, Forgejo GPL-3.0-or-later and OpenObserve
+release archives) by name, tag and optionally digest; **they never include it, and the registry
+distributes none of it.** Consul in particular is BSL 1.1, Forgejo GPL-3.0-or-later and OpenObserve
 AGPL-3.0.
 
 ## Adding the registry
@@ -274,7 +274,7 @@ norca pack run nats --registry=norca -f nats.hcl
 ```
 
 TLS material and tokens come from a Variable (default `nomad/jobs/<job>`), user passwords from the
-built-in secret store (`nats/users/<name>`); never from pack variables. With `auth_mode = "token"`
+built-in secret store (`nats/users/<name>`); **never from pack variables.** With `auth_mode = "token"`
 the item `client_token` holds the token (plain or a bcrypt hash of `nats server passwd`; any
 characters, quoted for the NATS configuration parser). `auth_mode = "userpass"` is available from
 pack version 0.3.0.
@@ -394,8 +394,8 @@ norca pack run postgres --registry=norca -f postgres.hcl
 Norca backups (see [backup and restore](/docs/features/backup-restore)): one server with one drive, or
 a distributed cluster with one server per node, the root credentials from the built-in secret store,
 the data on a client host volume, health checks with the startup, readiness and liveness roles, and
-optionally a poststart task that creates the backup bucket. Keep the backups outside the cluster they
-protect.
+optionally a poststart task that creates the backup bucket. **Keep the backups outside the cluster they
+protect.**
 
 | Variable | Default | |
 | --- | --- | --- |
@@ -461,8 +461,8 @@ norca pack run traefik --registry=norca -f examples/traefik/web.hcl
   changes rendered jobs raises the patch version, new variables raise the minor version, renamed or
   removed variables and changed defaults that change a running installation raise the major version
   (`0.x`: the minor version).
-- The registry is released as a whole with tags `vMAJOR.MINOR.PATCH`. A tag is never moved; pin it
-  with `--ref`. `main` is the development branch and may change at any time.
+- The registry is released as a whole with tags `vMAJOR.MINOR.PATCH`. **A tag is never moved; pin it
+  with `--ref`.** `main` is the development branch and may change at any time.
 - A registry release lists the pack versions it contains in its release notes. Pinned images change
   only with a pack version.
 - Server releases record the pack name and version in the release; `norca pack history` shows which

@@ -8,7 +8,7 @@ description: "Publishing packs to OCI registries, signing them with cosign compa
 Besides git registries, `norca pack` stores packs as artifacts in OCI registries (Harbor, GitHub
 Container Registry, Zot, `distribution`, ...), signs them with cosign compatible key pairs, moves them
 into air-gapped environments as offline bundles, and pins the content of packs and of their vendored
-dependencies in a `pack.lock` file. All of this happens on the client. On the server side,
+dependencies in a `pack.lock` file. **All of this happens on the client.** On the server side,
 [admission policies with `trusted_keys`](/docs/features/packages/releases#signatures-in-protected-namespaces)
 admit only releases of signed packs, and releases record the digest and signer of their pack.
 
@@ -139,7 +139,7 @@ the commands that have them: `push`, `sign`, `verify`, `bundle create`, `bundle 
 `NORCA_PACK_REGISTRY_USERNAME`/`NORCA_PACK_REGISTRY_PASSWORD` environment variables (a password
 without user name is used as an identity token), and the docker configuration
 (`~/.docker/config.json` or `$DOCKER_CONFIG`, including credential helpers, that is `docker login`).
-Credentials are never written into the pack configuration. TLS is verified against the system CA
+**Credentials are never written into the pack configuration.** TLS is verified against the system CA
 pool plus `ca_cert`; `plain_http` and `tls_skip_verify` exist for internal registries.
 
 ## Signing and trust policies
@@ -181,8 +181,8 @@ encoding.
 **Offline re-verification:** every pack downloaded into the cache keeps its signed manifest and its
 signatures in `.norca-origin.json`. Before a cached pack is used, the client checks the manifest
 against its digest, the pack files against the content digest signed in the manifest, and the
-signatures against the *current* trust policy. A pack modified in the cache, or one whose signer is
-no longer trusted, is rejected. Git registries and local pack directories are not signed and not
+signatures against the *current* trust policy. **A pack modified in the cache, or one whose signer is
+no longer trusted, is rejected.** Git registries and local pack directories are not signed and not
 subject to the trust policy.
 
 The servers can enforce signatures too: an admission policy with the `release` resource and
@@ -271,8 +271,8 @@ dependency "redis" {
   `--lock=update` (re)writes it for a pack in a local directory, `--lock=ignore` skips the check.
 - `push` and `bundle create` refuse packs whose lock file does not match.
 - The output is reproducible: the same content always produces the same bytes. The digests depend
-  only on relative paths and file contents (not on timestamps or permissions); note that line ending
-  conversion (for example git `autocrlf`) changes contents.
+  only on relative paths and file contents (not on timestamps or permissions); **note that line ending
+  conversion (for example git `autocrlf`) changes contents.**
 
 ## Provenance in the job meta
 

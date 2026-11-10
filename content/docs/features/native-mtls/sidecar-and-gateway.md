@@ -95,11 +95,12 @@ flowchart LR
   sc1 -->|"mTLS, SNI api.service.default.global.norca"| sc2
 ```
 
-The application port should not be mapped to the host: use a port number (`port = "8080"`) or a group port
-label without a host mapping, otherwise the application is also reachable without mTLS. Service checks of
-the native provider still use the application port.
+> [!WARNING]
+> **The application port should not be mapped to the host**: use a port number (`port = "8080"`) or a group port
+> label without a host mapping, otherwise the application is also reachable without mTLS. Service checks of
+> the native provider still use the application port.
 
-Changing `mtls` blocks of sidecar or gateway services is a destructive update. Intentions, upstream instances,
+**Changing `mtls` blocks of sidecar or gateway services is a destructive update.** Intentions, upstream instances,
 certificate renewals and CA rotations are applied to the running Envoy without restarting it.
 
 ### Authorization
@@ -118,8 +119,8 @@ norca service intention create -deny 'batch/*' api
 Intentions are regional, as the design sets out: they are stored in the Raft state of one region and, unlike
 ACL policies, tokens, namespaces and quotas, are not replicated from the authoritative region. A write goes to
 the region of the request (`-region`, by default the region of the agent the CLI talks to), and the sidecars
-of a region enforce only the intentions stored in that region. For a connection across regions the
-intentions of the destination region decide: create `probe → api` in the region where `api` runs. The
+of a region enforce only the intentions stored in that region. **For a connection across regions the
+intentions of the destination region decide**: create `probe → api` in the region where `api` runs. The
 source of an intention has no region: it matches the source service in any region whose certificates the
 destination trusts (`federation`). To apply the same rules in every region, create them in each region.
 
@@ -127,8 +128,8 @@ A change applies to new connections within about a second. The intentions are pa
 so a change to the intentions of the service replaces it: connections that were established before keep
 running on the previous listener version until Envoy has drained it (`--drain-time-s`, 600 s by default), then
 they are closed and the clients reconnect under the new rules. Changes to intentions of other services, new
-certificates and changed upstream instances don't touch the listener. Restart the sidecar task to cut the
-existing connections immediately.
+certificates and changed upstream instances don't touch the listener. **Restart the sidecar task to cut the
+existing connections immediately.**
 
 ### Envoy image
 
@@ -152,7 +153,7 @@ client {
 }
 ```
 
-Norca does not distribute Envoy; the client pulls the image like any other task image.
+**Norca does not distribute Envoy**; the client pulls the image like any other task image.
 
 To change the resources, the driver or anything else of the proxy task, define the task in the group yourself
 with `kind = "mtls-proxy:<service>"` (or `"mtls-gateway:<service>"`); the servers then don't inject one. Its
@@ -165,8 +166,8 @@ static bootstrap whose listeners and clusters come from files, one endpoint file
 certificate, key and trust bundle as SDS files. It replaces a file atomically and only when its content
 changes, and Envoy reloads it. Once a second, and right after an intention change, the client renders the
 configuration from the intentions of the namespace and the healthy instances of the upstreams, which it
-follows with blocking queries. The first configuration waits up to 10 seconds for the servers; until
-intentions are known, every inbound connection is denied. Envoy keeps its last configuration when the
+follows with blocking queries. The first configuration waits up to 10 seconds for the servers; **until
+intentions are known, every inbound connection is denied.** Envoy keeps its last configuration when the
 client restarts.
 
 ## Cross-region gateway
@@ -203,7 +204,7 @@ The `mtls-gateway` pack of the [Norca pack registry](https://github.com/bacanoo-
 renders this job with its options (system or service job, port, host network, placement, an Envoy task of its own):
 `norca pack run mtls-gateway --registry=norca --region=<region>`.
 
-Run it in the `default` namespace. The servers inject the Envoy task `mtls-gateway-<service>` (host networking
+**Run it in the `default` namespace.** The servers inject the Envoy task `mtls-gateway-<service>` (host networking
 is supported as well). The gateway listens on the service port, reads the SNI name of each TLS connection and
 forwards the connection, without terminating it, to a healthy instance of the mtls service
 `<service>.service.<namespace>.<region>.norca` of its region (registrations with `norca-mtls` = `app` or
@@ -225,14 +226,19 @@ sequenceDiagram
 ```
 
 An upstream with `region = "<other region>"` connects to the instances of the gateway service of that region
-(`gateway = "<name>"` selects another gateway service of its `default` namespace). The servers of the two
-regions must be federated, the regions must share the trust domain or trust each other's roots
-(`server { mtls { federation = true } }`), and the nodes must reach the gateway port of the other region
-(for example over the VPN between the clouds).
+(`gateway = "<name>"` selects another gateway service of its `default` namespace).
 
-With ACLs enabled, the client reads the catalog of another region with the token of its `dns` block
-(`client { dns { token = "..." } }`), which must be valid in every region (a global token with `read-job` on
-the namespaces of the gateways); without it, the node identity is used, which other regions don't accept.
+- The servers of the two
+  regions must be federated,
+- the regions must share the trust domain or trust each other's roots
+  (`server { mtls { federation = true } }`),
+- and the nodes must reach the gateway port of the other region
+  (for example over the VPN between the clouds).
+
+> [!IMPORTANT]
+> With ACLs enabled, the client reads the catalog of another region with the token of its `dns` block
+> (`client { dns { token = "..." } }`), **which must be valid in every region** (a global token with `read-job` on
+> the namespaces of the gateways); without it, the node identity is used, which other regions don't accept.
 
 The [multi-region example](/docs/getting-started/examples/04-multi-region) runs this setup: a gateway in
 both regions, `test-api` in `eu-1` and a probe in `eu-2` with the upstream below, and the intention created

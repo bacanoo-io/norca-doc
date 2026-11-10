@@ -23,12 +23,13 @@ Node scaling is built from three parts:
 - an **operator** creates and deletes the machines to match the scale, through a
   **provider** application for a platform ([`norca.io/NodeProvider`](/docs/features/node-scaling/nodeprovider)).
 
+> [!NOTE]
 > **What is available today.** The decisions (the kinds, the policy derived from the objects, the
 > trigger on blocked work, the headroom, the expanders, the dry run) and the operator,
 > `norca-nodescaler` (the `nodescaler-operator` pack), with its provider contract. There is no
 > provider for a cloud yet: the node providers that exist are the `mock` and `docker` types of
 > `norca-provider`, for tests.
-> Without a provider for your platform the scale is a recommendation: use it with
+> **Without a provider for your platform the scale is a recommendation**: use it with
 > `enforce = false` and read the events, or let your own tooling (or a person, with
 > `norca object scale`) act on `spec.replicas`.
 
@@ -42,8 +43,8 @@ cooldown, the rate limit and the oscillation guard are the ones described on the
 written to `spec.replicas` through the scale subresource, and the cooldown is read from the event
 log of the object, so a new leader keeps it.
 
-The checks of a group only **raise** its scale; a check that would lower it is ignored. A group is
-lowered by its `scale_down` block alone (see [Scale down](#scale-down)), which keeps the protections
+The checks of a group only **raise** its scale; a check that would lower it is ignored. **A group is
+lowered by its `scale_down` block alone** (see [Scale down](#scale-down)), which keeps the protections
 a scale down of nodes needs.
 
 Besides the checks, three triggers act on the groups. They run every `interval` of the
@@ -76,7 +77,7 @@ it, **without waiting for the cooldown of the group**:
    `max_step` of the pool.
 
 When the nodes the group has are not known (an operator does not report them and the cluster gauges
-cannot be read), the group is left alone: without that number the nodes on their way cannot be told
+cannot be read), **the group is left alone**: without that number the nodes on their way cannot be told
 from the ready ones, and the work would be asked for again at every look. A group whose datacenter, pool and class have no node at all (a new class, or every node down) is known to have none: it grows from nothing.
 
 ### Headroom
@@ -85,14 +86,14 @@ from the ready ones, and the work would be asked for again at every look. A grou
 applies) keeps free capacity worth that many nodes ahead of the work, so that new work can be placed
 at once while the next node starts. The free capacity is read from the cluster gauges of the group:
 the ready, eligible nodes and the allocated share of CPU and memory (the scarcer of the two). Nodes
-on their way count as free; the nodes that blocked work needs do not. The headroom is an
-ahead-of-time trigger, so it waits for the cooldown of the group. When the gauges cannot be read,
+on their way count as free; the nodes that blocked work needs do not. **The headroom is an
+ahead-of-time trigger, so it waits for the cooldown of the group.** When the gauges cannot be read,
 nothing is added.
 
 ### Scale down
 
-A group with a `policy.scale_down` block loses one node at a time; a group without it is never
-lowered by the autoscaler. The scale is lowered by one when, for `unneeded_for` (10 minutes by
+A group with a `policy.scale_down` block loses one node at a time; **a group without it is never
+lowered by the autoscaler.** The scale is lowered by one when, for `unneeded_for` (10 minutes by
 default) without a break:
 
 - no blocked work could use the group;
@@ -105,17 +106,17 @@ default) without a break:
 - the operator does not hold it (the condition `ScaleDownBlocked`, until its `retryAfter`).
 
 One group of a node pool is lowered at a time, the one with the most nodes first (which keeps the
-spread over the datacenters), and the pool waits while a node of it is being removed. The decision
-is only the number: the operator chooses the node, drains it and deletes its instance. When no node
+spread over the datacenters), and the pool waits while a node of it is being removed. **The decision
+is only the number: the operator chooses the node, drains it and deletes its instance.** When no node
 of the group may go, the operator sets `ScaleDownBlocked` with a `retryAfter` time, and the
 autoscaler sets the scale back to the nodes the group has, so the two do not pull the number up and
 down. A new leader starts the wait of `unneeded_for` again.
 
 ## Dry run
 
-A group is a **dry run** until you set `enforce = true`. A decision is then recorded in the event
+**A group is a *dry run* until you set `enforce = true`.** A decision is then recorded in the event
 log of the object (`norca object events norca.io/NodeGroup <name>`, reason `ScalingDryRun`, once
-for the same decision) and `spec.replicas` is not changed. Run a group this way first and compare
+for the same decision) and **`spec.replicas` is not changed.** Run a group this way first and compare
 the decisions with what you expect.
 
 ## Events and metrics
@@ -228,7 +229,7 @@ framework, run as a job (the `nodescaler-operator` pack), and it follows the
 
 - The reconciling of a region does not scale out: it is one process, and adding instances does not
   divide it. What helps a region with many groups is more `-workers` on the leader.
-- Do not run two operators for one region without leader election (`-leader-election=false`). The
+- **Do not run two operators for one region without leader election (`-leader-election=false`).** The
   status writes are check-and-set and the requests to a provider can be repeated, so nothing breaks
   at once, but both would act on the same groups: their writes would conflict and be retried, and
   two of them could decide about the same node during a replacement or a drain.
@@ -241,7 +242,7 @@ framework, run as a job (the `nodescaler-operator` pack), and it follows the
 - The groups of one node pool and datacenter must not overlap: use one group without `node_class`,
   or groups with different classes.
 - A job fixed to one datacenter stays blocked until its owner changes the job or raises the group;
-  the scaler never moves work between datacenters.
+  **the scaler never moves work between datacenters.**
 - A constraint of a job on `${node.class}` is checked against the `node_class` of each group, the way the scheduler checks it, with `=`, `!=`, `regexp`, `set_contains`, `set_contains_all`, `set_contains_any`, `is_set` and `is_not_set` (the class of a node is always set, even when it is empty). The nodes of a group without `node_class` have no class. Other operators, and a value that is itself a property of a node (`${meta.class}`), cannot be checked ahead of time and are reported like an unverifiable constraint.
 - The autoscaler lowers the scale of a group, but choosing, draining and deleting the node is the
   work of the operator; until the operator does it, `spec.replicas` stays below the nodes the group

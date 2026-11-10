@@ -28,8 +28,8 @@ install.
 > use case.
 
 Why not the last MPL release of Consul (v1.16.4)? It misses years of security fixes that were released
-only under the BSL, and supports only Envoy versions that no longer receive fixes. The pack therefore
-installs a current release.
+only under the BSL, and supports only Envoy versions that no longer receive fixes. **The pack therefore
+installs a current release.**
 
 ## How it works
 
@@ -66,9 +66,10 @@ flowchart TB
   (`image_registry` defaults to `docker.io`), so a mirror of the unmodified official image in an internal
   registry can be pinned by digest.
 
-Norca's own `consul {}` agent block is not changed by the pack. While Consul runs on a node, Norca's
-default Consul address (`127.0.0.1:8500`) reaches it, so either wire Norca to it with a token or turn the
-integration off on every node:
+> [!IMPORTANT]
+> Norca's own `consul {}` agent block is not changed by the pack. While Consul runs on a node, Norca's
+> default Consul address (`127.0.0.1:8500`) reaches it, so **either wire Norca to it with a token or turn the
+> integration off on every node:**
 
 ```hcl
 consul {

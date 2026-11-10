@@ -28,7 +28,7 @@ A secret lives at a **path** in a **namespace**, for example `prod/db/postgres` 
 | Path | Letters, digits, `-`, `_`, `~` and `/`, at most 256 characters, no leading, trailing or double `/`. |
 | Items | The value: key/value pairs of strings. Item keys use letters, digits, `_`, `.` and `-` (at most 128 characters). At most 64 KiB per version in total. |
 | Versions | Numbered from 1. The last `max_versions` (default 10, at most 100) are kept; older ones are destroyed on the next write. |
-| Metadata | `Description` (at most 1024 bytes), `Owner` (at most 256 bytes), `Labels` (at most 64), `ExpiresAt`, `RotateEvery`, `Rotate` (the rotation job), `MaxVersions`, `Replicate` ([replication](#replication-between-regions)). Metadata is never secret: everyone who may list the secret sees it. |
+| Metadata | `Description` (at most 1024 bytes), `Owner` (at most 256 bytes), `Labels` (at most 64), `ExpiresAt`, `RotateEvery`, `Rotate` (the rotation job), `MaxVersions`, `Replicate` ([replication](#replication-between-regions)). **Metadata is never secret: everyone who may list the secret sees it.** |
 | Value hash | `hmac-sha256:...`, a keyed hash of the items per version, so changes are visible without the value and the value can't be guessed offline. |
 | State | A version can be **deleted** (soft; `undelete` restores it) or **destroyed** (permanent). Destroying the whole secret removes all versions and the metadata. |
 
@@ -58,7 +58,7 @@ version is neither deleted nor destroyed) on the `Secret` event topic, with meta
   `nomad.secrets.rotation_due` (numbers of live secrets in each condition; 0 on the other servers) and
   counts rotation dispatches in `nomad.secrets.rotation.dispatched` and `nomad.secrets.rotation.failed`.
 
-A static secret is never changed by the store itself. To rotate it automatically, name a **rotation
+**A static secret is never changed by the store itself.** To rotate it automatically, name a **rotation
 job**: a [parameterized](/docs/job-specification/parameterized) batch job in the secret's namespace
 that creates the new value and writes it as a new version
 (`norca secret put -rotate-job rotate-db-password`, or `"Rotate": {"Job": "rotate-db-password"}` in the
@@ -185,7 +185,7 @@ authoritative region "eu" and is read-only in region "us"; change it in region "
 - **Backup and restore.** Replicas are part of the region's Raft snapshot like any secret. A replica
   restored in a non-authoritative region (a full or snapshot restore) is overwritten by the replication
   at the next comparison with the current state of the authoritative region, and replicas of secrets
-  that are gone there are removed. Restore replicated secrets in the authoritative region.
+  that are gone there are removed. **Restore replicated secrets in the authoritative region.**
 
 ### Permissions
 

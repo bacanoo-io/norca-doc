@@ -26,11 +26,11 @@ Norca adds an optional `role` to service checks:
   not pass within `startup_timeout`, the task is restarted.
 - **readiness** - can the instance receive traffic? It decides whether the
   instance is ready in the native service catalog and counts for deployment
-  health. Its failure never restarts the task.
+  health. **Its failure never restarts the task.**
 - **liveness** - does the task need a restart? Its failure restarts the task.
-  It does not affect the catalog nor deployments.
+  **It does not affect the catalog nor deployments.**
 
-A check without a role behaves exactly as in Nomad v1.6.5.
+**A check without a role behaves exactly as in Nomad v1.6.5.**
 
 The idea comes from Kubernetes (startup, readiness and liveness probes). The
 design and implementation are Norca's own: the roles are a field of the
@@ -73,7 +73,7 @@ stateDiagram-v2
   `limit = 3` and `grace = 0`, because the startup check provides the grace
   period. A liveness check of a Consul service is not registered in Consul; the
   Norca client executes it, so it does not change the health of the service in
-  Consul, and it must be of type `http` or `tcp`.
+  Consul, and **it must be of type `http` or `tcp`.**
 - **Deployments.** Startup and readiness checks count for the health of a
   deployment (`update { health_check = "checks" }`), liveness checks do not.
 - **Restarts.** Restarts caused by a startup timeout or a liveness failure are
@@ -124,10 +124,12 @@ service {
 }
 ```
 
-An application that needs up to 10 minutes to start is not restarted during
-that time, a readiness failure takes the instance out of traffic without a
-restart, and once started a hung process is restarted after three failed
-liveness checks (about 45 seconds) instead of after a long grace period.
+- An application that needs up to 10 minutes to start is not restarted during
+  that time,
+- a readiness failure takes the instance out of traffic without a
+  restart,
+- and once started a hung process is restarted after three failed
+  liveness checks (about 45 seconds) instead of after a long grace period.
 
 ## Configuration reference
 

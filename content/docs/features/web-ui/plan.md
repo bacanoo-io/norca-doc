@@ -81,7 +81,7 @@ is always shown with its short ID.
 
 ## Conditions coloured by meaning
 
-A condition is not good because it is True. Each kind says which of its conditions are bad when True (a
+**A condition is not good because it is True.** Each kind says which of its conditions are bad when True (a
 hint in the kind definition), and the condition chips, the object health in lists and the dashboard
 warnings all use it.
 
@@ -127,7 +127,7 @@ and node pool.
   release upgrades, restores waiting for approval.
 - **Warnings** by condition meaning, **quota pressure** with a trend, and the latest events with names.
 
-Every number links to the filtered list it counts. A batch history endpoint (several series in one
+**Every number links to the filtered list it counts.** A batch history endpoint (several series in one
 request) is proposed so that the capacity block does not need one request per series.
 
 ## The region map
@@ -194,8 +194,8 @@ The internal metrics store runs on every server and is not replicated. The Metri
 - **What is stored and what is planned**, in plain words. The store keeps today the history of task
   groups, cluster capacity (including blocked demand and ready nodes), autopilot health and quotas.
   Planned: node host statistics, per-server Raft, and the history of the scheduler and of objects such
-  as node groups and load balancers. A chart that needs planned history is drawn as an outline with a
-  "planned" badge, never with invented values, and the badge links to this explanation.
+  as node groups and load balancers. **A chart that needs planned history is drawn as an outline with a
+  "planned" badge, never with invented values**, and the badge links to this explanation.
 
 Metrics of operators stay on the operator's own `/metrics` port and are not reachable through the agent;
 showing them needs a decision first (a status summary in the object, or a proxy in the agent).

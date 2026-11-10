@@ -85,7 +85,7 @@ the scale subresource of the object; the controller then derives the group count
 from the object. The cooldown and the oscillation protection are derived from
 the event log of the object, where every change of the scale is recorded. A
 scale up is capped by the namespace quota with the task group as the size of one
-replica. Only one `target` block is allowed in a policy.
+replica. **Only one `target` block is allowed in a policy.**
 
 ## Not applicable to Norca
 

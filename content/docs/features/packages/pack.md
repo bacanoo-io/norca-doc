@@ -35,10 +35,10 @@ added with `--ref=v0.1.0` under `v0.1.0`. Several refs of a registry can be cach
 ref a registry was last added or updated with is its default ref (recorded in
 `<cache>/<registry>/default-ref`), which pack commands without `--ref` use.
 
-The cache is needed for `norca pack` to work, but do not change its files by hand; use the
-`registry` commands instead.
+The cache is needed for `norca pack` to work, but **do not change its files by hand; use the
+`registry` commands instead.**
 
-No registry is added automatically. Add one with `registry add` (see below), for example the
+**No registry is added automatically.** Add one with `registry add` (see below), for example the
 [Norca pack registry](/docs/features/packages/registry). Commands without `--registry` use the
 registry named `default`, so a registry added under that name can be used without the flag.
 
@@ -73,7 +73,7 @@ norca pack registry add norca https://github.com/bacanoo-io/norca-registry --tar
 ```
 
 To download a single pack or an entire registry at a specific version or SHA, use the `--ref` flag.
-Pin release tags in anything but experiments:
+**Pin release tags in anything but experiments:**
 
 ```shell
 norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.1.0
@@ -340,7 +340,7 @@ norca pack run hello_world --name hola-mundo --var job_name=spanish
 norca pack run hello_world --name hola-mundo --var job_name=hola
 ```
 
-If you run `destroy` without the variable overrides, it destroys both jobs, since by default
+If you run `destroy` without the variable overrides, **it destroys both jobs**, since by default
 `norca pack` targets all jobs belonging to the pack and deployment name:
 
 ```shell
@@ -364,8 +364,8 @@ To stop the jobs of a pack without removing them from the cluster, use the `stop
 norca pack stop hello_world --name hola-mundo
 ```
 
-The `destroy` command is the same as `stop --purge`. For releases, prefer
-[`uninstall`](/docs/commands/pack/uninstall), which also removes the non-job resources and the
+The `destroy` command is the same as `stop --purge`. **For releases, prefer
+[`uninstall`](/docs/commands/pack/uninstall)**, which also removes the non-job resources and the
 release.
 
 ## The hello_world pack

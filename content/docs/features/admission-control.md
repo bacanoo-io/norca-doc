@@ -24,7 +24,7 @@ Norca makes the chain configurable in two ways:
   webhook can also change it with a JSON Patch. The request and response
   documents follow the structure of an admission review.
 
-Both run for `norca job run` and for `norca job plan`, so a user sees a
+**Both run for `norca job run` and for `norca job plan`**, so a user sees a
 rejection, a warning or a modification already when planning.
 
 The idea comes from Kubernetes (ValidatingAdmissionPolicy with CEL rules, and
@@ -61,8 +61,8 @@ flowchart TB
 - **Policies.** A policy applies to the namespaces of its `match` block (glob
   patterns allowed, all namespaces if empty). Every rule is a CEL expression
   that must evaluate to `true`; a rule that fails to evaluate (for example
-  because it reads a missing field without `has()`) counts as violated, so a
-  broken `deny` rule fails closed. The expressions are compiled when the policy
+  because it reads a missing field without `has()`) counts as violated, so **a
+  broken `deny` rule fails closed.** The expressions are compiled when the policy
   is applied, and a policy that does not compile is not stored. A rule may cost
   at most a bounded amount of CEL work, and all policies of one submission must
   finish within 2 seconds.
@@ -95,7 +95,7 @@ flowchart TB
   `VariableAdmissionDenied`) event on the `AdmissionPolicy` topic of the
   [event stream](/docs/features/event-stream): namespace, job, operation, the
   submitter, the controller (`policy` or `webhook`), its name and the message.
-  `-policy-override` of `norca job run` does not bypass admission policies.
+  **`-policy-override` of `norca job run` does not bypass admission policies.**
 
 ## Example
 
@@ -246,8 +246,8 @@ Webhooks, `server { admission { webhook "<name>" { ... } } }` (full reference:
 
 ACL: `admission { policy = "read" }` reads policies and subscribes to the
 `AdmissionPolicy` topic, `admission { policy = "write" }` manages them. It is an
-operator-level rule, not scoped to a namespace. Webhooks cannot be managed
-through the API, so that a token cannot register a webhook that would see every
+operator-level rule, not scoped to a namespace. **Webhooks cannot be managed
+through the API**, so that a token cannot register a webhook that would see every
 job.
 
 Telemetry: `nomad.nomad.admission.denied`, `nomad.nomad.admission.webhook.calls`,
@@ -266,8 +266,8 @@ Telemetry: `nomad.nomad.admission.denied`, `nomad.nomad.admission.webhook.calls`
   server and restart the servers to change them.
 - A slow webhook slows down job submission (the chain runs on the leader for
   every `job run` and `job plan`), not the other operations of the cluster.
-- If a webhook service runs as a Norca job, exclude its own namespace with
-  `exclude_namespaces`, or its redeployment can be blocked by itself.
+- If a webhook service runs as a Norca job, **exclude its own namespace with
+  `exclude_namespaces`**, or its redeployment can be blocked by itself.
 - Policy writes need every server of the region on a Norca version that
   supports admission policies.
 

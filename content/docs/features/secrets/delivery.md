@@ -41,7 +41,7 @@ sequenceDiagram
   events; a denied or invalid request fails the task at once.
 - Files are written atomically (temporary file and rename) with mode 0400, owned by the task's user when
   the agent may change owners.
-- Symlinks are never followed, as the task can write to its `secrets/` directory: every directory on the
+- **Symlinks are never followed**, as the task can write to its `secrets/` directory: every directory on the
   way to the file, `secrets/` included, must be a real directory. A symlink (or a Windows junction)
   among them fails the delivery of the secret with an error instead of writing outside of the task
   directory; a symlink at the destination itself is replaced by the new file.
@@ -92,7 +92,7 @@ this order; the first step that names a provider wins:
 
 ### Access: `secret_access`
 
-Tasks have no implicit access to secrets. The `secret_access` block of a group (for all its tasks) or of a
+**Tasks have no implicit access to secrets.** The `secret_access` block of a group (for all its tasks) or of a
 task grants the tasks' workload identities `read-secret` and `list-secrets` on matching paths in the job's
 namespace, while the allocation is not terminal:
 
@@ -226,7 +226,7 @@ each secret; the secrets themselves are managed with [`norca secret`](/docs/comm
   engine for a credential with a lease, renewed while the task runs and revoked when it stops; see
   [Dynamic secrets](/docs/features/secrets/dynamic).
 - Not available yet: external providers, the per-client provider listing of the design.
-- Recommendation: prefer `file` delivery to `env`. Environment variables are visible to every process of
+- Recommendation: **prefer `file` delivery to `env`.** Environment variables are visible to every process of
   the task and are often logged by applications; an admission policy can forbid `env` per namespace.
 
 ## Design

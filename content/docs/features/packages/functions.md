@@ -31,7 +31,7 @@ their last argument.
 ### `var`
 
 Returns the value of a variable; nested values are addressed with dots (`"resources.cpu"`). A
-missing variable yields an empty string.
+**missing variable yields an empty string.**
 
 ```plaintext
 count = [[ var "count" . ]]

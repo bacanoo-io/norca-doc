@@ -94,8 +94,8 @@ flowchart LR
    scaling events, and reports "insufficient data" for the built-in metrics
    until one full metrics window has been collected.
 
-The built-in autoscaler only runs when every server of the region runs a Norca
-version that supports it ([version gate](/docs/introduction/compatibility#version-gate-of-the-norca-features)).
+**The built-in autoscaler only runs when every server of the region runs a Norca
+version that supports it** ([version gate](/docs/introduction/compatibility#version-gate-of-the-norca-features)).
 
 ## Example
 
@@ -224,7 +224,7 @@ Telemetry of the autoscaler is described in
   plugins are not loaded.
 - The Datadog, InfluxDB and Instana APMs are not built in; they can only be
   used as external plugins.
-- The usage data is not replicated: after a leader change the built-in metrics
+- **The usage data is not replicated**: after a leader change the built-in metrics
   need one full `metrics_window` before policies that use them scale again.
 - The `external` engine keeps the Nomad v1.6.5 behavior: an external autoscaler
   agent can list only its own policies with `GET /v1/scaling/policies?engine=external`.

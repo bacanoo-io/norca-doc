@@ -56,8 +56,8 @@ current state:
 
 An allocation that is not healthy can always be disrupted while the group has
 at least the required number of healthy allocations; a healthy one only while
-disruptions are allowed. When the group is already below the required count,
-nothing is disrupted.
+disruptions are allowed. **When the group is already below the required count,
+nothing is disrupted.**
 
 ```mermaid
 flowchart TB
@@ -74,14 +74,14 @@ flowchart TB
 
 **Drains.** The drainer applies the stricter of `migrate.max_parallel` and the
 budget, jointly for all nodes being drained at the same time. A drain that the
-budget holds back waits until replacements become healthy; at the drain
+budget holds back waits until replacements become healthy; **at the drain
 deadline (or with `-force`) the remaining allocations are stopped regardless of
-the budget, as before.
+the budget**, as before.
 
 **Evictions.** The budget is checked by the leader when the eviction is applied
 to the state store, in the same transaction that marks the allocation for
-migration and creates its evaluation. Two concurrent evictions therefore cannot
-exceed the budget together. An evicted allocation is stopped and rescheduled
+migration and creates its evaluation. **Two concurrent evictions therefore cannot
+exceed the budget together.** An evicted allocation is stopped and rescheduled
 like a migration; the change is published on the event stream with the type
 `AllocationEvicted` (topics `Allocation` and `Evaluation`). Evicting an
 allocation that is already stopping or migrating does nothing and returns no
@@ -140,7 +140,7 @@ The [`disruption`](/docs/job-specification/disruption) block is placed in a
 | `min_healthy` | string or number | none | Number of allocations that must stay healthy: a count (`4`) or a percentage of the group count (`"75%"`, rounded up). |
 | `max_unavailable` | string or number | none | Number of allocations that may be unavailable at the same time: a count (`1`) or a percentage (`"25%"`, rounded up). |
 
-Exactly one of the two must be set. Counts must not be negative and
+**Exactly one of the two must be set.** Counts must not be negative and
 percentages must not exceed 100%. Job registration warns when the budget blocks
 every voluntary disruption (the required count is at least the group count),
 because node drains would then always wait for their deadline. All servers of

@@ -14,9 +14,9 @@ version of what was installed, or roll it back. Norca solves this with a package
 part of the `norca` binary.
 
 The package manager is **Nomad Pack v0.4.2** (MPL 2.0), built in as the `norca pack` command tree.
-There is no separate `nomad-pack` binary. The pack format stays the same (a directory with
+There is no separate `nomad-pack` binary. **The pack format stays the same** (a directory with
 `metadata.hcl`, `variables.hcl`, `templates/` and `outputs.tpl`, rendered with `[[ ]]` Go templates),
-so existing packs keep working. Norca adds five things on top of it:
+**so existing packs keep working.** Norca adds five things on top of it:
 
 - **An extended package format.** Besides jobs, a pack can contain namespaces, quotas, ACL policies,
   Variables entries, object kinds, admission policies and custom objects, identified by the extension
@@ -43,7 +43,7 @@ so existing packs keep working. Norca adds five things on top of it:
 
 ## How it works
 
-`norca pack` renders on the client: what the servers receive is the list of rendered resources
+**`norca pack` renders on the client**: what the servers receive is the list of rendered resources
 together with the pack's metadata (name, version, registry, OCI digest, signatures, requirements,
 variables schemas). Packs of [cluster pack registries](/docs/features/packages/catalog) are rendered
 by the leader instead, from its cache, for the installs of the web UI and the API.

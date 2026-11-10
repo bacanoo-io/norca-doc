@@ -11,7 +11,7 @@ The state of a Norca region (jobs and their versions, allocations,
 deployments, namespaces, ACL objects, Variables, quotas, admission and network
 policies, secrets) lives in the Raft log of its servers. Nomad v1.6.5 can save
 a snapshot of it by hand (`operator snapshot save`), but has no scheduled
-backup, and a snapshot alone is not enough to rebuild a cluster: the keys that
+backup, and **a snapshot alone is not enough to rebuild a cluster**: the keys that
 encrypt Variables and sign workload identities are kept on the disk of every
 server, outside Raft.
 
@@ -21,9 +21,9 @@ RustFS, the `rustfs` pack of the
 [Norca pack registry](/docs/features/packages/registry)), and directories of
 the servers' filesystem, such as a file server mounted on every server. A
 backup holds the Raft snapshot, the keyring and the key of the built-in secret
-store. Every object is encrypted with
+store. **Every object is encrypted with
 [age](https://github.com/FiloSottile/age) public keys before it is written;
-the private keys stay with the administrators.
+the private keys stay with the administrators.**
 
 Backups can be listed, browsed and compared with the current state, in the CLI
 and the [web UI](/docs/features/web-ui). Restores come in three strengths:
@@ -73,13 +73,18 @@ flowchart LR
    uploads to a store and crash-safe writes to a directory (a temporary file,
    synced and renamed), so the memory used does not depend on the size of the
    snapshot. Each object is verified (its size, and with `verify_checksum` its
-   SHA-256), then the manifest is written last: without a manifest, an object
-   set is not a backup.
+   SHA-256), then the manifest is written last: **without a manifest, an object
+   set is not a backup.**
 5. The record of the backup (ID, Raft index, destinations, object counts) is
    written to Raft, and the retention deletes expired backups.
 
-A backup is `complete` when it was verified on every destination, `partial`
-when on at least one, and `failed` otherwise. All servers of the region must
+A backup is:
+
+- `complete` when it was verified on every destination,
+- `partial` when on at least one,
+- and `failed` otherwise.
+
+All servers of the region must
 run a Norca version that supports backups.
 
 ### Directory destinations and leader changes
@@ -97,8 +102,8 @@ such a backup fail with an error that names the requirement, and the retention
 keeps the record instead of dropping it silently.
 
 A directory is fast to restore from, but it is in the same site as the
-servers: combine it with an S3 store in another site, or copy the folders off
-the file server, for disaster recovery. Directories have no pre-signed
+servers: **combine it with an S3 store in another site, or copy the folders off
+the file server, for disaster recovery.** Directories have no pre-signed
 download URLs; administrators copy the files directly.
 
 ### Storage format
@@ -130,8 +135,8 @@ lost its Raft records can still be read.
 
 The [`retention`](/docs/configuration/backup#retention-parameters) block keeps
 the newest backup of each of the last 24 hours, 14 days, 8 weeks and 12 months
-by default, and never fewer than `min_keep` backups. A pinned backup is never
-deleted; backups can be pinned and labeled when they are taken or later. The
+by default, and never fewer than `min_keep` backups. **A pinned backup is never
+deleted**; backups can be pinned and labeled when they are taken or later. The
 automatic backup taken before a full restore is always pinned. Each leader
 deletes only within the prefix of its own region, and only on destinations
 with [`prune`](/docs/configuration/backup#prune) enabled, so a destination the
@@ -143,8 +148,8 @@ To browse, compare or restore, an administrator sends an age identity with the
 request. The server downloads the backup, decrypts it, and loads it into a
 separate in-memory state; the running cluster is not touched. The loaded
 backup stays in memory for
-[`browse_cache_ttl`](/docs/configuration/backup#browse_cache_ttl). The identity
-is used for the request only and never stored. Variables are shown with their
+[`browse_cache_ttl`](/docs/configuration/backup#browse_cache_ttl). **The identity
+is used for the request only and never stored.** Variables are shown with their
 key names, and secrets with their metadata, never their values.
 
 A selective restore writes every item with the normal API on behalf of the
@@ -184,8 +189,12 @@ sequenceDiagram
 ```
 
 A full restore returns the whole state of a region to the time of a backup.
-Every change since is lost, and the clients stop the allocations that are not
-in the backup. It is guarded:
+
+> [!WARNING]
+> **Every change since is lost, and the clients stop the allocations that are not
+> in the backup.**
+
+It is guarded:
 
 - **Preview.** The request is computed against the current state first: which
   objects would be removed, restored or reverted.
@@ -211,8 +220,10 @@ in the backup. It is guarded:
   warns about the live ones: their credentials can't be revoked and stay valid
   until their `max_ttl`, at the latest until the time it names.
 
-Restoring the authoritative region rolls the global ACL policies and tokens
-back in every region; the preview warns about it. After a restore of another
+#### Global objects and replicated secrets
+
+**Restoring the authoritative region rolls the global ACL policies and tokens
+back in every region**; the preview warns about it. After a restore of another
 region, ACL replication brings the global objects back to the state of the
 authoritative region. The same holds for
 [replicated secrets](/docs/features/secrets/secrets#replication-between-regions):
@@ -242,9 +253,9 @@ flowchart TB
   BOOT -- "keyring restore,<br/>Raft restore,<br/>secret store re-wrap" --> R2["New first server"]
 ```
 
-A backup can only be restored into its own region (`-allow-region-change`
+**A backup can only be restored into its own region** (`-allow-region-change`
 overrides this for `restore-bootstrap`; the region references of the jobs are
-not rewritten), and never by a Norca version older than the one that took it.
+not rewritten), **and never by a Norca version older than the one that took it.**
 
 ### Web UI
 
@@ -259,8 +270,8 @@ The **Backups** page of the [web UI](/docs/features/web-ui) shows, per region:
 - the **restore wizard** for selective and full restores, and the page of a
   full restore request with its preview, approval and rejection.
 
-The age identity is entered on the page and kept in the memory of the browser
-tab only.
+**The age identity is entered on the page and kept in the memory of the browser
+tab only.**
 
 ## Example
 
@@ -368,7 +379,7 @@ The [`backup` block](/docs/configuration/backup) of the server configuration:
 The [`backup` ACL rule](/docs/other-specifications/acl-policy#backup-rules)
 grants `read` (list, inspect, browse, compare, selective restore together with
 the normal write permissions) and `write` (manual backup, pin, label, delete,
-download URL). Full restores need management tokens.
+download URL). **Full restores need management tokens.**
 
 ## CLI and API
 
@@ -419,7 +430,7 @@ destination); see [Monitoring](/docs/operations/monitoring#backups).
   in time across the federation.
 - Server configuration, the local state of clients, allocation directories,
   CSI volume contents and the state of Consul or Vault are not backed up.
-- Norca never creates the bucket. It creates the directory of a directory
+- **Norca never creates the bucket.** It creates the directory of a directory
   destination, but not the mount behind it.
 
 ## Design

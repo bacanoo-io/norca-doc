@@ -8,8 +8,8 @@ description: "How the LoadBalancer operator finds the providers that create load
 ## What and why
 
 A `service` with an [`expose { load_balancer { ... } }`](/docs/job-specification/service)
-block asks for a load balancer in front of it. Norca does not create load
-balancers. The **LoadBalancer operator** (`norca-loadbalancer`) turns the request into a
+block asks for a load balancer in front of it. **Norca does not create load
+balancers.** The **LoadBalancer operator** (`norca-loadbalancer`) turns the request into a
 `norca.io/LoadBalancer` object, and a **provider**, an external application,
 creates the real load balancer at a cloud or on hardware. The `class` of the
 request says which provider.
@@ -313,8 +313,8 @@ service.
 - A **provider** needs `read`, `write` and `write-status` on
   `norca.io/LoadBalancerClass` (and on `norca.io/NodeProvider` if it also
   serves nodes), and nothing else. Who may write the kind
-  decides who can receive calls (and the tokens) for a class, so grant it only
-  to the provider's identity.
+  decides who can receive calls (and the tokens) for a class, so **grant it only
+  to the provider's identity.**
 
 ## Limits and status
 
@@ -323,8 +323,8 @@ service.
   ready is within 15 seconds and otherwise within a minute.
 - If the registration of a class is removed while `LoadBalancer` objects use
   it, deleting those objects waits until the class is registered again, because
-  the provider cannot be told to remove the load balancer. Remove the finalizer
-  by hand only if the cloud load balancer is already gone.
+  the provider cannot be told to remove the load balancer. **Remove the finalizer
+  by hand only if the cloud load balancer is already gone.**
 - Changing the `class` of a `LoadBalancer` removes what the previous provider
   created, if that class is still registered; otherwise it is left behind and
   logged.

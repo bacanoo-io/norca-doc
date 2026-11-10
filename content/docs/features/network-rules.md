@@ -26,7 +26,7 @@ The rules are enforced by the client with **nftables in the network namespace
 of each allocation** (bridge and CNI network modes). Egress is filtered by CIDR
 and port (level A); ingress is filtered on the node and on the host ports
 (level B). Nodes that cannot enforce the rules are filtered out by the
-scheduler, so a rule never silently has no effect.
+scheduler, so **a rule never silently has no effect.**
 
 The idea comes from Kubernetes (NetworkPolicy, and AdminNetworkPolicy for the
 administrator layer with explicit deny). The design and implementation are
@@ -44,8 +44,8 @@ namespaces (admin policy).
 
 **Isolation.** A namespace policy isolates a direction (`ingress` or `egress`)
 if it has rules in that direction, or lists the direction in `default_deny`.
-For an isolated direction, only the union of the traffic allowed by all
-policies selecting the allocation passes. Admin policies do not isolate by
+For an isolated direction, **only the union of the traffic allowed by all
+policies selecting the allocation passes.** Admin policies do not isolate by
 themselves: traffic that no admin rule decides and no namespace policy isolates
 is allowed.
 
@@ -93,14 +93,14 @@ are feasible, and groups in `host` network mode are not placed at all. With
 `enforcement = "best_effort"` the scheduler does not filter; job registration
 warns about groups whose network mode cannot enforce the selecting policies,
 and the client emits a `Network Policy Not Enforced` task event when it cannot
-apply the rules. If a required policy cannot be applied on the client, the
-allocation fails.
+apply the rules. **If a required policy cannot be applied on the client, the
+allocation fails.**
 
 **Across nodes.** In bridge mode, allocations on other nodes are reached
 through host ports, so the source of such traffic is the address of the sending
-node (or of an external client), not of an allocation. Selector peers therefore
+node (or of an external client), not of an allocation. **Selector peers therefore
 match allocations on the same node only; traffic from other nodes is matched by
-CIDR. Identity-based control between nodes is provided by
+CIDR.** Identity-based control between nodes is provided by
 [native mTLS and service intentions](/docs/features/native-mtls).
 
 ## Example
@@ -250,8 +250,8 @@ Available in Norca 0.1.0 (levels A and B of the design; level C, allocation
 ingress between nodes by label, is dropped in favor of
 [native mTLS](/docs/features/native-mtls)).
 
-- Linux clients only, bridge and CNI network modes. `host` mode cannot be
-  enforced.
+- **Linux clients only, bridge and CNI network modes. `host` mode cannot be
+  enforced.**
 - Selector peers match allocations on the same node; other nodes and external
   clients are matched by CIDR.
 - Not available: sampled logs of dropped connections, protection against deleting a namespace that has network

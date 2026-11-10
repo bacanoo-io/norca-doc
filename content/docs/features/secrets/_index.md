@@ -81,8 +81,8 @@ flowchart LR
   watches it for changes. See [Delivery to tasks](/docs/features/secrets/delivery).
 - **Resolution order.** Explicit `provider`, then the client's `route` rules, then the group, job and
   namespace default, then (for Vault-style lookups only) the agent's Vault integration, then the
-  built-in `norca` store as the fallback. Fallback means "nothing defined", never "the defined provider
-  failed".
+  built-in `norca` store as the fallback. **Fallback means "nothing defined", never "the defined provider
+  failed".**
 
 {{< cards >}}
   {{< card link="/docs/features/secrets/seal" title="Seal" subtitle="The shares seal, unsealing, seal status and online rewrap." >}}
@@ -140,7 +140,7 @@ job "app" {
 ```
 
 The task events of the allocation show which provider delivered the secret, for example
-`secret db: provider norca (fallback)`, never the value.
+`secret db: provider norca (fallback)`, **never the value.**
 
 ## Configuration reference
 

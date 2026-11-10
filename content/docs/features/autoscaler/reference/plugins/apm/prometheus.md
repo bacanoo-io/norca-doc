@@ -56,7 +56,7 @@ server {
   name will be set as the key with the `header_` prefix removed.
 
 - `skip_verify` `(bool: false)` - Do not verify TLS certificates when
-  connecting to the Prometheus server. This is strongly discouraged.
+  connecting to the Prometheus server. **This is strongly discouraged.**
 
 Several instances, for example for two Prometheus servers, are configured with
 several `apm` blocks with different labels.

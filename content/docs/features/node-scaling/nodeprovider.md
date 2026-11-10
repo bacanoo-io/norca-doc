@@ -9,7 +9,7 @@ A `NodeProvider` is a custom object of the kind `norca.io/NodeProvider`, cluster
 the region. A **provider** is an application outside the core that handles one platform (a cloud,
 or the VMs of a lab): it creates and deletes machines on request and reports the size of a machine
 kind. It registers itself by writing its object when it starts and keeps a heartbeat in the status.
-Credentials of the platform stay with the provider application and never enter an object.
+**Credentials of the platform stay with the provider application and never enter an object.**
 `norca-provider` (see [writing a provider](/docs/features/node-scaling/writing-a-provider)) is the
 provider application of Norca: it registers a `NodeProvider` for every provider of its configuration
 that has a node section, with the endpoint `<advertise_url>/providers/<name>`.

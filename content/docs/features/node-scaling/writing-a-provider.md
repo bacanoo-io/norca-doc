@@ -60,14 +60,19 @@ An instance:
 
 `state` is `creating`, `running`, `deleting` or `failed`; a failed instance says why in `reason`
 and `message`. A request that cannot be served is answered with an error body `{"reason": ...,
-"error": ...}`: `invalid` (status 400; an unknown group is 404), `quota` or `no_capacity` (422), or
-`error` (500). With `node.NewHandler` a provider returns Go errors and the handler writes them. The
+"error": ...}`:
+
+- `invalid` (status 400; an unknown group is 404),
+- `quota` or `no_capacity` (422),
+- or `error` (500).
+
+With `node.NewHandler` a provider returns Go errors and the handler writes them. The
 load balancer contract answers its failures in the same shape.
 
 ## What the operator relies on
 
-The operator keeps no state of its own about the machines: what it knows is what the provider
-lists. These rules are what make that safe.
+**The operator keeps no state of its own about the machines: what it knows is what the provider
+lists.** These rules are what make that safe.
 
 - **A create is idempotent by its `request_id`, also after a restart of the provider.** The operator
   repeats a request after a failure or a restart of its own, and must get the instances of the first
@@ -115,7 +120,7 @@ lists. These rules are what make that safe.
 A provider registers itself by writing its `NodeProvider` object (its `endpoint`, the
 `token_variable`, the `groups` with their `max` and `parameters`) and keeps `status.heartbeat`
 current. The operator takes a provider whose heartbeat is older than `-provider-ttl` (3 minutes) for
-unavailable, so a heartbeat every 10–30 seconds is right.
+unavailable, so **a heartbeat every 10–30 seconds is right.**
 
 - The operator calls only `https://` endpoints, unless it runs with `-provider-allow-http` (the
   `provider_allow_http` variable of the pack, for a lab).
@@ -232,10 +237,17 @@ list of the repository.
 ## The contract checks
 
 `provider/node/providertest` checks a provider the way the operator uses it: it serves the
-provider with `node.NewHandler`, calls it with the operator's client over HTTP, and checks the
-capacity of a group without instances, the idempotent create (names, labels, request IDs), invalid
-requests and unknown groups, the quota reason of a full group, the delete, a restart that loses
-nothing, and the token. The mock and the docker provider run it in their tests; a provider for a
+provider with `node.NewHandler`, calls it with the operator's client over HTTP, and checks:
+
+- the capacity of a group without instances,
+- the idempotent create (names, labels, request IDs),
+- invalid requests and unknown groups,
+- the quota reason of a full group,
+- the delete,
+- a restart that loses nothing,
+- and the token.
+
+The mock and the docker provider run it in their tests; a provider for a
 cloud runs it against a test account, with groups of its own:
 
 ```go
@@ -257,6 +269,6 @@ a provider that reads it.
 
 ## Where it runs
 
-A provider runs outside the pools it scales, and outside the failure domain it serves: not on the
+**A provider runs outside the pools it scales, and outside the failure domain it serves**: not on the
 nodes it creates, and reachable from the operator at the address it registers. The rules are those of
 [where to run a controller](/docs/features/operator-framework/controllers#where-to-run-a-controller).

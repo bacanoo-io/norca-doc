@@ -32,9 +32,9 @@ Norca's own traffic:
   [metrics store](/docs/configuration/metrics_store); see
   [below](#task-group-usage).
 
-The bus is not a message broker for applications. Applications keep their own
+**The bus is not a message broker for applications.** Applications keep their own
 NATS, for example the `nats` pack. The bus is configured in the server's
-[`bus` block](/docs/configuration/bus) and is enabled by default.
+[`bus` block](/docs/configuration/bus) and **is enabled by default.**
 
 ## Task group usage
 
@@ -46,8 +46,8 @@ metrics store needs it). A client publishes the report as JSON
 on its own subject, the only subject a node may publish on; a report larger
 than one message is split into several of the same window. The report also
 has the statistics of the node's host (in the first message of a split
-report), so a node without running allocations still reports. The reports travel
-on the bus only: without it the clients are not asked for usage.
+report), so a node without running allocations still reports. **The reports travel
+on the bus only: without it the clients are not asked for usage.**
 
 | Item | Value |
 | --- | --- |
@@ -79,10 +79,15 @@ decoding the payload:
 | `Nomad-Namespace` | namespace (if any) |
 | `Nomad-Key` | key of the event, e.g. the job ID (if any) |
 
-Delivery is at least once and in order. After a leader change, the new
-leader continues after the newest event in the stream. Republished events
-are dropped by their `Nats-Msg-Id` within the two-minute deduplication
-window. If the event buffer of the servers no longer holds the events after
+**Delivery is at least once and in order.**
+
+- After a leader change, the new
+  leader continues after the newest event in the stream.
+- Republished events
+  are dropped by their `Nats-Msg-Id` within the two-minute deduplication
+  window.
+
+If the event buffer of the servers no longer holds the events after
 the newest one in the stream, for example after a long outage, the leader
 publishes a gap marker and continues with the newest events. The gap marker
 is on `<prefix>.<region>.Bus`, with the type `EventGap` and a payload
@@ -116,14 +121,14 @@ A JetStream consumer of the stream needs the `$JS.API` subjects of the
 stream and its consumers, and `$JS.ACK` to acknowledge messages; the replies
 come to the connection's own `_INBOX`, which is always allowed. A plain
 subscriber of the live events needs only `subscribe = ["nomad.eu.>"]`.
-Wildcards are whole tokens, so the stream is named in full.
+**Wildcards are whole tokens, so the stream is named in full.**
 
 The namespace in the subject limits a live subscriber to the events of some
 namespaces: `subscribe = ["nomad.eu.shop.>"]` receives the events of the
 namespace `shop` only, `["nomad.*.*.Job"]` the job events of every region and
 namespace. A JetStream consumer reads whatever its filter subject selects, so
-for a namespace-limited reader of the stream allow only consumers filtered
-to the namespace (`$JS.API.CONSUMER.CREATE.NORCA_EVENTS_eu.*.nomad.eu.shop.>`)
+**for a namespace-limited reader of the stream allow only consumers filtered
+to the namespace** (`$JS.API.CONSUMER.CREATE.NORCA_EVENTS_eu.*.nomad.eu.shop.>`)
 instead of `$JS.API.CONSUMER.*.NORCA_EVENTS_eu`.
 
 ```shell-session
@@ -147,8 +152,8 @@ The request needs a token that may write the cluster registries. The server
 publishes the notice on `<prefix>.packs.pushed` in the stream
 `NORCA_PACK_PUSHES`, which keeps notices for 24 hours. The leader reads the
 stream with the durable consumer `norca-sync-<region>`, so a notice sent
-during a leader change is handled by the next leader. A registry is synced at
-most once a minute on push notices. Without the bus the server syncs the
+during a leader change is handled by the next leader. **A registry is synced at
+most once a minute on push notices.** Without the bus the server syncs the
 matching registries of its region directly.
 
 A pipeline with NATS tooling can also publish the notice itself with a token

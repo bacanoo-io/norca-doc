@@ -13,8 +13,8 @@ and not every installation can switch.
 
 A Norca client can serve a small part of Consul's documented HTTP API on top of the native catalog: the
 read endpoints of the catalog, health and status, and the agent endpoints that register services and
-update TTL checks. The tools connect to the client instead of a Consul agent, without changes. The API is
-off by default. It is an implementation of the public, documented behaviour of the API; it contains no
+update TTL checks. The tools connect to the client instead of a Consul agent, without changes. **The API is
+off by default.** It is an implementation of the public, documented behaviour of the API; it contains no
 Consul code.
 
 ## How it works
@@ -69,17 +69,18 @@ Variables below `consul/kv` (default) or in a NATS JetStream key-value bucket, s
 | `flags` | Kept | Rejected (`400`) |
 | ACL | The Variables rules of `consul/kv/<key>`, checked by the servers | The same rules, checked by the client |
 
-Sessions and locks (`?acquire`, `?release`) and transactions (`/v1/txn`) are not served (`501`), and a
-recursive delete removes the keys one by one, not atomically.
+> [!NOTE]
+> Sessions and locks (`?acquire`, `?release`) and transactions (`/v1/txn`) are not served (`501`), and **a
+> recursive delete removes the keys one by one, not atomically.**
 
-Every other path answers `501 Not Implemented` with a message that names the path, so a missing feature
+**Every other path answers `501 Not Implemented`** with a message that names the path, so a missing feature
 shows up instead of failing silently. The full list with parameters is on the
 [Consul-compatible API reference](/docs/api/consul-compatible).
 
 **Mapping.**
 
 - **Tokens:** a token in `X-Consul-Token`, `Authorization: Bearer` or `?token=` is used as a *Nomad*
-  ACL token, so Norca's ACL rules apply (`read-job` on the namespace to read services,
+  ACL token, so **Norca's ACL rules apply** (`read-job` on the namespace to read services,
   `register-external-service` to register). Requests without a token use `anonymous_token`.
 - **Datacenters:** with `datacenter_from = "region"` (default), a Consul datacenter is a Norca region and
   `?dc=` forwards to that region. With `"datacenter"`, the Consul datacenters are the datacenters of the
@@ -103,8 +104,8 @@ address of the agent's `consul` block. When the `consul` block points at the API
 agent would talk to itself, so it turns off `auto_advertise`, `server_auto_join` and `client_auto_join`
 and adds `consul` to the fingerprint deny list, logs what it turned off, and `norca config validate`
 warns about it. Task templates keep using the `consul` block's address, so consul-template's
-`service` functions read the native catalog through the API. Pointing `consul.address` or
-`consul_compat.bind` elsewhere restores the full Consul integration.
+`service` functions read the native catalog through the API. **Pointing `consul.address` or
+`consul_compat.bind` elsewhere restores the full Consul integration.**
 
 ## Example
 

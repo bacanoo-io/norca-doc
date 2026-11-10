@@ -147,11 +147,12 @@ variable "resources" {
 }
 ```
 
-Never take secrets from plain pack variables: their values end up in the shell history and, for
-releases, in the revision. Read them in the job from the
-[built-in secret store](/docs/features/secrets) or Variables, pass them with `--var-secret` to a
-Variables template ([secrets](/docs/features/packages/releases#extended-package-format)), or give the
-variable a `secret` block (below).
+> [!WARNING]
+> **Never take secrets from plain pack variables**: their values end up in the shell history and, for
+> releases, in the revision. Read them in the job from the
+> [built-in secret store](/docs/features/secrets) or Variables, pass them with `--var-secret` to a
+> Variables template ([secrets](/docs/features/packages/releases#extended-package-format)), or give the
+> variable a `secret` block (below).
 
 ### Form and constraints
 

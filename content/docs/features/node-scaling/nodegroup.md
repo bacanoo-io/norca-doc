@@ -113,8 +113,8 @@ The bounds of the moment hold for every decision of the autoscaler:
 - **Blocked work, the headroom and the checks** do not raise the group above the maximum of a
   window, and the scale down by use does not lower it below the minimum.
 
-When windows overlap, the largest `min` and the smallest `max` hold; when that `min` is above that
-`max`, the `max` holds. A window whose `start` or `end` cannot be read is left out (the leader logs
+**When windows overlap, the largest `min` and the smallest `max` hold; when that `min` is above that
+`max`, the `max` holds.** A window whose `start` or `end` cannot be read is left out (the leader logs
 it once) and the others still hold. The reason of a `Scaled` event names the windows, for example
 `maximum 2 (schedule "night": max 2)`. Outside every window, `min` and `max` of the group hold.
 
@@ -139,8 +139,8 @@ it once) and the others still hold. The reason of a `Scaled` event names the win
 ## The join of the nodes
 
 An instance whose node has not joined by `join.deadline` (15 minutes by default), or that the
-provider reports as failed, is deleted, and counts as a join failure. After `join.max_failures`
-(3) failures in a row the group stops asking for instances (`JoinFailing`), so a template that
+provider reports as failed, is deleted, and counts as a join failure. **After `join.max_failures`
+(3) failures in a row the group stops asking for instances (`JoinFailing`)**, so a template that
 does not work does not create and delete machines for ever. It asks again when the template
 changes (`spec.node`, `provider` or `group`) or `join.resume_generation` is raised; a node that
 joins ends the row. A node still joining after `join.slow_after` (5 minutes) stays in
@@ -167,8 +167,8 @@ the marks, installed by hand, are left alone.
 By default the bootstrap of a node carries its key and its certificate (60 days), signed by the
 node CA of the region: the key travels through the provider and the user data of the machine, and
 the node is replaced before the certificate expires. When the operator serves its **join endpoint**
-(`join_enabled` of the `nodescaler-operator` pack, or `-join-listen`), the key never leaves the
-node:
+(`join_enabled` of the `nodescaler-operator` pack, or `-join-listen`), **the key never leaves the
+node**:
 
 1. The bootstrap carries the cluster CA, the agent configuration, the join endpoints and a
    **one-time token**, no key and no certificate. The machines need `norca-join` (the item
@@ -184,23 +184,26 @@ node:
    connections.
 
 The endpoint proves itself with a certificate of the node CA whose only name is a URI no node
-certificate carries, so a node cannot pose as the endpoint. A token is used once, and only the
-latest certificate of an instance renews it: a copy of an older one is refused, with a
-`RenewalRefused` warning in the log of the group. A renewal must bring a new key: a request for
+certificate carries, so a node cannot pose as the endpoint. **A token is used once, and only the
+latest certificate of an instance renews it**: a copy of an older one is refused, with a
+`RenewalRefused` warning in the log of the group. **A renewal must bring a new key**: a request for
 the key of the current certificate is refused the same way. Every join and renewal is an event
 (`CertificateIssued`, `CertificateRenewed`).
 
 **Bound to the addresses of the instance.** The operator writes the addresses the provider reports
-for an instance into the record of its join, and the endpoint accepts the join and the renewals
-only from one of them: the source address of the connection, no forwarding header. A request from
+for an instance into the record of its join, and **the endpoint accepts the join and the renewals
+only from one of them**: the source address of the connection, no forwarding header. A request from
 another address is refused (`403`) with a `JoinAddressRefused` warning in the log of the group: it
 may be a stolen token or key; a refused join does not use the token. The token is issued before the
 machine exists, so a first join waits (the endpoint answers `503`, `norca-join` tries again a few
 seconds later) until the operator has recorded what the provider reports. Addresses once known are
 not cleared when a provider stops reporting them. A provider that reports no addresses has no
-binding. A proxy, a load balancer or NAT in front of the endpoint that changes the source address
-would refuse every node: there turn the check off with `join_check_address = false` (or
-`-join-check-address=false`), for example for `join_urls` behind such a load balancer.
+binding.
+
+> [!WARNING]
+> **A proxy, a load balancer or NAT in front of the endpoint that changes the source address
+> would refuse every node**: there turn the check off with `join_check_address = false` (or
+> `-join-check-address=false`), for example for `join_urls` behind such a load balancer.
 
 ### Keys in the TPM
 
@@ -217,8 +220,8 @@ all groups with `join_key_store` of the pack (`-join-key-store`), a group for it
 With the TPM the key is an ECDSA P-256 key under the storage key of the owner hierarchy, and the
 TPM signs the certificate request, the client certificate of each renewal and the TLS handshakes
 of the agent. The key file at the usual place (`client-key.pem`) is then a TSS2 key file
-(`-----BEGIN TSS2 PRIVATE KEY-----`, the format of the tpm2 providers of OpenSSL): a blob that
-only this TPM can load, useless on another machine or in a copy of the disk. Each renewal makes a
+(`-----BEGIN TSS2 PRIVATE KEY-----`, the format of the tpm2 providers of OpenSSL): **a blob that
+only this TPM can load, useless on another machine or in a copy of the disk.** Each renewal makes a
 new key in the TPM and replaces the file; keys are loaded only while in use, so no persistent
 handle or NV space of the TPM is used.
 
@@ -232,14 +235,14 @@ handle or NV space of the TPM is used.
   TPM can load it. The certificate of the agent works as before for RPC, the HTTP API and the
   migration of ephemeral disks.
 - The node reports where it keeps its key; the events of a key in the TPM say so
-  (`CertificateIssued`: "joined with its own key (key in its TPM)"). This is what the node says,
-  not a proof: the endpoint does not attest the TPM.
+  (`CertificateIssued`: "joined with its own key (key in its TPM)"). **This is what the node says,
+  not a proof: the endpoint does not attest the TPM.**
 - A machine without a TPM keeps its key in a file with `auto`. Nodes of the docker provider have
   no TPM of their own: see [a container node is not a machine](/docs/deployer/node-scaling-machines#a-container-node-is-not-a-machine).
 
 Such a node has the meta `norca.identity = "join"` and no `norca.cert_expires`: it is **not
 replaced for its age** (an explicit `rolling.max_node_age` still applies), and the other reasons of
-a rolling replacement are unchanged. Without a known endpoint the operator asks for no instance
+a rolling replacement are unchanged. **Without a known endpoint the operator asks for no instance**
 (`Provisioned` is `False` with `NoBootstrap`). The endpoints are the stable URLs of `join_urls`
 (a DNS name or a load balancer), or the instances of the service `<job>-join`; a node learns the
 endpoints of the moment at each renewal, so give stable URLs where the operator moves often. The
@@ -269,7 +272,7 @@ When the group has more instances than `spec.replicas`, the operator removes one
 When no node may go, the condition `ScaleDownBlocked` is set with a `retryAfter` time (10 minutes,
 doubled with each veto in a row, at most 6 hours), and the autoscaler sets the scale back. A drain
 that has not finished 5 minutes after its deadline is stopped and the node made eligible again,
-unless it was [drained by hand](#a-node-drained-by-hand) before (`DrainStuck`), with the same wait: no instance is deleted with an unfinished drain. A raise of the
+unless it was [drained by hand](#a-node-drained-by-hand) before (`DrainStuck`), with the same wait: **no instance is deleted with an unfinished drain.** A raise of the
 scale before the instance is deleted keeps the node (`ScaleDownCanceled`).
 
 The operator reads the jobs of the allocations on a node, so its ACL policy needs `read-job` in
@@ -292,9 +295,10 @@ with `norca node eligibility -disable`). The operator and the autoscaler see it 
 - **A scale down takes it first.** It is empty, so it is the least busy node (and an empty one for
   the selector `empty`): when the scale goes down, its instance is the one deleted.
 
-To keep a node through maintenance, put `norca.scale.protect = "true"` on it before the drain
-(`norca node meta apply -node-id <id> norca.scale.protect=true`), and remove the mark when it is
-back in service; a protected node is never chosen for a scale down or a replacement.
+> [!NOTE]
+> **To keep a node through maintenance, put `norca.scale.protect = "true"` on it before the drain**
+> (`norca node meta apply -node-id <id> norca.scale.protect=true`), and remove the mark when it is
+> back in service; a protected node is never chosen for a scale down or a replacement.
 
 A scale down or a rolling replacement may still choose a node drained by hand (with `least_busy`
 it drains it again, with `empty` it keeps it ineligible). It records that the node was out of
@@ -302,7 +306,7 @@ service when it took it (`held` in `status.removal` or `status.rollout.replacing
 before the instance is deleted (the scale raised again, a refused or late new node, a stuck or
 stopped drain), it gives the node back as it found it: it stops only its own drain and leaves the
 node ineligible, and its event says so (`... stays ineligible, as it was out of service by hand
-when it was taken`). Make the node eligible again by hand when the maintenance is over. A node the
+when it was taken`). **Make the node eligible again by hand when the maintenance is over.** A node the
 operator took while it was in service is made eligible again, as before.
 
 ## Edge nodes
@@ -339,15 +343,16 @@ A node the operator created is replaced when it is **outdated**:
 | `age` | It is older than its soft limit: `rolling.max_node_age` less a fixed jitter of up to `rolling.jitter` (15%) from a hash of its name, so nodes created together are not all due on one day. Without `max_node_age` the limit is three quarters of the life of its certificate (45 of 60 days); a node that [renews its own certificate](#nodes-that-make-their-own-keys) has no such limit. |
 | `expiry` | Its certificate expires within a twelfth of its life (55 of 60 days): the hard limit. The expiry is in the meta `norca.cert_expires`, which a node that renews its own certificate does not have. |
 
-A node with `norca.scale.protect = "true"` is not replaced. At most `rolling.max_unavailable` nodes
+**A node with `norca.scale.protect = "true"` is not replaced.** At most `rolling.max_unavailable` nodes
 (1) are replaced at a time, those at their hard limit first, then the oldest, and none while the
 group grows, shrinks or its nodes fail to join.
 
-The meta of a node is written on the node itself: `norca node meta apply` goes to the server that
-holds the connection of the node, and that server writes it. When that server cannot be reached for
-a moment (around a restart of the servers, for example), the command fails with an RPC error and
-nothing is changed; a script that marks nodes tries again. `norca node meta read -node-id <id>` shows
-whether the mark is there.
+> [!NOTE]
+> The meta of a node is written on the node itself: `norca node meta apply` goes to the server that
+> holds the connection of the node, and that server writes it. When that server cannot be reached for
+> a moment (around a restart of the servers, for example), **the command fails with an RPC error and
+> nothing is changed; a script that marks nodes tries again.** `norca node meta read -node-id <id>` shows
+> whether the mark is there.
 
 With `rolling.max_surge` at 1 or more (the default), **the new node comes first**: the old node gets
 no new work and no longer counts in the scale, so the operator asks for one more instance. When the
@@ -360,7 +365,7 @@ checked for the new nodes of a replacement: the operator does not know it. Empti
 node outdated only by its age, or of a group with the selector `empty`: it gets no new work and goes
 when its work has ended. A node at its hard limit is always drained.
 
-A replacement is not scaling: `spec.replicas` does not change, `status.replicas` counts the nodes that
+**A replacement is not scaling**: `spec.replicas` does not change, `status.replicas` counts the nodes that
 stay, and no scale down starts during it. When the provider refuses the new node (quota, capacity),
 or the new node has not joined by `join.deadline` and 5 minutes, the old node is made eligible again
 (one [drained by hand](#a-node-drained-by-hand) before stays ineligible) and the replacements are backed off (10 minutes, doubled each time, at most 6 hours); a node at its
@@ -380,13 +385,15 @@ nodes with a hard limit in the order of their limits, each no sooner than its so
 would be done after its hard limit, the condition `RollBehind` turns `True` and a `RollBehind`
 warning names the first one, early enough to raise `max_unavailable`.
 
-`rolling.mode = "paused"` starts no replacement except at the hard limit, and lets the one in
-progress finish. With `enforce = false` nothing is replaced: the outdated nodes are listed in
-`status.rollout.outdated` and in a `WouldReplace` event.
+- `rolling.mode = "paused"` starts no replacement except at the hard limit, and lets the one in
+  progress finish.
+- With `enforce = false` nothing is replaced: the outdated nodes are listed in
+  `status.rollout.outdated` and in a `WouldReplace` event.
 
-`status.rollout` stays after a rollout: it keeps `took` and `warned`. A tool that waits for a rollout
-to end waits until `status.rollout.replacing` and `status.rollout.outdated` are empty (and the
-condition `Rolling` is `False`), not until `status.rollout` is gone.
+> [!NOTE]
+> `status.rollout` stays after a rollout: it keeps `took` and `warned`. **A tool that waits for a rollout
+> to end waits until `status.rollout.replacing` and `status.rollout.outdated` are empty** (and the
+> condition `Rolling` is `False`), not until `status.rollout` is gone.
 
 ## The deletion of a group
 
@@ -411,7 +418,7 @@ changed), which the operator applies at once.
 An instance of a group that is gone (deleted with `orphan`, or whose finalizer was removed by force)
 is an **orphan**. The leader of the operator looks for them every `-orphan-sweep` (5 minutes; the
 variable `orphan_sweep` of the pack, since version 0.6.0) and deletes an orphan without a node once
-it is older than `-orphan-after` (15 minutes; `orphan_after`). An orphan that runs a node is left as it is and reported with an
+it is older than `-orphan-after` (15 minutes; `orphan_after`). **An orphan that runs a node is left as it is** and reported with an
 `OrphanedInstance` event in the log of its `NodeProvider`; it is deleted only when the operator runs
 with `-delete-orphans` (the variable `delete_orphans` of the pack). The metrics endpoint of the
 operator counts them by provider: `norca_nodescaler_orphaned_instances` (the orphans the last sweep
@@ -459,8 +466,8 @@ spec {
 | the template (`spec.node`) or `rolling.generation` changes | `norca.scale.protect = "true"` on the node, and `rolling.mode = "paused"`. |
 | the group is deleted | `deletion.policy = "orphan"`: the instances stay. |
 
-The operator still keeps the count: when the provider loses an instance, it asks for a new one. A
-node that has joined is never deleted for its join; only an instance that does not join by
+The operator still keeps the count: when the provider loses an instance, it asks for a new one. **A
+node that has joined is never deleted for its join**; only an instance that does not join by
 `join.deadline`, or that the provider reports as failed, is.
 
 - **The join endpoint has to stay reachable.** A node renews its certificate (7 days by default,
@@ -513,8 +520,8 @@ The kind refuses an object when:
 - a duration, a CIDR, a share or an enum value is not in the form above, a nested block has an
   unknown field, or a check has no strategy or more than one.
 
-The status is written by the operator and by the autoscaler, and a status write replaces the
-whole status: a writer reads the object, changes its own fields and writes it back with the index
+The status is written by the operator and by the autoscaler, and **a status write replaces the
+whole status**: a writer reads the object, changes its own fields and writes it back with the index
 it read (the `CAS` of the status write), so neither removes the fields of the other.
 
 ## Events

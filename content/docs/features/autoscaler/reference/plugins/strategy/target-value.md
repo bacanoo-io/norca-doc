@@ -11,7 +11,7 @@ keep the value resulting from the APM query at or around a specified target.
 
 It accomplishes this by extrapolating the current metric value and used
 capacity linearly to determine if a scaling action is required and how many
-instances need to be added or removed. More specify, the new scaling value is
+instances need to be added or removed. More specifically, the new scaling value is
 calculated as:
 
 ```
@@ -30,7 +30,7 @@ factor = 80/70 = 1.1428571429
 new_count = 1.1428571429 * 10 ~= 12
 ```
 
-In other words, if with 10 instances the memory usage in 80%, it's expected
+In other words, if with 10 instances the memory usage is 80%, it's expected
 that with 12 instances the memory usage will be lower and closer to the target
 value of 70%.
 

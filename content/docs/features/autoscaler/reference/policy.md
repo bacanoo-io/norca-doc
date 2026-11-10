@@ -16,8 +16,8 @@ external autoscaler.
 
 The servers parse the policy into typed fields when the job is planned or
 submitted, apply the defaults of the [`autoscaler` server block][server_block]
-and reject invalid policies, so errors show up in `norca job plan` and
-`norca job run` instead of a log.
+and **reject invalid policies, so errors show up in `norca job plan` and
+`norca job run` instead of a log.**
 
 ## Top Level Options
 
@@ -76,7 +76,7 @@ and reject invalid policies, so errors show up in `norca job plan` and
 A check is written either in the typed form, where `strategy` is an attribute
 and the strategy parameters are the other attributes of the check, or in the
 form of the external autoscaler, where a labeled `strategy` block holds the
-parameters. Both forms can be mixed in one policy, but not in one check.
+parameters. **Both forms can be mixed in one policy, but not in one check.**
 
 - `metric` - (Norca) A built-in metric computed by the leader from the usage the
   clients report: `nomad.cpu`, `nomad.memory`, `nomad.cpu_mhz` or
@@ -99,7 +99,7 @@ parameters. Both forms can be mixed in one policy, but not in one check.
 - `query_window_offset` - Shifts the end of the query window into the past. It
   should be provided as a duration. Defaults to `0s`.
 
-- `group` - Specifies which checks should treated as correlated when the policy
+- `group` - Specifies which checks should be treated as correlated when the policy
   is evaluated. Refer to [Check Grouping][concepts_grouping] for more
   information.
 

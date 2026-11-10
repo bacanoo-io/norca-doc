@@ -60,11 +60,11 @@ sequenceDiagram
 - Without `exact`, the behavior of Nomad v1.6.5 remains: a subscription starts
   at the closest index still in the buffer.
 - With `exact=true` the `index` parameter must be positive (otherwise `400`).
-  The subscription receives every event with an index at or after `index`. If
+  **The subscription receives every event with an index at or after `index`.** If
   the server cannot guarantee that, because events of the subscribed topics at
   or after `index` were dropped from the buffer or predate the server's state
-  (for example after a restart from a snapshot), it answers `410 Gone`. To
-  resume after the last processed event, pass its index plus one.
+  (for example after a restart from a snapshot), it answers `410 Gone`. **To
+  resume after the last processed event, pass its index plus one.**
 - After a restart the server knows, per topic, the last index at which the
   restored state changed objects of that topic, so a subscription to a topic
   that did not change since can still resume from an older index.
@@ -81,7 +81,7 @@ sequenceDiagram
 Every write and delete of a Variable publishes a `VariableUpserted` or
 `VariableDeleted` event. The event key is the path of the Variable and the
 payload holds only its metadata: namespace, path, create and modify index and
-time. The encrypted data and the ID of its key are never included.
+time. **The encrypted data and the ID of its key are never included.**
 
 Subscribing requires the Variables `list` capability for each requested key in
 the requested namespace; a key with `*` is a glob pattern and is granted only if
@@ -116,10 +116,11 @@ features are described on their pages:
 [native mTLS](/docs/features/native-mtls) and
 [backup and restore](/docs/features/backup-restore).
 
-`Scaling`, `JobAdmissionDenied` and `VariableAdmissionDenied` events are not
-written to Raft: they are published by the leader, which runs the autoscaler and
-the admission chain, so only subscriptions served by the leader receive them,
-and they cannot be resumed after a leader change.
+> [!NOTE]
+> `Scaling`, `JobAdmissionDenied` and `VariableAdmissionDenied` events are not
+> written to Raft: they are published by the leader, which runs the autoscaler and
+> the admission chain, so **only subscriptions served by the leader receive them,
+> and they cannot be resumed after a leader change.**
 
 ### Tokens
 
