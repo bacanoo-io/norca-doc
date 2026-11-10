@@ -19,7 +19,7 @@ processes with cgroups v2. Tasks start fast and need no copy of the host
 filesystem.
 
 The driver is a fork of the HashiCorp `nomad-driver-exec2` plugin v0.1.1 (MPL
-2.0), built into the Norca agent on Linux; it needs no plugin installation.
+2.0), built into the Norca agent on Linux; **it needs no plugin installation.**
 
 ## Task Configuration
 
@@ -165,8 +165,8 @@ task joins the network namespace of the allocation, so the
 
 - Linux with cgroups v2 (the node attribute `unique.cgroup.version` is `v2`).
 - The Landlock LSM enabled in the kernel (the node attribute
-  `kernel.landlock` is set). The driver requires Landlock: if the kernel does
-  not support it, the task fails at start.
+  `kernel.landlock` is set). **The driver requires Landlock: if the kernel does
+  not support it, the task fails at start.**
 - The `unshare` and `nsenter` commands (util-linux).
 - The Norca client running as root.
 
@@ -249,8 +249,8 @@ With `unveil_defaults = true` the task may reach:
   `/tmp`, the DNS files (`/etc/hosts`, `/etc/resolv.conf` and others) and the
   system CA certificates. Paths that do not exist on the node are skipped.
 
-Everything else on the host is out of reach, also for a task that runs as
-root.
+**Everything else on the host is out of reach, also for a task that runs as
+root.**
 
 ## Dynamic Users
 
@@ -271,6 +271,8 @@ The range is set in the client configuration with
 (default 80000 to 89999). Choose a range that no user or group of the node
 uses.
 
+### Tasks with a user
+
 A task with a `user` runs as that user, which must exist on the node, as with
 the `exec` driver.
 
@@ -289,8 +291,8 @@ directly in it and sets these limits:
 | processes     | `pids.max`         | `pids_limit` of the task or the plugin |
 | out of memory | `memory.oom.group` | `1`: an out of memory kill stops the whole task |
 
-Unlike the default of the Docker driver, the CPU limit is always hard: a task
-cannot use more CPU than its `cpu` value even when the node is idle.
+Unlike the default of the Docker driver, **the CPU limit is always hard: a task
+cannot use more CPU than its `cpu` value even when the node is idle.**
 
 When the task stops, the driver sends the stop signal and, after the kill
 timeout, kills every process of the task's cgroup.

@@ -43,7 +43,7 @@ custom plugins that advertise the [`RemoteTasks` capability][remote-cap].
 
 ## Caveats
 
-Due to the exerpimental nature there are a number of standard Norca features
+Due to the experimental nature there are a number of standard Norca features
 which Remote Task Drivers do not support by default.
 
 ### Resources
@@ -53,11 +53,11 @@ which Remote Task Drivers do not support by default.
 > details.  Comments, ideas, and use cases welcome!
 
 The [`resources`][resources] block has not been altered for remote task
-drivers. Since remote tasks do not consume local resources, remote task drivers
+drivers. Since remote tasks do not consume local resources, **remote task drivers
 should not use the existing `resources` block and instead implement their own
-resource parameters in their [`task.config`][task-config] block.
+resource parameters in their [`task.config`][task-config] block.**
 
-Jobs using remote task drivers should use the minimum allowed resources in
+**Jobs using remote task drivers should use the minimum allowed resources** in
 their [`task.resources`][resources] block:
 
 ```hcl
@@ -85,7 +85,7 @@ will be unavailable:
   directory.
 - [`vault`][vault] - a secret token may be retrieved but the task driver may
   not place the token file in the expected location.
-- [`volume`][volume] - volume and volue mounts assumed tasks have access to the
+- [`volume`][volume] - volume and volume mounts assumed tasks have access to the
   Norca node's local disk are unlikely to work with remote task drivers.
 
 Furthermore since networking is completely handled by the remote runtime the

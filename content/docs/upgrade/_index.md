@@ -15,7 +15,7 @@ outage. However, there are some restrictions to be aware of before upgrading:
   Upgrading 2 point releases (for example, from v1.4.0 to v1.6.0) may work but
   is untested and unsupported. For upgrades between Norca versions, see [upgrades](/docs/operations/upgrades).
 
-  - Norca does _not_ support downgrading at this time. Downgrading clients
+  - **Norca does _not_ support downgrading at this time.** Downgrading clients
     requires draining allocations and removing the [data directory][data_dir].
     Downgrading servers safely requires re-provisioning the cluster.
 
@@ -28,10 +28,10 @@ outage. However, there are some restrictions to be aware of before upgrading:
 
 Norca supports upgrading in place or by rolling in new servers:
 
-- In Place: The Norca binary can be updated on existing hosts. Running
+- **In Place:** The Norca binary can be updated on existing hosts. Running
   allocations will continue running uninterrupted.
 
-- Rolling: New hosts containing the new Norca version may be added followed by
+- **Rolling:** New hosts containing the new Norca version may be added followed by
   the removal of old hosts. The old nodes must be drained to migrate running
   allocations to the new nodes.
 
@@ -53,7 +53,7 @@ At a high level we complete the following steps to upgrade Norca:
 ### 1. Add the new version to the existing cluster
 
 While it is possible to upgrade Norca client nodes before servers, this guide
-recommends upgrading servers first as many new client features will not work
+recommends **upgrading servers first** as many new client features will not work
 until servers are upgraded.
 
 In a federated cluster,
@@ -68,11 +68,12 @@ On a single server, install the new version of Norca. You can do this by
 joining a new server to the cluster or by replacing or upgrading the binary
 locally and restarting the Norca service.
 
-Note that if you have [`leave_on_terminate`][] or [`leave_on_interrupt`][] set,
-you should ensure you're using the expected signal for your upgrade process. For
-example, if you have `leave_on_terminate` set and you intend on updating a
-server in-place, you should `SIGINT` and not `SIGTERM` when shutting down the
-server before restarting it.
+> [!WARNING]
+> Note that if you have [`leave_on_terminate`][] or [`leave_on_interrupt`][] set,
+> you should ensure you're using the expected signal for your upgrade process. For
+> example, if you have `leave_on_terminate` set and you intend on updating a
+> server in-place, you should **`SIGINT` and not `SIGTERM`** when shutting down the
+> server before restarting it.
 
 ### 2. Check cluster health
 
@@ -103,8 +104,8 @@ raft
 ...
 ```
 
-Continue with the upgrades across the servers making sure to do a single Norca
-server at a time. You can check state of the servers with [`norca server members`][server-members], and the state of the client nodes with [`norca node status`][node-status].
+Continue with the upgrades across the servers making sure to do **a single Norca
+server at a time**. You can check state of the servers with [`norca server members`][server-members], and the state of the client nodes with [`norca node status`][node-status].
 
 ### 3. Remove the old versions from servers
 
@@ -116,8 +117,8 @@ from the fleet you need to ensure that the server has left the fleet safely.
 
 1. Stop the service on the existing host
 2. On another server issue a `norca server members` and check the status, if
-   the server is now in a left state you are safe to continue.
-3. If the server is not in a left state, issue a `norca server force-leave <server id>`
+   the server is now in a `left` state you are safe to continue.
+3. If the server is not in a `left` state, issue a `norca server force-leave <server id>`
    to remove the server from the cluster.
 
 Monitor the logs of the other hosts in the Norca cluster over this period.

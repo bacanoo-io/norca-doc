@@ -15,7 +15,7 @@ Transport Layer Security (TLS). Applications can use sidecar proxies in a
 service mesh configuration to automatically establish TLS connections for
 inbound and outbound connections without being aware of the service mesh at all.
 
-# Norca with Consul Service Mesh Integration
+## Norca with Consul Service Mesh Integration
 
 Norca integrates with Consul to provide secure service-to-service communication
 between Norca jobs and task groups. To support Consul service mesh, Norca
@@ -36,7 +36,7 @@ When Consul ACLs are enabled, the Norca agents and the job submitters need
 Consul tokens; see the [`consul` block](/docs/configuration/consul) of the agent
 configuration.
 
-# Norca Consul Service Mesh Example
+## Norca Consul Service Mesh Example
 
 The following section walks through an example to enable secure communication
 between a web dashboard and a backend counting service. The web dashboard and
@@ -137,7 +137,7 @@ node_prefix    "" { policy = "read" }
 
 ### Norca
 
-Norca must schedule onto a routable interface in order for the proxies to
+**Norca must schedule onto a routable interface** in order for the proxies to
 connect to each other. The following steps show how to start a Norca dev agent
 configured for Consul service mesh.
 
@@ -148,10 +148,10 @@ $ sudo norca agent -dev-connect
 ### CNI Plugins
 
 Norca uses CNI reference plugins to configure the network namespace used to secure the
-Consul service mesh sidecar proxy. All Norca client nodes using network namespaces
+Consul service mesh sidecar proxy. **All Norca client nodes using network namespaces
 must have the [CNI reference plugins](https://github.com/containernetworking/plugins/releases)
 in the client's [`cni_path`](/docs/configuration/client#cni_path) (default `/opt/cni/bin`)
-installed.
+installed.**
 
 ## Run the Service Mesh-enabled Services
 
@@ -267,8 +267,11 @@ any ports in its network. The service block enables service mesh.
 
 The `port` in the service block is the port the API service listens on. The
 Envoy proxy will automatically route traffic to that port inside the network
-namespace. Note that currently this cannot be a named port; it must be a
-hard-coded port value. See GH-9907.
+namespace.
+
+> [!NOTE]
+> Note that currently **this cannot be a named port; it must be a
+> hard-coded port value**. See GH-9907.
 
 ### Web Frontend
 
@@ -331,9 +334,12 @@ environment variable:
 ```
 
 The web frontend is configured via the `$COUNTING_SERVICE_URL`, so you must
-interpolate the upstream's address into that environment variable. Note that
-dashes (`-`) are converted to underscores (`_`) in environment variables so
-`count-api` becomes `count_api`.
+interpolate the upstream's address into that environment variable.
+
+> [!NOTE]
+> Note that
+> dashes (`-`) are converted to underscores (`_`) in environment variables so
+> `count-api` becomes `count_api`.
 
 ## Limitations
 
@@ -365,9 +371,10 @@ norca alloc exec -task connect-proxy-count-api b36a cat secrets/.envoy_bootstrap
 norca alloc fs b36a alloc/logs/envoy_bootstrap.stderr.0
 ```
 
-Note: If the alloc is unable to start successfully, debugging files may
-only be accessible from the host filesystem. However, the sidecar task secrets
-directory may not be available in systems where it is mounted in a temporary
-filesystem.
+> [!NOTE]
+> Note: If the alloc is unable to start successfully, debugging files may
+> only be accessible from the host filesystem. However, the sidecar task secrets
+> directory may not be available in systems where it is mounted in a temporary
+> filesystem.
 
 [consul_acl]: https://github.com/hashicorp/consul/issues/7414

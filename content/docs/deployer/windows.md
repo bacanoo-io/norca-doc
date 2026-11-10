@@ -6,7 +6,7 @@ weight: 14
 origin: "norca-deployer/doc/windows.md"
 ---
 
-Windows nodes are supported as clients (typically for native `.exe` workloads with `raw_exec`) and as servers. Windows support is meant for optional installations and testing; production clusters should use Linux nodes.
+Windows nodes are supported as clients (typically for native `.exe` workloads with `raw_exec`) and as servers. **Windows support is meant for optional installations and testing; production clusters should use Linux nodes.**
 
 ## Requirements
 

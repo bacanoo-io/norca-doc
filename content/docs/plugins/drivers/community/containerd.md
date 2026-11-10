@@ -27,7 +27,7 @@ for more details.
 
 ## Client Requirements
 
-The containerd task driver is not built into Norca. It must be
+**The containerd task driver is not built into Norca.** It must be
 [`downloaded`][releases] onto the client host in the configured plugin
 directory.
 
@@ -155,7 +155,7 @@ config {
 }
 ```
 
-- `shm_size` - (Optional) Size of /dev/shm e.g. `128M` if you want 128 MB of /dev/shm.
+- `shm_size` - (Optional) Size of `/dev/shm` e.g. `128M` if you want 128 MB of `/dev/shm`.
 
 - `sysctl` - (Optional) A key-value map of sysctl configurations to set to the
   containers on start.
@@ -187,7 +187,7 @@ config {
 }
 ```
 
-- `extra_hosts` - (Optional) A list of hosts, given as host:IP, to be added to
+- `extra_hosts` - (Optional) A list of hosts, given as `host:IP`, to be added to
   `/etc/hosts`.
 
 - `hostname` - (Optional) The hostname to assign to the container. When
@@ -260,8 +260,9 @@ config {
 
 `nomad-driver-containerd` supports **host** and **bridge** networks.
 
-**NOTE:** `host` and `bridge` are mutually exclusive options, and only one of
-them should be used at a time.
+> [!NOTE]
+> **NOTE:** `host` and `bridge` are mutually exclusive options, and only one of
+> them should be used at a time.
 
 1. **Host** network can be enabled by setting `host_network` to `true` in task
    config of the job spec (see [host_network][host-network] under Task
@@ -276,8 +277,8 @@ network {
 }
 ```
 
-You need to install CNI plugins on Norca client nodes under `/opt/cni/bin`
-before you can use `bridge` networks.
+**You need to install CNI plugins on Norca client nodes under `/opt/cni/bin`
+before you can use `bridge` networks.**
 
 **Instructions for installing CNI plugins.**
 
@@ -363,11 +364,12 @@ The service block instructs Norca to register a service with Consul.
 `auth` block allow you to set credentials for your private registry e.g. if you want
 to pull an image from a private repository in docker hub.
 `auth` block can be set either in `Driver Config` or `Task Config` or both.
-If set at both places, `Task Config` auth will take precedence over `Driver Config` auth.
+**If set at both places, `Task Config` auth will take precedence over `Driver Config` auth.**
 
-**NOTE**: In the below example, `user` and `pass` are just placeholder values which need to be
-replaced by actual `username` and `password`, when specifying the credentials. Below `auth`
-block can be used for both `Driver Config` and `Task Config`.
+> [!NOTE]
+> **NOTE**: In the below example, `user` and `pass` are just placeholder values which need to be
+> replaced by actual `username` and `password`, when specifying the credentials. Below `auth`
+> block can be used for both `Driver Config` and `Task Config`.
 
 ```hcl
 auth {
@@ -403,8 +405,9 @@ plugin "containerd-driver" {
 }
 ```
 
-Please note the plugin name should match whatever name you have specified for
-the external driver in the [plugin_dir][plugin_dir] directory.
+> [!NOTE]
+> Please note the plugin name should match whatever name you have specified for
+> the external driver in the [plugin_dir][plugin_dir] directory.
 
 [nomad-driver-containerd]: https://github.com/Roblox/nomad-driver-containerd
 [nomad-init]: /docs/commands/job/init/

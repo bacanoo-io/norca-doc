@@ -34,7 +34,7 @@ The `nspawn` driver supports the following configuration in the job spec:
 
 - [`ephemeral`](https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html#-x) -
   (Optional) `true` or `false` (default). Make an ephemeral copy of the image
-  before staring the container.
+  before starting the container.
 
 - [`process_two`](https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html#-a) -
   (Optional) `true` or `false` (default). Start the command specified with
@@ -164,7 +164,7 @@ The `nspawn` driver requires the following:
 - The `linux_amd64` Norca binary
 - The nspawn driver binary placed in the [plugin_dir][plugin_dir] directory.
 - `systemd-nspawn` to be installed
-- Norca running with root privileges
+- **Norca running with root privileges**
 
 ## Plugin Options
 

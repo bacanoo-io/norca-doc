@@ -29,7 +29,7 @@ with Consul service mesh.
 
 Install the [CNI reference plugins](https://github.com/containernetworking/plugins/releases)
 in the client's [`cni_path`](/docs/configuration/client#cni_path) (default `/opt/cni/bin`)
-on each Linux client. They are not part of the Norca archives.
+on each Linux client. **They are not part of the Norca archives.**
 
 ### Supported versions
 
@@ -40,7 +40,7 @@ on each Linux client. They are not part of the Norca archives.
 | Configuration of the `bridge` network mode | `cniVersion` 0.4.0 |
 | CNI reference plugins | v1.9.1 recommended; any 1.x release works |
 
-A network configuration with a `cniVersion` above 1.1.0 is rejected. The
+**A network configuration with a `cniVersion` above 1.1.0 is rejected.** The
 `GC` and `STATUS` operations of the 1.1.0 specification are not called by
 Norca.
 
@@ -65,7 +65,7 @@ mkdir -p /opt/cni/bin
 tar -C /opt/cni/bin -xzf "cni-plugins-linux-${ARCH}-${CNI_VERSION}.tgz"
 ```
 
-Restart the client agent afterwards: it fingerprints the plugins at start
+**Restart the client agent afterwards**: it fingerprints the plugins at start
 (node attributes `plugins.cni.version.<plugin>`).
 
 ## CNI plugins
@@ -73,8 +73,8 @@ Restart the client agent afterwards: it fingerprints the plugins at start
 Spec-compliant plugins should work with Norca, however, it's possible a plugin
 vendor has implemented their plugin to make non-standard API calls, or it is
 otherwise non-compliant with the CNI specification. In those situations the
-plugin may not function correctly in a Norca environment. You should verify
-plugin compatibility with Norca before deploying in production.
+plugin may not function correctly in a Norca environment. **You should verify
+plugin compatibility with Norca before deploying in production.**
 
 CNI plugins are installed and configured on a per-client basis. Norca consults
 the path given in the client's [`cni_path`][] to find CNI plugin executables.
@@ -194,7 +194,7 @@ The `bridge` plugin creates a bridge (virtual switch) named `nomad` that resides
 in the host network namespace. Because this bridge is intended to provide
 network connectivity to allocations, it's configured to be a gateway by setting
 `isGateway` to `true`. This tells the plugin to assign an IP address to the
-bridge interface
+bridge interface.
 
 The bridge plugin connects allocations (on the same host) into a bridge (virtual
 switch) that resides in the host network namespace. By default Norca creates a
@@ -257,8 +257,8 @@ $ sudo iptables -t nat -L
 You can use this template as a basis for your own CNI-based bridge network
 configuration in cases where you need access to an unsupported option in the
 default configuration, like hairpin mode. When making your own bridge network
-based on this template, ensure that you change the `iptablesAdminChainName` to
-a unique value for your configuration.
+based on this template, **ensure that you change the `iptablesAdminChainName` to
+a unique value for your configuration.**
 
 [3rd_party_cni]: https://www.cni.dev/docs/#3rd-party-plugins
 [`bridge_network_name`]: /docs/configuration/client#bridge_network_name

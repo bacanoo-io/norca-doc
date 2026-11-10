@@ -72,9 +72,9 @@ The `Singularity` driver supports the following configuration in the job spec:
   }
   ```
 
-- [`binds`][bind] - (Optional) A user-bind path specification. This spec has the format `src[:dest[:opts]]`, where src and
-  dest are outside and inside paths. If dest is not given, it is set equal to src.
-  Mount options ('opts') may be specified as 'ro' (read-only) or 'rw' (read/write, which
+- [`binds`][bind] - (Optional) A user-bind path specification. This spec has the format `src[:dest[:opts]]`, where `src` and
+  `dest` are outside and inside paths. If `dest` is not given, it is set equal to `src`.
+  Mount options ('opts') may be specified as `'ro'` (read-only) or `'rw'` (read/write, which
   is the default). Multiple bind paths can be given by a comma separated list.
 
   ```hcl
@@ -110,7 +110,7 @@ The `Singularity` driver supports the following configuration in the job spec:
   }
   ```
 
-- `workdir` - (Optional) Working directory to be used for `/tmp`, `/var/tmp` and `$HOME` (if -c/--contain was also used).
+- `workdir` - (Optional) Working directory to be used for `/tmp`, `/var/tmp` and `$HOME` (if `-c/--contain` was also used).
 
   ```hcl
   config {
@@ -128,7 +128,7 @@ The `Singularity` driver supports the following configuration in the job spec:
 
 ## Networking
 
-Currently the `Singularity` driver only supports host networking. For more detailed instructions on how to set up networking options, please refer to the `Singularity` user guides [singularity-network]
+**Currently the `Singularity` driver only supports host networking.** For more detailed instructions on how to set up networking options, please refer to the `Singularity` user guides [singularity-network]
 
 ## Client Requirements
 
@@ -157,7 +157,8 @@ plugin "nomad-driver-Singularity" {
 }
 ```
 
-Please note the plugin name should match whatever name you have specified for the external driver in the [plugin_dir][plugin_dir] directory.
+> [!NOTE]
+> Please note the plugin name should match whatever name you have specified for the external driver in the [plugin_dir][plugin_dir] directory.
 
 ## Client Attributes
 

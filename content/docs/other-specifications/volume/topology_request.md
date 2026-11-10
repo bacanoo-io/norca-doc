@@ -33,8 +33,8 @@ topology_request {
 
 Consult the documentation for your storage provider and CSI plugin as to
 whether it supports defining topology and what values it expects for topology
-segments. Specifying topology segments that aren't supported by the storage
-provider may return an error or may be silently removed by the plugin.
+segments. **Specifying topology segments that aren't supported by the storage
+provider may return an error or may be silently removed by the plugin.**
 
 ## `topology_request` Parameters
 

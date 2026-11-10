@@ -74,7 +74,7 @@ name that starts with a letter, at most 63 characters.
   characters).
 
 - `namespaced` `(bool: true)` - Whether objects live in namespaces. With
-  `false` the kind is cluster-scoped. It can't change while objects exist.
+  `false` the kind is cluster-scoped. **It can't change while objects exist.**
 
 - `schema` `(string: <required>)` - A JSON Schema (draft 2020-12 unless it
   declares another `$schema`) of the document `{"spec": ..., "status": ...}`, at
@@ -89,7 +89,7 @@ name that starts with a letter, at most 63 characters.
 - `scale` <code>([Scale](#scale-parameters): nil)</code> - The scale
   subresource.
 
-- `version` `(int: 1)` - The schema version. It can never be lowered; raising
+- `version` `(int: 1)` - The schema version. **It can never be lowered**; raising
   it migrates the stored objects with `migration`.
 
 - `migration` <code>([Migration](#migration-parameters): nil)</code> - Converts
@@ -170,12 +170,12 @@ characters).
 - `operations` `(array<string>: ["create", "update"])` - The reviewed
   operations: `create`, `update` and, for validating webhooks, `delete`.
 
-Webhooks are called only after an administrator approved them; see
+**Webhooks are called only after an administrator approved them**; see
 [Approval](/docs/features/operator-framework/ecosystem#approval).
 
 ### `limits` Parameters
 
-Zero means no limit.
+**Zero means no limit.**
 
 - `write_rate` `(float: 0)` - Writes per second of all identities to objects of
   the kind (spec, status, finalizers, events, scale, deletion).

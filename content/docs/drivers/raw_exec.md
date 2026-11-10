@@ -10,7 +10,7 @@ Name: `raw_exec`
 
 The `raw_exec` driver is used to execute a command for a task without any
 isolation. Further, the task is started as the same user as the Norca process.
-As such, it should be used with extreme care and is disabled by default.
+As such, **it should be used with extreme care and is disabled by default.**
 
 ## Task Configuration
 
@@ -27,7 +27,7 @@ task "webservice" {
 
 The `raw_exec` driver supports the following configuration in the job spec:
 
-- `command` - The command to execute. Must be provided. If executing a binary
+- `command` - The command to execute. **Must be provided.** If executing a binary
   that exists on the host, the path must be absolute. If executing a binary that
   is downloaded from an [`artifact`](/docs/job-specification/artifact/), the
   path can be relative from the allocation's root directory.
@@ -112,15 +112,15 @@ client {
 ## Plugin Options
 
 - `enabled` - Specifies whether the driver should be enabled or disabled.
-  Defaults to `false`.
+  **Defaults to `false`.**
 
 - `no_cgroups` - Specifies whether the driver should not use
   cgroups to manage the process group launched by the driver. By default,
   cgroups are used to manage the process tree to ensure full cleanup of all
   processes started by the task. The driver uses cgroups by default on
   Linux and when `/sys/fs/cgroup/freezer/nomad` is writable for the
-  Norca process. Using a cgroup significantly reduces Norca's CPU
-  usage when collecting process metrics.
+  Norca process. **Using a cgroup significantly reduces Norca's CPU
+  usage when collecting process metrics.**
 
 ## Client Options
 
@@ -145,11 +145,14 @@ The `raw_exec` driver will set the following client attributes:
 
 ## Resource Isolation
 
-The `raw_exec` driver provides no isolation.
+**The `raw_exec` driver provides no isolation.**
 
-If the launched process creates a new process group, it is possible that Norca
-will leak processes on shutdown unless the application forwards signals
-properly. Norca will not leak any processes if cgroups are being used to manage
+> [!WARNING]
+> If the launched process creates a new process group, it is possible that Norca
+> will leak processes on shutdown unless the application forwards signals
+> properly.
+
+Norca will not leak any processes if cgroups are being used to manage
 the process tree. Cgroups are used on Linux when Norca is being run with
 appropriate privileges, the cgroup system is mounted and the operator hasn't
 disabled cgroups for the driver.

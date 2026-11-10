@@ -8,8 +8,8 @@ upstream:
 
 Name: `usb`
 
-The `usb` device plugin is used to expose USB devices to Norca. The USB plugin
-is not included within Norca and requires downloading and providing on each
+The `usb` device plugin is used to expose USB devices to Norca. **The USB plugin
+is not included within Norca** and requires downloading and providing on each
 node.
 
 ## Fingerprinted Attributes
@@ -102,8 +102,8 @@ specified USB devices connected.
 
 ## Other Information
 
-The `usb` device plugin is currently in beta and thus is not recommended for
-production use. This will remain the case until the current limitations have
+**The `usb` device plugin is currently in beta and thus is not recommended for
+production use.** This will remain the case until the current limitations have
 been solved with the plugin. If you find any issues with the `usb` plugin
 please raise an issue on the plugins [issues
 page](https://gitlab.com/CarbonCollins/nomad-usb-device-plugin/-/issues/new?issue)

@@ -26,15 +26,15 @@ service-based access control permissions throughout the entire mesh.
 
 Norca has native integration with Consul to provide service mesh capabilities.
 The [`connect`][] block is the entrypoint for all service mesh configuration.
-Norca automatically deploys a sidecar proxy task to all allocations that have a
-[`sidecar_service`][] block.
+**Norca automatically deploys a sidecar proxy task to all allocations that have a
+[`sidecar_service`][] block.**
 
 This proxy task is responsible for exposing the service to the mesh and can
 also be used to access other services from within the allocation. These
 external services are called upstreams and are declared using the
 [`upstreams`][] block.
 
-The allocation `network_mode` must be set to `bridge` for network isolation and
+**The allocation `network_mode` must be set to `bridge`** for network isolation and
 all external traffic is provided by the sidecar.
 
 > [!WARNING]

@@ -141,11 +141,11 @@ config:
 
 ## Limitations
 
-The Nvidia integration only works with drivers who natively integrate with
+**The Nvidia integration only works with drivers who natively integrate with
 Nvidia's [container runtime
-library](https://github.com/NVIDIA/libnvidia-container).
+library](https://github.com/NVIDIA/libnvidia-container).**
 
-Norca has tested support with the [`docker` driver][docker-driver]. Support for
+**Norca has tested support with the [`docker` driver][docker-driver].** Support for
 [`lxc`][lxc-driver] should be possible by installing the [Nvidia hook][nvidia_hook]
 but is not tested or documented by Norca.
 

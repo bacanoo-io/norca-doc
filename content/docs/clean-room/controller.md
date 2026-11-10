@@ -242,8 +242,8 @@ The fixes change no signature of the SDK, but three behaviours:
 - `Kind.PathGroup` returns a different value for groups that contain dashes
   (`my-db.example.com` becomes `my--db-example-com`), and so do the Variables
   paths of their objects and the owner references of their jobs. Groups
-  without dashes are unchanged. Objects stored for such groups under the old
-  path are not moved.
+  without dashes are unchanged. **Objects stored for such groups under the old
+  path are not moved.**
 - `Kind.Validate` rejects groups that are not lower case DNS subdomains, as
   the server already did.
 - `webhook.Serve` waits (up to 5 seconds) for the graceful shutdown before it

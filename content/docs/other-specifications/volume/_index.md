@@ -71,7 +71,7 @@ parameters {
 
 - `namespace` `(string: <optional>)` - The namespace of the volume. This field
   overrides the namespace provided by the `-namespace` flag or `NORCA_NAMESPACE`
-  environment variable. Defaults to `"default"` if unset.
+  environment variable. **Defaults to `"default"` if unset.**
 
 - `name` `(string: <required>)` - The display name of the volume. On **volume
   creation**, this field may be used by the external storage provider to tag
@@ -142,8 +142,8 @@ parameters {
   details of these parameters are specific to each storage provider, so consult
   the specific plugin documentation for more information. Only allowed on
   **volume registration**. Note that, like the rest of the volume specification, 
-  this block is declarative, and an update replaces it in its entirety, therefore 
-  all parameters need to be specified.
+  this block is declarative, and **an update replaces it in its entirety, therefore 
+  all parameters need to be specified.**
 
 ## Differences Between Create and Register
 
@@ -160,8 +160,8 @@ And you should not set the [`external_id`](#external_id) or
 
 ## Updating a Volume Definition
 
-The `volume register` command allows updating a volume definition. But not all
-fields can be updated after the volume is registered:
+The `volume register` command allows updating a volume definition. **But not all
+fields can be updated after the volume is registered:**
 
 * The `capacity_min` and `capacity_max` fields can be updated, so long as the
   volumes existing capacity fits within that range. The actual capacity of the

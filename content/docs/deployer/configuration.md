@@ -196,7 +196,7 @@ See [Multi-region](/docs/deployer/multi-region).
 
 ## consul
 
-Norca does not need Consul. Without this section every agent gets `auto_advertise = false`, so it does not try to register itself in a Consul agent on `127.0.0.1:8500`. With it, the agents register in the Consul agent of their node, for example the one of the `consul` pack. The servers are always joined by the plan, never through Consul (`server_auto_join` and `client_auto_join` are always `false`).
+**Norca does not need Consul.** Without this section every agent gets `auto_advertise = false`, so it does not try to register itself in a Consul agent on `127.0.0.1:8500`. With it, the agents register in the Consul agent of their node, for example the one of the `consul` pack. The servers are always joined by the plan, never through Consul (`server_auto_join` and `client_auto_join` are always `false`).
 
 | Key | Default | Description |
 | --- | --- | --- |

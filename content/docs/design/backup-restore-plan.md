@@ -60,7 +60,7 @@ Two consequences:
 
 ## Architecture
 
-Backup is performed per region by a new subsystem running on the leader server (`norca/backup/`). It starts and stops with leadership in the same way as the deployment watcher or the planned built-in autoscaler, so exactly one instance backs up per region at any time, without separate high-availability handling.
+Backup is performed per region by a new subsystem running on the leader server (`norca/backup/`). It starts and stops with leadership in the same way as the deployment watcher or the planned built-in autoscaler, so **exactly one instance backs up per region at any time**, without separate high-availability handling.
 
 ```mermaid
 flowchart LR
@@ -189,7 +189,7 @@ server {
 }
 ```
 
-The manifest is unencrypted so that the UI can list backups without decrypting their content; it therefore contains only summary counts, no names and no content.
+The manifest is unencrypted so that the UI can list backups without decrypting their content; it therefore **contains only summary counts, no names and no content.**
 
 ## Encryption
 
@@ -214,7 +214,7 @@ Backups are protected in two layers: storage-side encryption (for example S3 SSE
 
 ## Multi-region operation
 
-Each region backs up independently, with its own leader, into its own prefix. Backups capture the state of one region, not of the whole federation, because every region has its own Raft.
+Each region backs up independently, with its own leader, into its own prefix. **Backups capture the state of one region, not of the whole federation**, because every region has its own Raft.
 
 ```mermaid
 flowchart TB
@@ -284,7 +284,7 @@ norca operator backup restore-bootstrap \
   -age-identity ./dr-secret-key.txt
 ```
 
-On the new servers (which have not yet formed a cluster), the command first writes the keystore to disk, then restores the snapshot. The region name in the configuration must match that of the backup; otherwise the command runs only with the `-allow-region-change` flag, because it does not rewrite the region references of the jobs.
+On the new servers (which have not yet formed a cluster), the command first writes the keystore to disk, then restores the snapshot. **The region name in the configuration must match that of the backup;** otherwise the command runs only with the `-allow-region-change` flag, because it does not rewrite the region references of the jobs.
 
 ## Web UI
 

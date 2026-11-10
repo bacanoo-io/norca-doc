@@ -16,7 +16,7 @@ below describe the integration in more detail.
 
 In order to use Consul with Norca, you will need to configure and
 install Consul on your nodes alongside Norca, or schedule it as a system job.
-Norca does not currently run Consul for you.
+**Norca does not currently run Consul for you.**
 
 To enable Consul integration, please see the
 [Norca agent Consul integration](/docs/configuration/consul/)
@@ -62,9 +62,10 @@ KV store reads, which Consul then implicitly resolves to the `"default"` namespa
 This default namespace behavior can be modified by setting the [`namespace`][consul_agent_namespace] field
 in the Norca agent Consul configuration block.
 
-The agent configuration is the only place to choose the Consul namespace. A job
-that sets a Consul namespace (the group level `consul` block `namespace` or the
-`-consul-namespace` flag of `job run`) is rejected.
+> [!IMPORTANT]
+> **The agent configuration is the only place to choose the Consul namespace.** A job
+> that sets a Consul namespace (the group level `consul` block `namespace` or the
+> `-consul-namespace` flag of `job run`) is rejected.
 
 If Consul ACLs are enabled, the Consul token of the agent must belong to the
 configured namespace and must be backed by a Consul ACL Policy with sufficient
@@ -89,7 +90,7 @@ service_prefix "" {
 - Consul 0.6.0 or later is needed for using the TCP checks.
 
 - The service discovery feature in Norca depends on operators making sure that
-  the Norca client can reach the Consul agent.
+  **the Norca client can reach the Consul agent**.
 
 - Tasks running inside Norca also need to reach out to the Consul agent if
   they want to use any of the Consul APIs. Ex: A task running inside a docker

@@ -6,7 +6,7 @@ weight: 2
 origin: "norca-deployer/doc/how-apply-works.md"
 ---
 
-`apply` brings every node to the state the plan describes. It is idempotent: running it again on an unchanged plan changes nothing and restarts nothing.
+`apply` brings every node to the state the plan describes. **It is idempotent: running it again on an unchanged plan changes nothing and restarts nothing.**
 
 ## Stages
 
@@ -65,7 +65,7 @@ Clients are prepared in parallel like the servers, then restarted in batches of 
     [10.0.0.22] unchanged, not restarted
 ```
 
-Allocations keep running while a client agent restarts. A failed batch stops the rollout. `post_install` scripts run after each client is healthy.
+**Allocations keep running while a client agent restarts.** A failed batch stops the rollout. `post_install` scripts run after each client is healthy.
 
 ### 5. Post-cluster tasks (through the first server)
 

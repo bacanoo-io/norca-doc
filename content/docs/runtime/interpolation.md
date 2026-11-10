@@ -154,7 +154,7 @@ job "docs" {
 
 The following are runtime environment variables that describe the environment
 the task is running in. These are only defined once the task has been placed on
-a particular node and as such can not be used in constraints.
+a particular node and as such **can not be used in constraints**.
 
 Environment variables should be enclosed in brackets `${...}` for
 interpolation or accessed using the `env` function inside the template
@@ -162,13 +162,13 @@ block—`{{env "..."}}`
 
 ### Dots in Variables ((#dots_in_vars))
 
-Norca interprets dots in names as object notation. This causes names that have
-multiple consecutive dots to be considered invalid. For example, an environment
+Norca interprets dots in names as object notation. **This causes names that have
+multiple consecutive dots to be considered invalid.** For example, an environment
 variable named `invalid...name` cannot be interpolated using the standard
 `"${invalid...name}"` syntax. If you do, the parser will return an
 `Extra characters after interpolation expression` error. Norca provides a
-variable—`env`—that can access any environment variable, regardless
-of its name, using index syntax.
+variable—**`env`—that can access any environment variable, regardless
+of its name, using index syntax**.
 
 ```hcl
 job "sample" {

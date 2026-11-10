@@ -73,12 +73,12 @@ The `pledge` driver supports the following task configuration in the job spec:
 
 ## Syscall Isolation (promises)
 
-When using the `pledge` task driver, by default most syscalls will become
-unavailable. A process that attempts to use an unavailable syscall will receive
+When using the `pledge` task driver, **by default most syscalls will become
+unavailable.** A process that attempts to use an unavailable syscall will receive
 an `EPERM` error from the kernel. By specifying a set of `promises`, additional
 syscalls will be made available to the `command`.
 
-See the complete documetation for [promises][promises].
+See the complete documentation for [promises][promises].
 
 | Promise | Description |
 | ------- | ------------|
@@ -104,18 +104,19 @@ See the complete documetation for [promises][promises].
 
 ## Filesystem Isolation (unveil)
 
-By default the `command` will not be able to access the filesystem. Using some
+**By default the `command` will not be able to access the filesystem.** Using some
 promises will implicitly allow access to specific parts of the filesystem where
 applicable. The `unveil` configuration is used to grant access to additional
-filesytem paths at a specified permission level.
+filesystem paths at a specified permission level.
 
 The format of the `unveil` parameter is a list of paths and associated
 permissions. Permissions can be any combination of `r`, `w`, `c` and `x` for
 read, write, create and execute privileges.
 
-Note that reading a file also requires the `rpath` promise, writing a file
-requires the `wpath` promise, creating a file requires the `cpath` promise, and
-executing a program requires the `exec` promise.
+> [!NOTE]
+> Note that reading a file also requires the `rpath` promise, writing a file
+> requires the `wpath` promise, creating a file requires the `cpath` promise, and
+> executing a program requires the `exec` promise.
 
 #### Examples
 
@@ -200,7 +201,7 @@ The `pledge` driver will set the following Client attributes:
 ## Resource Isolation
 
 CPU and memory resource isolation is enforced by cgroups v2 features, and is
-configured through the resources block in task configuration.
+configured through the `resources` block in task configuration.
 
 ```hcl
 resources {
@@ -216,7 +217,7 @@ task. The bandwidth is calculated whether `resources.cpu` or `resources.cores`
 is configured.
 
 If `resources.cores` is set, the scheduler reserves that many CPU cores for use
-by the task, and only this task will be able to run on those cores.
+by the task, and **only this task will be able to run on those cores.**
 
 #### memory oversubscription
 

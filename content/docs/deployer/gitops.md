@@ -103,11 +103,11 @@ binding "payment-api" {
   keys or X.509 certificates are refused.
 - A branch or commit needs a signed commit. A tag needs a signed annotated tag that points at its commit, or a signed
   commit.
-- Only the deployed commit is checked, not its history: an unsigned ancestor is accepted.
+- **Only the deployed commit is checked, not its history:** an unsigned ancestor is accepted.
 - An archive has no signatures, so a verified binding always clones, which takes longer and more memory.
 - A failure stops the deployment, on `apply`, `gitops run` and in the daemon, where it shows in the logs; a success
   is the `VERIFY` phase of the logs.
-- The check runs in the deployer: the servers don't know about it, and a token with upload rights can bypass it.
+- The check runs in the deployer: the servers don't know about it, and **a token with upload rights can bypass it.**
 
 `gitops run` takes `--verify-key-file` (repeatable), and `--no-verify` to skip the check of a binding once.
 
@@ -152,7 +152,7 @@ Point the webhook of the provider at `POST /v1/gitops/webhook`. A shared URL fin
 - **What deploys.** The pushed commit, or the tag.
 - **Logs and status.** `GET /v1/gitops/logs` and `/v1/gitops/status` need `Authorization: Bearer <token>` with the
   token of `NORCA_GITOPS_API_TOKEN` (`--api-token-env`). Without one they answer on the loopback interface only.
-  Behind a reverse proxy on the same host set a token: every client looks local.
+  **Behind a reverse proxy on the same host set a token: every client looks local.**
 
 ```shell
 norca-deployer gitops logs payment-api --tail 50

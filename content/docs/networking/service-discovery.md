@@ -70,14 +70,14 @@ EOF
 
 ## Health checks
 
-Both Norca and Consul services can define health checks to make sure that only
-healthy instances are returned by the service catalog. Health checks are
+Both Norca and Consul services can define health checks to make sure that **only
+healthy instances are returned by the service catalog**. Health checks are
 specified using the [`check`][] block.
 
 ## Service tags
 
 `service` blocks may be specified multiple times with the same name but for
-different ports. All instances are returned when the service name is queried.
+different ports. **All instances are returned when the service name is queried.**
 To restrict results you can assign [`tags`][] to services to group them. When
 querying the service you can provide tag values as part of the service name.
 

@@ -14,7 +14,7 @@ ACL policies are written using [HashiCorp Configuration Language
 machine-generated configuration. A detailed syntax specification for HCL can be
 found at [HCL Native Syntax Specification][hcl_syntax_spec].
 
-All content of an ACL policy is case-sensitive.
+**All content of an ACL policy is case-sensitive.**
 
 An ACL policy contains one or more **rules**. Each rule block contains a
 combination of `policy` and `capabilities` fields. The specific values permitted
@@ -79,15 +79,17 @@ Volumes][api_volumes]. Namespace rules also filter items related to the above
 APIs from the [Event Stream][api_events] and [Search][api_search] APIs.
 
 Each namespace rule is labeled with the namespace name it applies to. If no
-namespace label is specified, the rule will apply to the "default"
-namespace. You may use wildcard globs (`"*"`) in the namespace label, to apply a
+namespace label is specified, **the rule will apply to the `"default"`
+namespace.** You may use wildcard globs (`"*"`) in the namespace label, to apply a
 rule to multiple namespaces.
 
-Only one namespace rule can apply. When an action is checked against the ACL
+### Rule selection
+
+**Only one namespace rule can apply.** When an action is checked against the ACL
 Policy, the namespace rule is selected by first checking for an _exact match_,
 before falling back to a glob-based lookup. When looking up the namespace by
-glob, the matching rule with the greatest number of matched characters will be
-chosen.
+glob, **the matching rule with the greatest number of matched characters will be
+chosen.**
 
 For example the following policy will evaluate to deny for `production-web`,
 because it is 9 characters different from the `"*-web"` rule, but 13 characters
@@ -102,6 +104,8 @@ namespace "*" {
   policy = "write"
 }
 ```
+
+### Policy and capabilities
 
 Each namespace rule can include a coarse-grained `policy` field, a fine-grained
 `capabilities` field, a `variables` block, or all three.
@@ -127,7 +131,7 @@ of `capabilities`. This includes:
 - `alloc-exec` - Allows an operator to connect and run commands in running
   allocations.
 - `alloc-node-exec` - Allows an operator to connect and run commands in
-  allocations running without filesystem isolation, for example, raw_exec jobs.
+  allocations running without filesystem isolation, for example, `raw_exec` jobs.
 - `alloc-lifecycle` - Allows an operator to stop individual allocations
   manually.
 - `csi-register-plugin` - Allows jobs to be submitted that register themselves
@@ -145,10 +149,10 @@ of `capabilities`. This includes:
   no effect.
 - `register-external-service` (Norca) - Allows registering, renewing and
   deregistering [external services](/docs/features/service-discovery/external-services).
-  It is not part of any policy shorthand and must be granted explicitly.
+  It is not part of any policy shorthand and **must be granted explicitly**.
 - `write-intention` (Norca) - Allows creating, updating and deleting the
   [service intentions](/docs/features/native-mtls/intentions) of the namespace.
-  It is not part of any policy shorthand and must be granted explicitly; reading
+  It is not part of any policy shorthand and **must be granted explicitly**; reading
   intentions requires `read-job`.
 - `read-network-policy`, `write-network-policy` (Norca) - Allow reading and
   managing the [network policies](/docs/features/network-rules) of the namespace;
@@ -174,8 +178,8 @@ grained namespace capabilities:
 
 <!-- markdownlint-enable -->
 
-If you provide both a `policy` and `capabilities` list, the capabilities are
-merged. For example, the policy below adds the `submit-job` capability to the `read`
+**If you provide both a `policy` and `capabilities` list, the capabilities are
+merged.** For example, the policy below adds the `submit-job` capability to the `read`
 policy disposition, which provides the `list-job` and `read-job` capabilities:
 
 ```hcl
@@ -202,7 +206,7 @@ namespace "default" {
 The namespace capabilities `read-network-policy` and `write-network-policy`
 control the [network policies](/docs/features/network-rules) of the namespace.
 `read-network-policy` is included in the `read` and `write` policies;
-`write-network-policy` must be granted explicitly, either in `capabilities` or
+**`write-network-policy` must be granted explicitly**, either in `capabilities` or
 with a `network_policy` block, whose `policy` is `read` or `write`:
 
 ```hcl
@@ -277,11 +281,16 @@ are as follows:
 | deny       | No permissions at this path. Deny takes precedence over other capabilities.                                           |
 
 For example, the policy below allows full access to variables at all paths in
-the "dev" namespace that are prefixed with "project/", but only read access to
-paths prefixed with "system/". Note that the glob can match an empty string but
-all other characters are strictly matched. This policy grants read access to
-paths prefixed with "system/" but not a path named "system" (without a trailing
-slash). This policy does not grant any other coarse-grained policy or
+the `"dev"` namespace that are prefixed with `"project/"`, but only read access to
+paths prefixed with `"system/"`.
+
+> [!NOTE]
+> Note that the glob can match an empty string but
+> all other characters are strictly matched. This policy grants read access to
+> paths prefixed with `"system/"` but not a path named `"system"` (without a trailing
+> slash).
+
+This policy does not grant any other coarse-grained policy or
 fine-grained capabilities.
 
 ```hcl
@@ -305,8 +314,8 @@ namespace "dev" {
 ### Secrets
 
 (Norca) Four namespace capabilities control the secrets of the
-[built-in secret store](/docs/features/secrets). None of them is included in
-the `read`, `write` or `scale` policies. They can be granted for the whole
+[built-in secret store](/docs/features/secrets). **None of them is included in
+the `read`, `write` or `scale` policies.** They can be granted for the whole
 namespace in `capabilities`, or for secret paths in `secret` blocks, whose label
 is a path that may contain globs, with a list of `capabilities`.
 
@@ -343,7 +352,7 @@ Two further namespace capabilities (not valid in `secret` rules) control the
 A task requests a credential with `read-secret` on the virtual path
 `engines/<engine>/creds/<role>`, granted like any secret read.
 
-Tasks have no implicit access to secrets. A task reads a secret through a
+**Tasks have no implicit access to secrets.** A task reads a secret through a
 [`secret_access`](/docs/job-specification/secret_access) grant of its job, or a
 policy bound to its job. Submitting a job with `secret_access` requires
 `read-secret` on each granted pattern.
@@ -500,13 +509,13 @@ The `policy` field for the backup rule can have one of the following values:
 - `deny`: do not allow the resource to be read or modified. Deny takes
   precedence when multiple policies are associated with a token.
 
-Full restores, their approval and the keyring restore need a management token.
+**Full restores, their approval and the keyring restore need a management token.**
 
 ## Bus rules
 
 (Norca) The `bus` rule allows a token to connect to the
 [system bus](/docs/configuration/bus) of the servers and lists the NATS
-subjects it may use. Without a bus rule a token can't connect; management
+subjects it may use. **Without a bus rule a token can't connect**; management
 tokens may use every subject.
 
 ```hcl
@@ -522,10 +531,10 @@ bus {
   servers to the bus; the bus does not accept leaf nodes yet.
 
 Subjects may use the NATS wildcards `*` (one token) and `>` (the remaining
-tokens, last only). Subjects starting with `$SYS` can't be granted. The lists
+tokens, last only). **Subjects starting with `$SYS` can't be granted.** The lists
 of all policies of a token are combined. A connection may always receive the
-replies to its own requests. When the token or its policies change, its
-connections are closed and reconnect with the new rights.
+replies to its own requests. **When the token or its policies change, its
+connections are closed and reconnect with the new rights.**
 
 ## Host Volume rules
 
@@ -608,8 +617,8 @@ The `policy` field for the plugin rule can have one of the following values:
 ## Configuring ACLs for the web UI
 
 The Norca web UI uses the API endpoints `/v1/agent` and `/v1/node` for nearly
-every page. ACL policies for users who will use the Norca UI should include the
-following rules.
+every page. **ACL policies for users who will use the Norca UI should include the
+following rules.**
 
 ```hcl
 node {

@@ -12,11 +12,11 @@ upstream:
 > other projects. Project activity has declined and there are unpatched CVEs.
 > The project has been [archived by the CNCF](https://github.com/rkt/rkt/issues/4004#issuecomment-507358362)
 
-Nomad 0.11 converted the rkt driver to an external driver. We will not prioritize features
-or pull requests that affect the rkt driver. The external driver is available as an [open source
+Nomad 0.11 converted the rkt driver to an external driver. **We will not prioritize features
+or pull requests that affect the rkt driver.** The external driver is available as an [open source
 repository](https://github.com/hashicorp/nomad-driver-rkt) for community ownership.
 
-# Rkt Driver
+## Rkt Driver
 
 Name: `rkt`
 
@@ -109,7 +109,7 @@ The `rkt` driver supports the following configuration in the job spec:
 
 * `debug` - (Optional) Enable rkt command debug option.
 
-* `no_overlay` - (Optional) When enabled, will use `--no-overlay=true` flag for 'rkt run'.
+* `no_overlay` - (Optional) When enabled, will use `--no-overlay=true` flag for `'rkt run'`.
   Useful when running jobs on older systems affected by https://github.com/rkt/rkt/issues/1922
 
 * `volumes` - (Optional) A list of `host_path:container_path[:readOnly]` strings to bind
@@ -173,7 +173,7 @@ For more information, please refer to [rkt Networking](https://coreos.com/rkt/do
 
 The `rkt` driver requires the following:
 
-- The Norca client agent to be running as the root user.
+- **The Norca client agent to be running as the root user.**
 - rkt to be installed and in your system's `$PATH`.
 - The `trust_prefix` must be accessible by the node running Norca. This can be an
   internal source, private to your cluster, but it must be reachable by the client
@@ -222,8 +222,8 @@ job "docs" {
 
 ## Resource Isolation
 
-This driver supports CPU and memory isolation by delegating to `rkt`. Network
-isolation is not supported as of now.
+This driver supports CPU and memory isolation by delegating to `rkt`. **Network
+isolation is not supported as of now.**
 
 [user]: /docs/job-specification/task#user
 [plugin-options]: #plugin-options

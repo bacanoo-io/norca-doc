@@ -41,7 +41,7 @@ Refer to the project's [homepage][homepage] for details.
 
 ## Client Requirements
 
-The Podman task driver is not built into Norca. It must be
+**The Podman task driver is not built into Norca.** It must be
 downloaded onto the client host in the configured plugin
 directory.
 
@@ -49,7 +49,7 @@ directory.
 - For rootless containers you need a system supporting cgroups v2 and a few
   other things, follow [this tutorial][rootless_tutorial].
 
-You need a v3.x or higher podman binary and a system socket [activation unit][rest_api]
+**You need a v3.x or higher podman binary** and a system socket [activation unit][rest_api]
 . It is recommended to install podman via your system's package
 manager, which will configure systemd for you.
 
@@ -82,7 +82,7 @@ The `podman` driver implements the following [capabilities](/docs/concepts/plugi
   ```
 
 - `auth` - (Optional) Authenticate to the image registry using a static
-  credential. By setting tlsVerify to false the driver will allow using self-
+  credential. By setting `tlsVerify` to `false` the driver will allow using self-
   signed certificates or plain HTTP connections to the registry.
 
   ```hcl
@@ -241,8 +241,8 @@ The `podman` driver implements the following [capabilities](/docs/concepts/plugi
     structured stream including metadata to your log aggregator. No log
     rotation at Podman level. You can add additional tags to the journal.
     Drawbacks: a bit more overhead, depends on Journal (will not work on WSL2).
-    You should configure some rotation policy for your Journal. Ensure you're
-    running Podman 3.1.0 or higher because of bugs in older versions.
+    You should configure some rotation policy for your Journal. **Ensure you're
+    running Podman 3.1.0 or higher** because of bugs in older versions.
 
     ```hcl
     config {
@@ -262,8 +262,8 @@ The `podman` driver implements the following [capabilities](/docs/concepts/plugi
 
   After setting memory reservation, when the system detects memory contention
   or low memory, containers are forced to restrict their consumption to their
-  reservation. So you should always set the value below `--memory`, otherwise
-  the hard limit will take precedence. By default, memory reservation will be
+  reservation. **So you should always set the value below `--memory`, otherwise
+  the hard limit will take precedence.** By default, memory reservation will be
   the same as memory limit.
 
   ```hcl
@@ -302,9 +302,9 @@ The `podman` driver implements the following [capabilities](/docs/concepts/plugi
   - `bridge` - (Default for rootful) Create a network stack on the default
   Podman bridge.
   - `container:id` - Reuse another container's network stack.
-  - `host` - Use the Podman host network stack. Note: the host mode gives the
+  - `host` - Use the Podman host network stack. Note: **the host mode gives the
   container full access to local system services such as D-bus and is therefore
-  considered insecure.
+  considered insecure.**
   - `none` - No networking.
   - `slirp4netns` - (Default for rootless) Use `slirp4netns` to create a user
   network stack. Podman currently does not support this option for rootful
@@ -321,8 +321,8 @@ The `podman` driver implements the following [capabilities](/docs/concepts/plugi
 - `ports` - (Optional) Forward and expose ports. Refer to
   [Docker driver configuration][nomad_driver_ports] for details.
 
-- `privileged` - (Optional) `true` or `false` (default). A privileged container
-  turns off the security features that isolate the container from the host.
+- `privileged` - (Optional) `true` or `false` (default). **A privileged container
+  turns off the security features that isolate the container from the host.**
   Dropped Capabilities, limited devices, read-only mount points,
   Apparmor/SELinux separation, and Seccomp filters are all disabled.
 
@@ -361,7 +361,7 @@ The `podman` driver implements the following [capabilities](/docs/concepts/plugi
   container.
 
 - `volumes` - (Optional) A list of `host_path:container_path:options` strings
-  to bind host paths to container paths. Named volumes are not supported.
+  to bind host paths to container paths. **Named volumes are not supported.**
 
   ```hcl
   config {
@@ -428,25 +428,28 @@ a `poststart` sidecar. Because of that, Norca guarantees that the server is
 started first and thus the exporter can easily join the servers network
 namespace via `network_mode = "task:server"`.
 
-Note, that the `server` configuration file binds the `http_port` to
-`localhost`.
+> [!NOTE]
+> Note, that the `server` configuration file binds the `http_port` to
+> `localhost`.
 
-Be aware that ports must be defined in the parent network namespace, here
-`server`.
+> [!IMPORTANT]
+> Be aware that **ports must be defined in the parent network namespace**, here
+> `server`.
 
 ### 3 Task setup, a pause container defines the network
 
 Reference [`examples/jobs/nats_pod.nomad`].
 
 A slightly different setup is demonstrated in this job. It reassembles more
-closesly the idea of a `pod` by starting a `pause` task, named `pod` via a
+closely the idea of a `pod` by starting a `pause` task, named `pod` via a
 [`prestart`] sidecar hook.
 
 Next, the main workload, `server` is started and joins the network namespace by
 using the `network_mode = "task:pod"` block. Finally, Norca starts the
 `poststart` sidecar `exporter` which also joins the network.
 
-Note that all ports must be defined on the `pod` level.
+> [!NOTE]
+> Note that **all ports must be defined on the `pod` level.**
 
 ### 2 Task setup, shared Norca network namespace
 
@@ -464,8 +467,8 @@ configuration file.
 - `disable_log_collection` `(bool: false)` - Setting this to `true` will
   disable Norca logs collection of Podman tasks. If you don't rely on Norca log
   capabilities and exclusively use host based log aggregation, you may consider
-  this option to disable Norca log collection overhead. Beware that you also
-  lose automatic log rotation.
+  this option to disable Norca log collection overhead. **Beware that you also
+  lose automatic log rotation.**
 
   ```hcl
   plugin "nomad-driver-podman" {

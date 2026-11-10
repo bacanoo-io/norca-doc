@@ -56,7 +56,7 @@ Code references are to the Nomad v1.6.5 source code and were verified at the tim
 
 ### Summary
 
-The CPU, memory and number of allocations that can be reserved can be limited per namespace and per region, and task-level default and maximum resource values can be specified. In Nomad 1.6.5 the client side of quota handling, the API and the scheduler hook points almost entirely exist; only the server-side implementation is missing. Of the seven items, this has the best effort-to-value ratio.
+The CPU, memory and number of allocations that can be reserved can be limited per namespace and per region, and task-level default and maximum resource values can be specified. In Nomad 1.6.5 the client side of quota handling, the API and the scheduler hook points almost entirely exist; only the server-side implementation is missing. **Of the seven items, this has the best effort-to-value ratio.**
 
 ### How does Kubernetes work?
 
@@ -182,7 +182,7 @@ The API server passes every write request through an admission chain. **Mutating
 5. **CEL rules** (admission policies stored in Raft);
 6. **validating webhooks**.
 
-Mutators run before validators, so validators see the final job. `job plan` runs the same chain, so the user sees the rejection or modification already at planning time.
+**Mutators run before validators, so validators see the final job.** `job plan` runs the same chain, so the user sees the rejection or modification already at planning time.
 
 **Error handling:** per webhook, `failure_policy = "fail"` (default) or `"ignore"`, and `timeout` (default 5 s). Since the chain runs on the leader, a slow webhook slows down job submission, not the other operations of the cluster.
 
@@ -236,7 +236,7 @@ The request and response follow the structure of the Kubernetes AdmissionReview,
 ### API and CLI
 
 - `norca admission-policy apply / list / inspect / delete`, HTTP: `/v1/admission-policies`, `/v1/admission-policy/:name`.
-- Webhooks can be specified only in the server configuration, not through the API. This is intentional: this way a compromised token cannot register its own webhook that could see every job.
+- **Webhooks can be specified only in the server configuration, not through the API.** This is intentional: this way a compromised token cannot register its own webhook that could see every job.
 
 ### Data model
 
@@ -497,7 +497,7 @@ A service check (`norca/structs/services.go`) controls its behavior with the fol
 
 Deployment health is tied to checks by the `update.health_check = "checks"` setting (`client/allochealth/tracker.go`), the checks of the native provider are run by `client/allocrunner/checks_hook.go`, and the `check_restart` logic is handled by `client/serviceregistration/watcher.go`.
 
-The practical problem: for a slow-starting application, the `grace` value has to be set to the worst-case startup time, which also delays the detection of failures during runtime. And a check cannot be both "readiness, but never restart" and "liveness, but do not take out of traffic".
+**The practical problem:** for a slow-starting application, the `grace` value has to be set to the worst-case startup time, which also delays the detection of failures during runtime. And a check cannot be both "readiness, but never restart" and "liveness, but do not take out of traffic".
 
 ### Proposed semantics
 
@@ -565,7 +565,7 @@ service {
 
 ### Summary
 
-Based on namespaces and job labels, it can be specified what traffic an allocation may receive and send. The most important design question is not the form of the rules, but that Nomad's default bridge network uses address translation (NAT) for traffic between nodes, so the sending allocation cannot be identified by IP address there. For this reason the feature can be introduced gradually, in three levels, and Consul intentions (if Consul stays) still give a better solution for the node-to-node case.
+Based on namespaces and job labels, it can be specified what traffic an allocation may receive and send. The most important design question is not the form of the rules, but that **Nomad's default bridge network uses address translation (NAT) for traffic between nodes, so the sending allocation cannot be identified by IP address there.** For this reason the feature can be introduced gradually, in three levels, and Consul intentions (if Consul stays) still give a better solution for the node-to-node case.
 
 ### How does Kubernetes work?
 
@@ -663,7 +663,7 @@ If Consul stays part of the stack, allocation-level control between nodes is alr
 
 Custom object types and the controllers that maintain them, following the Kubernetes operator pattern. Items 1–7 (especially admission, the event stream and quotas) provide the foundations; this chapter describes what else is needed: a native, generic object type, a controller SDK, lifecycle management in the core, and the ecosystem (packaging, versioning, developer tools).
 
-The value of a Nomad operator is not the basic maintenance of workloads, because the job and the deployment already do that (restart, rescheduling, rolling update, canary, service registration). Its value lies in "day two" operations, mainly for stateful systems: building and failing over a database cluster, ordered version upgrades, scheduling backups, schema migration, managing external cloud resources.
+The value of a Nomad operator is not the basic maintenance of workloads, because the job and the deployment already do that (restart, rescheduling, rolling update, canary, service registration). **Its value lies in "day two" operations, mainly for stateful systems:** building and failing over a database cluster, ordered version upgrades, scheduling backups, schema migration, managing external cloud resources.
 
 ### How does Kubernetes work?
 
@@ -842,7 +842,7 @@ The controller receives these capabilities through the ACL rule bound to its job
 | 3. Lifecycle | Finalizers, owner reference, garbage collection with deletion modes, event log, protection of managed jobs, `scale` and the autoscaler target | Phase 2 |
 | 4. Ecosystem | UI, operator package (per the package management plan), type-bound webhooks, developer tools, migration CEL, load management | Phase 3 |
 
-The first production operator needs the elements up to the end of phase 3. Phase 4 becomes urgent when other teams start writing operators too.
+**The first production operator needs the elements up to the end of phase 3.** Phase 4 becomes urgent when other teams start writing operators too.
 
 ### Implementation notes (phase 4: ecosystem)
 

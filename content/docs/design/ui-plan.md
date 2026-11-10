@@ -82,7 +82,7 @@ The "Optimize" menu item is removed (Enterprise cleanup).
 | Events and audit | A unified, filterable stream (deployment, scaling, admission, quota, backup, release), with a link to the affected item | event stream |
 | Servers and regions | Per region: servers, leader, Raft state, federation connection | existing |
 
-The content of the existing pages (clients, node pools, topology, storage, Variables, evaluations, access) is kept, migrated to the new frame and components.
+**The content of the existing pages (clients, node pools, topology, storage, Variables, evaluations, access) is kept**, migrated to the new frame and components.
 
 ## Common UX patterns
 
@@ -126,7 +126,7 @@ The content of the existing pages (clients, node pools, topology, storage, Varia
 
 The most frequent Bulma classes in the UI: `button` (128), `column`/`columns` (126), `title` (84), `is-small`, `is-primary`, `is-danger`, `table`, `tag`, `notification`; the custom `boxed-section` structure appears in about 250 places; HashiCorp Design System components are used in 119 places.
 
-Bulma and Bootstrap partly use the same class names (`table`, `modal`, `dropdown`, `navbar`, `card`, `tag`), and Bootstrap globally overrides base styles. The two cannot coexist on the same page.
+Bulma and Bootstrap partly use the same class names (`table`, `modal`, `dropdown`, `navbar`, `card`, `tag`), and Bootstrap globally overrides base styles. **The two cannot coexist on the same page.**
 
 ### Method
 

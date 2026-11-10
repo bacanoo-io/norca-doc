@@ -101,8 +101,8 @@ spins a CPU core and floods the log.
 
 **Verdict: partially valid, latent.** The loop did retry at once and reset
 the index to 0. But in this tree the blocking query returns only a
-cancellation, which the loop handles, or a schema error, so the spin cannot
-be triggered today.
+cancellation, which the loop handles, or a schema error, so **the spin cannot
+be triggered today.**
 
 **Fix.** After a failed query the loop waits one second (and returns at once
 when its context ends), and keeps the last-seen index. File:

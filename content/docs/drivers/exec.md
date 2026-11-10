@@ -29,7 +29,7 @@ task "webservice" {
 
 The `exec` driver supports the following configuration in the job spec:
 
-- `command` - The command to execute. Must be provided. If executing a binary
+- `command` - The command to execute. **Must be provided.** If executing a binary
   that exists on the host, the path must be absolute and within the task's
   [chroot](#chroot) or in a [host volume][] mounted with a
   [`volume_mount`][volume_mount] block. The driver will make the binary
@@ -137,10 +137,12 @@ The `exec` driver implements the following [capabilities](/docs/concepts/plugins
 
 ## Client Requirements
 
-The `exec` driver can only be run when on Linux and running Norca as root.
+**The `exec` driver can only be run when on Linux and running Norca as root.**
 `exec` is limited to this configuration because currently isolation of resources
-is only guaranteed on Linux. Further, the host must have cgroups mounted properly
-in order for the driver to work.
+is only guaranteed on Linux. Further, **the host must have cgroups mounted properly
+in order for the driver to work.**
+
+### Troubleshooting
 
 If you are receiving the error:
 
@@ -149,7 +151,7 @@ If you are receiving the error:
 ```
 
 and using the exec driver, check to ensure that you are running Norca as root.
-This also applies for running Norca in -dev mode.
+This also applies for running Norca in `-dev` mode.
 
 ## Plugin Options
 
@@ -203,7 +205,7 @@ The resource isolation provided varies by the operating system of
 the client and the configuration.
 
 On Linux, Norca will use cgroups, and a chroot to isolate the resources of a
-process and as such the Norca agent must be run as root. Some Linux
+process and as such **the Norca agent must be run as root.** Some Linux
 distributions do not boot with all required cgroups enabled by default. You
 can see which cgroups are enabled by reading `/proc/cgroups`, and verifying
 that all the following cgroups are enabled:
@@ -244,22 +246,26 @@ machine:
 ```
 
 The task's chroot is populated by linking or copying the data from the host into
-the chroot. Note that this can take considerable disk space. Since Nomad v0.5.3,
-the client manages garbage collection locally which mitigates any issue this may
-create.
+the chroot.
+
+> [!NOTE]
+> Note that **this can take considerable disk space.** Since Nomad v0.5.3,
+> the client manages garbage collection locally which mitigates any issue this may
+> create.
 
 This list is configurable through the agent client
 [configuration file](/docs/configuration/client#chroot_env).
 
 ### CPU
 
-Norca limits exec tasks' CPU based on CPU shares. CPU shares allow containers to
-burst past their CPU limits. CPU limits will only be imposed when there is contention
-for resources. When the host is under load your process may be throttled to stabilize
+**Norca limits exec tasks' CPU based on CPU shares.** CPU shares allow containers to
+burst past their CPU limits. **CPU limits will only be imposed when there is contention
+for resources.** When the host is under load your process may be throttled to stabilize
 QoS depending on how many shares it has. You can see how many CPU shares are available
 to your process by reading [`NORCA_CPU_LIMIT`][runtime_env]. 1000 shares are approximately equal to 1 GHz.
 
-Please keep the implications of CPU shares in mind when you load test workloads on Norca.
+> [!IMPORTANT]
+> Please keep the implications of CPU shares in mind when you load test workloads on Norca.
 
 If resources [`cores`][cores] is set, the task is given an isolated reserved set of
 CPU cores to make use of. The total set of cores the task may run on is the private

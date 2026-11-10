@@ -70,7 +70,7 @@ node_pools:
       owner: platform
 ```
 
-The pools are written after the cluster is up (in the authoritative region; they replicate to the others), and again only when they change. Scheduler settings of a pool (`scheduler_config`) are not supported by Norca.
+The pools are written after the cluster is up (in the authoritative region; they replicate to the others), and again only when they change. **Scheduler settings of a pool (`scheduler_config`) are not supported by Norca.**
 
 **Jobs only run in their pool.** A job without `node_pool` runs in the pool `default`. When the clients are in another pool, set `node_pool` in the jobs and in the pack values (most packs have a `node_pool` variable), as the cluster example does.
 
@@ -121,7 +121,10 @@ client_settings:
     ignore_system_jobs: false
 ```
 
-The deployer's own restarts are rolling and do not need it; it is meant for reboots and maintenance. Note that with it a client restart by `apply` also drains the node.
+The deployer's own restarts are rolling and do not need it; it is meant for reboots and maintenance.
+
+> [!NOTE]
+> Note that with it **a client restart by `apply` also drains the node.**
 
 ## Dynamic ports
 
@@ -147,4 +150,4 @@ client_settings:
     cpu_total_compute = 8000
 ```
 
-The deployer does not check these lines; a mistake shows up when the agent starts (and stops the rollout).
+**The deployer does not check these lines**; a mistake shows up when the agent starts (and stops the rollout).

@@ -27,8 +27,8 @@ mount_options {
 ```
 
 This block will be validated during volume creation against the `capability`
-field. The `mount_options` provided in a job specification's [`volume`] block
-will override this block. Consult the documentation for your storage provider
+field. **The `mount_options` provided in a job specification's [`volume`] block
+will override this block.** Consult the documentation for your storage provider
 and CSI plugin as to whether these options are required or necessary.
 
 ## `mount_options` Parameters

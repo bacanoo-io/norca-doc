@@ -14,8 +14,9 @@ handle the tokens renewal. Further, Norca's [`template` block][template] can
 retrieve secrets from Vault making it easier than ever to secure your
 infrastructure.
 
-Note that in order to use Vault with Norca, you will need to configure and
-install Vault separately from Norca. Norca does not run Vault for you.
+> [!NOTE]
+> Note that in order to use Vault with Norca, you will need to configure and
+> install Vault separately from Norca. **Norca does not run Vault for you.**
 
 > [!NOTE]
 > Vault integration requires Vault version 0.6.2 or higher.
@@ -34,8 +35,8 @@ be provided with a Vault token.**
 If Norca is given a root
 token, no
 further configuration is needed as Norca can derive a token for jobs using any
-Vault policies. Best practices recommend using a periodic token with the minimal
-permissions necessary instead of providing Norca the root vault token.
+Vault policies. **Best practices recommend using a periodic token with the minimal
+permissions necessary instead of providing Norca the root vault token.**
 
 ### Token Role based Integration
 
@@ -253,7 +254,7 @@ default of `orphan = false`.
 More information about creating orphan tokens can be found in
 Vault's Token Hierarchies and Orphan Tokens documentation.
 
-The `-period` flag is required to allow the automatic renewal of the token. If this is left out, a `vault token renew` command will need to be run manually to renew the token.
+**The `-period` flag is required** to allow the automatic renewal of the token. If this is left out, a `vault token renew` command will need to be run manually to renew the token.
 
 The token can then be set in the server configuration's
 [`vault` block][config], as a command-line flag, or via an environment
@@ -294,8 +295,8 @@ specification documentation][vault-spec].
 
 Upon startup, Norca will attempt to connect to the specified Vault server. Norca
 will lookup the passed token and if the token is from a token role, the token
-role will be validated. Norca will not shutdown if given an invalid Vault token,
-but will log the reasons the token is invalid and disable Vault integration.
+role will be validated. **Norca will not shutdown if given an invalid Vault token,
+but will log the reasons the token is invalid and disable Vault integration.**
 
 ### Permission Denied errors
 
@@ -318,7 +319,7 @@ URL: PUT https://vault:8200/v1/sys/leases/renew
 ### No Secret Exists
 
 Vault has two APIs for secrets, `v1` and `v2`. Each version
-has different paths, and Norca does not abstract this for you. As such you will
+has different paths, and **Norca does not abstract this for you.** As such you will
 need to specify the path as reflected by Vault's HTTP API, rather than the path
 used in the `vault kv` command.
 
@@ -333,7 +334,7 @@ tokens in that namespace. A job can set a namespace in its `vault` block (for
 the template reads of the task and the `VAULT_NAMESPACE` environment variable),
 but when the servers require a Vault token from the job submitter
 ([`allow_unauthenticated`](/docs/configuration/vault#allow_unauthenticated) set
-to `false`), a job that sets a Vault namespace is rejected.
+to `false`), **a job that sets a Vault namespace is rejected.**
 
 [config]: /docs/configuration/vault/ 'Norca Vault Configuration Block'
 [createfromrole]: /docs/configuration/vault#create_from_role 'Norca vault create_from_role Configuration Flag'

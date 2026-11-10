@@ -48,8 +48,8 @@ capabilities {
   Specifies capabilities allowed in the namespace. These values are checked at
   job submission.
 
-- `node_pool_config` - Not supported in Norca: a namespace specification
-  with a `node_pool_config` block is rejected.
+- `node_pool_config` - Not supported in Norca: **a namespace specification
+  with a `node_pool_config` block is rejected.**
 
 ### `capabilities` Parameters
 

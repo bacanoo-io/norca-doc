@@ -168,7 +168,7 @@ flowchart LR
   NG1 -. "not replicated" .- NG2
 ```
 
-The pool is a shared concept ("workers" means the same everywhere); the node group is regional (other platform, other zones, other limits). This is why the scaling setting cannot be a field of the node pool: replicating it would carry the groups of one region into the others. Objects of the operator framework are stored in the state of their own region and are not replicated, which is what a node group needs.
+The pool is a shared concept ("workers" means the same everywhere); the node group is regional (other platform, other zones, other limits). **This is why the scaling setting cannot be a field of the node pool:** replicating it would carry the groups of one region into the others. Objects of the operator framework are stored in the state of their own region and are not replicated, which is what a node group needs.
 
 ### Jobs, groups and the `all` pool
 
@@ -424,7 +424,7 @@ flowchart TB
 
 The **headroom** is computed from the allocated shares: the free capacity of a group is the unallocated part of its nodes, and `headroom_nodes = n` means free capacity worth `n` nodes of the group's machine kind (the capacity reported by the provider). Ineligible nodes are not part of the allocatable capacity: the sampler (`metrics_store_sample.go`) skips every node that is not ready and eligible, for the capacity and for the allocations on it, so a node being drained or replaced does not hide a lack of room. The same holds for `nodes_ready`. The label **`class`** (the `node_class` of the node) was added to these gauges for this plan, because two groups of one pool and datacenter with different classes would otherwise read the same series: the series with `class` empty covers all the nodes of the datacenter and pool, and every node class that is set has a series of its own. A group without a class reads the series with `class` empty, a group with a class reads that class (the groups of one pool and datacenter do not overlap, so this is each group's own share).
 
-The new metrics of the core are sampled by the leader from its state, into the same store and with the same retention, so the decisions can be inspected after the fact. An *allocated* share, not the usage, drives the scaler (the way the Kubernetes cluster autoscaler looks at requests): it is what the scheduler cannot place against.
+The new metrics of the core are sampled by the leader from its state, into the same store and with the same retention, so the decisions can be inspected after the fact. **An *allocated* share, not the usage, drives the scaler** (the way the Kubernetes cluster autoscaler looks at requests): it is what the scheduler cannot place against.
 
 ## The provider contract
 
@@ -541,7 +541,7 @@ The operator does this when the scale is lowered (or the count of nodes is above
 4. When the drain is **complete** (or the node is confirmed empty), ask the provider to delete the instance, then wait for the node to go down and be garbage collected.
 5. Record the result in the event log of the object, with the node, the node group and the reason.
 
-If the drain does not finish by its deadline, or fails, the operator **does not delete the instance**: it makes the node eligible again, backs the candidate off and raises an event. This is the acceptance criterion of the development plan: no node is removed with an unfinished drain.
+If the drain does not finish by its deadline, or fails, the operator **does not delete the instance**: it makes the node eligible again, backs the candidate off and raises an event. This is the acceptance criterion of the development plan: **no node is removed with an unfinished drain.**
 
 **Deleting a node group.** A finalizer of the object keeps it until its nodes are dealt with, by `spec.deletion`: `drain` (the default: the nodes it created are drained with the deadline of the policy and deleted), `orphan` (the instances stay, labelled, and only the object goes) or `terminate` (the instances are deleted at once and their allocations are rescheduled). A stuck drain does not keep the object for ever: after `deletion.drain_timeout` (1 hour by default) the condition `DeletionBlocked` names the node and the reason, and the person chooses `terminate` or `orphan`. A finalizer removed by force leaves instances behind; they keep the labels of the group, and the operator **reports** instances whose group has no object (`OrphanedInstance`, an event and a metric) and deletes them only when it runs with `-delete-orphans`. Nodes added by hand are not touched.
 
@@ -594,7 +594,7 @@ After the [hardening step](#node-identity-and-certificates), when the node renew
 
 ## Where the operator and the providers run
 
-The operator creates and deletes the nodes that jobs run on. If it ran on one of them, deleting that node would remove the operator in the middle of its work, and a group scaled to zero could never be scaled up again. A provider has the same dependency: it must be reachable at the moment nodes are needed. The rules:
+The operator creates and deletes the nodes that jobs run on. **If it ran on one of them, deleting that node would remove the operator in the middle of its work, and a group scaled to zero could never be scaled up again.** A provider has the same dependency: it must be reachable at the moment nodes are needed. The rules:
 
 | # | Rule |
 | --- | --- |

@@ -45,12 +45,12 @@ spec {
 
 - `managed_by` `(string: "")` - The tool or identity that manages the spec. The
   identity forms `workload:<namespace>/<job>[/<task>]`, `role:<name>`,
-  `policy:<name>` and `token:<accessor ID>` are enforced: only that identity
-  (and management tokens) may update or delete the object. Other values are
+  `policy:<name>` and `token:<accessor ID>` are enforced: **only that identity
+  (and management tokens) may update or delete the object.** Other values are
   free text. At most 256 characters.
 
 - `finalizers` `(array<string>: nil)` - Finalizers to add (requires the
-  `manage-finalizers` capability). An apply never removes finalizers. At most 32.
+  `manage-finalizers` capability). **An apply never removes finalizers.** At most 32.
 
 - `owner` <code>([Owner](#owner-parameters): nil)</code> - An owner of the
   object. Repeatable, at most 16. An apply replaces the owners.
@@ -67,7 +67,7 @@ The status is not part of the file; controllers write it through the
 
 - `kind` `(string: <required>)` - The owner's kind: a `<group>/<Kind>`
   reference for a custom object. `Job` and `Variable` are accepted and stored,
-  but the garbage collector acts only on custom object owners.
+  but **the garbage collector acts only on custom object owners.**
 
 - `name` `(string: <required>)` - The owner's name.
 

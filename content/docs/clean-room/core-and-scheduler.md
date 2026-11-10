@@ -40,9 +40,9 @@ nodes, which stops them and triggers rescheduling across the cluster.
 authenticated the caller but never used the identity: it only checked that the
 node named by the first allocation exists and is not down. A node secret is
 mapped to the identity of its node only with ACLs enabled, and there a request
-without a token resolves to the anonymous token, so not only another client
+without a token resolves to the anonymous token, so **not only another client
 node but even an anonymous caller could set the client status of any
-allocation of the cluster.
+allocation of the cluster.**
 
 **Fix.** Every allocation of the request must name the node of the request,
 and every stored allocation that is updated must run on that node; with ACLs
@@ -171,8 +171,8 @@ were signed when the allocation was first applied. Nothing was changed.
 ### `Node.UpdateStatus` never checks the caller
 
 This was not in the report. While CORE-SEC-01 was checked, `Node.UpdateStatus`
-was found to authenticate the caller without checking it. With ACLs enabled
-anyone, even an anonymous caller, could set the status of any node, for
+was found to authenticate the caller without checking it. **With ACLs enabled
+anyone, even an anonymous caller, could set the status of any node**, for
 example mark it down and so reschedule its work. On the leader the caller's
 connection was also registered as the connection of the node, so the
 server-to-client RPCs of that node (logs, exec, file system) would have gone

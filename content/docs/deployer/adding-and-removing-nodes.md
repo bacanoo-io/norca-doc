@@ -39,7 +39,7 @@ Clusters installed before the list existed get it on their next `apply`; nodes r
 Add the node to `inventory.masters` or `inventory.clients` and run `apply`.
 
 - **Client:** only the new node is installed. Other nodes do not change and are not restarted.
-- **Server:** every server's configuration changes (join list, `bootstrap_expect`), so the existing servers restart one at a time with health, leader and peer checks. Keep an odd number of servers and add them one plan change at a time.
+- **Server:** every server's configuration changes (join list, `bootstrap_expect`), so the existing servers restart one at a time with health, leader and peer checks. **Keep an odd number of servers and add them one plan change at a time.**
 
 The new node gets a certificate from the existing CA, the existing gossip key and the same release.
 
@@ -71,7 +71,7 @@ The removal runs in the post-cluster stage, after the remaining nodes were rolle
 3. The server is removed from Raft (`/v1/operator/raft/peer`) and from Serf (`force-leave`).
 4. `apply` waits until the remaining servers report the new peer count.
 
-**Uninstall** removes the service, `norca.hcl`, the TLS files, the binary and `/var/lib/norca-deployer`; on Windows the service, the binary, the configuration and the TLS files. With `purge_data` the data directory (after unmounting allocation mounts), the log directory and the application directory are deleted too. Host packages, CNI plugins, sysctl and firewall settings are left in place.
+**Uninstall** removes the service, `norca.hcl`, the TLS files, the binary and `/var/lib/norca-deployer`; on Windows the service, the binary, the configuration and the TLS files. With `purge_data` the data directory (after unmounting allocation mounts), the log directory and the application directory are deleted too. **Host packages, CNI plugins, sysctl and firewall settings are left in place.**
 
 A machine that cannot be reached (for example, already deleted) is still removed from the cluster; `apply` prints a warning that Norca could not be uninstalled from it.
 

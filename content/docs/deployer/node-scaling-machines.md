@@ -264,8 +264,8 @@ user must give it access to the device (the group `tss` on most distributions). 
 | The key of the cluster root CA | With the deployer only (`certs/` next to the plan), encrypted with the master key when there is one | Whoever runs the deployer with the master key |
 
 The node CA can only sign client certificates of its region, so a stolen key of the node CA
-cannot make a server. There is no revocation: the validity of a node certificate (and of the node
-CA) bounds what a stolen key is worth. A join-mode certificate lives 7 days by default and is
+cannot make a server. **There is no revocation: the validity of a node certificate (and of the node
+CA) bounds what a stolen key is worth.** A join-mode certificate lives 7 days by default and is
 renewed on the node.
 
 ## A container node is not a machine
@@ -288,5 +288,5 @@ enough for a lab, but it is not the isolation of a machine:
   **foreign** and makes it ineligible for new work, but the certificate it holds stays valid until
   it expires.
 
-Use the docker provider for labs and hosts you trust. On a cloud, each node is a machine of its
+**Use the docker provider for labs and hosts you trust.** On a cloud, each node is a machine of its
 own, built from an image with the install script, or installed by the script at boot.

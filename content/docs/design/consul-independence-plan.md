@@ -6,7 +6,7 @@ status: "In progress"
 
 **Status:** In progress · 2026-10-25 (phases 1–4 and 6 implemented; phase 5, native mTLS: steps 1–3 implemented, tested against Envoy 1.39 and 1.40) · Starting point: Nomad v1.6.5 (MPL 2.0) · Related documents: [development plan](/docs/design/development-plan), [kubernetes-features-spec.md](/docs/design/kubernetes-features-spec)
 
-One of Nomad's biggest practical drawbacks is that service discovery, DNS and the service mesh require Consul to be installed and operated separately. The goal is that most users no longer need Consul, while external tools built on the Consul API (Traefik, Prometheus and many others) keep working unchanged or through a native Nomad integration. Anyone who needs a full service mesh can still use Consul, but Nomad installs and manages it.
+One of Nomad's biggest practical drawbacks is that service discovery, DNS and the service mesh require Consul to be installed and operated separately. **The goal is that most users no longer need Consul**, while external tools built on the Consul API (Traefik, Prometheus and many others) keep working unchanged or through a native Nomad integration. Anyone who needs a full service mesh can still use Consul, but Nomad installs and manages it.
 
 ## Contents
 
@@ -53,7 +53,7 @@ One of Nomad's biggest practical drawbacks is that service discovery, DNS and th
 | The `miekg/dns` DNS library is already a dependency | `client/allocrunner/network_hook.go`, `norca/structs/structs.go` |
 | `consul-template` v0.37.4 is built in, with the `nomadService` and `nomadVar` functions | `go.mod`, `client/allocrunner/taskrunner/template/` |
 
-Consul is therefore needed today mainly for three things: health-based discovery, DNS and the service mesh.
+**Consul is therefore needed today mainly for three things: health-based discovery, DNS and the service mesh.**
 
 ## External tools built on the Consul API
 
@@ -227,7 +227,7 @@ server {
 | Consul-compatible layer (`/v1/health/service`) | Optionally: the layer can return a list ordered and filtered by the client's datacenter |
 | Traefik `nomad` provider, Prometheus `nomad_sd` and other tools that read the catalog themselves | No: they receive all healthy instances |
 
-For Traefik running at the edge, one Traefik instance per datacenter is therefore recommended (with `datacenters` set to that datacenter), or Traefik reads through the Consul-compatible layer with a datacenter-filtered configuration.
+For Traefik running at the edge, **one Traefik instance per datacenter is therefore recommended** (with `datacenters` set to that datacenter), or Traefik reads through the Consul-compatible layer with a datacenter-filtered configuration.
 
 **Cross-region failover:** responses pointing to other regions reach the client's cache through region forwarding, and the connection is established through the native mTLS gateway (phase 5); until then, over the WireGuard mesh between regions. In the multi-cloud setup (one cloud per region), local preference also reduces the cost of cross-region traffic.
 
@@ -258,7 +258,7 @@ Tools built on Consul's catalog API connect to the Nomad client instead of a rea
 | `GET /v1/health/checks/:name`, `/v1/health/state/:state` | The results of the native checks in Consul format |
 | `GET /v1/health/connect/:name` | Empty list (there is no Connect); this way Traefik works without Connect mode |
 
-Every other endpoint returns `501 Not Implemented` with a clear error message, so that the gap does not stay hidden.
+**Every other endpoint returns `501 Not Implemented`** with a clear error message, so that the gap does not stay hidden.
 
 ### Mapping rules
 
@@ -424,7 +424,8 @@ Whatever is left out of the above still requires a real Consul:
 
 Consul's last MPL release is v1.16.4 (December 2023); it gets no more fixes. Public security advisories published since affect it, among them CVE-2024-10005 and CVE-2024-10006 (bypass of L7 intentions), CVE-2025-11374 and CVE-2025-11375 (denial of service on the KV and event endpoints, path traversal on KV keys), and the Envoy versions it supports no longer receive fixes.
 
-For this reason 1.16.4 is not recommended for a production service mesh.
+> [!WARNING]
+> For this reason **1.16.4 is not recommended for a production service mesh.**
 
 ### The recommended path: the official Consul, through the API
 
@@ -482,7 +483,7 @@ README feature table row after the merge: "Service discovery without Consul: nat
 | 5 | Native mTLS and authorization | 1 | Replaces most of the service mesh; simplifies level C of K8s item 7 |
 | 6 | Installing and managing the official Consul by Nomad, optionally (through the API, not distributed by the project) | – (in parallel) | Easier installation for those who need a full Consul |
 
-After phases 1–3, most users no longer need Consul. Phase 6 can proceed at any time, independently of the others.
+**After phases 1–3, most users no longer need Consul.** Phase 6 can proceed at any time, independently of the others.
 
 ## Testing and acceptance
 

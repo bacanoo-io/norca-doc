@@ -107,7 +107,7 @@ The `lxc` driver supports the following configuration in the job spec:
 
 - `image_variant` - (Optional) The variant of the image. Defaults to `default` or as set by the template.
 
-- `disable_gpg` - (Optional) Disable GPG validation of images. Defaults to `false`, and enabling this flag is not recommended.
+- `disable_gpg` - (Optional) Disable GPG validation of images. Defaults to `false`, and **enabling this flag is not recommended.**
 
 - `flush_cache` - (Optional) Flush the local copy of the image (if present) and force it to be fetched from the image server. Defaults to `false`.
 
@@ -119,7 +119,7 @@ The `lxc` driver supports the following configuration in the job spec:
 
 ## Networking
 
-Currently the `lxc` driver only supports host networking. See the `none`
+**Currently the `lxc` driver only supports host networking.** See the `none`
 networking type in the `lxc.container.conf` [manual][lxc_man] for more
 information.
 
@@ -162,7 +162,8 @@ plugin "nomad-driver-lxc" {
 }
 ```
 
-Please note the plugin name should match whatever name you have specified for the external driver in the [plugin_dir][plugin_dir] directory.
+> [!NOTE]
+> Please note the plugin name should match whatever name you have specified for the external driver in the [plugin_dir][plugin_dir] directory.
 
 ## Client Configuration
 
@@ -184,8 +185,8 @@ The `lxc` driver will set the following client attributes:
 
 ## Resource Isolation
 
-This driver supports CPU and memory isolation via the `lxc` library. Network
-isolation is not supported as of now.
+This driver supports CPU and memory isolation via the `lxc` library. **Network
+isolation is not supported as of now.**
 
 [lxc-create]: https://linuxcontainers.org/lxc/manpages/man1/lxc-create.1.html
 [lxc_man]: https://linuxcontainers.org/lxc/manpages/man5/lxc.container.conf.5.html#lbAM

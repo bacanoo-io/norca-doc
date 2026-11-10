@@ -26,8 +26,8 @@ capability {
 }
 ```
 
-You must provide at least one `capability` block, and you must provide a block
-for each capability you intend to use in a job's [`volume`] block.
+**You must provide at least one `capability` block, and you must provide a block
+for each capability you intend to use in a job's [`volume`] block.**
 
 ## `capability` Parameters
 

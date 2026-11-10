@@ -14,8 +14,8 @@ a history in an embedded time-series store, the [metrics store](/docs/configurat
 - the capacity of the cluster, the scheduler, the Raft log, the system bus and the custom objects,
   sampled by the servers themselves.
 
-The API, the CLI, the web UI and the built-in autoscaler read this history. No external metrics
-system is needed for it.
+The API, the CLI, the web UI and the built-in autoscaler read this history. **No external metrics
+system is needed for it.**
 
 ## Comparison
 

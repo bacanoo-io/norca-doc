@@ -31,13 +31,13 @@ task "webservice" {
 }
 ```
 
-The `docker` driver supports the following configuration in the job spec. Only
-`image` is required.
+The `docker` driver supports the following configuration in the job spec. **Only
+`image` is required.**
 
 - `image` - The Docker image to run. The image may include a tag or custom URL
   and should include `https://` if required. By default it will be fetched from
-  Docker Hub. If the tag is omitted or equal to `latest` the driver will always
-  try to pull the image. If the image to be pulled exists in a registry that
+  Docker Hub. **If the tag is omitted or equal to `latest` the driver will always
+  try to pull the image.** If the image to be pulled exists in a registry that
   requires authentication credentials must be provided to Norca. Please see the
   [Authentication section](#authentication).
 
@@ -92,8 +92,9 @@ The `docker` driver supports the following configuration in the job spec. Only
   be 0-3 (to use the first, second, third, and fourth CPU) or 1,3 (to use the
   second and fourth CPU).
 
-Note: `cpuset_cpus` pins the workload to the CPUs but doesn't give the workload
-exclusive access to those CPUs.
+> [!NOTE]
+> Note: `cpuset_cpus` pins the workload to the CPUs but **doesn't give the workload
+> exclusive access to those CPUs.**
 
 ```hcl
 config {
@@ -187,16 +188,16 @@ config {
   ```
 
 - `privileged` - (Optional) `true` or `false` (default). Privileged mode gives
-  the container access to devices on the host. Note that this also requires the
+  the container access to devices on the host. Note that **this also requires the
   Norca agent and docker daemon to be configured to allow privileged
-  containers.
+  containers.**
 
 - `ipc_mode` - (Optional) The IPC mode to be used for the container. The default
   is `none` for a private IPC namespace. Other values are `host` for sharing
   the host IPC namespace or the name or id of an existing container. Note that
   it is not possible to refer to Docker containers started by Norca since their
-  names are not known in advance. Note that setting this option also requires the
-  Norca agent to be configured to allow privileged containers.
+  names are not known in advance. Note that **setting this option also requires the
+  Norca agent to be configured to allow privileged containers.**
 
 - `ipv4_address` - (Optional) The IPv4 address to be used for the container when
   using user defined networks. Requires Docker 1.13 or greater.
@@ -285,8 +286,8 @@ config {
   The default `network_mode` for tasks that use group networking in [`bridge`]
   mode will be `container:<name>`, where the name is the container name of the
   parent container used to share network namespaces between tasks. If you set
-  the group [`network.mode`][] to `"bridge"` you should not set this Docker
-  `network_mode` config, otherwise the container will be unable to reach other
+  the group [`network.mode`][] to `"bridge"` **you should not set this Docker
+  `network_mode` config**, otherwise the container will be unable to reach other
   containers in the task group. This will also prevent [Connect]-enabled tasks
   from reaching the Envoy sidecar proxy. You must also set any DNS options in
   the `network.dns` block and not in the task configuration.
@@ -318,7 +319,7 @@ config {
   }
   ```
 
-- `shm_size` - (Optional) The size (bytes) of /dev/shm for the container.
+- `shm_size` - (Optional) The size (bytes) of `/dev/shm` for the container.
 
 - `storage_opt` - (Optional) A key-value map of storage options set to the containers on start.
   This overrides the [host dockerd configuration](https://docs.docker.com/engine/reference/commandline/dockerd/#options-per-storage-driver).
@@ -349,7 +350,7 @@ config {
 
 - `volumes` - (Optional) A list of `host_path:container_path` strings to bind
   host paths to container paths. Mounting host paths outside of the [allocation
-  working directory] is prevented by default and limits volumes to directories
+  working directory] **is prevented by default** and limits volumes to directories
   that exist inside the allocation working directory. You can allow mounting
   host paths outside of the [allocation working directory] on individual clients
   by setting the `docker.volumes.enabled` option to `true` in the
@@ -488,7 +489,7 @@ config {
 
 - `devices` - (Optional) A list of
   [devices](https://docs.docker.com/engine/reference/commandline/run/#add-host-device-to-container-device)
-  to be exposed the container. `host_path` is the only required field. By default, the container will be able to
+  to be exposed the container. **`host_path` is the only required field.** By default, the container will be able to
   `read`, `write` and `mknod` these devices. Use the optional `cgroup_permissions` field to restrict permissions.
 
   ```hcl
@@ -532,8 +533,8 @@ config {
 ```
 
 - `cpu_hard_limit` - (Optional) `true` or `false` (default). Use hard CPU
-  limiting instead of soft limiting. By default this is `false` which means
-  soft limiting is used and containers are able to burst above their CPU limit
+  limiting instead of soft limiting. **By default this is `false` which means
+  soft limiting is used** and containers are able to burst above their CPU limit
   when there is idle capacity.
 
 - `cpu_cfs_period` - (Optional) An integer value that specifies the duration in microseconds of the period
@@ -571,7 +572,7 @@ Norca creates a container after pulling an image. Containers are named
 container from the same task on a host (e.g. with count > 1). This also means
 that each container's name is unique across the cluster.
 
-This is not configurable.
+**This is not configurable.**
 
 ### Authentication
 
@@ -691,7 +692,7 @@ A Docker container typically specifies which port a service will listen on by
 specifying the `EXPOSE` directive in the `Dockerfile`.
 
 Because dynamic ports will not match the ports exposed in your Dockerfile,
-Norca will automatically expose any ports specified in the `ports` field.
+**Norca will automatically expose any ports specified in the `ports` field.**
 
 These ports will be identified via environment variables. For example:
 
@@ -719,7 +720,7 @@ performance.
 
 ### Using the Port Map
 
-If you prefer to use the traditional port-mapping method, you can specify the
+If you prefer to use the traditional port-mapping method, you can specify
 the `to` field in the port configuration. It looks like this:
 
 ```hcl
@@ -742,16 +743,17 @@ If Norca allocates port `23332` to your allocation, the Docker driver will
 automatically setup the port mapping from `23332` on the host to `6379` in your
 container, so it will just work.
 
-Note that by default this only works with `bridged` networking mode. It may
-also work with custom networking plugins which implement the same API for
-expose and port forwarding.
+> [!NOTE]
+> Note that **by default this only works with `bridged` networking mode.** It may
+> also work with custom networking plugins which implement the same API for
+> expose and port forwarding.
 
 #### Deprecated `port_map` Syntax
 
 Up until Nomad 0.12, ports could be specified in a task's resource block and set using the docker
 `port_map` field. As more features have been added to the group network resource allocation, task based
-network resources are deprecated. With it the `port_map` field is also deprecated and can only be used
-with task network resources.
+network resources are deprecated. With it **the `port_map` field is also deprecated and can only be used
+with task network resources.**
 
 Users should migrate their jobs to define ports in the group network block and specified which ports
 a task maps with the `ports` field.
@@ -770,7 +772,7 @@ using the `address_mode` parameter on a `service`. See
 
 The Docker driver configures ports on both the `tcp` and `udp` protocols.
 
-This is not configurable.
+**This is not configurable.**
 
 ### Other Networking Modes
 
@@ -792,11 +794,13 @@ The `docker` driver implements the following [capabilities](/docs/concepts/plugi
 
 ## Client Requirements
 
-Norca requires Docker to be installed and running on the host alongside the
-Norca agent. Norca was developed against Docker `1.8.2` and `1.9`.
+**Norca requires Docker to be installed and running on the host alongside the
+Norca agent.** Norca was developed against Docker `1.8.2` and `1.9`.
+
+### Docker socket access
 
 By default Norca communicates with the Docker daemon using the daemon's Unix
-socket. Norca will need to be able to read/write to this socket. If you do not
+socket. **Norca will need to be able to read/write to this socket.** If you do not
 run Norca as root, make sure you add the Norca user to the Docker group so
 Norca can communicate with the Docker daemon.
 
@@ -809,6 +813,8 @@ $ sudo usermod -G docker -a nomad
 
 For the best performance and security features you should use recent versions
 of the Linux Kernel and Docker daemon.
+
+### Example plugin configuration
 
 If you would like to change any of the options related to the `docker` driver
 on a Norca client, you can modify them with the [plugin block][plugin-block]
@@ -860,16 +866,16 @@ plugin "docker" {
 ## Plugin Options
 
 - `endpoint` - If using a non-standard socket, HTTP or another location, or if
-  TLS is being used, docker.endpoint must be set. If unset, Norca will attempt
+  TLS is being used, `docker.endpoint` must be set. If unset, Norca will attempt
   to instantiate a Docker client using the `DOCKER_HOST` environment variable and
   then fall back to the default listen address for the given operating system.
   Defaults to `unix:///var/run/docker.sock` on Unix platforms and
   `npipe:////./pipe/docker_engine` for Windows.
 
-- `allow_privileged` - Defaults to `false`. Changing this to true will allow
+- `allow_privileged` - **Defaults to `false`.** Changing this to true will allow
   containers to use privileged mode, which gives the containers full access to
-  the host's devices. Note that you must set a similar setting on the Docker
-  daemon for this to work.
+  the host's devices. Note that **you must set a similar setting on the Docker
+  daemon for this to work.**
 
 - `pull_activity_timeout` - Defaults to `2m`. If Norca receives no communication
   from the Docker engine during an image pull within this timeframe, Norca will
@@ -893,8 +899,8 @@ plugin "docker" {
   to control which capabilities can be obtained by tasks using
   [`cap_add`][cap_add] and [`cap_drop`][cap_drop] options. Supports the value
   `"all"` as a shortcut for allow-listing all capabilities supported by the
-  operating system. Note that due to a limitation in Docker, tasks running as
-  non-root users cannot expand the capabilities set beyond the default. They can
+  operating system. Note that due to a limitation in Docker, **tasks running as
+  non-root users cannot expand the capabilities set beyond the default.** They can
   only have their capabilities reduced.
 
 > [!CAUTION]
@@ -918,8 +924,8 @@ plugin "docker" {
     sources. The script's name must begin with `docker-credential-` and this
     option should include only the basename of the script, not the path.
 
-    If you set an auth helper, it will be tried for all images, including
-    public images. If you mix private and public images, you will need to
+    **If you set an auth helper, it will be tried for all images, including
+    public images.** If you mix private and public images, you will need to
     include [`auth_soft_fail=true`] in every job using a public image.
 
 - `tls` block:
@@ -968,7 +974,7 @@ plugin "docker" {
     The delay controls how long Norca will wait between an image being unused
     and deleting it. If a task is received that uses the same image within
     the delay, the image will be reused. If an image is referenced by more than
-    one tag, `image_delay` may not work correctly.
+    one tag, **`image_delay` may not work correctly.**
 
   - `container` - Defaults to `true`. This option can be used to disable Norca
     from removing a container when the task exits. Under a name conflict,
@@ -1061,7 +1067,7 @@ options](/docs/configuration/client#options):
 - `docker.cleanup.image.delay` A time duration, as [defined
   here](https://golang.org/pkg/time/#ParseDuration), that defaults to `3m`. The
   delay controls how long Norca will wait between an image being unused and
-  deleting it. If a tasks is received that uses the same image within the delay,
+  deleting it. If a task is received that uses the same image within the delay,
   the image will be reused.
 
 - `docker.volumes.enabled`: Defaults to `false`. Allows tasks to bind host paths
@@ -1076,8 +1082,8 @@ options](/docs/configuration/client#options):
 
 - `docker.privileged.enabled` Defaults to `false`. Changing this to `true` will
   allow containers to use `privileged` mode, which gives the containers full
-  access to the host's devices. Note that you must set a similar setting on the
-  Docker daemon for this to work.
+  access to the host's devices. Note that **you must set a similar setting on the
+  Docker daemon for this to work.**
 
 - `docker.caps.allowlist`: A list of allowed Linux capabilities. Defaults to
   `"CHOWN,DAC_OVERRIDE,FSETID,FOWNER,MKNOD,NET_RAW,SETGID,SETUID,SETFCAP, SETPCAP,NET_BIND_SERVICE,SYS_CHROOT,KILL,AUDIT_WRITE"`, which is the list of
@@ -1093,10 +1099,11 @@ options](/docs/configuration/client#options):
 
 - `docker.nvidia_runtime`: Defaults to `nvidia`. This option allows operators to select the runtime that should be used in order to expose Nvidia GPUs to the container.
 
-Note: When testing or using the `-dev` flag you can use `DOCKER_HOST`,
-`DOCKER_TLS_VERIFY`, and `DOCKER_CERT_PATH` to customize Norca's behavior. If
-`docker.endpoint` is set Norca will **only** read client configuration from the
-config file.
+> [!NOTE]
+> Note: When testing or using the `-dev` flag you can use `DOCKER_HOST`,
+> `DOCKER_TLS_VERIFY`, and `DOCKER_CERT_PATH` to customize Norca's behavior. If
+> `docker.endpoint` is set Norca will **only** read client configuration from the
+> config file.
 
 An example is given below:
 
@@ -1137,15 +1144,16 @@ job "docs" {
 
 ### CPU
 
-Norca limits containers' CPU based on CPU shares. CPU shares allow containers
-to burst past their CPU limits. CPU limits will only be imposed when there is
-contention for resources. When the host is under load your process may be
+**Norca limits containers' CPU based on CPU shares.** CPU shares allow containers
+to burst past their CPU limits. **CPU limits will only be imposed when there is
+contention for resources.** When the host is under load your process may be
 throttled to stabilize QoS depending on how many shares it has. You can see how
 many CPU shares are available to your process by reading [`NORCA_CPU_LIMIT`][runtime_env].
 1000 shares are approximately equal to 1 GHz.
 
-Please keep the implications of CPU shares in mind when you load test workloads
-on Norca.
+> [!IMPORTANT]
+> Please keep the implications of CPU shares in mind when you load test workloads
+> on Norca.
 
 If resources [`cores`][cores] is set, the task is given an isolated reserved set of
 CPU cores to make use of. The total set of cores the task may run on is the private
@@ -1155,13 +1163,13 @@ is available to your process by reading [`NORCA_CPU_CORES`][runtime_env].
 ### Memory
 
 Norca limits containers' memory usage based on total virtual memory. This means
-that containers scheduled by Norca cannot use swap. This is to ensure that a
+that **containers scheduled by Norca cannot use swap.** This is to ensure that a
 swappy process does not degrade performance for other workloads on the same
 host.
 
-Since memory is not an elastic resource, you will need to make sure your
+Since memory is not an elastic resource, **you will need to make sure your
 container does not exceed the amount of memory allocated to it, or it will be
-terminated or crash when it tries to malloc. A process can inspect its memory
+terminated or crash when it tries to malloc.** A process can inspect its memory
 limit by reading [`NORCA_MEMORY_LIMIT`][runtime_env], but will need to track its own memory
 usage. Memory limit is expressed in megabytes so 1024 = 1 GB.
 
@@ -1176,7 +1184,7 @@ Docker provides resource isolation by way of
 [cgroups and namespaces](https://docs.docker.com/introduction/understanding-docker/#the-underlying-technology).
 Containers essentially have a virtual file system all to themselves. If you
 need a higher degree of isolation between processes for security or other
-reasons, it is recommended to use full virtualization like
+reasons, **it is recommended to use full virtualization** like
 [QEMU](/docs/drivers/qemu/).
 
 ## Caveats
@@ -1197,7 +1205,7 @@ container that Norca no longer manages.
 The newly added reaper periodically scans for such containers. It only targets
 containers with a `com.hashicorp.nomad.allocation_id` label, or match Norca's
 conventions for naming and bind-mounts (i.e. `/alloc`, `/secrets`, `local`).
-Containers that don't match Norca container patterns are left untouched.
+**Containers that don't match Norca container patterns are left untouched.**
 
 Operators can run the reaper in a dry-run mode, where it only logs dangling
 container ids without killing them, or disable it by setting the
@@ -1205,7 +1213,7 @@ container ids without killing them, or disable it by setting the
 
 ### Docker for Windows
 
-Docker for Windows only supports running Windows containers. Because Docker for
+**Docker for Windows only supports running Windows containers.** Because Docker for
 Windows is relatively new and rapidly evolving you may want to consult the
 list of relevant issues on GitHub.
 

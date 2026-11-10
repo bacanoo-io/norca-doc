@@ -9,8 +9,8 @@ upstream:
 Name: `java`
 
 The `java` driver is used to execute Java applications packaged into a Java Jar
-file. The driver requires the Jar file to be accessible from the Norca
-client via the [`artifact` downloader](/docs/job-specification/artifact/).
+file. **The driver requires the Jar file to be accessible from the Norca
+client via the [`artifact` downloader](/docs/job-specification/artifact/).**
 
 ## Task Configuration
 
@@ -45,7 +45,7 @@ The `java` driver supports the following configuration in the job spec:
   launching the task.
 
 - `jvm_options` - (Optional) A list of JVM options to be passed while invoking
-  java. These options are passed without being validated in any way by Norca.
+  java. **These options are passed without being validated in any way by Norca.**
 
 - `pid_mode` - (Optional) Set to `"private"` to enable PID namespace isolation for
   this task, or `"host"` to disable isolation. If left unset, the behavior is
@@ -183,10 +183,12 @@ The `java` driver implements the following [capabilities](/docs/concepts/plugins
 
 ## Client Requirements
 
-The `java` driver requires Java to be installed and in your system's `$PATH`. On
-Linux, Norca must run as root since it will use `chroot` and `cgroups` which
-require root privileges. The task must also specify at least one artifact to
-download, as this is the only way to retrieve the Jar being run.
+- The `java` driver requires Java to be installed and in your system's `$PATH`.
+- On
+  Linux, **Norca must run as root** since it will use `chroot` and `cgroups` which
+  require root privileges.
+- **The task must also specify at least one artifact to
+  download**, as this is the only way to retrieve the Jar being run.
 
 ## Client Attributes
 
@@ -217,8 +219,8 @@ The resource isolation provided varies by the operating system of
 the client and the configuration.
 
 On Linux, Norca will attempt to use cgroups, namespaces, and chroot
-to isolate the resources of a process. If the Norca agent is not
-running as root, many of these mechanisms cannot be used.
+to isolate the resources of a process. **If the Norca agent is not
+running as root, many of these mechanisms cannot be used.**
 
 As a baseline, the Java jars will be run inside a Java Virtual Machine,
 providing a minimum amount of isolation.
@@ -242,9 +244,12 @@ directories from the host machine:
 ```
 
 The task's chroot is populated by linking or copying the data from the host into
-the chroot. Note that this can take considerable disk space. Since Nomad v0.5.3,
-the client manages garbage collection locally which mitigates any issue this may
-create.
+the chroot.
+
+> [!NOTE]
+> Note that **this can take considerable disk space.** Since Nomad v0.5.3,
+> the client manages garbage collection locally which mitigates any issue this may
+> create.
 
 This list is configurable through the agent client
 [configuration file](/docs/configuration/client#chroot_env).

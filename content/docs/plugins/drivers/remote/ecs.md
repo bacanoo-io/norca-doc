@@ -32,7 +32,7 @@ a new node has taken over.
 
 ## Client Requirements
 
-The AWS ECS Task Driver is not currently built into Norca and must be
+**The AWS ECS Task Driver is not currently built into Norca** and must be
 downloaded onto the client host in the configured [plugin
 directory][plugin_dir].
 

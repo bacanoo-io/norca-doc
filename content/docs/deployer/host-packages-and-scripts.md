@@ -16,7 +16,7 @@ Order on each node:
 4. Tuning, directories, Norca binary, CNI, certificates, `norca.hcl`, firewall, service
 5. `post_install` scripts (after the agent was restarted and is healthy, or was unchanged)
 
-An error in any step stops that node.
+**An error in any step stops that node.**
 
 ## APT repositories
 
@@ -99,7 +99,7 @@ scripts:
 
 - Scripts run as root with `bash` under `timeout`; a non-zero exit fails the node.
 - Environment variables are written to a 0600 file, sourced by the script runner and deleted afterwards. They never appear on a command line.
-- After a successful run, the SHA-256 of the script and its environment is stored in `/var/lib/norca-deployer/scripts/<name>.sha256`. The script runs again only when the body or the environment changed, or with `always: true`. Write scripts so that a second run is harmless anyway.
+- After a successful run, the SHA-256 of the script and its environment is stored in `/var/lib/norca-deployer/scripts/<name>.sha256`. The script runs again only when the body or the environment changed, or with `always: true`. **Write scripts so that a second run is harmless anyway.**
 
 ## Validation
 

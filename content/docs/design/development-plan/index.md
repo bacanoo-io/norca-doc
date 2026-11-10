@@ -12,13 +12,15 @@ Progress: autoscaler phases 1–3 implemented, phase 4 (node pools with cloud pr
 
 ## Summary and goals
 
-The evaluation logic of the Nomad Autoscaler will become an internal subsystem running on the Nomad leader server, delivered in four phases. After the first phase the separate autoscaler deployment can be retired; after the fourth, the scaling of jobs and node pools becomes a validated part of the jobspec and of the node pool specification.
+**The evaluation logic of the Nomad Autoscaler will become an internal subsystem running on the Nomad leader server, delivered in four phases.** After the first phase the separate autoscaler deployment can be retired; after the fourth, the scaling of jobs and node pools becomes a validated part of the jobspec and of the node pool specification.
 
 The plan starts from Nomad v1.6.5 (the last release under MPL 2.0) and Nomad Autoscaler v0.6.0 (MPL 2.0). Both codebases can be freely modified and merged.
 
 The plan also schedules seven features that can be adopted from Kubernetes (quotas, dynamic admission, event notification, cross-job affinity, disruption budget, health check roles, network rules). Two of them, quotas and dynamic admission, are prerequisites for phase 2 of the autoscaler. An operator framework (custom object types and controllers, following the Kubernetes operator pattern) is built on top of these seven items.
 
-For multi-cloud operation the plan proposes one federated region per cloud with a WireGuard mesh, native mTLS gateways (the official Consul if a full mesh is needed) and a NATS supercluster, plus two Norca developments: an own implementation of multiregion deployment and an event stream → NATS bridge. Multiregion deployment is controlled over Nomad's own cross-region RPC; NATS only carries events, notifications and application messages and is not in the control path.
+For multi-cloud operation the plan proposes one federated region per cloud with a WireGuard mesh, native mTLS gateways (the official Consul if a full mesh is needed) and a NATS supercluster, plus two Norca developments: an own implementation of multiregion deployment and an event stream → NATS bridge. Multiregion deployment is controlled over Nomad's own cross-region RPC; **NATS only carries events, notifications and application messages and is not in the control path.**
+
+### Related plans
 
 The plan also includes S3-based, per-region scheduled backup and restore (encrypted backups copied to multiple clouds, with selective and full restore managed from the UI); its detailed plan is in a separate document: [backup-restore-plan.md](/docs/design/backup-restore-plan).
 
@@ -29,6 +31,8 @@ Package management builds on Nomad Pack: the package format and the command-line
 The web UI gets a new information architecture, a federation dashboard and pages for the planned features, on a Tabler base (MIT) with its own Ember component layer. Details: [ui-plan.md](/docs/design/ui-plan), clickable mockup: [mockups/ui-mockup.html](/design/mockups/ui-mockup.html).
 
 Licensing: wherever possible everything is MPL 2.0 (Norca, Nomad Pack, the standalone components and the documentation as well); there is no separate control plane. Details, starting commits, dependency rules and the base files of the repository: [licensing.md](/docs/introduction/license).
+
+### Goals
 
 **Goals:**
 
@@ -174,7 +178,7 @@ The built-in scaler sees deployments, quotas and node state directly from the st
 
 **Rate limit:** a cluster-wide token bucket on scaling Raft writes (default: 10 writes/s, burst of 50), and per-job oscillation protection: if a task group changes direction three times within 10 minutes, the scaler suspends it for 15 minutes and writes a warning event.
 
-**Execution:** the decision goes through the existing `Job.Scale` path, as an internal call (not over HTTP). This leaves the existing ACL check, the recording of the `scaling_event` and the creation of the evaluation unchanged. The internal call runs with a system identity that only receives the `scale-job` permission.
+**Execution:** the decision goes through the existing `Job.Scale` path, as an internal call (not over HTTP). This leaves the existing ACL check, the recording of the `scaling_event` and the creation of the evaluation unchanged. **The internal call runs with a system identity that only receives the `scale-job` permission.**
 
 ## Compatibility and migration
 
@@ -232,7 +236,12 @@ K8s features · value × effort, 7 items
 
 The detailed specification of the eight items (semantics, jobspec, API, data model, affected files, acceptance criteria) is in a separate document: [kubernetes-features-spec.md](/docs/design/kubernetes-features-spec).
 
-**Order:** items 1 and 3 start at the same time as phase 1 of the autoscaler, item 2 is completed before phase 2 of the autoscaler. Item 5 is a prerequisite for phase 4 of the autoscaler. Items 4 and 6 can be slotted in at any time, item 7 only after the decision about Consul. The prototype of the operator framework can start after items 2 and 3; its native objects and lifecycle management are prerequisites for the first production operator.
+**Order:**
+
+- items 1 and 3 start at the same time as phase 1 of the autoscaler, item 2 is completed before phase 2 of the autoscaler.
+- Item 5 is a prerequisite for phase 4 of the autoscaler.
+- Items 4 and 6 can be slotted in at any time, item 7 only after the decision about Consul.
+- The prototype of the operator framework can start after items 2 and 3; its native objects and lifecycle management are prerequisites for the first production operator.
 
 **What we do not adopt:** etcd and the general object model, the kube-proxy-style virtual-IP Service model and the YAML-based manifest ecosystem, because these would sacrifice the simplicity and performance of Nomad.
 
@@ -248,7 +257,7 @@ Proposed setup: one federated Norca region per cloud, a WireGuard mesh underneat
 
 multi-cloud topology · 3 regions, 4 layers
 
-The outage of one cloud affects only its own region, because every region has its own Raft. The connection between regions does not need to be low-latency.
+**The outage of one cloud affects only its own region**, because every region has its own Raft. The connection between regions does not need to be low-latency.
 
 | Layer                           | Solution                                                                                              | License                 |
 |---------------------------------|-------------------------------------------------------------------------------------------------------|-------------------------|
@@ -264,7 +273,12 @@ The outage of one cloud affects only its own region, because every region has it
 
 **Alternative (one region, clients in several clouds):** simpler, and with the `spread` block jobs can be distributed across clouds, but the control plane is tied to one cloud. If it fails, running allocations keep running, but no new scheduling takes place.
 
-**Security minimum:** TLS on the Norca RPC and HTTP API (4647, 4646), an encryption key on the Serf gossip (4648), ACL enabled in every region, ports reachable only on the mesh interface.
+**Security minimum:**
+
+- TLS on the Norca RPC and HTTP API (4647, 4646),
+- an encryption key on the Serf gossip (4648),
+- ACL enabled in every region,
+- ports reachable only on the mesh interface.
 
 **Norca developments:**
 
@@ -331,7 +345,7 @@ Details: [ui-plan.md](/docs/design/ui-plan). Clickable mockup with the real Tabl
 
 ## Roadmap
 
-The work proceeds in four phases that build on each other, and every phase can be released separately. After phase 1 the external autoscaler can already be stopped; the later phases improve quality and efficiency. We deliberately give no durations, because they depend on the team size and on the answers to the open questions.
+The work proceeds in four phases that build on each other, and every phase can be released separately. **After phase 1 the external autoscaler can already be stopped;** the later phases improve quality and efficiency. We deliberately give no durations, because they depend on the team size and on the answers to the open questions.
 
 ![roadmap · 4 phases, 3 gates](images/04-roadmap.svg)
 
@@ -346,7 +360,7 @@ roadmap · 4 phases, 3 gates
 
 ## Risks and testing
 
-The biggest risk is that the scaler loads the leader's resources and Raft, so every phase ends with a load test, and the scaler can be switched off at runtime with a switch.
+**The biggest risk is that the scaler loads the leader's resources and Raft**, so every phase ends with a load test, and the scaler can be switched off at runtime with a switch.
 
 | Risk                                      | Impact                                                | Mitigation                                                                                                                                                 |
 |-------------------------------------------|-------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -367,7 +381,10 @@ The biggest risk is that the scaler loads the leader's resources and Raft, so ev
 
 ## License and legal aspects
 
-Every source in the plan is MPL 2.0 or under a compatible license, so the autoscaler code can be taken directly into Norca. This is not legal advice; a legal review is recommended before commercial distribution.
+Every source in the plan is MPL 2.0 or under a compatible license, so the autoscaler code can be taken directly into Norca.
+
+> [!IMPORTANT]
+> This is not legal advice; a legal review is recommended before commercial distribution.
 
 <!-- REUSE-IgnoreStart -->
 

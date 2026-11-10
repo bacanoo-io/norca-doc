@@ -36,11 +36,11 @@ secrets:
 | `bootstrap[].items` | | Item names and values (see below) |
 | `bootstrap[].overwrite` | `false` | See below |
 
-**Create once (default).** The entry is written with check-and-set index 0: it is created when it does not exist, and an existing secret or Variable is never touched. A password rotated in the cluster is not reset by the next `apply`.
+**Create once (default).** The entry is written with check-and-set index 0: it is created when it does not exist, and an existing secret or Variable is never touched. **A password rotated in the cluster is not reset by the next `apply`.**
 
 **`overwrite: true`.** A new version is written whenever the items in the plan changed since the last `apply` (the deployer keeps a digest of the written items in `.norca-deployer/secrets/`). Use it for values the plan owns, such as certificates.
 
-With ACLs the writes use the management token; without a token the entries are skipped with a warning. Secrets and Variables are regional: each region's plan writes its own.
+With ACLs the writes use the management token; without a token the entries are skipped with a warning. **Secrets and Variables are regional: each region's plan writes its own.**
 
 ### Item values
 

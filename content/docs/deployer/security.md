@@ -77,9 +77,9 @@ norca-deployer pki issue-node-ca -c cluster.yaml --region eu
 
 It writes `certs/node-ca-eu.pem`, `certs/node-ca-eu-key.pem` (0600) and `certs/node-ca-eu-chain.pem` (node CA and root). The region defaults to `metadata.region`, and an existing node CA is only replaced with `--force`.
 
-The node CA is valid for **180 days** by default (`--days`, or `--years` for whole years, not both) and never longer than the cluster CA. A short validity is the point: there is no revocation, and a new node CA does not end the validity of an older one (the servers trust the cluster CA, and the old node CA still chains up to it), so the certificates that a stolen key signs stay valid until the node CA itself expires. Rotate it well before it expires and give the operator the new one.
+The node CA is valid for **180 days** by default (`--days`, or `--years` for whole years, not both) and never longer than the cluster CA. A short validity is the point: there is no revocation, and a new node CA does not end the validity of an older one (the servers trust the cluster CA, and the old node CA still chains up to it), so the certificates that a stolen key signs stay valid until the node CA itself expires. **Rotate it well before it expires and give the operator the new one.**
 
-The node CA signs leaf certificates only (path length 0), for server and client authentication, and **name constraints** limit what it can sign to what a node certificate carries: the DNS names `client.<region>.norca` (and subdomains) and `localhost`, the address `127.0.0.1`, and with SPIFFE the URIs of the trust domain (without SPIFFE, no URI at all). A certificate for a server (`server.<region>.norca`), for another region or with a foreign name, address or trust domain fails verification, so the key of a node CA cannot be used to join the Raft cluster or to impersonate a server. It can still make client certificates of its region, so keep the key where only the operator can read it.
+The node CA signs leaf certificates only (path length 0), for server and client authentication, and **name constraints** limit what it can sign to what a node certificate carries: the DNS names `client.<region>.norca` (and subdomains) and `localhost`, the address `127.0.0.1`, and with SPIFFE the URIs of the trust domain (without SPIFFE, no URI at all). A certificate for a server (`server.<region>.norca`), for another region or with a foreign name, address or trust domain fails verification, so the key of a node CA cannot be used to join the Raft cluster or to impersonate a server. **It can still make client certificates of its region, so keep the key where only the operator can read it.**
 
 An agent presents the chain it loads from its certificate file: the file of a node signed by a node CA holds the **leaf followed by the node CA**, and without the node CA the servers cannot verify it. The agents keep the cluster CA as their only trusted CA; nothing changes on the servers. After a renewal, send the agent a SIGHUP: it reloads the certificate without a restart and keeps its connections.
 
@@ -147,6 +147,6 @@ An encrypted value that cannot be decrypted is an error; it is never sent as is.
 ## Files
 
 - `init` writes the plan with mode 0600 and overwrites an existing file only with `--force`.
-- `secret create-key` never overwrites an existing key: the key decrypts your existing secrets. Do not lose it: with it gone, the encrypted CA key cannot be read.
+- `secret create-key` never overwrites an existing key: the key decrypts your existing secrets. **Do not lose it: with it gone, the encrypted CA key cannot be read.**
 - The key files of `pki issue-intermediate` and `pki issue-node-ca` (`certs/*-ca-key.pem`, mode 0600) are plain text: the operator or the PKI that uses them needs the key itself.
 - On the nodes, the TLS directory is 0700, keys are 0600, and script environment files are 0600 and deleted after use.

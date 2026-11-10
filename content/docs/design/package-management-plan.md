@@ -79,7 +79,7 @@ flowchart LR
     RAFT --> BK["Backups<br/>(backup-restore-plan)"]
 ```
 
-Rendering stays on the client (as Nomad Pack works today), so the server does not need to run a template engine, and the content of the pack does not reach the server. The server receives the rendered resources, applies them and keeps track of them.
+**Rendering stays on the client** (as Nomad Pack works today), so the server does not need to run a template engine, and the content of the pack does not reach the server. The server receives the rendered resources, applies them and keeps track of them.
 
 > [!NOTE]
 > Update 2026-10-29: packs of **cluster pack registries** are rendered by the leader for the installs and
@@ -101,7 +101,7 @@ The existing pack structure (`metadata.hcl`, `variables.hcl`, `templates/`, `out
 | `*.object.hcl.tpl` | Custom object (K8s item 8) | 7 |
 | `*.nomad.tpl` | Job (the current format) | 8 |
 
-On deletion the order is reversed. The pack states the required Norca version and the features it uses in `metadata.hcl`, so that on an older server `plan` already reports an error:
+**On deletion the order is reversed.** The pack states the required Norca version and the features it uses in `metadata.hcl`, so that on an older server `plan` already reports an error:
 
 ```hcl
 pack {
@@ -211,7 +211,7 @@ variables_schema = file("values.schema.json")   # optional JSON Schema for the v
 | 3. Server-side apply | Extended package format, fixed order, `Release.Apply`, `plan`, `atomic`, hooks, tests, drift detection, UI | Phase 2; K8s item 2 (admission); phase 3 of item 8 (ownership) |
 | 4. Supply chain and multi-region | OCI registry, signing, admission check, `pack.lock`, multiple regions | Phase 3; multiregion deployment |
 
-Phase 1 can start immediately and on its own provides unified package management. Helm-level capabilities are available from phase 3.
+Phase 1 can start immediately and on its own provides unified package management. **Helm-level capabilities are available from phase 3.**
 
 **Relationship to upstream Nomad Pack:** the client-side extensions (OCI registry, signature verification, `pack.lock`, value schema) are best written as changes that can be submitted upstream. The parts that build on Norca's own server-side features (release object, `Release.Apply`, extended resource types) live in Norca's Nomad Pack branch, with regular upstream synchronization.
 

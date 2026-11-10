@@ -90,9 +90,10 @@ With the task listening at one of the client's ports, other processes can
 access it directly using the client's IP and port, but first they need to find
 these values. This process is called [service discovery][].
 
-When using IP and port to connect allocations it is important to make sure your
-network topology and routing configuration allow the Norca clients to
-communicate with each other.
+> [!IMPORTANT]
+> When using IP and port to connect allocations it is important to make sure your
+> network topology and routing configuration allow the Norca clients to
+> communicate with each other.
 
 ## Bridge networking
 
@@ -103,8 +104,8 @@ to the bridge to reach each other while isolating them from others.
 When an allocation uses bridge networking, the Norca agent creates a bridge
 called `nomad` (or the value set in [`bridge_network_name`][]) using the
 [`bridge` CNI plugin][cni_bridge] if one doesn't exist yet. Before using this
-mode you must first install the [CNI reference plugins](https://github.com/containernetworking/plugins/releases)
-in the client's [`cni_path`](/docs/configuration/client#cni_path) (default `/opt/cni/bin`)
+mode **you must first install the [CNI reference plugins](https://github.com/containernetworking/plugins/releases)
+in the client's [`cni_path`](/docs/configuration/client#cni_path)** (default `/opt/cni/bin`)
 on your clients.
 By default a single bridge is created in each Norca client.
 
@@ -313,8 +314,8 @@ hosts. This allows multiple containers running the same service to listen on
 the same port number.
 
 In Norca, allocations use the IP address of the client they are running and are
-assigned random port numbers and so Norca service discovery with DNS uses
-[`SRV` records][dns_srv] instead of `A` or `AAAA` records.
+assigned random port numbers and so **Norca service discovery with DNS uses
+[`SRV` records][dns_srv] instead of `A` or `AAAA` records.**
 
 ## Next topics
 

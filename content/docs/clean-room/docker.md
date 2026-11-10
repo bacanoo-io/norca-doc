@@ -39,7 +39,7 @@ A `kill_timeout` of `500ms` truncates to 0, and Docker treats a stop timeout of
 0 as an immediate SIGKILL; `5.9s` truncates to 5.
 
 **Verdict: valid.** The conversion truncates, and a timeout of 0 seconds makes
-Docker send SIGKILL without waiting, so the task gets no time to shut down.
+Docker send SIGKILL without waiting, so **the task gets no time to shut down.**
 
 **Fix.** The timeout is converted by `stopTimeoutSeconds`, which rounds up
 (`math.Ceil`): any positive timeout gives at least one second, `5.9s` gives 6.

@@ -61,15 +61,15 @@ A quota is attached to a namespace with the `quota` parameter of the
   256 characters.
 
 - `limit` <code>([Limit](#limit-parameters): nil)</code> - The limit of one
-  region. May be repeated, at most once per region. A region without a `limit`
-  block is not limited.
+  region. May be repeated, at most once per region. **A region without a `limit`
+  block is not limited.**
 
 - `task_defaults` <code>([Task resources](#task_defaults-and-task_max-parameters): nil)</code> -
   Resources filled in at job submission for tasks that do not set them.
 
 - `task_max` <code>([Task resources](#task_defaults-and-task_max-parameters): nil)</code> -
-  The maximum resources a single task may request. A job with a task above the
-  maximum is rejected at submission.
+  The maximum resources a single task may request. **A job with a task above the
+  maximum is rejected at submission.**
 
 - `enforce` `(string: "schedule")` - The enforcement mode:
   - `schedule` - Jobs are always accepted. The scheduler places allocations up
@@ -101,7 +101,7 @@ A quota is attached to a namespace with the `quota` parameter of the
 - `allocations` `(int: 0)` - (Norca) The maximum number of non-terminal
   allocations.
 
-For every limit, `0` means unlimited and a negative value disallows any usage.
+**For every limit, `0` means unlimited and a negative value disallows any usage.**
 Disk, network and device resources are not supported in `region_limit`.
 
 ### `task_defaults` and `task_max` Parameters
@@ -116,8 +116,8 @@ Disk, network and device resources are not supported in `region_limit`.
 - `memory_max` `(int: 0)` - The `memory_max` in MB. In `task_defaults` it is
   only filled in if it is not lower than the memory of the task.
 
-A task resource equal to the built-in default (`cpu = 100`, `memory = 300`) is
-treated as not set, because jobs submitted through the HTTP API carry these
+**A task resource equal to the built-in default (`cpu = 100`, `memory = 300`) is
+treated as not set,** because jobs submitted through the HTTP API carry these
 defaults. A zero value in `task_max` means no maximum. The values of
 `task_defaults` must not be negative and must not exceed `task_max`.
 

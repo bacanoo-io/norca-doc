@@ -104,8 +104,8 @@ values to adapt its behavior to fit inside the resource allocation that Norca
 provides. For example, you can use the memory limit to inform how large your
 in-process cache should be, or to decide when to flush buffers to disk.
 
-Both CPU and memory are presented as integers. The unit for CPU limit is
-`1024 = 1GHz`. The unit for memory is `1 = 1 megabyte`.
+Both CPU and memory are presented as integers. **The unit for CPU limit is
+`1024 = 1GHz`. The unit for memory is `1 = 1 megabyte`.**
 
 Writing your applications to adjust to these values at runtime provides greater
 scheduling flexibility since you can adjust the resource allocations in your
@@ -133,12 +133,12 @@ working directory:
   shipper.
 - `local/`: This directory is private to each task. It can be used to store
   arbitrary data that should not be shared by tasks in the task group.
-- `secrets/`: This directory is private to each task, not accessible via the
-  `norca alloc fs` command or filesystem APIs. Where possible it is backed by an
+- `secrets/`: This directory is private to each task, **not accessible via the
+  `norca alloc fs` command or filesystem APIs**. Where possible it is backed by an
   in-memory filesystem and mounted `noexec`. It can be used to store secret data
   that should not be visible outside the task.
 
-These directories are persisted until the allocation is removed, which occurs
+**These directories are persisted until the allocation is removed**, which occurs
 hours after all the tasks in the task group enter terminal states. This gives
 time to view the data produced by tasks.
 
@@ -162,9 +162,10 @@ environment variables. Prior to Nomad 0.5.5 the key was uppercased and since
 then both the original case and an uppercased version are injected. The
 uppercased version will be deprecated in a future release.
 
-Currently there is no enforcement that the meta keys be lowercase, but using
-multiple keys with the same uppercased representation will lead to undefined
-behavior.
+> [!WARNING]
+> Currently there is no enforcement that the meta keys be lowercase, but **using
+> multiple keys with the same uppercased representation will lead to undefined
+> behavior.**
 
 ## Host environment variables
 

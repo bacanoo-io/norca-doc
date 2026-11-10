@@ -44,11 +44,11 @@ The Jail task driver supports most of [JAIL(8)][jail(8)] parameters, for a list 
 
 - `Ip4` - (Optional) Control the availability of IPv4 addresses. Possible values are
   **"inherit"** to allow unrestricted access to all system addresses,
-  **"new"** to restrict addresses via Ip4_addr, and "**disable"** to stop
+  **"new"** to restrict addresses via `Ip4_addr`, and "**disable"** to stop
   the jail from using IPv4 entirely.
 
 > [!WARNING]
-> Note : Setting the Ip4_addr parameter implies a value of **"new"**
+> Note : Setting the `Ip4_addr` parameter implies a value of **"new"**
 
 - `Ip4_addr` - (Optional) A list of IPv4 addresses assigned to the jail. If this is set,
   the jail is restricted to using only these addresses. Any attempts to use other addresses fail,
@@ -59,11 +59,11 @@ The Jail task driver supports most of [JAIL(8)][jail(8)] parameters, for a list 
   single overlapping IP address assigned to itself.
 
 - `Allow_raw_sockets` - (Optional) The jail root is allowed to create raw sockets. Setting
-  this parameter allows utilities like ping(8) and traceroute(8) to operate inside the jail.
+  this parameter allows utilities like `ping(8)` and `traceroute(8)` to operate inside the jail.
   If this is set, the source IP addresses are enforced to comply with the IP address bound to the jail,
-  regardless of whether or not the IP_HDRINCL flag has been set on the socket.
-  Since raw sockets can be used to configure and interact with various network subsystems, extra caution
-  should be used where privileged access to jails is given out to untrusted parties.
+  regardless of whether or not the `IP_HDRINCL` flag has been set on the socket.
+  Since raw sockets can be used to configure and interact with various network subsystems, **extra caution
+  should be used where privileged access to jails is given out to untrusted parties.**
 
 ## Resource Isolation
 

@@ -99,8 +99,8 @@ egress {
   mode cannot enforce the rules, and the client emits a
   `Network Policy Not Enforced` task event when applying them fails.
 
-A network policy needs at least one `ingress` or `egress` rule or a
-`default_deny` direction.
+**A network policy needs at least one `ingress` or `egress` rule or a
+`default_deny` direction.**
 
 ### Admin-only parameters
 
@@ -112,7 +112,7 @@ A network policy needs at least one `ingress` or `egress` rule or a
   to, as names or glob patterns (`"*"`, `"team-*"`). Empty means every
   namespace.
 
-An admin policy needs at least one `ingress` or `egress` rule.
+**An admin policy needs at least one `ingress` or `egress` rule.**
 
 ## Rule Parameters
 
@@ -123,7 +123,7 @@ An admin policy needs at least one `ingress` or `egress` rule.
 
 - `action` `(string)` - Admin policies only, required there: `"allow"` accepts
   the traffic, `"deny"` drops it (and counts it), `"pass"` hands the decision
-  over to the namespace policies. Both `allow` and `deny` are final. In network
+  over to the namespace policies. **Both `allow` and `deny` are final.** In network
   policies `action` must be empty or `"allow"`.
 
 - `from` (ingress) / `to` (egress) <code>([Peer](#peer-parameters): &lt;optional&gt;)</code> -
@@ -140,7 +140,7 @@ An admin policy needs at least one `ingress` or `egress` rule.
 
   Ingress ports are always the ports inside the allocation's network namespace.
 
-Traffic matches a rule if it matches one of its peers and one of its ports.
+**Traffic matches a rule if it matches one of its peers and one of its ports.**
 
 ## Peer Parameters
 
@@ -166,7 +166,7 @@ A peer is either an address block or a set of allocations on the same node:
 
   The client subtracts the excepted prefixes from the blocks when it compiles
   the rules, so the nftables rule set contains only the remaining prefixes. An
-  `except` of a rule does not affect other rules or policies: another policy
+  `except` of a rule **does not affect other rules or policies**: another policy
   that allows the excepted range still allows it.
 
 - `namespace` `(string: "")` - The namespace of peer allocations. Empty means
@@ -177,7 +177,7 @@ A peer is either an address block or a set of allocations on the same node:
   by their merged job and task group `meta`. Empty selects every allocation of
   the namespace.
 
-Allocation peers match only allocations running on the same node. Traffic
+**Allocation peers match only allocations running on the same node.** Traffic
 from other nodes arrives through host ports with the address of the sending
 node (or external client) as source, so it is matched with `cidr`.
 

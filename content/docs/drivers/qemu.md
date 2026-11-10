@@ -17,8 +17,8 @@ resource allocation.
 The `qemu` driver can execute any regular `qemu` image (e.g. `qcow`, `img`,
 `iso`), and is currently invoked with `qemu-system-x86_64`.
 
-The driver requires the image to be accessible from the Norca client via the
-[`artifact` downloader](/docs/job-specification/artifact/).
+**The driver requires the image to be accessible from the Norca client via the
+[`artifact` downloader](/docs/job-specification/artifact/).**
 
 ## Task Configuration
 
@@ -54,17 +54,17 @@ The `qemu` driver supports the following configuration in the job spec:
   monitor](https://en.wikibooks.org/wiki/QEMU/Monitor), send an ACPI shutdown
   signal to virtual machines rather than simply terminating them. This emulates
   a physical power button press, and gives instances a chance to shut down
-  cleanly. If the VM is still running after `kill_timeout`, it will be
-  forcefully terminated. This feature uses a Unix socket that is placed within
+  cleanly. **If the VM is still running after `kill_timeout`, it will be
+  forcefully terminated.** This feature uses a Unix socket that is placed within
   the task directory and operating systems may impose a limit on how long these
-  paths can be. This feature is currently not supported on Windows.
+  paths can be. **This feature is currently not supported on Windows.**
 
 - `guest_agent` `(bool: false)` - Enable support for the [QEMU Guest
   Agent](https://wiki.qemu.org/Features/GuestAgent) for this virtual machine.
   This will add the necessary virtual hardware and create a `qa.sock` file in
-  the task's working directory for interacting with the agent. The QEMU Guest
-  Agent must be running in the guest VM. This feature is currently not
-  supported on Windows.
+  the task's working directory for interacting with the agent. **The QEMU Guest
+  Agent must be running in the guest VM.** **This feature is currently not
+  supported on Windows.**
 
 - `port_map` - (Optional) A key-value map of port labels.
 
@@ -119,9 +119,9 @@ The `qemu` driver implements the following [capabilities](/docs/concepts/plugins
 
 ## Client Requirements
 
-The `qemu` driver requires QEMU to be installed and in your system's `$PATH`.
-The task must also specify at least one artifact to download, as this is the only
-way to retrieve the image being run.
+- The `qemu` driver requires QEMU to be installed and in your system's `$PATH`.
+- **The task must also specify at least one artifact to download**, as this is the only
+  way to retrieve the image being run.
 
 ## Client Attributes
 
@@ -159,7 +159,7 @@ plugin "qemu" {
   driver is allowed to load images from.
 - `args_allowlist` (`[]string`: `[]`) - Specifies the command line
   flags that the [`args`] option is permitted to pass to QEMU. If
-  unset, a job submitter can pass any command line flag into QEMU,
+  unset, **a job submitter can pass any command line flag into QEMU**,
   including flags that provide the VM with access to host devices such
   as USB drives. Refer to the [QEMU documentation] for the available
   flags.
@@ -175,10 +175,11 @@ require additional security, and resource use is constrained by the QEMU
 hypervisor rather than the host kernel. VM network traffic still flows through
 the host's interface(s).
 
-Note that the strong isolation provided by virtualization only applies
-to the workload once the VM is started. Operators should use the
-`args_allowlist` option to prevent job submitters from accessing
-devices and resources they are not allowed to access.
+> [!IMPORTANT]
+> Note that **the strong isolation provided by virtualization only applies
+> to the workload once the VM is started.** Operators should use the
+> `args_allowlist` option to prevent job submitters from accessing
+> devices and resources they are not allowed to access.
 
 [`args`]: /docs/drivers/qemu#args
 [QEMU documentation]: https://www.qemu.org/docs/master/system/invocation.html

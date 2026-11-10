@@ -44,8 +44,8 @@ Successfully applied node pool "example"!
   pool, defined as key-value pairs. The scheduler does not use node pool
   metadata as part of scheduling.
 
-- `scheduler_config` - Not supported in Norca: a node pool specification
-  with a `scheduler_config` block (JSON `SchedulerConfiguration`) is rejected
+- `scheduler_config` - Not supported in Norca: **a node pool specification
+  with a `scheduler_config` block (JSON `SchedulerConfiguration`) is rejected**
   with "node pool scheduler_config is not supported". The
   [global scheduler configuration](/docs/commands/operator/scheduler/set-config)
   (scheduling algorithm, memory oversubscription) applies to every node pool;

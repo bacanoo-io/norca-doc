@@ -62,5 +62,5 @@ With ACLs enabled the calls use the management token. Without a token (bootstrap
 
 ## Notes
 
-- Removing an entry from `deploy` does not uninstall the release; use the Norca CLI or UI for that.
-- Secrets of a pack (e.g. a database password) should not be put in `values` as plain text. Write them with `secrets.bootstrap` (generated or encrypted), or set them in the Norca UI or CLI.
+- **Removing an entry from `deploy` does not uninstall the release**; use the Norca CLI or UI for that.
+- **Secrets of a pack (e.g. a database password) should not be put in `values` as plain text.** Write them with `secrets.bootstrap` (generated or encrypted), or set them in the Norca UI or CLI.

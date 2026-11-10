@@ -6,7 +6,14 @@ weight: 12
 origin: "norca-deployer/doc/multi-datacenter.md"
 ---
 
-A region can span several datacenters: availability zones of a cloud region, or buildings of a campus. The servers form one Raft cluster across them, the clients of every datacenter run jobs, the native service catalog knows the datacenter of every instance and can prefer the caller's own, and the system bus of the servers (the event stream, the Consul KV, the usage reports of the autoscaler, the pack push notices) is replicated over the datacenters. The example plan also runs a NATS cluster with one server per datacenter, as an example of a stateful service spread over the datacenters. Example: [multi-datacenter.yaml](/docs/deployer/examples/multi-datacenter).
+A region can span several datacenters: availability zones of a cloud region, or buildings of a campus.
+
+- The servers form one Raft cluster across them,
+- the clients of every datacenter run jobs,
+- the native service catalog knows the datacenter of every instance and can prefer the caller's own,
+- and the system bus of the servers (the event stream, the Consul KV, the usage reports of the autoscaler, the pack push notices) is replicated over the datacenters.
+
+The example plan also runs a NATS cluster with one server per datacenter, as an example of a stateful service spread over the datacenters. Example: [multi-datacenter.yaml](/docs/deployer/examples/multi-datacenter).
 
 ```mermaid
 flowchart LR
@@ -45,7 +52,7 @@ flowchart LR
 | Service discovery | One catalog; lookups can prefer the caller's datacenter | One catalog per region; lookups fall back to other regions in a given order |
 | NATS | One cluster, routes between the datacenters | One cluster per region, gateways (supercluster) |
 
-Raft needs a majority of the servers to answer quickly; across long distances use [regions](/docs/deployer/multi-region).
+**Raft needs a majority of the servers to answer quickly; across long distances use [regions](/docs/deployer/multi-region).**
 
 ## Servers and clients
 
@@ -181,7 +188,7 @@ norca operator bus status               # streams, routes and JetStream state of
 ## Operations
 
 - **Rollouts:** servers restart one at a time, so every datacenter keeps its quorum share; `upgrade.max_parallel_clients` limits the clients restarted together across all datacenters.
-- **Adding a datacenter:** add its nodes with their `datacenter`, extend `cluster_cidrs` if needed, and add it to the `datacenters` of the jobs and packs. Keep the number of servers odd (3 or 5).
+- **Adding a datacenter:** add its nodes with their `datacenter`, extend `cluster_cidrs` if needed, and add it to the `datacenters` of the jobs and packs. **Keep the number of servers odd (3 or 5).**
 - **Removing nodes:** move them to `inventory.decommission` ([adding and removing nodes](/docs/deployer/adding-and-removing-nodes)).
 
 ## Tested in the lab

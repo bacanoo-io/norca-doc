@@ -74,7 +74,12 @@ norca-deployer apply -c cluster-deploy.yaml
 | `node-scaling install-script [--arch <arch>]` | Print the bash script that installs the norca binary, the CNI plugins, `norca-join` and the agent unit on a machine of the node scaling operator (for its image, or run at the first boot) |
 | `version` | Print the version |
 
-`-o json` prints a JSON document on stdout for scripts. Errors go to stderr as `[ERROR] ...`, never to stdout. Exit codes: `0` success, `1` a failure while the command ran, `2` a wrong command line (unknown command or flag, missing argument), `130` the command was interrupted (Ctrl-C) and stopped between two steps.
+`-o json` prints a JSON document on stdout for scripts. Errors go to stderr as `[ERROR] ...`, never to stdout. Exit codes:
+
+- `0` success,
+- `1` a failure while the command ran,
+- `2` a wrong command line (unknown command or flag, missing argument),
+- `130` the command was interrupted (Ctrl-C) and stopped between two steps.
 
 Global flags: `-c, --config` (plan file, `.yaml`/`.yml` or `.hcl`; default `cluster-deploy.yaml`), `--secret-key`, `--secret-key-file`. The master key can also be given in `NORCA_DEPLOYER_SECRET_KEY`.
 
@@ -84,7 +89,7 @@ Complete plans with a comment on every setting are in the [examples](/docs/deplo
 
 ## Local state
 
-`apply` keeps its state next to the plan. Keep these files private and do not commit them:
+`apply` keeps its state next to the plan. **Keep these files private and do not commit them:**
 
 | Path | Content |
 | --- | --- |

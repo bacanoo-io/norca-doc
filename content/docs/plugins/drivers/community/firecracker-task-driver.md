@@ -31,29 +31,29 @@ task "test01" {
 The firecracker task driver supports the following parameters:
 
 - `KernelImage` - (Optional) Path to the kernel image to be used on the microvm.
-  Defaults to 'vmlinux' in the [allocation working directory].
+  Defaults to `'vmlinux'` in the [allocation working directory].
 
 - `BootDisk` - (Optional) Path to the ext4 rootfs to boot from.
-  Defaults to 'rootfs.ext4' in the [allocation working directory].
+  Defaults to `'rootfs.ext4'` in the [allocation working directory].
 
 - `BootOptions` - (Optional) Kernel command line options to boot the microvm.
-  Defaults to "ro console=ttyS0 reboot=k panic=1 pci=off"
+  Defaults to `"ro console=ttyS0 reboot=k panic=1 pci=off"`
 
 - `Network` - (Optional) Network name of your container network configuration
   file.
 
 - `Vcpus` - (Optional) Number of CPUs to assign to microvm.
 
-- `Cputype` - (Optional) CPU template to use, templates available are C3 or T2.
+- `Cputype` - (Optional) CPU template to use, templates available are `C3` or `T2`.
 
 - `Mem` - (Optional) Amount of memory in Megabytes to assign to microvm.
-  Defaults to 512
+  Defaults to `512`
 
 - `Firecracker` Location of the firecracker binary, the option could be omitted
-  if the environment variable FIRECRACKER_BIN is setup. Defaults to
-  '/usr/bin/firecracker'
+  if the environment variable `FIRECRACKER_BIN` is setup. Defaults to
+  `'/usr/bin/firecracker'`
 
-- `DisableHt` - (Optional) Disable CPU Hyperthreading. Defaults to false
+- `DisableHt` - (Optional) Disable CPU Hyperthreading. Defaults to `false`
 
 - `Log` - (Optional) path to file where to write firecracker logs.
 
@@ -62,11 +62,11 @@ The firecracker task driver supports the following parameters:
 Network configuration is setup using CNI plugins, the steps to setup firecracker
 task driver with cni are the following:
 
-- Build [cni plugins][container network plugins] and [tc-redirect-tap][tc-redirect-tap]
-  and copy them to `/opt/cni`.
+1. Build [cni plugins][container network plugins] and [tc-redirect-tap][tc-redirect-tap]
+   and copy them to `/opt/cni`.
 
-- Create a network configuration to be used by micro-vms on /etc/cni/conf.d/,
-  for example: default.conflist.
+2. Create a network configuration to be used by micro-vms on `/etc/cni/conf.d/`,
+   for example: `default.conflist`.
 
 ### Example network configuration
 
@@ -94,9 +94,9 @@ task driver with cni are the following:
 }
 ```
 
-In this example the name of this network is default and this name is the
-parameter used in Network on the task driver job spec. Also the filename must
-match the name of the network, and use the .conflist extension.
+In this example the name of this network is `default` and this name is the
+parameter used in `Network` on the task driver job spec. **Also the filename must
+match the name of the network, and use the `.conflist` extension.**
 
 ## Client Requirements
 
@@ -108,7 +108,7 @@ match the name of the network, and use the .conflist extension.
 
 - The [Firecracker binary][firecracker binary]
 
-- KVM enabled in your Linux kernel, and you have read/write access to /dev/kvm
+- KVM enabled in your Linux kernel, and you have read/write access to `/dev/kvm`
 
 - tun kernel module
 

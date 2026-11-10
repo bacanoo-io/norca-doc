@@ -32,8 +32,8 @@ The validation of each finding and the fixes were done with Claude Code, in a
 - no access to any other directory of the machine;
 - no internet access.
 
-The reports were not taken at face value. Every finding was checked against
-the code itself: the code path the report named was read, together with its
+**The reports were not taken at face value. Every finding was checked against
+the code itself:** the code path the report named was read, together with its
 callers, to decide whether the defect can happen and with what effect. Each
 finding got one of four verdicts:
 
@@ -48,7 +48,7 @@ For the findings that were fixed:
 
 - the fix is the one that removes the cause, not the one the report proposed
   when that differed;
-- every fix carries a `// clean room bugfix:` comment in the code, which
+- **every fix carries a `// clean room bugfix:` comment** in the code, which
   explains what was wrong, so the fixes can be found with
   `git grep "clean room bugfix"` (the process was first called the
   "white room"; the subjects of the earlier commits listed below still
@@ -118,7 +118,7 @@ looked at code of a flagged pair.
 against the lines HashiCorp added to the same file between v1.6.5 and v1.11.3):
 2346 pairs; above the threshold only the generated msgpack codec
 (`structs.generated.go`, 0.507 and 0.427), which is generated from the
-structure definitions. Every hand-written file scored 0.261 or lower. The run
+structure definitions. **Every hand-written file scored 0.261 or lower.** The run
 of 2026-11-02 (`main` at `e98a2f58b`, 1221 pairs) gave the same picture.
 
 **Replacements of the BUSL files** (each BUSL file against the Norca files of

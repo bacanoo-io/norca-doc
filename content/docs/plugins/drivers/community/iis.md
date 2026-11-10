@@ -58,7 +58,7 @@ For optional parameters default value is assumed `nil`, if the default value is 
 
 ## Networking
 
-Currently, `nomad-driver-iis` only supports host networking. No special configuration is needed as `nomad-driver-iis`
+**Currently, `nomad-driver-iis` only supports host networking.** No special configuration is needed as `nomad-driver-iis`
 relies on IIS to manage the networking for Windows IIS website tasks.
 
 ## Client Requirements
@@ -89,7 +89,8 @@ plugin "win_iis" {
 }
 ```
 
-Please note the plugin name should match whatever name you have specified for the external driver in the [plugin_dir][plugin_dir] directory.
+> [!NOTE]
+> Please note the plugin name should match whatever name you have specified for the external driver in the [plugin_dir][plugin_dir] directory.
 
 ## Client Attributes
 

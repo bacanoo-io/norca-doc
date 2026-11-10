@@ -26,42 +26,52 @@ go build -o bin/norca-deployer ./cmd/norca-deployer
 
 ## First deployment
 
-1. **Write a plan.** Start from [examples/single-node.yaml](/docs/deployer/examples/single-node) or [examples/cluster.yaml](/docs/deployer/examples/cluster), or let the tool write a sample:
+{{% steps %}}
 
-   ```sh
-   norca-deployer init -c cluster-deploy.yaml
-   ```
+### Write a plan.
 
-2. **Protect secrets (optional but recommended).** A master key encrypts passwords in the plan and the ACL token on disk:
+Start from [examples/single-node.yaml](/docs/deployer/examples/single-node) or [examples/cluster.yaml](/docs/deployer/examples/cluster), or let the tool write a sample:
 
-   ```sh
-   norca-deployer secret create-key                 # writes .norca-deployer.key (keep it safe)
-   norca-deployer secret encrypt 'ssh-password'     # paste the !enc:v1:... output into the plan
-   ```
+```sh
+norca-deployer init -c cluster-deploy.yaml
+```
 
-3. **Check the plan.**
+### Protect secrets (optional but recommended).
 
-   ```sh
-   norca-deployer validate -c cluster-deploy.yaml
-   norca-deployer plan -c cluster-deploy.yaml       # dry run: nodes, release, rollout settings
-   ```
+A master key encrypts passwords in the plan and the ACL token on disk:
 
-4. **Deploy.**
+```sh
+norca-deployer secret create-key                 # writes .norca-deployer.key (keep it safe)
+norca-deployer secret encrypt 'ssh-password'     # paste the !enc:v1:... output into the plan
+```
 
-   ```sh
-   norca-deployer apply -c cluster-deploy.yaml
-   ```
+### Check the plan.
 
-   The output shows five stages: preparation, servers, server restarts, clients, and post-cluster tasks. See [How apply works](/docs/deployer/how-apply-works).
+```sh
+norca-deployer validate -c cluster-deploy.yaml
+norca-deployer plan -c cluster-deploy.yaml       # dry run: nodes, release, rollout settings
+```
 
-5. **Use the cluster.** With ACLs enabled, the management token is in `.norca-deployer/management-token` (or encrypted, when a master key exists). The CA is `certs/norca-ca.pem`.
+### Deploy.
 
-   ```sh
-   export NORCA_ADDR=https://<server>:4646
-   export NORCA_CACERT=certs/norca-ca.pem
-   export NORCA_TOKEN=$(cat .norca-deployer/management-token)
-   norca node status
-   ```
+```sh
+norca-deployer apply -c cluster-deploy.yaml
+```
+
+The output shows five stages: preparation, servers, server restarts, clients, and post-cluster tasks. See [How apply works](/docs/deployer/how-apply-works).
+
+### Use the cluster.
+
+With ACLs enabled, the management token is in `.norca-deployer/management-token` (or encrypted, when a master key exists). The CA is `certs/norca-ca.pem`.
+
+```sh
+export NORCA_ADDR=https://<server>:4646
+export NORCA_CACERT=certs/norca-ca.pem
+export NORCA_TOKEN=$(cat .norca-deployer/management-token)
+norca node status
+```
+
+{{% /steps %}}
 
 ## A local development node
 
@@ -86,4 +96,4 @@ norca-deployer apply -c cluster-deploy.yaml --force-restart   # restart every ag
 
 ## Keep the local state
 
-Keep the plan directory with `certs/`, `.norca-deployer/` and the master key. Losing the CA means re-issuing every certificate; losing the management token means you cannot bootstrap ACLs again. Do not commit these files (see the repository `.gitignore`).
+Keep the plan directory with `certs/`, `.norca-deployer/` and the master key. **Losing the CA means re-issuing every certificate; losing the management token means you cannot bootstrap ACLs again.** Do not commit these files (see the repository `.gitignore`).

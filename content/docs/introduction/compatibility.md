@@ -32,7 +32,7 @@ Norca's HTTP clients identify themselves with the User-Agent
 
 A Norca feature that writes new kinds of data to the Raft log is enabled only when every server of the
 region runs a Norca version that supports it. Servers that do not advertise a Norca version never meet
-the gate, so the new features stay off until the last server runs Norca. See [Upgrades](/docs/operations/upgrades).
+the gate, so **the new features stay off until the last server runs Norca**. See [Upgrades](/docs/operations/upgrades).
 
 ## HTTP API
 
@@ -48,8 +48,8 @@ access checks are stricter than in Nomad v1.6.5; see
 Norca is one binary, `norca`, for the agent and the CLI. Help and usage texts always say `norca`.
 
 A copy of the binary, or a symlink to it, named `nomad` (`nomad.exe` on Windows) behaves exactly like
-`norca`: the same commands, the same output and no extra text, so existing scripts keep working. The
-alias is not shipped or installed by default; create it yourself if you need it:
+`norca`: the same commands, the same output and no extra text, so existing scripts keep working. **The
+alias is not shipped or installed by default**; create it yourself if you need it:
 
 ```shell
 ln -s "$(command -v norca)" /usr/local/bin/nomad
@@ -58,7 +58,7 @@ ln -s "$(command -v norca)" /usr/local/bin/nomad
 ## Environment variables of the CLI
 
 The CLI and the API client read their settings from `NORCA_*` environment variables.
-Command-line flags take precedence.
+**Command-line flags take precedence.**
 
 | Variable | Meaning |
 | --- | --- |

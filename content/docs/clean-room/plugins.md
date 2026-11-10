@@ -79,12 +79,15 @@ waiting reader gets the same result as before. File:
 
 ### PLUG-PIPE-01 Exec streams and the `TaskEvents` server
 
-**Report.** Three points: (1) the input goroutine of `StreamToExecOptions`
-returns when the stream ends or fails without closing the stdin pipe, so the
-command never gets EOF on its stdin; (2) the input goroutine of
-`ExecTaskStreamingRaw` stays blocked on `Recv` after the command ended; (3)
-the `TaskEvents` handler of the driver server waits only on the driver's
-channel, not on the stream context, so it hangs when the client goes away.
+**Report.** Three points:
+
+- (1) the input goroutine of `StreamToExecOptions`
+  returns when the stream ends or fails without closing the stdin pipe, so the
+  command never gets EOF on its stdin;
+- (2) the input goroutine of
+  `ExecTaskStreamingRaw` stays blocked on `Recv` after the command ended;
+- (3) the `TaskEvents` handler of the driver server waits only on the driver's
+  channel, not on the stream context, so it hangs when the client goes away.
 
 **Verdict: partially valid.** Points 1 and 3 are real. For point 3, the
 shared eventer of the bundled drivers dropped consumers whose context had

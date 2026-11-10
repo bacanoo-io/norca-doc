@@ -41,7 +41,7 @@ rule {
   new rule gradually).
 
 - `match` <code>([Match](#match-parameters): nil)</code> - Selects what the policy
-  applies to. Without it the policy applies to the jobs of every namespace.
+  applies to. **Without it the policy applies to the jobs of every namespace.**
 
 - `rule` <code>([Rule](#rule-parameters): nil)</code> - A CEL rule. May be
   repeated, up to 64 times. At least one rule is required, unless the policy sets
@@ -74,14 +74,14 @@ rule {
 
 - `expression` `(string: <required>)` - A CEL expression of at most 8192
   characters that must evaluate to a boolean. The rule is satisfied when it
-  evaluates to `true`. An expression that fails at runtime (for example because
-  it reads a missing field without `has()`) counts as violated.
+  evaluates to `true`. **An expression that fails at runtime (for example because
+  it reads a missing field without `has()`) counts as violated.**
 
 - `message` `(string: "")` - The message returned to the submitter when the rule
   is violated.
 
-The expressions are compiled when the policy is applied; a policy with an
-expression that does not compile, or does not return a boolean, is rejected.
+The expressions are compiled when the policy is applied; **a policy with an
+expression that does not compile, or does not return a boolean, is rejected.**
 
 ## CEL Variables
 

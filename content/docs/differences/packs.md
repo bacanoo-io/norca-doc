@@ -8,7 +8,7 @@ weight: 3
 Nomad v1.6.5 has no package manager. Packs come from **Nomad Pack v0.4.2**, a separate `nomad-pack`
 binary: it renders a pack on the workstation and submits its jobs, and what was installed is known
 only from the meta of the jobs. Norca builds the same tool into the `norca` binary as `norca pack`
-and keeps the pack format, so existing packs work unchanged. On top of it, a pack can carry more
+and keeps the pack format, so **existing packs work unchanged.** On top of it, a pack can carry more
 than jobs, an install is a **release** that the servers apply and record in revisions, packs come
 from git or OCI registries and can be signed, and the web UI has a catalog and an install form.
 See [Package management](/docs/features/packages) for the full description.

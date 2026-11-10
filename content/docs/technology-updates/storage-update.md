@@ -184,8 +184,8 @@ replace github.com/hashicorp/raft => github.com/bacanoo-io/raft v1.8.0-norca.1
 Badger is an LSM-tree key-value store with a separate value log. Compared with BoltDB (one B+tree file,
 one writer, an fsync of the whole transaction), it writes sequentially and batches writes, which suits
 the raft log (append at the end, delete from the start). In exchange it compacts in the background,
-and badly sized compaction shows up as latency spikes and write stalls. The configuration is therefore
-part of the design, not an afterthought.
+and badly sized compaction shows up as latency spikes and write stalls. **The configuration is therefore
+part of the design, not an afterthought.**
 
 ### Data layout
 
@@ -272,7 +272,7 @@ Both blocks share one implementation (`helper/badgerdb`); the metrics are `nomad
 
 ### Moving existing data
 
-Norca has no released versions, so there is no in-place migration of `raft.db` and `state.db`: a server
+Norca has no released versions, so **there is no in-place migration of `raft.db` and `state.db`**: a server
 or client starts with an empty Badger store and catches up (a server from the leader's snapshot, a
 client from the servers). The lab clusters are redeployed. A `norca operator raft` command that finds an
 old `raft.db` says so instead of failing silently, and a client that finds an old `state.db` in its
@@ -402,7 +402,7 @@ well below the baseline (p50 9.4–18.5 ms, p99.9 22–41 ms).
 
 ### Optional BoltDB stores
 
-Badger stays the default, but both stores can be switched back to BoltDB, for machines where memory
+**Badger stays the default**, but both stores can be switched back to BoltDB, for machines where memory
 matters more than write speed, as a fallback, and for comparisons:
 
 | Setting | Values | Data |

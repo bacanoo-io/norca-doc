@@ -10,7 +10,7 @@ weight: 3
 The review looked for places where a token or a client node can read or
 change data it is not entitled to: release revisions, backup browsing, the
 system bus and its Consul KV bucket, the event stream and network policies. It
-reported six findings, all valid and all fixed. Paths are relative to the
+reported **six findings, all valid and all fixed.** Paths are relative to the
 `nomad` directory of the norca repository. See the
 [section page](/docs/clean-room) for the process.
 
@@ -106,8 +106,8 @@ with `list` gets the path without the item names.
 secret, and the servers granted it the subjects of the whole `consul-kv` KV
 bucket and of its JetStream API. The Variables ACL of the keys was checked
 only by the client's Consul-compatible HTTP API, not on the bus, so whoever
-obtains a node secret can read and write the Consul KV of every namespace
-directly on the bus, without any ACL check.
+obtains a node secret **can read and write the Consul KV of every namespace
+directly on the bus, without any ACL check.**
 
 **Verdict: valid.**
 

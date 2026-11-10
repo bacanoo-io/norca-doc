@@ -15,7 +15,7 @@ origin: "norca-deployer/doc/networking-and-tuning.md"
 | `network.bind_address` | Listen address of HTTP, RPC and Serf. Empty (default): each node listens on its cluster address only, and HTTP also on `127.0.0.1` |
 | `network.ports` | `http` 4646, `rpc` 4647, `serf` 4648 |
 
-**Listen address.** Without `bind_address`, the agent gets an `addresses` block: RPC and Serf on the node's cluster address (or the matched interface, see below), HTTP on that address and on `127.0.0.1` (used by the local CLI and by the deployer). Nothing listens on other interfaces, such as a public one. The cluster address must then be an IP address; `validate` reports a DNS name. With `bind_address: 0.0.0.0` the agent listens on every interface, and only the firewall decides who can connect.
+**Listen address.** Without `bind_address`, the agent gets an `addresses` block: RPC and Serf on the node's cluster address (or the matched interface, see below), HTTP on that address and on `127.0.0.1` (used by the local CLI and by the deployer). Nothing listens on other interfaces, such as a public one. The cluster address must then be an IP address; `validate` reports a DNS name. **With `bind_address: 0.0.0.0` the agent listens on every interface, and only the firewall decides who can connect.**
 
 **Joining:** every server lists all servers of the plan on the Serf port; clients list the servers on the RPC port.
 
@@ -74,7 +74,7 @@ An empty list means **any source**; `plan` prints `ANY source` for such ports. A
 
 - **ufw**, when active (or installed, with `default_deny`): `ufw allow` rules with the source, `ufw route allow out on cni0` rules for bridge-mode allocations and `ufw route allow in on cni0` for their egress.
 - **firewalld**, when running: ports open to any source, rich rules for restricted sources, `cni0` in the trusted zone with masquerading in that zone.
-- **iptables** (fallback): `INPUT` and `FORWARD` rules with the source. They are not persistent across reboots, and if the `INPUT` policy is `ACCEPT` (the default on a plain Debian) they restrict nothing; the deployer warns about that. Use ufw with `default_deny` instead.
+- **iptables** (fallback): `INPUT` and `FORWARD` rules with the source. **They are not persistent across reboots, and if the `INPUT` policy is `ACCEPT` (the default on a plain Debian) they restrict nothing;** the deployer warns about that. Use ufw with `default_deny` instead.
 
 **Rule management.** Every rule carries an identifier (`norca:<port>/<proto>:<source>`, as a ufw or iptables comment). A later `apply` adds the rules the plan asks for first, then removes its own rules the plan no longer asks for (for example after a CIDR change), including the open rules of earlier deployer versions. Rules it did not create are not touched; with firewalld it only manages the Norca ports.
 
