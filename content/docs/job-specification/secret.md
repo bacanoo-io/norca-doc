@@ -9,8 +9,8 @@ description: "The \"secret\" block delivers a secret of the built-in secret stor
 - `job -> group -> task -> secret`
 
 The `secret` block (Norca) delivers one secret into the task, as a file below `secrets/`, as environment
-variables, or both. The job only references the secret by path; the value never appears in the job, the
-allocation, the client state or the task events. The client fetches the value with the task's workload
+variables, or both. The job only references the secret by path; **the value never appears in the job, the
+allocation, the client state or the task events.** The client fetches the value with the task's workload
 identity before the task starts, and delivers it again when a new version is written. The block can be
 repeated; the label names the secret within the task.
 
@@ -107,7 +107,7 @@ secret "db" {
 
 - `fallback` `(string: "")` - A path of the built-in store, delivered instead of a dynamic secret when the
   operator can't be reached as the task starts. It has the placeholders of `path`, and the task needs read
-  access to it. A denied or refused request, and a failed renewal of a running task, never use it. See
+  access to it. **A denied or refused request, and a failed renewal of a running task, never use it.** See
   [When the operator is down](/docs/features/secrets/dynamic#when-the-operator-is-down).
 
 - `fallback_recover` `(string: "")` - `"signal"` keeps asking for a credential while the task runs on the
@@ -119,7 +119,7 @@ secret "db" {
 - `fallback_keep_on_restart` `(bool: false)` - Keeps the task on the fallback when it restarts, also after a
   restart of the client. By default a restart asks for a credential first.
 
-A `secret` block needs a `file` block, an `env` block, or both. The items of a dynamic secret are those its
+**A `secret` block needs a `file` block, an `env` block, or both.** The items of a dynamic secret are those its
 operator returns.
 
 ### `file` Parameters
@@ -127,7 +127,7 @@ operator returns.
 - `destination` `(string: <required>)` - The file, relative to the task directory and below `secrets/`,
   for example `secrets/db.env`. It must be a clean relative path, can't be the destination of another
   secret or of a template, and can't be `secrets/nomad_token` or `secrets/vault_token`. The file is written
-  atomically with mode 0400. Symlinks are not followed: if `secrets/` or a directory below it on the way to
+  atomically with mode `0400`. **Symlinks are not followed:** if `secrets/` or a directory below it on the way to
   the file is a symlink or junction, the delivery fails; a symlink at the destination is replaced.
 
 - `format` `(string: "env")` - The file format:

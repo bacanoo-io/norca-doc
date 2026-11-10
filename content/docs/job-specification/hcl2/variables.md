@@ -22,7 +22,7 @@ can set their values using CLI options and environment variables.
 ## Declaring an Input Variable
 
 Each input variable accepted by a job must be declared using a `variable`
-block :
+block:
 
 ```hcl
 variable "image_id" {
@@ -70,9 +70,9 @@ section.
 
 The `variable` declaration can also include a `default` argument. If present,
 the variable is considered to be _optional_ and the default value will be used
-if no value is set when calling the job or running Norca. The `default`
+if no value is set when calling the job or running Norca. **The `default`
 argument requires a literal value and cannot reference other objects in the
-configuration.
+configuration.**
 
 ## Using Input Variable Values
 
@@ -88,9 +88,12 @@ config {
 ```
 
 The value assigned to a variable can be accessed only from expressions within
-the folder where it was declared. Note that a block label (such as the job ID
-or task group name) is not an expression and so can't be interpolated with a
-variable or local.
+the folder where it was declared.
+
+> [!NOTE]
+> Note that **a block label (such as the job ID
+> or task group name) is not an expression** and so can't be interpolated with a
+> variable or local.
 
 ## Type Constraints
 
@@ -123,15 +126,13 @@ information on the meaning and behavior of these different types, as well as
 detailed information about automatic conversion of complex types, see Type
 Constraints.
 
-If both the `type` and `default` arguments are specified, the given default
-value must be convertible to the specified type.
-
-If only `default` is specified, the type of the default value will be used.
-
-When the `type` and `default` are both _not_ specified and you try to set a
-variable [from env vars](#environment-variables) or [from the command
-line](#variables-on-the-command-line), the variable will always be interpreted
-as a string.
+- If both the `type` and `default` arguments are specified, the given default
+  value must be convertible to the specified type.
+- If only `default` is specified, the type of the default value will be used.
+- When the `type` and `default` are both _not_ specified and you try to set a
+  variable [from env vars](#environment-variables) or [from the command
+  line](#variables-on-the-command-line), **the variable will always be interpreted
+  as a string.**
 
 ## Input Variable Documentation
 
@@ -169,11 +170,11 @@ variable "image_id" {
 }
 ```
 
-The condition argument is an expression that must use the value of the variable to
-return true if the value is valid, or false if it is invalid. The expression can
-refer only to the variable that the condition applies to, and _must_ not produce errors.
+The `condition` argument is an expression that must use the value of the variable to
+return `true` if the value is valid, or `false` if it is invalid. **The expression can
+refer only to the variable that the condition applies to, and _must_ not produce errors.**
 
-If condition evaluates to false, Norca will produce an error message that includes
+If `condition` evaluates to `false`, Norca will produce an error message that includes
 the sentences given in `error_message`. The error message string should be at least
 one full sentence explaining the constraint that failed, starting with an uppercase
 letter ( if the alphabet permits it ) and ending with a period or question mark.
@@ -204,8 +205,8 @@ The `-var` option can be used any number of times in a single command.
 
 If you plan to assign variables via the command line, we strongly recommend that
 you at least set a default type instead of using empty blocks; this helps the
-HCL parser understand what is being set. Otherwise, the interpreter will assume
-that any variable set on the command line is a string.
+HCL parser understand what is being set. **Otherwise, the interpreter will assume
+that any variable set on the command line is a string.**
 
 ### Variable Definitions Files
 
@@ -283,9 +284,9 @@ rules in your shell:
 $ export NORCA_VAR_availability_zone_names='["us-west-1b","us-west-1d"]'
 ```
 
-For readability, and to avoid the need to worry about shell escaping, we
+For readability, and to avoid the need to worry about shell escaping, **we
 recommend always setting complex variable values via variable definitions
-files.
+files.**
 
 ### Variable Definition Precedence
 
@@ -295,13 +296,15 @@ combination.
 Norca loads variables in the following order, with later sources taking
 precedence over earlier ones:
 
-- Environment variables (lowest priority)
-- Any `-var` and `-var-file` options on the command line, in the order they are
-  provided. (highest priority)
+1. Environment variables (lowest priority)
+2. Any `-var` and `-var-file` options on the command line, in the order they are
+   provided. (highest priority)
 
 If the same variable is assigned multiple values using different mechanisms,
-Norca uses the _last_ value it finds, overriding any previous values. Note
-that the same variable cannot be assigned multiple values within a single source.
+**Norca uses the _last_ value it finds, overriding any previous values.**
+
+> [!NOTE]
+> Note that the same variable cannot be assigned multiple values within a single source.
 
 > [!WARNING]
 > Variables with map and object values behave the same way as

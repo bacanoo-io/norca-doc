@@ -59,8 +59,8 @@ refer to the [`text/template` package documentation](https://pkg.go.dev/text/tem
   triggered on template change. This option is required if the `change_mode` is
   `script`.
 
-- `data` `(string: "")` - Specifies the raw template to execute. One of `source`
-  or `data` must be specified, but not both. This is useful for smaller
+- `data` `(string: "")` - Specifies the raw template to execute. **One of `source`
+  or `data` must be specified, but not both.** This is useful for smaller
   templates, but we recommend using `source` for larger templates.
 
 - `destination` `(string: <required>)` - Specifies the location where the
@@ -69,16 +69,21 @@ refer to the [`text/template` package documentation](https://pkg.go.dev/text/tem
   that build a chroot in the task working directory (ex. `exec`) can render
   templates outside of the `NORCA_ALLOC_DIR`, `NORCA_TASK_DIR`, or
   `NORCA_SECRETS_DIR`. For more details on how `destination` interacts with
-  task drivers, see the [Filesystem internals][] documentation. Note that where
-  possible, the `NORCA_SECRETS_DIR` is mounted `noexec`, so rendered templates
-  can't be used as self-executing scripts.
+  task drivers, see the [Filesystem internals][] documentation.
+
+  > [!NOTE]
+  > Note that where
+  > possible, the `NORCA_SECRETS_DIR` is mounted `noexec`, so **rendered templates
+  > can't be used as self-executing scripts.**
 
 - `env` `(bool: false)` - Specifies the template should be read back in as
-  environment variables for the task ([example](#environment-variables)). To
-  update the environment on changes, you must set `change_mode` to
-  `restart`. Setting `env` when the `change_mode` is `signal` will return a
-  validation error. Setting `env` when the `change_mode` is `noop` is
-  permitted but will not update the environment variables in the task.
+  environment variables for the task ([example](#environment-variables)).
+  - **To update the environment on changes, you must set `change_mode` to
+    `restart`.**
+  - Setting `env` when the `change_mode` is `signal` will return a
+    validation error.
+  - Setting `env` when the `change_mode` is `noop` is
+    permitted but will not update the environment variables in the task.
 
 - `error_on_missing_key` `(bool: false)` - Specifies how the template behaves
   when attempting to index a map key that does not exist in the map.
@@ -87,11 +92,11 @@ refer to the [`text/template` package documentation](https://pkg.go.dev/text/tem
     task to fail.
 
   - When `false`, the template engine will do nothing and continue executing the
-    template.	If printed, the result of the index operation is the string
-	  "<no value\>".
+    template. If printed, the result of the index operation is the string
+    `"<no value>"`.
 
 - `left_delimiter` `(string: "{{")` - Specifies the left delimiter to use in the
-  template. The default is "{{" for some templates, it may be easier to use a
+  template. The default is `"{{"` for some templates, it may be easier to use a
   different delimiter that does not conflict with the output file itself.
 
 - `perms` `(string: "644")` - Specifies the rendered template's permissions.
@@ -117,18 +122,18 @@ refer to the [`text/template` package documentation](https://pkg.go.dev/text/tem
   > feature will also **not** work with Docker Desktop.
 
 - `right_delimiter` `(string: "}}")` - Specifies the right delimiter to use in the
-  template. The default is "}}" for some templates, it may be easier to use a
+  template. The default is `"}}"` for some templates, it may be easier to use a
   different delimiter that does not conflict with the output file itself.
 
 - `source` `(string: "")` - Specifies the path to the template to be rendered.
-  One of `source` or `data` must be specified, but not both. This source can
-  optionally be fetched using an [`artifact`][artifact] resource. This template
-  must exist on the machine prior to starting the task; it is not possible to
+  **One of `source` or `data` must be specified, but not both.** This source can
+  optionally be fetched using an [`artifact`][artifact] resource. **This template
+  must exist on the machine prior to starting the task;** it is not possible to
   reference a template that's source is inside a Docker container, for example.
 
 - `splay` `(string: "5s")` - Specifies a random amount of time to wait between
   0 ms and the given splay value before invoking the change mode. This is
-  specified using a label suffix like "30s" or "1h", and is often used to
+  specified using a label suffix like `"30s"` or `"1h"`, and is often used to
   prevent a thundering herd problem where all task instances restart at the same
   time.
 
@@ -138,7 +143,7 @@ refer to the [`text/template` package documentation](https://pkg.go.dev/text/tem
   because it will reduce the number of times a template is rendered. This setting
   can be overridden by the [`client.template.wait_bounds`]. If the template
   configuration has a `min` lower than `client.template.wait_bounds.min` or a `max`
-  greater than `client.template.wait_bounds.max`, the client's bounds will be enforced,
+  greater than `client.template.wait_bounds.max`, **the client's bounds will be enforced,**
   and the template `wait` will be adjusted before being sent to the template
   engine.
 
@@ -276,8 +281,8 @@ Secrets or certificates may contain a wide variety of characters such as
 newlines, quotes, and backslashes which may be difficult to quote or escape
 properly.
 
-Whenever a templated variable may include special characters, use the `toJSON`
-function to ensure special characters are properly parsed by Norca.
+**Whenever a templated variable may include special characters, use the `toJSON`
+function** to ensure special characters are properly parsed by Norca.
 
 ```hcl
 CERT_PEM={{ file "path/to/cert.pem" | toJSON }}
@@ -305,9 +310,9 @@ For more details see [go-envparser's README][go-envparse].
 Templates are rendered into the task working directory. Drivers without
 filesystem isolation (such as `raw_exec`) or drivers that build a chroot in
 the task working directory (such as `exec`) can have templates rendered to
-arbitrary paths in the task. But task drivers such as `docker` can only access
+arbitrary paths in the task. **But task drivers such as `docker` can only access
 templates rendered into the `NORCA_ALLOC_DIR`, `NORCA_TASK_DIR`, or
-`NORCA_SECRETS_DIR`. To work around this restriction, you can create a mount
+`NORCA_SECRETS_DIR`.** To work around this restriction, you can create a mount
 from the template `destination` to another location in the task.
 
 ```hcl
@@ -475,9 +480,9 @@ to render the template if the variable list query returns blank/empty data.
 #### `nomadVar`
 
 These functions can be used to a read Norca variable, assuming the task has
-access rights to the variable based on the task's [workload identity]. If the
+access rights to the variable based on the task's [workload identity]. **If the
 path does not exist or the caller does not have access to it, the `template`
-renderer will block until the path is available. To avoid blocking, wrap
+renderer will block until the path is available.** To avoid blocking, wrap
 `nomadVar` calls with [`nomadVarExists`](#nomadvarexists).
 
 The `nomadVar` function returns a map of `string` to `NomadVarItems`
@@ -735,8 +740,9 @@ raw key/value data. This secret was set using
   }
 ```
 
-Note that if the name of a secret includes the `-` character, you must access
-it by index. This secret was set using `vault kv put secret/app db-password=somepassword`.
+> [!NOTE]
+> Note that if the name of a secret includes the `-` character, **you must access
+> it by index.** This secret was set using `vault kv put secret/app db-password=somepassword`.
 
 ```hcl
   template {
@@ -761,9 +767,9 @@ metadata in addition to key/value data. This secret was set using
 ```
 
 Notice the addition of `data` in both the path and the field accessor string.
-Additionally, when using the Vault v2 API, the Vault policies applied to your
+Additionally, when using the Vault v2 API, **the Vault policies applied to your
 Norca jobs will need to grant permissions to `read` under `secret/data/...`
-rather than `secret/...`.
+rather than `secret/...`.**
 
 Like KV API v1, if the name of a secret includes the `-` character, you must
 access it by index. This secret was set using

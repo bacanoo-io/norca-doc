@@ -10,8 +10,8 @@ upstream:
 
 The `upstreams` block allows configuring various options for managing upstream
 services that a [Consul
-Connect](/docs/integrations/consul-connect/) proxy routes to. It
-is valid only within the context of a `proxy` block.
+Connect](/docs/integrations/consul-connect/) proxy routes to. **It
+is valid only within the context of a `proxy` block.**
 
 For Consul-specific details see the
 [Consul service mesh integration](/docs/integrations/consul-connect).
@@ -97,19 +97,19 @@ job "countdash" {
   If left unset, the mode will default to the mode as determined by the Consul service-defaults
   configuration for the service. Can be configured with the following modes:
   - `local` - In this mode the Connect proxy makes its outbound connection to a
-  gateway running in the same datacenter. That gateway is then responsible for
-  ensuring the data gets forwarded along to gateways in the destination datacenter.
+    gateway running in the same datacenter. That gateway is then responsible for
+    ensuring the data gets forwarded along to gateways in the destination datacenter.
   - `remote` - In this mode the Connect proxy makes its outbound connection to a
-  gateway running in the destination datacenter. That gateway will then forward
-  the data to the final destination service.
+    gateway running in the destination datacenter. That gateway will then forward
+    the data to the final destination service.
   - `none` - In this mode, no gateway is used and a Connect proxy makes its
-  outbound connections directly to the destination services.
+    outbound connections directly to the destination services.
 
 The `NORCA_UPSTREAM_ADDR_<destination_name>` environment variables may be used
 to interpolate the upstream's `host:port` address.
 
 Applications are encouraged to connect to `127.0.0.1` and a well defined port
-(eg 6379 for Redis) by default. Then when using Consul Connect the application
+(eg `6379` for Redis) by default. Then when using Consul Connect the application
 can be deployed with the Redis upstream's `local_bind_port = 6379` and require
 no explicit configuration.
 

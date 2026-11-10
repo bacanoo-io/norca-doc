@@ -63,8 +63,8 @@ job "docs" {
   with user-defined metadata.
 
 - `migrate` <code>([Migrate][]: nil)</code> - Specifies the group strategy for
-  migrating off of draining nodes. Only service jobs with a count greater than
-  1 support migrate blocks.
+  migrating off of draining nodes. **Only service jobs with a count greater than
+  1 support migrate blocks.**
 
 - `network` <code>([Network][]: &lt;optional&gt;)</code> - Specifies the network
   requirements and configuration, including static and dynamic port allocations,
@@ -92,8 +92,8 @@ job "docs" {
   de-registers them when the allocation is destroyed.
 
 - `shutdown_delay` `(string: "0s")` - Specifies the duration to wait when
-  stopping a group's tasks. The delay occurs between Consul or Norca service
-  deregistration and sending each task a shutdown signal. Ideally, services
+  stopping a group's tasks. **The delay occurs between Consul or Norca service
+  deregistration and sending each task a shutdown signal.** Ideally, services
   would fail health checks once they receive a shutdown signal. Alternatively,
   `shutdown_delay` may be set to give in-flight requests time to complete
   before shutting down. A group level `shutdown_delay` will run regardless
@@ -104,22 +104,24 @@ job "docs" {
 
 - `stop_after_client_disconnect` `(string: "")` - Specifies a duration after
   which a Norca client will stop allocations, if it cannot communicate with the
-  servers. By default, a client will not stop an allocation until explicitly
-  told to by a server. A client that fails to heartbeat to a server within the
-  [`heartbeat_grace`] window and any allocations running on it will be marked
-  "lost" and Norca will schedule replacement allocations. The replaced
-  allocations will normally continue to run on the non-responsive client. But
-  you may want them to stop instead — for example, allocations requiring
-  exclusive access to an external resource. When specified, the Norca client
-  will stop them after this duration.
-  The Norca client process must be running for this to occur. This setting
-  cannot be used with [`max_client_disconnect`].
+  servers.
+  - **By default, a client will not stop an allocation until explicitly
+    told to by a server.**
+  - A client that fails to heartbeat to a server within the
+    [`heartbeat_grace`] window and any allocations running on it will be marked
+    "lost" and Norca will schedule replacement allocations. The replaced
+    allocations will normally continue to run on the non-responsive client. But
+    you may want them to stop instead — for example, allocations requiring
+    exclusive access to an external resource. When specified, the Norca client
+    will stop them after this duration.
+  - The Norca client process must be running for this to occur.
+  - **This setting cannot be used with [`max_client_disconnect`].**
 
 - `max_client_disconnect` `(string: "")` - Specifies a duration during which a
   Norca client will attempt to reconnect allocations after it fails to heartbeat
   in the [`heartbeat_grace`] window. See [the example code
-  below][max-client-disconnect] for more details. This setting cannot be used
-  with [`stop_after_client_disconnect`].
+  below][max-client-disconnect] for more details. **This setting cannot be used
+  with [`stop_after_client_disconnect`].**
 
 - `task` <code>([Task][]: &lt;required&gt;)</code> - Specifies one or more tasks to run
   within this group. This can be specified multiple times, to add a task as part
@@ -182,7 +184,7 @@ group "example" {
 
 ### Metadata
 
-This example show arbitrary user-defined metadata on the group:
+This example shows arbitrary user-defined metadata on the group:
 
 ```hcl
 group "example" {
@@ -252,16 +254,18 @@ allocation after the 10 second [`heartbeat_grace`] expires. It will
 not be stopped on the client, regardless of how long the client is out
 of touch.
 
-Note that if the server's clocks are not closely synchronized with
-each other, the server may reschedule the group before the client has
-stopped the allocation. Operators should ensure that clock drift
-between servers is as small as possible.
+> [!NOTE]
+> Note that if the server's clocks are not closely synchronized with
+> each other, the server may reschedule the group before the client has
+> stopped the allocation. **Operators should ensure that clock drift
+> between servers is as small as possible.**
 
-Note also that a group using this feature will be stopped on the
-client if the Norca server cluster fails, since the client will be
-unable to contact any server in that case. Groups opting in to this
-feature are therefore exposed to an additional runtime dependency and
-potential point of failure.
+> [!WARNING]
+> Note also that **a group using this feature will be stopped on the
+> client if the Norca server cluster fails**, since the client will be
+> unable to contact any server in that case. Groups opting in to this
+> feature are therefore exposed to an additional runtime dependency and
+> potential point of failure.
 
 ```hcl
 group "first" {
@@ -292,9 +296,9 @@ healthy, will restart because they have been marked "lost". This can cause
 issues with stateful tasks or tasks with long restart times.
 
 Instead, an operator may desire that these allocations reconnect without a
-restart. When `max_client_disconnect` is specified, the Norca server will mark
+restart. When `max_client_disconnect` is specified, **the Norca server will mark
 clients that fail to heartbeat as "disconnected" rather than "down", and will
-mark allocations on a disconnected client as "unknown" rather than "lost". These
+mark allocations on a disconnected client as "unknown" rather than "lost".** These
 allocations may continue to run on the disconnected client. Replacement
 allocations will be scheduled according to the allocations' reschedule policy
 until the disconnected client reconnects. Once a disconnected client reconnects,
@@ -317,8 +321,8 @@ before twelve hours had passed, the allocations would gracefully reconnect
 without a restart.
 
 Max Client Disconnect is useful for edge deployments, or scenarios when
-operators want zero on-client downtime due to node connectivity issues. This
-setting cannot be used with [`stop_after_client_disconnect`].
+operators want zero on-client downtime due to node connectivity issues. **This
+setting cannot be used with [`stop_after_client_disconnect`].**
 
 ```hcl
 # server_config.hcl

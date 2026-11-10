@@ -43,7 +43,7 @@ service {
   rest of the region is left out. Values below 1 act as 1. Must not be negative.
 
 - `overflow_fraction` `(float: <server default>)` - Fraction of all eligible instances of the region the
-  caller's datacenter must hold before the rest of the region is left out, between 0 and 1; `0` disables the rule. When unset,
+  caller's datacenter must hold before the rest of the region is left out, between 0 and 1; **`0` disables the rule.** When unset,
   the servers fill in their
   [`default_overflow_fraction`](/docs/configuration/native_service_discovery#server-block) (0.2 unless
   configured) when the job is registered, so the stored job carries a concrete value.

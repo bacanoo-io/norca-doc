@@ -48,11 +48,11 @@ job "docs" {
 - `interval` `(string: <varies>)` - Specifies the sliding window which begins
   when the first reschedule attempt starts and ensures that only `attempts`
   number of reschedule happen within it. If more than `attempts` number of
-  failures happen with this interval, Norca will not reschedule any more.
+  failures happen with this interval, **Norca will not reschedule any more.**
 
 - `delay` `(string: <varies>)` - Specifies the duration to wait before attempting
-  to reschedule a failed task. This is specified using a label suffix like "30s" or "1h".
-  Delay cannot be less than 5 seconds.
+  to reschedule a failed task. This is specified using a label suffix like `"30s"` or `"1h"`.
+  **Delay cannot be less than 5 seconds.**
 
 - `delay_function` `(string: <varies>)` - Specifies the function that is used to
   calculate subsequent reschedule delays. The initial delay is specified by the delay parameter.
@@ -71,7 +71,7 @@ job "docs" {
   the `attempts` and `interval` fields are not used.
 
 Information about reschedule attempts are displayed in the CLI and API for
-allocations. Rescheduling is enabled by default for service and batch jobs
+allocations. **Rescheduling is enabled by default for service and batch jobs**
 with the options shown below.
 
 ### `reschedule` Parameter Defaults
@@ -104,7 +104,7 @@ defaults by job type:
 
 ### Disabling rescheduling
 
-To disable rescheduling, set the `attempts` parameter to zero and `unlimited` to false.
+To disable rescheduling, set the **`attempts` parameter to zero and `unlimited` to false.**
 
 ```hcl
 job "docs" {

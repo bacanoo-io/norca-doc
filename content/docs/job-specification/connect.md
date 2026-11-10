@@ -9,9 +9,9 @@ upstream:
 **Placement:** `job -> group -> service -> connect`
 
 The `connect` block allows configuring various options for
-[Consul Connect](/docs/integrations/consul-connect/). It is
+[Consul Connect](/docs/integrations/consul-connect/). **It is
 valid only within the context of a service definition at the task group
-level. For using `connect` when Consul ACLs are enabled, see the
+level.** For using `connect` when Consul ACLs are enabled, see the
 [Consul service mesh integration](/docs/integrations/consul-connect).
 
 ```hcl
@@ -45,8 +45,8 @@ job "countdash" {
 
 ## `connect` Parameters
 
-Used to configure a connect service. Only one of `native`, `sidecar_service`,
-or `gateway` may be realized per `connect` block.
+Used to configure a connect service. **Only one of `native`, `sidecar_service`,
+or `gateway` may be realized per `connect` block.**
 
 - `native` - `(bool: false)` - This is used to configure the service as supporting
   Connect Native applications.

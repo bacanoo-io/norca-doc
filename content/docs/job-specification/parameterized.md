@@ -30,13 +30,13 @@ would be a task's JSON configuration.
 Further, certain metadata may be marked as required when dispatching a job so it
 can be used to inject configuration directly into a task's arguments using
 [interpolation]. An example of this would be to require a run ID key that
-could be used to lookup the work the job is suppose to do from a management
+could be used to lookup the work the job is supposed to do from a management
 service or database.
 
 Each time a job is dispatched, a unique job ID is generated. This
 allows a caller to track the status of the job, much like a future or
-promise in some programming languages. The dispatched job cannot be
-updated after dispatching; to update the job definition you need to
+promise in some programming languages. **The dispatched job cannot be
+updated after dispatching;** to update the job definition you need to
 update the parent job.
 
 ```hcl
@@ -54,7 +54,7 @@ dispatching parameterized jobs.
 
 ## `parameterized` Requirements
 
-- The job's [scheduler type][batch-type] must be `batch` or `sysbatch`.
+- **The job's [scheduler type][batch-type] must be `batch` or `sysbatch`.**
 
 ## `parameterized` Parameters
 

@@ -59,11 +59,11 @@ federation, and all its servers must run a Norca version that supports
 multiregion deployments.
 
 The registration in the other regions, and the later coordination of the
-rollout, carry the ACL token of the submitter, so with ACLs enabled the job
-must be submitted with a [global token](/docs/features/multiregion#global-tokens).
+rollout, carry the ACL token of the submitter, so **with ACLs enabled the job
+must be submitted with a [global token](/docs/features/multiregion#global-tokens).**
 
-`norca job plan` plans the job in every region of the block. `norca job run`
-does not monitor the evaluation of a multiregion job; follow the rollout with
+`norca job plan` plans the job in every region of the block. **`norca job run`
+does not monitor the evaluation of a multiregion job;** follow the rollout with
 `norca deployment status` or `norca job status`.
 
 ## Multiregion Deployment States
@@ -105,8 +105,8 @@ for that region.
 
 ## Periodic Time Zones
 
-Multiregion periodic jobs share [time zone] configuration, with UTC being the
-default. Operators should be mindful of this when registering multiregion jobs.
+**Multiregion periodic jobs share [time zone] configuration, with UTC being the
+default.** Operators should be mindful of this when registering multiregion jobs.
 For example, a periodic configuration that specifies the job should run every
 night at midnight New York time, may result in an undesirable execution time
 if one of the target regions is set to Tokyo time.
@@ -145,16 +145,16 @@ use [`norca job stop -global`][job stop].
   field tells Norca how many other regions should be marked as failed when one
   region's deployment fails:
 
-  - The default behavior is that the failed region and all regions that come
-    after it in order are marked as failed.
+  - The default behavior is that **the failed region and all regions that come
+    after it in order are marked as failed.**
 
-  - If `on_failure: "fail_all"` is set, all regions will be marked as
-    failed. If all regions have already completed their deployments, it's
+  - If `on_failure: "fail_all"` is set, **all regions will be marked as
+    failed.** If all regions have already completed their deployments, it's
     possible that a region may transition from `blocked` to `successful` while
-    another region is failing. This successful region cannot be rolled back.
+    another region is failing. **This successful region cannot be rolled back.**
 
-  - If `on_failure: "fail_local"` is set, only the failed region will be marked
-    as failed. The remaining regions will move on to `blocked` status. At this
+  - If `on_failure: "fail_local"` is set, **only the failed region will be marked
+    as failed.** The remaining regions will move on to `blocked` status. At this
     point, you'll need to manually unblock regions to mark them successful
     with the [`norca deployment unblock`][deployment unblock] command or
     correct the conditions that led to the failure and resubmit the job.
@@ -164,10 +164,12 @@ use [`norca job stop -global`][job stop].
 The name of a region must match the name of one of the federated regions.
 
 - `count` `(int: <optional>)` - Specifies a count override for task groups in
-  the region. If a task group specifies a `count = 0`, its count will be
-  replaced with this value. If a task group specifies its own `count` or omits
-  the `count` field, this value will be ignored. This value must be
-  non-negative.
+  the region.
+  - If a task group specifies a `count = 0`, its count will be
+    replaced with this value.
+  - If a task group specifies its own `count` or omits
+    the `count` field, **this value will be ignored.**
+  - This value must be non-negative.
 
 - `datacenters` `(array<string>: <optional>)` - A list of
   datacenters in the region which are eligible for task placement. If not

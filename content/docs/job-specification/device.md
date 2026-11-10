@@ -13,8 +13,8 @@ that the given task has access to the specified devices. A device is a hardware
 device that is attached to the node and may be made available to the task.
 Examples are GPUs, FPGAs, and TPUs.
 
-When a `device` block is added, Norca will schedule the task onto a node that
-contains the set of device(s) that meet the specified requirements. The `device` block
+When a `device` block is added, **Norca will schedule the task onto a node that
+contains the set of device(s) that meet the specified requirements.** The `device` block
 allows the operator to specify as little as just the type of device required,
 such as `gpu`, all the way to specifying arbitrary constraints and affinities.
 Once the scheduler has placed the allocation on a suitable node, the Norca
@@ -67,15 +67,15 @@ to use GPUs that have at least 4 GiB. This examples shows how expressive the
   are valid:
 
   - `<device_type>`: If a single value is given, it is assumed to be the device
-    type, such as "gpu", or "fpga".
+    type, such as `"gpu"`, or `"fpga"`.
 
   - `<vendor>/<device_type>`: If two values are given separated by a `/`, the
     given device type will be selected, constraining on the provided vendor.
-    Examples include "nvidia/gpu" or "amd/gpu".
+    Examples include `"nvidia/gpu"` or `"amd/gpu"`.
 
   - `<vendor>/<device_type>/<model>`: If three values are given separated by a `/`, the
     given device type will be selected, constraining on the provided vendor, and
-    model name. Examples include "nvidia/gpu/1080ti" or "nvidia/gpu/2080ti".
+    model name. Examples include `"nvidia/gpu/1080ti"` or `"nvidia/gpu/2080ti"`.
 
 - `count` `(int: 1)` - Specifies the number of instances of the given device
   that are required.
@@ -222,7 +222,7 @@ The units Norca supports are as follows:
   </tbody>
 </table>
 
-Conversion is only possible within the same base unit.
+**Conversion is only possible within the same base unit.**
 
 ## `device` Examples
 

@@ -17,7 +17,7 @@ specified in a `check_restart` block, it is restarted according to the task grou
 [`restart` policy][restart_block]. The `check_restart` settings apply to
 [`check`s][check_block], but may also be placed on [`service`s][service_block]
 to apply to all checks on a service. If `check_restart` is set on both the check
-and service, the blocks are merged with the check values taking precedence.
+and service, **the blocks are merged with the check values taking precedence.**
 
 ```hcl
 job "mysql" {
@@ -63,11 +63,13 @@ job "mysql" {
 }
 ```
 
+## `check_restart` Parameters
+
 - `limit` `(int: 0)` - Restart task when a health check has failed `limit`
-  times. For example 1 causes a restart on the first failure. The default,
-  `0`, disables health check based restarts. Failures must be consecutive. A
-  single passing check will reset the count, so flapping services may not be
-  restarted.
+  times. For example 1 causes a restart on the first failure.
+  - **The default, `0`, disables health check based restarts.**
+  - **Failures must be consecutive.** A single passing check will reset the
+    count, so flapping services may not be restarted.
 
 - `grace` `(string: "1s")` - Duration to wait after a task starts or restarts
   before checking its health.

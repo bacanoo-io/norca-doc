@@ -10,8 +10,8 @@ upstream:
 
 The `sidecar_service` block allows configuring various options for the sidecar
 proxy managed by Norca for [Consul
-Connect](/docs/integrations/consul-connect/) integration. It is
-valid only within the context of a connect block.
+Connect](/docs/integrations/consul-connect/) integration. **It is
+valid only within the context of a `connect` block.**
 
 ```hcl
 job "countdash" {

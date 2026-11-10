@@ -32,8 +32,8 @@ context from the local environment of the CLI (e.g., files, environment variable
 
 Since HCL is a superset of JSON, `norca job run example.json` will attempt to
 parse a JSON job using the HCL parser. However, the JSON format accepted by
-the HCL parser is not the same as the [API's JSON format][json-jobs-api]. The 
-HCL parser's JSON format is unspecified, so the API format is preferred. You can 
+the HCL parser is not the same as the [API's JSON format][json-jobs-api]. **The 
+HCL parser's JSON format is unspecified, so the API format is preferred.** You can 
 use the API format with the [`-json` command line flag][run-json]:
 
 ```shell
@@ -81,8 +81,8 @@ For full details about Norca's syntax, see:
 
 ## Backward Compatibilities
 
-HCL2 syntax closely mirrors HCL1, but has some minor changes. Most existing
-Norca job specifications will not require any changes.
+HCL2 syntax closely mirrors HCL1, but has some minor changes. **Most existing
+Norca job specifications will not require any changes.**
 
 When you run `norca job run` or `norca job plan`, the CLI will report any
 required changes. Also, you can activate a backwards compatibility mode by
@@ -103,7 +103,7 @@ meta {
 meta = { "team" = "...", organization = "..." }
 ```
 
-Starting with Nomad 1.0 and the HCL2 parser, only the block syntax with unquoted attributes is accepted:
+Starting with Nomad 1.0 and the HCL2 parser, **only the block syntax with unquoted attributes is accepted:**
 
 ```hcl
 meta {
@@ -114,7 +114,7 @@ meta {
 
 Additionally, block attributes must be [HCL2 valid identifiers](https://github.com/hashicorp/hcl/blob/v2.8.0/hclsyntax/spec.md#identifiers).
 Generally, identifiers may only contain letters, numbers, underscore `_`,
-or a dash `-`, and start with a letter. Notable,
+or a dash `-`, and start with a letter. Notably,
 [`meta`](/docs/job-specification/meta/), and
 [`env`](/docs/job-specification/env/) keys may not
 contain other symbols (e.g. `.`, `#`).

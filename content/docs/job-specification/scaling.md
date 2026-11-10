@@ -15,8 +15,8 @@ The `scaling` block configures the scaling options of a `group` or a `task`:
 the bounds that Norca honors for `norca job scale` and job updates, and the
 autoscaling policy. The policy of a group is evaluated either by the
 [built-in autoscaler](/docs/features/autoscaler) of the servers (engine
-`builtin`) or by an external autoscaler (engine `external`). This block is not
-supported within jobs of type `system`.
+`builtin`) or by an external autoscaler (engine `external`). **This block is not
+supported within jobs of type `system`.**
 
 When placed at the `group` level, the scaling policy is of type horizontal
 application scaling and controls the value of [`count`][] for the group.
@@ -53,10 +53,10 @@ job "example" {
 When placed at the `task` level, the block must have a label indicating which
 resource it relates to (`cpu` or `mem`); such policies describe vertical sizing
 of the task's [`resources`][]. Norca keeps task level policies in the job (they
-are visible in `norca job inspect` and the job API), but it does not list them in
-the scaling policies API and does not evaluate them: the built-in
-autoscaler only performs horizontal scaling, and a task level policy with
-`engine = "builtin"` is rejected.
+are visible in `norca job inspect` and the job API), but **it does not list them in
+the scaling policies API and does not evaluate them:** the built-in
+autoscaler only performs horizontal scaling, and **a task level policy with
+`engine = "builtin"` is rejected.**
 
 ```hcl
 task "redis" {
@@ -90,7 +90,7 @@ task "redis" {
   the policy: `builtin` (the built-in autoscaler of the servers) or `external`
   (an external autoscaler agent). When empty, the
   [`default_engine`](/docs/configuration/autoscaler#autoscaler-parameters) of the servers
-  applies, which is `external` unless configured otherwise. A policy of the
+  applies, which is **`external` unless configured otherwise.** A policy of the
   `builtin` engine is validated when the job is planned or submitted, and an
   enabled one is rejected while the built-in autoscaler is not enabled on the
   servers.
@@ -136,6 +136,8 @@ next to the original document. The attributes of the `policy` block are:
   [targets](/docs/features/autoscaler/reference/plugins/target).
 
 - `check "<name>"` <code>(block: &lt;required&gt;)</code> - One or more checks.
+
+### `check` Parameters
 
 A `check` block is written in one of two forms:
 
@@ -188,6 +190,8 @@ check "latency" {
   `strategy` block of the server configuration. In the typed form, the
   `threshold` strategy also accepts `upper` and `lower` as short names of
   `upper_bound` and `lower_bound`.
+
+### Validation
 
 The validation at submission checks, among others: `min <= max`, a known
 strategy and source, the required parameters of the built-in strategies (for

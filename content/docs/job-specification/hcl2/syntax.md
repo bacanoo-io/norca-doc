@@ -94,14 +94,14 @@ HCL supports three different syntaxes for comments:
 - `/*` and `*/` are start and end delimiters for a comment that might span
   over multiple lines.
 
-The `#` single-line comment style is the default comment style and should be
-used in most cases. Automatic configuration formatting tools may automatically
+**The `#` single-line comment style is the default comment style and should be
+used in most cases.** Automatic configuration formatting tools may automatically
 transform `//` comments into `#` comments, since the double-slash style is
 not idiomatic.
 
 ## Character Encoding and Line Endings
 
-Norca configuration files must always be UTF-8 encoded. While the
+**Norca configuration files must always be UTF-8 encoded.** While the
 delimiters of the language are all ASCII characters, Norca accepts
 non-ASCII characters in identifiers, comments, and string values.
 

@@ -27,7 +27,7 @@ consistent evaluation when Norca spans multiple time zones.
 ## `periodic` Requirements
 
 - The job's [scheduler type][batch-type] must be `batch` or `sysbatch`.
-- A job can not be updated to be periodically. Thus, to transition an existing job to be periodic, you must first run `norca stop -purge «job name»`. This is expected behavior and is to ensure that this change has been intentionally made by an operator.
+- **A job can not be updated to be periodic.** Thus, to transition an existing job to be periodic, you must first run `norca stop -purge «job name»`. This is expected behavior and is to ensure that this change has been intentionally made by an operator.
 
 ## `periodic` Parameters
 
@@ -41,7 +41,7 @@ consistent evaluation when Norca spans multiple time zones.
   `@weekly`. Refer to [the
   documentation](https://github.com/hashicorp/cronexpr#implementation) for full
   details about the supported cron specs and the predefined expressions.
-  Conflicts with `cron`.
+  **Conflicts with `cron`.**
 
 - `prohibit_overlap` `(bool: false)` - Specifies if this job should wait until
   previous instances of this job have completed. This only applies to this job;
@@ -97,8 +97,8 @@ periodic {
 
 ## Daylight Saving Time
 
-Though Norca supports configuring `time_zone`, we strongly recommend that periodic
-jobs are specified with respect to UTC `time_zone`. Only customize `time_zone`
+Though Norca supports configuring `time_zone`, **we strongly recommend that periodic
+jobs are specified with respect to UTC `time_zone`.** Only customize `time_zone`
 when the following daylight saving time behavior is _desired:_
 
 - When leaping forward, periodic jobs scheduled for the skipped hour (eg 2:30am

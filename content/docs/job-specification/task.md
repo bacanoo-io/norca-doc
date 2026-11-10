@@ -55,20 +55,23 @@ job "docs" {
 - `kill_timeout` `(string: "5s")` - Specifies the duration to wait for an
   application to gracefully quit before force-killing. Norca first sends a
   [`kill_signal`][kill_signal]. If the task does not exit before the configured
-  timeout, `SIGKILL` is sent to the task. Note that the value set here is capped
-  at the value set for [`max_kill_timeout`][max_kill] on the agent running the
-  task, which has a default value of 30 seconds.
+  timeout, `SIGKILL` is sent to the task.
+
+  > [!NOTE]
+  > Note that **the value set here is capped
+  > at the value set for [`max_kill_timeout`][max_kill]** on the agent running the
+  > task, which has a default value of 30 seconds.
 
 - `kill_signal` `(string)` - Specifies a configurable kill signal for a task,
-  where the default is SIGINT (or SIGTERM for `docker`, or CTRL_BREAK_EVENT
-  for `raw_exec` on Windows). Note that this is only supported for drivers
-  sending signals (currently `docker`, `exec`, `raw_exec`, and `java`
+  where the default is `SIGINT` (or `SIGTERM` for `docker`, or `CTRL_BREAK_EVENT`
+  for `raw_exec` on Windows). Note that **this is only supported for drivers
+  sending signals** (currently `docker`, `exec`, `raw_exec`, and `java`
   drivers).
 
 - `leader` `(bool: false)` - Specifies whether the task is the leader task of
-  the task group. If set to `true`, when the leader task completes, all other
-  tasks within the task group will be gracefully shutdown. The shutdown
-  process starts by applying the `shutdown_delay` if configured. It then stops the
+  the task group. If set to `true`, **when the leader task completes, all other
+  tasks within the task group will be gracefully shutdown.** The shutdown
+  process starts by applying the `shutdown_delay` if configured. It then stops
   the leader task first, followed by non-sidecar and non-poststop tasks,
   and finally sidecar tasks. Once this process completes, post-stop tasks
   are triggered. See the [lifecycle][] documentation for a complete description
@@ -102,8 +105,8 @@ job "docs" {
   killing a task between removing its service registrations from Consul or Norca,
   and sending it a shutdown signal. Ideally services would fail health checks
   once they receive a shutdown signal. Alternatively, `shutdown_delay` may be
-  set to give in flight requests time to complete before shutting down. This
-  `shutdown_delay` only applies to services defined at the task level by the
+  set to give in flight requests time to complete before shutting down. **This
+  `shutdown_delay` only applies to services defined at the task level** by the
   [`service`](/docs/job-specification/task#service) block. In addition, task
   groups have their own [`shutdown_delay`](/docs/job-specification/group#shutdown_delay)
   which waits between de-registering group services and stopping tasks.
@@ -123,8 +126,8 @@ job "docs" {
   and Vault.
 
 - `vault` <code>([Vault][]: nil)</code> - Specifies the set of Vault policies
-  required by the task. This overrides any `vault` block set at the `group` or
-  `job` level.
+  required by the task. **This overrides any `vault` block set at the `group` or
+  `job` level.**
 
 - `volume_mount` <code>([VolumeMount][]: nil)</code> - Specifies where a group
   volume should be mounted.

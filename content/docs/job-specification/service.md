@@ -58,7 +58,7 @@ job "docs" {
 }
 ```
 
-This section of the documentation only cover the job file fields and blocks
+This section of the documentation only covers the job file fields and blocks
 for service discovery. For more details on using Norca with Consul please see
 the [Consul integration documentation][service-discovery].
 
@@ -70,8 +70,8 @@ Connect][connect] integration.
 
 - `provider` `(string: "consul")` - Specifies the service registration provider
   to use for service registrations. Valid options are either `consul` or
-  `nomad` (Norca's native service catalog). All services within a single task
-  group must utilise the same provider value.
+  `nomad` (Norca's native service catalog). **All services within a single task
+  group must utilise the same provider value.**
 
 - `check` <code>([Check][check]: nil)</code> - Specifies a health
   check associated with the service. This can be specified multiple times to
@@ -102,8 +102,8 @@ Connect][connect] integration.
   Validation of the name occurs in two parts. When the job is registered, an initial validation pass checks that
   the service name adheres to RFC-1123 §2.1 and the length limit, excluding any variables requiring interpolation.
   Once the client receives the service and all interpretable values are available, the service name will be
-  interpolated and revalidated. This can cause certain service names to pass validation at submit time but fail
-  at runtime.
+  interpolated and revalidated. **This can cause certain service names to pass validation at submit time but fail
+  at runtime.**
 
 - `port` `(string: <optional>)` - Specifies the port to advertise for this
   service. The value of `port` depends on which [`address_mode`](#address_mode)
@@ -149,10 +149,10 @@ Connect][connect] integration.
   examples.](#using-driver-address-mode) Valid options are:
 
   - `alloc` - For allocations which create a network namespace, this address mode
-    uses the IP address inside the namespace. Can only be used with "bridge" and "cni"
+    uses the IP address inside the namespace. Can only be used with `"bridge"` and `"cni"`
     [networking modes][network_mode]. A numeric port may be specified for situations
-    where no port mapping is necessary. This mode can only be set for services which
-    are defined in a "group" block.
+    where no port mapping is necessary. **This mode can only be set for services which
+    are defined in a `"group"` block.**
 
   - `auto` - Allows the driver to determine whether the host or driver address
     should be used. Defaults to `host` and only implemented by Docker. If you
@@ -163,8 +163,8 @@ Connect][connect] integration.
     port map. A numeric port may be specified since port maps aren't required
     by all network plugins. Useful for advertising SDN and overlay network
     addresses. Task will fail if driver network cannot be determined. Only
-    implemented for Docker. This mode can only be set for services
-    which are defined in a "task" block.
+    implemented for Docker. **This mode can only be set for services
+    which are defined in a `"task"` block.**
 
   - `host` - Use the host IP and port.
 
@@ -237,7 +237,7 @@ Connect][connect] integration.
   }
   ```
 
-  Norca does not create the load balancer. The servers write the block to the
+  **Norca does not create the load balancer.** The servers write the block to the
   service meta keys `norca_lb_class`, `norca_lb_port` and `norca_lb_internal`
   (the block wins over the same keys set by hand), and a load balancer operator
   (an external application, such as the sample
@@ -387,11 +387,12 @@ driver's address (in this case Weave's). The service will advertise the
 container's port: 6379.
 
 However since Consul is often run on the host without access to the Weave
-network, `check` blocks default to `host` address mode. The TCP check will run
+network, **`check` blocks default to `host` address mode.** The TCP check will run
 against the host's IP and the dynamic host port assigned by Norca.
 
-Note that the `check` still inherits the `service` block's `db` port label,
-but each will resolve the port label according to their address mode.
+> [!NOTE]
+> Note that the `check` still inherits the `service` block's `db` port label,
+> but each will resolve the port label according to their address mode.
 
 If Consul has access to the Weave network the job could be configured like
 this:
@@ -450,7 +451,7 @@ Unlike services, checks do not have an `auto` address mode as there's no way
 for Norca to know which is the best address to use for checks. Consul needs
 access to the address for any HTTP or TCP checks.
 
-So you have to set `address_mode` parameter in the `check` block to `driver`.
+So **you have to set `address_mode` parameter in the `check` block to `driver`.**
 
 For example using `auto` address mode:
 

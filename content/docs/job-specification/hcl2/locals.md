@@ -41,8 +41,8 @@ The `locals` block defines one or more local variables.
 The names given for the items in the `locals` block must be unique. The given
 value can be any expression that is valid within the current file.
 
-The expression of a local value can refer to other locals, but reference cycles
-are not allowed. That is, a local cannot refer to itself or to a variable that
+The expression of a local value can refer to other locals, but **reference cycles
+are not allowed.** That is, a local cannot refer to itself or to a variable that
 refers (directly or indirectly) back to it.
 
 It's recommended to group together logically-related local values into a single

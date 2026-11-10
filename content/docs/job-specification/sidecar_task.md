@@ -11,8 +11,8 @@ upstream:
 The `sidecar_task` block allows configuring various options for the proxy
 sidecar or Connect gateway managed by Norca for the [Consul
 Connect](/docs/integrations/consul-connect/) integration such as
-resource requirements, kill timeouts and more as defined below. It is valid
-only within the context of a [`connect`][connect] block.
+resource requirements, kill timeouts and more as defined below. **It is valid
+only within the context of a [`connect`][connect] block.**
 
 ```hcl
 job "countdash" {
@@ -149,7 +149,7 @@ meta.connect.sidecar_image = custom/envoy-${NORCA_envoy_version}:latest
 - `shutdown_delay` `(string: "5s")` - Delay between deregistering the task from
   Consul and sending it a signal to shutdown.
 
-- `kill_signal` `(string:SIGINT)` - Kill signal to use for the task, defaults to SIGINT.
+- `kill_signal` `(string:SIGINT)` - Kill signal to use for the task, defaults to `SIGINT`.
 
 ## `sidecar_task` Examples
 

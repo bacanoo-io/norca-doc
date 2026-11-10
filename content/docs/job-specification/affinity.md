@@ -47,14 +47,15 @@ job "docs" {
 }
 ```
 
-Affinities apply to task groups but may be specified within job and task blocks as well.
-Job affinities apply to all groups within the job. Task affinities apply to the whole task group
-that the task is a part of.
+**Affinities apply to task groups** but may be specified within job and task blocks as well.
+
+- Job affinities apply to all groups within the job.
+- Task affinities apply to the whole task group that the task is a part of.
 
 Norca will use affinities when computing scores for placement. Nodes that match affinities will
 have their scores boosted. Affinity scores are combined with other scoring factors such as bin packing.
-Operators can use weights to express relative preference across multiple affinities. If no nodes match a given affinity,
-placement is still successful. This is different from [constraints][constraint] where placement is
+Operators can use weights to express relative preference across multiple affinities. **If no nodes match a given affinity,
+placement is still successful.** This is different from [constraints][constraint] where placement is
 restricted only to nodes that meet the constraint's criteria.
 
 > [!TIP]
@@ -95,8 +96,8 @@ restricted only to nodes that meet the constraint's criteria.
   values](/docs/runtime/interpolation#interpreted_node_vars).
 
 - `weight` `(integer: 50)` - Specifies a weight for the affinity. The weight is used
-  during scoring and must be an integer between -100 to 100. Negative weights act as
-  anti affinities, causing nodes that match them to be scored lower. Weights can be used
+  during scoring and must be an integer between -100 to 100. **Negative weights act as
+  anti affinities**, causing nodes that match them to be scored lower. Weights can be used
   when there is more than one affinity to express relative preference across them.
 
 ### `operator` Values

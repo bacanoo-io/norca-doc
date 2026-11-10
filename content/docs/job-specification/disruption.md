@@ -25,8 +25,8 @@ job "api" {
 }
 ```
 
-The block is only valid in `service` jobs. Exactly one of `min_healthy` and
-`max_unavailable` must be set.
+**The block is only valid in `service` jobs. Exactly one of `min_healthy` and
+`max_unavailable` must be set.**
 
 ## `disruption` Parameters
 
@@ -58,7 +58,7 @@ deployment or migration health check, and is not already marked for migration.
   stop and reschedule the allocation only if the budget allows it, and fail with
   HTTP 429 otherwise.
 
-The budget does not apply to reducing `count` (manually or by an autoscaler),
+**The budget does not apply** to reducing `count` (manually or by an autoscaler),
 to deployments (governed by the [`update`](/docs/job-specification/update)
 block), to involuntary events such as node failures, or to a plain
 `norca alloc stop`.

@@ -59,7 +59,7 @@ job "web" {
 
 - `upstream` <code>([upstream](#upstream-parameters): nil)</code> - A service the sidecar exposes on a
   local port. May be repeated; the label is the name of the upstream (letters, digits, `.`, `-` and `_`,
-  at most 64 characters, unique within the block). Only allowed with `mode = "sidecar"`.
+  at most 64 characters, unique within the block). **Only allowed with `mode = "sidecar"`.**
 
 - `change_mode` `(string: "noop")` - What happens to the running tasks that use the certificate when the
   client has written a renewed certificate or a trust bundle with a new CA (see
@@ -102,7 +102,7 @@ job "web" {
 
 - The service must use `provider = "nomad"`.
 - Native mTLS must be enabled on the servers ([`server { mtls { enabled } }`](/docs/configuration/mtls),
-  on by default), and every server of the region must run Norca.
+  on by default), and **every server of the region must run Norca.**
 - The namespace, the job ID and the name of the group must be valid SPIFFE path segments: letters,
   digits, `.`, `-` and `_`. Dispatched and periodic jobs use the ID of their parent job.
 - `sidecar` and `gateway` modes:
@@ -116,7 +116,7 @@ job "web" {
 ## Behaviour
 
 - Adding or removing `mtls` on a group, and changing the `mtls` block or the port of a sidecar or gateway
-  service, are destructive updates. Changing `change_mode`, `change_signal` or `change_on` of an app mode
+  service, are **destructive updates**. Changing `change_mode`, `change_signal` or `change_on` of an app mode
   service is an in-place update.
 - For a `sidecar` service the servers inject a prestart sidecar task `mtls-proxy-<service>` (kind
   `mtls-proxy:<service>`) and a dynamic port `mtls-proxy-<service>`; for a `gateway` service, a task

@@ -65,8 +65,8 @@ The client [`artifact`][client_artifact] configuration can set limits to
 specific artifact operations to prevent excessive data download or operation
 time.
 
-If a task's `artifact` retrieval exceeds one of those limits, the task will be
-interrupted and fail to start. Refer to the task events for more information.
+If a task's `artifact` retrieval exceeds one of those limits, **the task will be
+interrupted and fail to start.** Refer to the task events for more information.
 
 ## `artifact` Examples
 
@@ -99,9 +99,9 @@ artifact {
 }
 ```
 
-To use HTTP basic authentication, preprend the username and password to the
-hostname in the URL. All special characters, including the username and
-password, must be URL encoded. For example, for a username `exampleUser` and
+To use HTTP basic authentication, prepend the username and password to the
+hostname in the URL. **All special characters, including the username and
+password, must be URL encoded.** For example, for a username `exampleUser` and
 the password `pass/word!`:
 
 ```hcl
@@ -122,8 +122,8 @@ artifact {
 }
 ```
 
-To download from a private repo, sshkey needs to be set. The key must be
-base64-encoded string. On Linux, you can run `base64 -w0 <file>` to encode the
+To download from a private repo, `sshkey` needs to be set. **The key must be
+base64-encoded string.** On Linux, you can run `base64 -w0 <file>` to encode the
 file. Or use [HCL2](/docs/job-specification/hcl2/)
 expressions to read and encode the key from a file on your machine:
 
@@ -168,7 +168,7 @@ artifact {
 }
 ```
 
-To disable automatic unarchiving, set the `archive` option to false:
+To disable automatic unarchiving, set the `archive` option to `false`:
 
 ```hcl
 artifact {
@@ -200,8 +200,8 @@ artifact {
 These examples download artifacts from Amazon S3. There are several different
 types of [S3 bucket addressing][s3-bucket-addr] and [S3 region-specific
 endpoints][s3-region-endpoints]. As of Nomad 0.6 non-Amazon S3-compatible
-endpoints like [Minio] are supported, but you must explicitly set the "s3::"
-prefix.
+endpoints like [Minio] are supported, but **you must explicitly set the `"s3::"`
+prefix.**
 
 This example uses path-based notation on a publicly-accessible bucket:
 
@@ -243,8 +243,8 @@ artifact {
 
 ## Environment
 
-The `artifact` downloader by default does not have access to the environment variables
-set for the Norca client. Inheritence of environment variables can be managed through the [`artifact.set_environment_variables`][client_artifact]
+**The `artifact` downloader by default does not have access to the environment variables
+set for the Norca client.** Inheritance of environment variables can be managed through the [`artifact.set_environment_variables`][client_artifact]
 client configuration.
 
 [client_artifact]: /docs/configuration/client#artifact-parameters

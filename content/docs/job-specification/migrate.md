@@ -14,8 +14,8 @@ upstream:
 The `migrate` block specifies the group's strategy for migrating allocations from
 [draining][drain] nodes. If omitted, a default migration strategy is applied.
 If specified at the job level, the configuration will apply to all groups
-within the job. Only service jobs with a count greater than 1 support migrate
-blocks.
+within the job. **Only service jobs with a count greater than 1 support migrate
+blocks.**
 
 ```hcl
 job "docs" {
@@ -29,14 +29,15 @@ job "docs" {
 ```
 
 When one or more nodes are draining, only `max_parallel` allocations will be
-stopped at a time. Node draining will not continue until replacement
+stopped at a time. **Node draining will not continue until replacement
 allocations have been healthy for their `min_healthy_time` or
-`healthy_deadline` is reached.
+`healthy_deadline` is reached.**
 
-Note that a node's drain [deadline][deadline] will override the `migrate`
-block for allocations on that node. The `migrate` block is for job authors to
-define how their services should be migrated, while the node drain deadline is
-for system operators to put hard limits on how long a drain may take.
+> [!NOTE]
+> Note that a node's drain [deadline][deadline] **will override the `migrate`
+> block** for allocations on that node. The `migrate` block is for job authors to
+> define how their services should be migrated, while the node drain deadline is
+> for system operators to put hard limits on how long a drain may take.
 
 > [!NOTE]
 > **Norca:** a group can also have a [`disruption`](/docs/job-specification/disruption)
@@ -58,12 +59,12 @@ on node draining.
 - `health_check` `(string: "checks")` - Specifies the mechanism in which
   allocations health is determined. The potential values are:
 
-  - "checks" - Specifies that the allocation should be considered healthy when
+  - `"checks"` - Specifies that the allocation should be considered healthy when
     all of its tasks are running and their associated [checks][checks] are
     healthy, and unhealthy if any of the tasks fail or not all checks become
-    healthy. This is a superset of "task_states" mode.
+    healthy. This is a superset of `"task_states"` mode.
 
-  - "task_states" - Specifies that the allocation should be considered healthy when
+  - `"task_states"` - Specifies that the allocation should be considered healthy when
     all its tasks are running and unhealthy if tasks fail.
 
 - `min_healthy_time` `(string: "10s")` - Specifies the minimum time the

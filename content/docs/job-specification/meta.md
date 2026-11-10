@@ -45,8 +45,8 @@ Meta values are made available inside tasks as [runtime environment variables][e
 
 The "parameters" for the `meta` block can be any key-value. The keys and values
 are both of type `string`, but they can be specified as other types. They will
-automatically be converted to strings. Any `-` character existing in the key
-will also be converted to `_`.
+automatically be converted to strings. **Any `-` character existing in the key
+will also be converted to `_`.**
 
 ## `meta` Examples
 
@@ -56,8 +56,8 @@ The following examples only show the `meta` blocks. Remember that the
 ### Coercion
 
 This example shows the different ways to specify key-value pairs. Internally,
-these values will be stored as their string representation. No type information
-is preserved.
+these values will be stored as their string representation. **No type information
+is preserved.**
 
 ```hcl
 meta {

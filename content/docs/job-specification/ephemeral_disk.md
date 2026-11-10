@@ -10,7 +10,7 @@ upstream:
 
 The `ephemeral_disk` block describes the ephemeral disk requirements of the
 group. Ephemeral disks can be marked as sticky and support live data migrations.
-All tasks in this group will share the same ephemeral disk.
+**All tasks in this group will share the same ephemeral disk.**
 
 ```hcl
 job "docs" {
@@ -24,26 +24,27 @@ job "docs" {
 }
 ```
 
-The ephemeral disk can be referenced under `alloc/data/`. More information can
-be found in the [filesystem internals][].
-
-Each job's logs will be written to ephemeral disk space. See the [logs
-documentation][] for more information.
+- The ephemeral disk can be referenced under `alloc/data/`. More information can
+  be found in the [filesystem internals][].
+- Each job's logs will be written to ephemeral disk space. See the [logs
+  documentation][] for more information.
 
 ## `ephemeral_disk` Parameters
 
 - `migrate` `(bool: false)` - This specifies that the Norca client should make a
   best-effort attempt to migrate the data from the previous allocation, even if
-  the previous allocation was on another client. Enabling `migrate`
-  automatically enables `sticky` as well. During data migration, the task will
-  block starting until the data migration has completed. Migration is atomic and
-  any partially migrated data will be removed if an error is encountered. Note
-  that data migration will not take place if a client garbage collects a failed
-  allocation or if the allocation has been intentionally stopped via `norca
-  alloc stop`, because the original allocation has already been removed.
+  the previous allocation was on another client.
+  - **Enabling `migrate` automatically enables `sticky` as well.**
+  - During data migration, the task will block starting until the data migration has completed.
+  - Migration is atomic and any partially migrated data will be removed if an error is encountered.
 
-- `size` `(int: 300)` - Specifies the size of the ephemeral disk in MB. The
-  current Norca ephemeral storage implementation does not enforce this limit;
+  > [!NOTE]
+  > Note that **data migration will not take place** if a client garbage collects a failed
+  > allocation or if the allocation has been intentionally stopped via `norca alloc stop`,
+  > because the original allocation has already been removed.
+
+- `size` `(int: 300)` - Specifies the size of the ephemeral disk in MB. **The
+  current Norca ephemeral storage implementation does not enforce this limit;**
   however, it is used during job placement.
 
 - `sticky` `(bool: false)` - Specifies that Norca should make a best-effort

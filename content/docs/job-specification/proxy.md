@@ -10,8 +10,8 @@ upstream:
 
 The `proxy` block allows configuring various options for the sidecar proxy
 managed by Norca for [Consul
-Connect](/docs/integrations/consul-connect/). It is valid only
-within the context of a `sidecar_service` block.
+Connect](/docs/integrations/consul-connect/). **It is valid only
+within the context of a `sidecar_service` block.**
 
 ```hcl
 job "countdash" {

@@ -10,8 +10,8 @@ upstream:
 
 The `expose` block allows configuration of additional listeners for the default
 Envoy sidecar proxy managed by Norca for Consul Connect.
-These listeners create a bypass of the Connect TLS and network namespace
-isolation, enabling non-Connect enabled services to make requests to specific
+**These listeners create a bypass of the Connect TLS and network namespace
+isolation**, enabling non-Connect enabled services to make requests to specific
 HTTP paths through the sidecar proxy.
 
 The `expose` configuration is valid within the context of a `proxy` block.
@@ -126,11 +126,11 @@ job "expose-example" {
 
 ### `path` Parameters
 
-- `path` `(string: required)` - The HTTP or gRPC path to expose. The path must be prefixed
-  with a slash.
+- `path` `(string: required)` - The HTTP or gRPC path to expose. **The path must be prefixed
+  with a slash.**
 
 - `protocol` `(string: required)` - Sets the protocol of the listener. Must be
-  `http` or `http2`. For gRPC use `http2`.
+  `http` or `http2`. **For gRPC use `http2`.**
 
 - `local_path_port` `(int: required)` - The port the service is listening to for connections to
   the configured `path`. Typically this will be the same as the `service.port` value, but

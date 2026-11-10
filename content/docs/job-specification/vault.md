@@ -47,8 +47,8 @@ network error), the client will attempt to retrieve a new Vault token. If succes
 contents of the secrets file are updated on disk, and action will be taken
 according to the value set in the `change_mode` parameter.
 
-If a `vault` block is specified, the [`template`][template] block can interact
-with Vault as well.
+If a `vault` block is specified, **the [`template`][template] block can interact
+with Vault as well.**
 
 > [!NOTE]
 > **Norca without Vault.** On an agent without a Vault integration, the `vault`
@@ -91,11 +91,11 @@ with Vault as well.
   the [agent `vault` block](/docs/configuration/vault#namespace). When the
   servers require a Vault token from the job submitter
   ([`allow_unauthenticated`](/docs/configuration/vault#allow_unauthenticated)
-  set to `false`), a job that sets a Vault namespace is rejected.
+  set to `false`), **a job that sets a Vault namespace is rejected.**
 
 - `policies` `(array<string>: [])` - Specifies the set of Vault policies that
-  the task requires. The Norca client will retrieve a Vault token that is
-  limited to those policies.
+  the task requires. **The Norca client will retrieve a Vault token that is
+  limited to those policies.**
 
 ## `vault` Examples
 

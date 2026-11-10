@@ -59,7 +59,7 @@ job "docs" {
   partial placements if optimistic scheduling resulted in an oversubscribed
   node. This does not control whether all allocations for the job, where all
   would be the desired count for each task group, must be placed atomically.
-  This should only be used for special circumstances.
+  **This should only be used for special circumstances.**
 
 - `constraint` <code>([Constraint][constraint]: nil)</code> -
   This can be provided multiple times to define additional constraints. See the
@@ -95,7 +95,7 @@ job "docs" {
 
 - `migrate` <code>([Migrate][]: nil)</code> - Specifies the groups strategy for
   migrating off of draining nodes. If omitted, a default migration strategy is
-  applied. Only service jobs with a count greater than 1 support migrate blocks.
+  applied. **Only service jobs with a count greater than 1 support migrate blocks.**
 
 - `namespace` `(string: "default")` - The namespace in which to execute the job.
 
@@ -107,11 +107,11 @@ job "docs" {
 
 - `priority` `(int: 50)` - Specifies the job priority which is used to
   prioritize scheduling and access to resources.
-  Must be between 1 and [`job_max_priority`] inclusively,
-  with a larger value corresponding to a higher priority.
-  If value 0 is provided this will fallback to [`job_default_priority`].
-  Priority only has an effect when job preemption is enabled.
-  It does not have an effect on which of multiple pending jobs is run first.
+  - Must be between 1 and [`job_max_priority`] inclusively,
+    with a larger value corresponding to a higher priority.
+  - If value 0 is provided this will fallback to [`job_default_priority`].
+  - **Priority only has an effect when job preemption is enabled.**
+    It does not have an effect on which of multiple pending jobs is run first.
 
 - `region` `(string: "global")` - The region in which to execute the job.
 

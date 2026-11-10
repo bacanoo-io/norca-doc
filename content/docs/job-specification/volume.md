@@ -78,18 +78,18 @@ the [volume_mount][volume_mount] block in the `task` configuration.
   = true`, the allocation named `myjob.mygroup.mytask[0]` will require a
   volume ID `myvolume[0]`.
 
-  The `per_alloc` field cannot be true for system jobs, sysbatch jobs, or jobs
-  that use canaries.
+  **The `per_alloc` field cannot be true for system jobs, sysbatch jobs, or jobs
+  that use canaries.**
 
 The following fields are only valid for volumes with `type = "csi"`:
 
 - `access_mode` `(string: <required>)` - Defines whether a volume should be
-  available concurrently. The `access_mode` and `attachment_mode` together
-  must exactly match one of the volume's `capability` blocks. Can be one of
+  available concurrently. **The `access_mode` and `attachment_mode` together
+  must exactly match one of the volume's `capability` blocks.** Can be one of
   `"single-node-reader-only"`, `"single-node-writer"`,
   `"multi-node-reader-only"`, `"multi-node-single-writer"`, or
-  `"multi-node-multi-writer"`. Most CSI plugins support only single-node
-  modes. Consult the documentation of the storage provider and CSI plugin.
+  `"multi-node-multi-writer"`. **Most CSI plugins support only single-node
+  modes.** Consult the documentation of the storage provider and CSI plugin.
 
 - `attachment_mode` `(string: <required>)` - The storage API that will be used
   by the volume. The `access_mode` and `attachment_mode` together must exactly
@@ -111,8 +111,8 @@ The following fields are only valid for volumes with `type = "csi"`:
 
 Because volumes represent state, many workloads with multiple allocations will
 want to mount specific volumes to specific tasks. The `volume` block is used
-to schedule workloads, so `${NORCA_ALLOC_INDEX}` can't be used directly in the
-`volume.source` field. The following job specification demonstrates how to use
+to schedule workloads, so **`${NORCA_ALLOC_INDEX}` can't be used directly in the
+`volume.source` field.** The following job specification demonstrates how to use
 multiple volumes with multiple allocations, using the `per_alloc` field. This
 job specification also shows using HCL2 -variables interpolation to expose
 information to the task's environment.

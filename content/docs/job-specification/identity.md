@@ -9,8 +9,8 @@ upstream:
 **Placement:** `job -> group -> task -> identity`
 
 The `identity` block allows a task access to its [Workload Identity][] via an
-environment variable or file. By default Norca will create an identity for all
-workloads, but it is *not* exposed to a task.
+environment variable or file. **By default Norca will create an identity for all
+workloads, but it is *not* exposed to a task.**
 
 The following will expose the Workload Identity as an environment variable and
 file to the task:

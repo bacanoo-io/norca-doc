@@ -35,8 +35,8 @@ job "db" {
 }
 ```
 
-The block can be repeated. A task group may have at most 8 `colocate` and
-`separate` blocks combined.
+The block can be repeated. **A task group may have at most 8 `colocate` and
+`separate` blocks combined.**
 
 ## `separate` Parameters
 
@@ -101,8 +101,8 @@ separate {
 
 ## Notes
 
-- With `required = true` and fewer domains than instances, the remaining
-  instances cannot be placed. The evaluation is blocked, and
+- With `required = true` and fewer domains than instances, **the remaining
+  instances cannot be placed.** The evaluation is blocked, and
   `norca job status` lists the rule (for example
   `separate {app=postgres} by ${node.datacenter}`) among the filters.
 - The rule applies only at placement time and is not symmetric.

@@ -31,13 +31,15 @@ csi_plugin {
   belong to the same plugin.
 
 - `type` `(string: <required>)` - One of `node`, `controller`, or
-  `monolith`. Each plugin supports one or more types. Each Norca
-  client node where you want to mount a volume will need a `node`
-  plugin instance. Some plugins will also require one or more
-  `controller` plugin instances to communicate with the storage
-  provider's APIs. Some plugins can serve as both `controller` and
-  `node` at the same time, and these are called `monolith`
-  plugins. Refer to your CSI plugin's documentation.
+  `monolith`. Each plugin supports one or more types.
+  - **Each Norca client node where you want to mount a volume will need a `node`
+    plugin instance.**
+  - Some plugins will also require one or more `controller` plugin instances to
+    communicate with the storage provider's APIs.
+  - Some plugins can serve as both `controller` and `node` at the same time, and
+    these are called `monolith` plugins.
+
+  Refer to your CSI plugin's documentation.
 
 - `mount_dir` `(string: <optional>)` - The directory path inside the
   container where the plugin will expect a Unix domain socket for
@@ -47,8 +49,8 @@ csi_plugin {
 - `stage_publish_base_dir` `(string: <optional>)` - The base directory
   path inside the container where the plugin will be instructed to
   stage and publish volumes. This field is typically not required.
-  Refer to your CSI plugin's documentation for details. This can not
-  be a subdirectory of `mount_dir`.
+  Refer to your CSI plugin's documentation for details. **This can not
+  be a subdirectory of `mount_dir`.**
 
 - `health_timeout` `(duration: <optional>)` - The duration that
   the plugin supervisor will wait before restarting an unhealthy
@@ -71,13 +73,13 @@ the CSI plugin. But when an allocation that mounts a volume stops, Norca will
 need to communicate with the plugin on that allocation's node to unmount the
 volume. This has implications on how to deploy CSI plugins:
 
-* If you are stopping jobs on a node, you must stop tasks that claim
+* If you are stopping jobs on a node, **you must stop tasks that claim
   volumes before stopping the `node` or `monolith` plugin for those
-  volumes. If you use the `node drain` feature, plugin tasks will
+  volumes.** If you use the `node drain` feature, plugin tasks will
   automatically be drained last.
 
-* Only the most recently-placed allocation for a given plugin ID and
-  type (controller or node) will be used by any given client node. Run
+* **Only the most recently-placed allocation for a given plugin ID and
+  type (controller or node) will be used by any given client node.** Run
   `node` plugins as system jobs and distribute `controller` plugins
   across client nodes using a constraint as shown below.
 

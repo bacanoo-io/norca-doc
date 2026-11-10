@@ -30,9 +30,9 @@ job
         \_ task
 ```
 
-Each job file has only a single job, however a job may have multiple groups, and
-each group may have multiple tasks. Groups contain a set of tasks that are
-co-located on the same Norca client.
+**Each job file has only a single job**, however a job may have multiple groups, and
+each group may have multiple tasks. **Groups contain a set of tasks that are
+co-located on the same Norca client.**
 
 ## Example
 
@@ -131,9 +131,10 @@ job "docs" {
 }
 ```
 
-Note that starting with Nomad 0.10, the `service` block can also be specified at the group level. This
-allows job specification authors to create and register services with Consul Connect support. A service
-block specified at the group level must include a [connect][] block, like the following snippet.
+> [!NOTE]
+> Note that starting with Nomad 0.10, the `service` block can also be specified at the group level. This
+> allows job specification authors to create and register services with Consul Connect support. A service
+> block specified at the group level must include a [connect][] block, like the following snippet.
 
 ```hcl
 service {

@@ -15,10 +15,11 @@ and services. Because you don't know in advance what host your job will be
 provisioned on, Norca will provide your tasks with network configuration when
 they start up.
 
-Note that this document only applies to services that want to _listen_ on a
-port. Batch jobs or services that only make outbound connections do not need to
-allocate ports, since they will use any available interface to make an outbound
-connection.
+> [!NOTE]
+> Note that this document **only applies to services that want to _listen_ on a
+> port.** Batch jobs or services that only make outbound connections do not need to
+> allocate ports, since they will use any available interface to make an outbound
+> connection.
 
 ```hcl
 job "docs" {
@@ -49,7 +50,7 @@ installed at the location specified by the client's [`cni_path`]
 configuration. These plugins are used to create the bridge network and
 configure the appropriate iptables rules.
 
-Network modes are only supported in allocations running on Linux clients.
+**Network modes are only supported in allocations running on Linux clients.**
 All other operating systems use the `host` networking mode.
 
 > [!WARNING]
@@ -70,9 +71,9 @@ All other operating systems use the `host` networking mode.
 
   - `none` - Task group will have an isolated network without any network interfaces.
   - `bridge` - Task group will have an isolated network namespace with an interface
-    that is bridged with the host. Note that bridge networking is only
+    that is bridged with the host. Note that **bridge networking is only
     currently supported for the `docker`, `exec`, `raw_exec`, and `java` task
-    drivers.
+    drivers.**
   - `host` - Each task will join the host network namespace and a shared network
     namespace is not created. This matches the current behavior in Nomad 0.9.
   - `cni/<cni network name>` - Task group will have an isolated network namespace
@@ -92,7 +93,7 @@ All other operating systems use the `host` networking mode.
 - `static` `(int: nil)` - Specifies the static TCP/UDP port to allocate. If omitted, a
   dynamic port is chosen. We **do not recommend** using static ports, except
   for `system` or specialized jobs like load balancers.
-- `to` `(string:nil)` - Applicable when using "bridge" mode to configure port
+- `to` `(string:nil)` - Applicable when using `"bridge"` mode to configure port
   to map to inside the task's network namespace. Omitting this field or
   setting it to `-1` sets the mapped port equal to the dynamic port allocated
   by the scheduler. The `NORCA_PORT_<label>` environment variable will contain
@@ -157,9 +158,9 @@ network {
 ### Static Ports
 
 This example specifies a static port allocation for the port labeled "lb". Static
-ports bind your job to a specific port on the host they' are placed on. Since
-multiple services cannot share a port, the port must be open in order to place
-your task.
+ports bind your job to a specific port on the host they are placed on. Since
+multiple services cannot share a port, **the port must be open in order to place
+your task.**
 
 ```hcl
 network {
@@ -221,22 +222,22 @@ network {
 }
 ```
 
-Using bridge mode can result in failing outbound network requests on hosts that have
-[firewalld](https://firewalld.org) enabled. This includes most RHEL-based Linux distributions
+**Using bridge mode can result in failing outbound network requests on hosts that have
+[firewalld](https://firewalld.org) enabled.** This includes most RHEL-based Linux distributions
 like CentOS, Rocky Linux or Oracle Linux. One solution for firewalld to allow network
-requsts coming from Norca jobs is to mark the `nomad` bridge interface as trusted.
+requests coming from Norca jobs is to mark the `nomad` bridge interface as trusted.
 
 ```shell
 $ sudo firewall-cmd --zone=trusted --add-interface=nomad
 $ sudo firewall-cmd --zone=trusted --add-interface=nomad --permanent
 ```
 
-It is neccessary to restart the affected jobs afterwards for them to be able to access
+**It is necessary to restart the affected jobs afterwards** for them to be able to access
 the network. Further details can be found in Docker's documentation under [Docker and iptables](https://docs.docker.com/network/iptables/#integration-with-firewalld).
 
 ### DNS
 
-The following example configures the allocation to use Google's DNS resolvers 8.8.8.8 and 8.8.4.4.
+The following example configures the allocation to use Google's DNS resolvers `8.8.8.8` and `8.8.4.4`.
 
 ```hcl
 network {

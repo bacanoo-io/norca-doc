@@ -34,7 +34,7 @@ service {
 
 ## `gateway` Parameters
 
-Exactly one of `ingress`, `terminating`, or `mesh` must be configured.
+**Exactly one of `ingress`, `terminating`, or `mesh` must be configured.**
 
 - `proxy` <code>([proxy]: nil)</code> - Configuration of the Envoy proxy that will
   be injected into the task group.
@@ -56,7 +56,7 @@ Exactly one of `ingress`, `terminating`, or `mesh` must be configured.
   listener address.
 - `envoy_gateway_bind_addresses` <code>(map<string|[address]>: nil)</code> - A map of additional addresses to be bound.
   The keys to this map are the same of the listeners to be created and the values are
-  a map with two keys - address and port, that combined make the address to bind the
+  a map with two keys - `address` and `port`, that combined make the address to bind the
   listener to. These are bound in addition to the default address.
   If `bridge` networking is in use, this map is automatically populated with additional
   listeners enabling the Envoy proxy to work from inside the network namespace.
@@ -73,7 +73,7 @@ envoy_gateway_bind_addresses "<service>" {
   to configure the gateway's bind addresses. If `bridge` networking is in use, this
   value will default to `true` since the Envoy proxy does not need to bind to the
   service address from inside the network namespace.
-- `envoy_dns_discovery_type` `(string: optional)` - Determintes how Envoy will
+- `envoy_dns_discovery_type` `(string: optional)` - Determines how Envoy will
   resolve hostnames. Defaults to `LOGICAL_DNS`. Must be one of `STRICT_DNS` or
   `LOGICAL_DNS`. Details for each type are available in the [Envoy Documentation](https://www.envoyproxy.io/docs/envoy/v1.16.1/intro/arch_overview/upstream/service_discovery).
   This option applies to terminating gateways that route to services addressed by a
@@ -125,7 +125,7 @@ envoy_gateway_bind_addresses "<service>" {
   > of the service to the desired protocol is mandatory due to an open issue.
 
 - `service` <code>(array<[service]>: required)</code> - One or more services to be
-  exposed via this listener. For `tcp` listeners, only a single service is allowed.
+  exposed via this listener. **For `tcp` listeners, only a single service is allowed.**
 
 #### `service` Parameters
 
@@ -144,23 +144,23 @@ envoy_gateway_bind_addresses "<service>" {
   the ingress gateway, if TLS is not enabled. This allows a user to route all traffic
   to a single service without specifying a host, allowing simpler tests and demos.
   Otherwise, the wildcard specifier can be used as part of the host to match
-  multiple hosts, but only in the leftmost DNS label. This ensures that all defined
+  multiple hosts, **but only in the leftmost DNS label.** This ensures that all defined
   hosts are valid DNS records. For example, `*.example.com` is valid while `example.*`
   and `*-suffix.example.com` are not.
 
 ### `terminating` Parameters
 
 - `service` <code>(array<[linked-service]>: required)</code> - One or more services to be
-  linked with the gateway. The gateway will proxy traffic to these services. These
+  linked with the gateway. The gateway will proxy traffic to these services. **These
   linked services must be registered with Consul for the gateway to discover their
   addresses. They must also be registered in the same Consul datacenter as the
-  terminating gateway.
+  terminating gateway.**
 
 #### `service` Parameters
 
 - `name` `(string: required)` - The name of the service to link with the gateway.
   If the wildcard specifier `*` is provided, then ALL services within the Consul
-  namespace wil lbe linked with the gateway.
+  namespace will be linked with the gateway.
 
 - `ca_file` `(string: <optional>)` - A file path to a PEM-encoded certificate
   authority. The file must be accessible by the gateway task. The certificate authority
@@ -188,7 +188,7 @@ The `mesh` block currently does not have any configurable parameters.
 
 ### Gateway with host networking
 
-Norca supports running gateways using host networking. A static port must be allocated
+Norca supports running gateways using host networking. **A static port must be allocated**
 for use by the [Envoy admin interface](https://www.envoyproxy.io/docs/envoy/latest/operations/admin)
 and assigned to the proxy service definition.
 

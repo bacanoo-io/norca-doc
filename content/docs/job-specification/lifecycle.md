@@ -15,22 +15,22 @@ Main tasks are tasks that do not have a `lifecycle` block. Lifecycle task hooks
 specify when other tasks are run in relation to the main tasks.
 There are three different lifecycle hooks, indicating when a task is started:
 
-- prestart tasks are started immediately
-- poststart tasks are started after the main tasks are running
-- poststop tasks are started after the main tasks are dead
+- `prestart` tasks are started immediately
+- `poststart` tasks are started after the main tasks are running
+- `poststop` tasks are started after the main tasks are dead
 
 Tasks can be run with an additional parameter indicating whether they are ephemeral
 tasks or "sidecar" tasks that are expected to run for the duration of the main tasks.
-The absence of the sidecar flag indicates that the task is ephemeral
-and should not be restarted if it completes successfully.
+**The absence of the sidecar flag indicates that the task is ephemeral
+and should not be restarted if it completes successfully.**
 
 ## `lifecycle` Parameters
 
 - `hook` `(string: <required>)` - Specifies when a task should be run within
   the lifecycle of a group. The following hooks are available:
 
-  - `prestart` - Will be started immediately. The main tasks will not start until
-    all `prestart` tasks with `sidecar = false` have completed successfully.
+  - `prestart` - Will be started immediately. **The main tasks will not start until
+    all `prestart` tasks with `sidecar = false` have completed successfully.**
   - `poststart` - Will be started once all main tasks are running.
   - `poststop` - Will be started once all main tasks have stopped successfully
     or exhausted their failure [retries](/docs/job-specification/restart/).

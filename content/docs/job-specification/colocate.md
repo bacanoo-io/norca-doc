@@ -28,8 +28,8 @@ job "cache" {
 }
 ```
 
-The block can be repeated. A task group may have at most 8 `colocate` and
-`separate` blocks combined.
+The block can be repeated. **A task group may have at most 8 `colocate` and
+`separate` blocks combined.**
 
 ## `colocate` Parameters
 
@@ -60,11 +60,11 @@ The block can be repeated. A task group may have at most 8 `colocate` and
   default applies only to preferences; `weight` must not be set when `required`
   is `true`.
 
-- `required` `(bool: false)` - Makes the rule a feasibility filter: only nodes
-  whose domain contains at least one matching allocation are eligible. The
-  first allocation of a group that its own required `colocate` rule selects may
-  be placed anywhere when nothing matches yet. `system` and `sysbatch` jobs may
-  only use required rules.
+- `required` `(bool: false)` - Makes the rule a feasibility filter: **only nodes
+  whose domain contains at least one matching allocation are eligible.**
+  - The first allocation of a group that its own required `colocate` rule selects may
+    be placed anywhere when nothing matches yet.
+  - `system` and `sysbatch` jobs may only use required rules.
 
 ## `colocate` Examples
 
@@ -108,7 +108,7 @@ colocate {
 
 ## Notes
 
-- The rule applies only when an allocation is placed. Running allocations are
+- **The rule applies only when an allocation is placed.** Running allocations are
   not moved when the selected allocations move or stop, and in-place updates
   are not affected.
 - The rule is not symmetric: the selected job is not attracted to this one

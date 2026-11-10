@@ -27,8 +27,8 @@ job "docs" {
 
 The "parameters" for the `env` block can be any key-value. The keys and values
 are both of type `string`, but they can be specified as other types. They will
-automatically be converted to strings. Invalid characters such as dashes (`-`)
-will be converted to underscores.
+automatically be converted to strings. **Invalid characters such as dashes (`-`)
+will be converted to underscores.**
 
 ## `env` Examples
 
@@ -38,8 +38,8 @@ The following examples only show the `env` blocks. Remember that the
 ### Coercion
 
 This example shows the different ways to specify key-value pairs. Internally,
-these values will be stored as their string representation. No type information
-is preserved.
+these values will be stored as their string representation. **No type information
+is preserved.**
 
 ```hcl
 env {

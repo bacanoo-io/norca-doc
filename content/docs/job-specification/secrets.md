@@ -29,9 +29,9 @@ job "app" {
 }
 ```
 
-The group's default wins over the job's. When neither is set, the namespace metadata key
-`secrets.default_provider` applies; it is captured on the job when the job is registered, so a changed
-namespace default applies to jobs registered afterwards, never to running tasks.
+**The group's default wins over the job's.** When neither is set, the namespace metadata key
+`secrets.default_provider` applies; it is captured on the job when the job is registered, so **a changed
+namespace default applies to jobs registered afterwards, never to running tasks.**
 
 ## `secrets` Parameters
 

@@ -45,15 +45,15 @@ spread block. Spread scores are combined with other scoring factors such as bin 
 
 A job or task group can have more than one spread criteria, with weights to express relative preference.
 
-Spread criteria are treated as a soft preference by the Norca
+**Spread criteria are treated as a soft preference by the Norca
 scheduler. If no nodes match a given spread criteria, placement is
-still successful. To avoid scoring every node for every placement,
+still successful.** To avoid scoring every node for every placement,
 allocations may not be perfectly spread. Spread works best on
 attributes with similar number of nodes: identically configured racks
 or similarly configured datacenters.
 
 Spread may be expressed on [attributes][interpolation] or [client metadata][client-meta].
-Additionally, spread may be specified at the [job][job] and [group][group] levels for ultimate flexibility. Job level spread criteria are inherited by all task groups in the job.
+Additionally, spread may be specified at the [job][job] and [group][group] levels for ultimate flexibility. **Job level spread criteria are inherited by all task groups in the job.**
 
 ## `spread` Parameters
 
@@ -96,7 +96,7 @@ spread {
 
 This example shows a spread block that specifies one target percentage. If we
 have three datacenters `us-east1`, `us-east2`, and `us-west1`, and a task group
-of `count = 10`, Norca will attempt to place 5 of the allocations in "us-east1",
+of `count = 10`, Norca will attempt to place 5 of the allocations in `"us-east1"`,
 and will spread the remaining among the other two datacenters.
 
 ```hcl

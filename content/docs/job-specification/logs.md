@@ -15,11 +15,13 @@ over how Norca handles log files.
 
 Norca's log rotation works by writing stdout/stderr output from tasks to a file
 inside the `alloc/logs/` directory with the following format:
-`<task-name>.<stdout/stderr>.<index>`. Output is written to a particular index,
-starting at zero, till that log file hits the configured `max_file_size`. After,
-a new file is created at `index + 1` and logs will then be written there. A log
-file is never rolled over, instead Norca will keep up to `max_files` worth of
-logs and once that is exceeded, the log file with the lowest index is deleted.
+`<task-name>.<stdout/stderr>.<index>`.
+
+- Output is written to a particular index,
+  starting at zero, till that log file hits the configured `max_file_size`.
+- After, a new file is created at `index + 1` and logs will then be written there.
+- **A log file is never rolled over,** instead Norca will keep up to `max_files` worth of
+  logs and once that is exceeded, the log file with the lowest index is deleted.
 
 ```hcl
 job "docs" {
@@ -51,18 +53,21 @@ please see the [`norca alloc logs`][logs-command] command.
 - `max_file_size` `(int: 10)` - Specifies the maximum size of each rotated file
   in `MB`. If the amount of disk resource requested for the task is less than
   the total amount of disk space needed to retain the rotated set of files,
-  Norca will return a validation error when a job is submitted.
+  **Norca will return a validation error when a job is submitted.**
 
 - `disabled` `(bool: false)` - Specifies that log collection should be enabled for
   this task. If set to `true`, the task driver will attach stdout/stderr of the
   task to `/dev/null` (or `NUL` on Windows). You should only disable log
   collection if your application has some other way of emitting logs, such as
-  writing to a remote syslog server. Note that the `norca alloc logs` command
-  and related APIs will return errors (404 "not found") if logging is disabled.
+  writing to a remote syslog server.
+
+  > [!NOTE]
+  > Note that the `norca alloc logs` command
+  > and related APIs will **return errors (404 "not found") if logging is disabled.**
 
   Some task drivers such as `docker` support a [`disable_log_collection`][]
-  option. If the task driver's `disable_log_collection` option is set to `true`,
-  it will override `disabled=false` in the task's `logs` block.
+  option. **If the task driver's `disable_log_collection` option is set to `true`,
+  it will override `disabled=false` in the task's `logs` block.**
 
 ## `logs` Examples
 

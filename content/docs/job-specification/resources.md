@@ -33,7 +33,7 @@ job "docs" {
 - `cpu` `(int: 100)` - Specifies the CPU required to run this task in MHz.
 
 - `cores` <code>(`int`: &lt;optional&gt;)</code> - Specifies the number of CPU cores
-  to reserve specifically for the task. This may not be used with `cpu`. The behavior
+  to reserve specifically for the task. **This may not be used with `cpu`.** The behavior
   of setting `cores` is specific to each task driver (e.g. [docker][docker_cpu], [exec][exec_cpu]).
 
 - `memory` `(int: 300)` - Specifies the memory required in MB.
@@ -62,7 +62,7 @@ resources {
 }
 ```
 
-If `cores` and `cpu` are both defined in the same resource block, validation of the job will fail.
+If `cores` and `cpu` are both defined in the same resource block, **validation of the job will fail.**
 
 ### Memory
 
@@ -87,6 +87,7 @@ resources {
   }
 }
 ```
+
 ## Memory Oversubscription
 
 Setting task memory limits requires balancing the risk of interrupting tasks
@@ -105,8 +106,8 @@ limits:
   available memory, and may be terminated if it exceeds
 
 If a client's memory becomes contended or low, the operating system will
-pressure the running tasks to free up memory. If the contention persists, Norca
-may kill oversubscribed tasks and reschedule them to other clients. The exact
+pressure the running tasks to free up memory. **If the contention persists, Norca
+may kill oversubscribed tasks and reschedule them to other clients.** The exact
 mechanism for memory pressure is specific to the task driver, operating system,
 and application runtime.
 
@@ -114,7 +115,7 @@ The `memory_max` limit attribute is currently supported by the official
 `docker`, `exec`, and `java` task drivers.  Consult the documentation of
 community-supported task drivers for their memory oversubscription support.
 
-Memory oversubscription is opt-in. Norca operators can enable [Memory
+**Memory oversubscription is opt-in.** Norca operators can enable [Memory
 Oversubscription in the scheduler configuration][api_sched_config].
 [Resource quotas](/docs/features/quotas) can limit the `memory_max` of the jobs
 in a namespace.

@@ -52,7 +52,7 @@ job "docs" {
 ```
 
 Placing constraints at both the job level and at the group level is redundant
-since constraints are applied hierarchically. The job constraints will affect
+since **constraints are applied hierarchically**. The job constraints will affect
 all groups (and tasks) in the job.
 
 ## `constraint` Parameters
@@ -105,10 +105,11 @@ constraint {
 ```
 
 - `"distinct_hosts"` - Instructs the scheduler to not co-locate any groups on
-  the same machine. When specified as a job constraint, it applies to all groups
-  in the job. When specified as a group constraint, the effect is constrained to
-  that group. This constraint can not be specified at the task level. Note that
-  the `attribute` parameter should be omitted when using this constraint.
+  the same machine.
+  - When specified as a job constraint, it applies to all groups in the job.
+  - When specified as a group constraint, the effect is constrained to that group.
+  - **This constraint can not be specified at the task level.**
+  - Note that the `attribute` parameter should be omitted when using this constraint.
 
   ```hcl
   constraint {
@@ -127,12 +128,13 @@ constraint {
   ```
 
 - `"distinct_property"` - Instructs the scheduler to select nodes that have a
-  distinct value of the specified property. The `value` parameter specifies how
-  many allocations are allowed to share the value of a property. The `value`
-  must be 1 or greater and if omitted, defaults to 1. When specified as a job
-  constraint, it applies to all groups in the job. When specified as a group
-  constraint, the effect is constrained to that group. This constraint can not
-  be specified at the task level.
+  distinct value of the specified property.
+  - The `value` parameter specifies how many allocations are allowed to share
+    the value of a property. **The `value` must be 1 or greater and if omitted,
+    defaults to 1.**
+  - When specified as a job constraint, it applies to all groups in the job.
+  - When specified as a group constraint, the effect is constrained to that group.
+  - **This constraint can not be specified at the task level.**
 
   ```hcl
   constraint {
@@ -192,8 +194,8 @@ constraint {
 
 - `"version"` - Specifies a version constraint against the attribute. This
   supports a comma-separated list of constraints, including the pessimistic
-  operator. `version` will not consider a prerelease (eg `1.6.0-beta`)
-  sufficient to match a non-prerelease constraint (eg `>= 1.0`). Use the
+  operator. **`version` will not consider a prerelease (eg `1.6.0-beta`)
+  sufficient to match a non-prerelease constraint (eg `>= 1.0`).** Use the
   `semver` constraint for strict [Semantic Versioning 2.0][semver2] ordering.
   For more examples please see the [go-version
   repository](https://github.com/hashicorp/go-version) for more specific
@@ -223,8 +225,8 @@ constraint {
 
 - `"is_set"` - Specifies that a given attribute must be present. This can be
   combined with the `"!="` operator to require that an attribute has been set
-  before checking for equality. The default behavior for `"!="` is to include
-  nodes that don't have that attribute set.
+  before checking for equality. **The default behavior for `"!="` is to include
+  nodes that don't have that attribute set.**
 
 - `"is_not_set"` - Specifies that a given attribute must not be present.
 

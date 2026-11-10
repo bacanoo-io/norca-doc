@@ -73,23 +73,23 @@ level, so that the Connect sidecar can inherit the default `restart`.
   information.
 
 - `delay` `(string: "15s")` - Specifies the duration to wait before restarting a
-  task. This is specified using a label suffix like "30s" or "1h". A random
-  jitter of up to 25% is added to the delay.
+  task. This is specified using a label suffix like `"30s"` or `"1h"`. **A random
+  jitter of up to 25% is added to the delay.**
 
 - `interval` `(string: <varies>)` - Specifies the duration which begins when the
   first task starts and ensures that only `attempts` number of restarts happens
   within it. If more than `attempts` number of failures happen, behavior is
-  controlled by `mode`. This is specified using a label suffix like "30s" or
-  "1h". Defaults vary by job type, see below for more information.
+  controlled by `mode`. This is specified using a label suffix like `"30s"` or
+  `"1h"`. Defaults vary by job type, see below for more information.
 
 - `mode` `(string: "fail")` - Controls the behavior when the task fails more
   than `attempts` times in an interval. For a detailed explanation of these
   values and their behavior, please see the [mode values section](#mode-values).
 
-- `render_templates` `(bool: false)` - Specifies whether to re-render all 
-templates when a task is restarted. If set to `true`, all templates will be re-rendered
-when the task restarts. This can be useful for re-fetching Vault secrets, even if the
-lease on the existing secrets has not yet expired.
+- `render_templates` `(bool: false)` - Specifies whether to re-render all
+  templates when a task is restarted. If set to `true`, all templates will be re-rendered
+  when the task restarts. This can be useful for re-fetching Vault secrets, even if the
+  lease on the existing secrets has not yet expired.
 
 ### `restart` Parameter Defaults
 
@@ -122,7 +122,7 @@ defaults by job type:
 
 ### `mode` Values
 
-This section details the specific values for the "mode" parameter in the Norca
+This section details the specific values for the `"mode"` parameter in the Norca
 job specification for constraints. The mode is always specified as a string:
 
 ```hcl
@@ -135,10 +135,10 @@ restart {
   before restarting the task.
 
 - `"fail"` - Instructs the client not to attempt to restart the task
-  once the number of `attempts` have been used. This is the default
-  behavior. This mode is useful for non-idempotent jobs which are
-  unlikely to succeed after a few failures. The allocation will be
-  marked as failed and the scheduler will attempt to reschedule the
+  once the number of `attempts` have been used. **This is the default
+  behavior.** This mode is useful for non-idempotent jobs which are
+  unlikely to succeed after a few failures. **The allocation will be
+  marked as failed** and the scheduler will attempt to reschedule the
   allocation according to the
   [`reschedule`] block.
 
@@ -146,8 +146,8 @@ restart {
 
 With the following `restart` block, a failing task will restart 3
 times with 15 seconds between attempts, and then wait 10 minutes
-before attempting another 3 attempts. The task restart will never fail
-the entire allocation.
+before attempting another 3 attempts. **The task restart will never fail
+the entire allocation.**
 
 ```hcl
 restart {

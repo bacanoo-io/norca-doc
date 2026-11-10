@@ -52,8 +52,8 @@ job "example" {
   Unlike services, checks do not have an `auto` address mode as there's no way
   for Norca to know which is the best address to use for checks. Consul needs
   access to the address for any HTTP or TCP checks. See
-  [below for details.](#using-driver-address-mode) Unlike `port`, this setting
-  is _not_ inherited from the `service`.
+  [below for details.](#using-driver-address-mode) **Unlike `port`, this setting
+  is _not_ inherited from the `service`.**
   If the service `address` is set and the check `address_mode` is not set, the
   service `address` value will be used for the check address.
 
@@ -63,8 +63,8 @@ job "example" {
 - `check_restart` - See [`check_restart` block][check_restart_block].
 
 - `command` `(string: <varies>)` - Specifies the command to run for performing
-  the health check. The script must exit: 0 for passing, 1 for warning, or any
-  other value for a failing health check. This is required for script-based
+  the health check. **The script must exit: 0 for passing, 1 for warning, or any
+  other value for a failing health check.** This is required for script-based
   health checks. Only supported in the Consul service provider.
 
   > [!WARNING]
@@ -99,7 +99,7 @@ job "example" {
 
 - `interval` `(string: <required>)` - Specifies the frequency of the health checks
   that Consul or Norca service provider will perform. This is specified using a label
-  suffix like "30s" or "1h". This must be greater than or equal to "1s".
+  suffix like `"30s"` or `"1h"`. This must be greater than or equal to `"1s"`.
 
 - `method` `(string: "GET")` - Specifies the HTTP method to use for HTTP
   checks. Must be a valid HTTP method.
@@ -121,15 +121,16 @@ job "example" {
   Only supported in the Consul service provider.
 
 - `port` `(string: <varies>)` - Specifies the label of the port on which the
-  check will be performed. Note this is the _label_ of the port and not the port
-  number unless `address_mode = driver`. The port label must match one defined
-  in the [`network`][network] block. If a port value was declared on the
-  `service`, this will inherit from that value if not supplied. If supplied,
-  this value takes precedence over the `service.port` value. This is useful for
-  services which operate on multiple ports. `grpc`, `http`, and `tcp` checks
-  require a port while `script` checks do not. Checks will use the host IP and
-  ports by default. In Nomad 0.7.1 or later numeric ports may be used if
-  `address_mode="driver"` is set on the check.
+  check will be performed.
+  - Note this is the **_label_ of the port and not the port
+    number** unless `address_mode = driver`.
+  - The port label must match one defined in the [`network`][network] block.
+  - If a port value was declared on the `service`, this will inherit from that
+    value if not supplied. If supplied, this value takes precedence over the
+    `service.port` value. This is useful for services which operate on multiple ports.
+  - `grpc`, `http`, and `tcp` checks require a port while `script` checks do not.
+  - Checks will use the host IP and ports by default. In Nomad 0.7.1 or later
+    numeric ports may be used if `address_mode="driver"` is set on the check.
 
 - `protocol` `(string: "http")` - Specifies the protocol for the HTTP-based
   health checks. Valid options are `http` and `https`.
@@ -149,8 +150,8 @@ job "example" {
   or equivalent to `service.task` in task-level services.
 
 - `timeout` `(string: <required>)` - Specifies how long to wait for a health check
-  query to succeed. This is specified using a label suffix like "30s" or "1h". This
-  must be greater than or equal to "1s"
+  query to succeed. This is specified using a label suffix like `"30s"` or `"1h"`. This
+  must be greater than or equal to `"1s"`
 
   > [!WARNING]
   > Script checks use the task driver to execute in the task's
@@ -196,7 +197,7 @@ job "example" {
   evaluated when determining deployment health (including a job's initial
   deployment). This allows job submitters to define certain checks as readiness
   checks, progressing a deployment even if the Service's checks are not yet
-  healthy. Checks inherit the Service's value by default. The check status is
+  healthy. **Checks inherit the Service's value by default.** The check status is
   not altered in the service provider and is only used to determine the check's
   health during an update.
 
@@ -260,8 +261,8 @@ service {
 
 ### Multiple Health Checks
 
-This example shows a service with multiple health checks defined. All health
-checks must be passing in order for the service to register as healthy.
+This example shows a service with multiple health checks defined. **All health
+checks must be passing in order for the service to register as healthy.**
 
 ```hcl
 service {
@@ -324,10 +325,11 @@ selection.
 
 ### Script Checks with Shells
 
-Note that script checks run inside the task. If your task is a Docker container,
-the script will run inside the Docker container. If your task is running in a
-chroot, it will run in the chroot. Please keep this in mind when authoring check
-scripts.
+> [!NOTE]
+> Note that **script checks run inside the task**. If your task is a Docker container,
+> the script will run inside the Docker container. If your task is running in a
+> chroot, it will run in the chroot. Please keep this in mind when authoring check
+> scripts.
 
 This example shows a service with a script check that is evaluated and interpolated in a shell; it
 tests whether a file is present at `${HEALTH_CHECK_FILE}` environment variable:
@@ -342,7 +344,7 @@ service {
 }
 ```
 
-Using `/bin/bash` (or another shell) is required here to interpolate the `${HEALTH_CHECK_FILE}` value.
+**Using `/bin/bash` (or another shell) is required here to interpolate the `${HEALTH_CHECK_FILE}` value.**
 
 The following examples of `command` fields **will not work**:
 

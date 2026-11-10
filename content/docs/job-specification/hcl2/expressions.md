@@ -69,7 +69,7 @@ another in order to produce the expected type. If this isn't possible, Norca
 will produce a type mismatch error and you must update the configuration with a
 more suitable expression.
 
-Norca automatically converts number and bool values to strings when needed.
+**Norca automatically converts number and bool values to strings when needed.**
 It also converts strings to numbers or bools, as long as the string contains a
 valid representation of a number or bool value.
 
@@ -154,6 +154,8 @@ expressions must be provided separated by the `=>` symbol:
 This expression produces an object whose attributes are the original elements
 from `var.list` and their corresponding values are the uppercase versions.
 
+### Filtering Elements
+
 A `for` expression can also include an optional `if` clause to filter elements
 from the source collection, which can produce a value with fewer elements than
 the source:
@@ -162,6 +164,8 @@ the source:
 [for s in var.list : upper(s) if s != ""]
 ```
 
+### Iterating over Maps
+
 The source value can also be an object or map value, in which case two
 temporary variable names can be provided to access the keys and values
 respectively:
@@ -169,6 +173,8 @@ respectively:
 ```text
 [for k, v in var.map : length(k) + length(v)]
 ```
+
+### Grouping Results
 
 Finally, if the result type is an object (using `{` and `}` delimiters) then
 the value result expression can be followed by the `...` symbol to group
@@ -329,8 +335,8 @@ The iterator object (`port` in the example above) has two attributes:
   `value` and should not be used.
 - `value` is the value of the current element.
 
-The `for_each` value must be a map or set with one element per desired nested
-block. If you need to declare resource instances based on a nested data
+**The `for_each` value must be a map or set with one element per desired nested
+block.** If you need to declare resource instances based on a nested data
 structure or combinations of elements from multiple data structures you can use
 expressions and functions to derive a suitable value. For some common examples
 of such situations, see the
@@ -342,8 +348,8 @@ functions.
 
 Overuse of `dynamic` blocks can make configuration hard to read and maintain,
 so we recommend using them only when you need to hide details in order to build
-a clean user interface for a re-usable code. Always write nested blocks out
-literally where possible.
+a clean user interface for a re-usable code. **Always write nested blocks out
+literally where possible.**
 
 ## String Literals
 
@@ -361,6 +367,8 @@ sequence, with the following characters selecting the escape behavior:
 | `\\`         | Literal backslash                                                             |
 | `\uNNNN`     | Unicode character from the basic multilingual plane (NNNN is four hex digits) |
 | `\UNNNNNNNN` | Unicode character from supplementary planes (NNNNNNNN is eight hex digits)    |
+
+### Heredoc Strings
 
 The alternative syntax for string literals is the so-called Here Documents or
 "heredoc" style, inspired by Unix shell languages. This style allows multi-line
@@ -415,13 +423,15 @@ hello
   world
 ```
 
-Backslash sequences are not interpreted in a heredoc string expression.
+**Backslash sequences are not interpreted in a heredoc string expression.**
 Instead, the backslash character is interpreted literally.
+
+### Escaping Template Sequences
 
 In both quoted and heredoc string expressions, Norca supports template
 sequences that begin with `${` and `%{`. These are described in more detail
 in the following section. To include these sequences _literally_ without
-beginning a template sequence, double the leading character: `$${` or `%%{`.
+beginning a template sequence, **double the leading character: `$${` or `%%{`.**
 
 ## String Templates
 
