@@ -14,7 +14,7 @@ The commands need a token with `operator:write` (`operator:read` for the status)
 - Decide on the number of shares and the threshold. The defaults, 5 shares of which 3 unseal a server,
   tolerate the loss of two shares and require three people for an unseal.
 - Choose the share holders: different people, each keeping one share in their own password manager or
-  hardware token. Never store shares on the servers, in the job specifications, or together in one place.
+  hardware token. **Never store shares on the servers, in the job specifications, or together in one place.**
 - Keep a second recovery path: [backups](/docs/features/backup-restore) encrypted with `age` carry the keys
   for a full restore with the age identity.
 
@@ -66,7 +66,7 @@ The deployment examples [single node](/docs/getting-started/examples/02-single-n
 
 ## After a restart
 
-A restarted server is sealed: it joins Raft and serves everything that needs no decryption, but rejects
+**A restarted server is sealed:** it joins Raft and serves everything that needs no decryption, but rejects
 Variables, workload identity signing, mTLS issuance and the secret store with `server is sealed` (HTTP
 503). The region keeps working while the leader and enough servers are unsealed.
 
@@ -83,7 +83,7 @@ once. A wrong share among valid ones is detected when the threshold is reached: 
 holders start again. `norca operator unseal -server-id <name> -reset` discards the shares entered so far
 without trying them.
 
-A server that stays sealed is a reason to alert: watch `norca operator seal-status` (or
+**A server that stays sealed is a reason to alert:** watch `norca operator seal-status` (or
 `GET /v1/operator/seal`) from your monitoring.
 
 A new or replaced server that joins a region with the `shares` seal is sealed as well. Unseal it with the
@@ -116,7 +116,7 @@ norca operator keyring rewrap -to shares
 norca operator root keyring rotate -full
 ```
 
-From now on, every restarted server needs the shares. `norca operator keyring rewrap -to aead` moves back
+**From now on, every restarted server needs the shares.** `norca operator keyring rewrap -to aead` moves back
 (for development only).
 
 ## Restore with another seal
@@ -146,9 +146,9 @@ keystores are not part of the snapshot. See [backup and restore](/docs/operation
 ## Lost shares
 
 If fewer than `threshold` shares remain, a sealed server can't be unsealed. While at least the leader is
-unsealed, rekey at once (`norca operator keyring rewrap -to shares`) to get a new set of shares, and don't
-restart the unsealed servers before the rekey is complete. If no server can be unsealed any more, the keys
-of the region are lost; what remains is a restore from a backup whose keys are encrypted with `age` or
+unsealed, rekey at once (`norca operator keyring rewrap -to shares`) to get a new set of shares, and **don't
+restart the unsealed servers before the rekey is complete.** **If no server can be unsealed any more, the keys
+of the region are lost;** what remains is a restore from a backup whose keys are encrypted with `age` or
 `kms`, see [backup and restore](/docs/operations/backup-restore).
 
 ## Reference

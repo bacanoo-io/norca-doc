@@ -76,8 +76,8 @@ instances on older clients as not ready; see
    ```
 
    A backup records the Norca version that took it. A Norca version older than
-   that refuses to restore it, so keep the backup of the old version: it is the
-   only way back.
+   that refuses to restore it, so **keep the backup of the old version: it is the
+   only way back.**
 2. **Read the release notes** of the Norca version for new defaults and new
    gates.
 3. **Check the configuration** with the new binary:
@@ -102,7 +102,7 @@ until it is healthy and a voter (`norca operator raft list-peers`,
 Norca features are available, for example with `norca operator backup list`,
 then upgrade the clients.
 
-Downgrades are not supported. Data written by a Norca feature can't be read by
+**Downgrades are not supported.** Data written by a Norca feature can't be read by
 a version that does not know it.
 
 ## Web UI

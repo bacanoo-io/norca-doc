@@ -34,18 +34,22 @@ A highly available region on three Linux machines. Each machine runs a
 quorum that survives the loss of one, and three clients are needed for the
 placement rules (one instance per datacenter), drains under a disruption budget
 and native mTLS between nodes. Combining both roles keeps the example at
-three machines; in production run the servers on their own machines and the
-workloads on separate clients (same configuration, split into a `server`
+three machines; **in production run the servers on their own machines and the
+workloads on separate clients** (same configuration, split into a `server`
 and a `client` part). Each node is its own datacenter (`dc-a`, `dc-b`,
 `dc-c`), the way one availability zone maps to one datacenter: the
 datacenter is the failure domain of the placement rules and the first tier
 of topology-aware discovery.
 
-On top of [02-single-node](/docs/getting-started/examples/02-single-node) this shows: joining
-servers, unsealing every server, native mTLS with an Envoy sidecar and
-service intentions, network rules, cross-job affinity and anti-affinity
-over datacenters, the disruption budget during a drain, the operator framework
-with the LoadBalancer operator.
+On top of [02-single-node](/docs/getting-started/examples/02-single-node) this shows:
+
+- joining servers,
+- unsealing every server,
+- native mTLS with an Envoy sidecar and service intentions,
+- network rules,
+- cross-job affinity and anti-affinity over datacenters,
+- the disruption budget during a drain,
+- the operator framework with the LoadBalancer operator.
 
 ## Prerequisites
 
@@ -138,7 +142,7 @@ norca operator seal-status
 norca operator bus status
 ```
 
-After a restart a server is sealed again and needs three shares; the region
+**After a restart a server is sealed again and needs three shares**; the region
 keeps working while the other two servers are unsealed.
 
 ### 4. Namespace, quota, policies
@@ -204,8 +208,8 @@ norca alloc logs -namespace apps -task probe <probe alloc ID>    # "<h1>test-api
 norca operator api /v1/mtls/roots
 ```
 
-`test-api` is registered with the address of its sidecar: whoever reaches it
-through the catalog or DNS needs a workload certificate and an intention.
+`test-api` is registered with the address of its sidecar: **whoever reaches it
+through the catalog or DNS needs a workload certificate and an intention.**
 See [native mTLS: sidecar and gateway](/docs/features/native-mtls/sidecar-and-gateway) for the sidecar, the
 upstreams and the limits (TCP only).
 

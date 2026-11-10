@@ -119,8 +119,8 @@ signals.
 ## Client Metrics
 
 The Norca client emits metrics related to the resource usage of the allocations
-and tasks running on it and the node itself. Operators have to explicitly turn
-on publishing host and allocation metrics. Publishing allocation and host
+and tasks running on it and the node itself. **Operators have to explicitly turn
+on publishing host and allocation metrics.** Publishing allocation and host
 metrics can be turned on by setting the value of `publish_allocation_metrics`
 `publish_node_metrics` to `true`.
 
@@ -183,8 +183,11 @@ Norca will emit [tagged metrics][tagged-metrics], in the below format:
 ## Allocation Metrics
 
 The following metrics are emitted for each allocation if allocation metrics
-are enabled. Note that allocation metrics available may be dependent on factors
-such as the task driver and control group (cgroup) version in use.
+are enabled.
+
+> [!NOTE]
+> Note that allocation metrics available may be dependent on factors
+> such as the task driver and control group (cgroup) version in use.
 
 | Metric                                        | Description                                                       | Unit        | Type    | Labels                                           |
 |-----------------------------------------------|-------------------------------------------------------------------|-------------|---------|--------------------------------------------------|

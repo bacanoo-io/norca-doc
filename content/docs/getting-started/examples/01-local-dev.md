@@ -31,7 +31,7 @@ A development agent (`norca agent -dev`: server and client in one process,
 state in memory, no ACLs, no TLS) with the web UI, the native service
 catalog with the built-in DNS and the Consul-compatible API and KV, the built-in
 secret store and the built-in autoscaler. It is the quickest way to try the
-features; everything is gone when the agent stops.
+features; **everything is gone when the agent stops.**
 
 ## Prerequisites
 
@@ -78,8 +78,8 @@ norca pack status test-app
 norca job status test-app
 ```
 
-`network_mode = "host"` in `test-app.hcl` uses Docker port mapping, so no
-CNI plugins and no root agent are needed. For bridge networking run the
+`network_mode = "host"` in `test-app.hcl` uses Docker port mapping, so **no
+CNI plugins and no root agent are needed.** For bridge networking run the
 agent as root with the CNI plugins in `/opt/cni/bin` and drop that line.
 
 ### 4. Look at it
@@ -190,4 +190,4 @@ Then stop the agent with Ctrl-C: the dev agent keeps nothing.
   their versions and metadata (`norca secret ...` on the command line).
 
 The task events of the allocation show which provider delivered each secret,
-never the value.
+**never the value.**

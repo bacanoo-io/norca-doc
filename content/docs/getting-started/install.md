@@ -8,8 +8,18 @@ weight: 1
 ## Build from source
 
 Norca is built from the `nomad/` directory of the [Norca repository](https://github.com/bacanoo-io/norca)
-(Go module `github.com/bacanoo-io/norca/norca`). You need Go 1.27 and, on Linux, a
-C compiler (cgo).
+(Go module `github.com/bacanoo-io/norca/norca`).
+
+{{% steps %}}
+
+### Requirements
+
+You need:
+
+- Go 1.27
+- on Linux, a C compiler (cgo)
+
+### Build and install
 
 ```shell
 git clone https://github.com/bacanoo-io/norca
@@ -21,8 +31,10 @@ norca version                     # Norca v0.1.0 (Nomad API 1.6.5 compatible)
 ```
 
 The `ui` build tag embeds the web UI (its assets are committed in
-`norca/command/agent/bindata_assetfs.go`). Without `-tags ui` the binary works the same but serves no
-web UI.
+`norca/command/agent/bindata_assetfs.go`). **Without `-tags ui` the binary works the same but serves no
+web UI.**
+
+{{% /steps %}}
 
 ## Release archives and container image
 
@@ -35,18 +47,25 @@ repository and published as a GitHub release with:
 | Checksums and SBOMs | SHA-256 checksums and a CycloneDX SBOM |
 | Container image | `ghcr.io/<owner>/norca:<version>`, with the licence files in `/usr/share/doc/norca/` and OCI labels |
 
-Each release links the exact source tag; the code is available under the MPL 2.0.
+**Each release links the exact source tag; the code is available under the MPL 2.0.**
 
 ## The `nomad` compatibility alias
 
-A copy of the binary or a symlink named `nomad` behaves exactly like `norca`. It is not installed by
-default:
+A copy of the binary or a symlink named `nomad` behaves exactly like `norca`. **It is not installed by
+default:**
 
 ```shell
 sudo ln -s /usr/local/bin/norca /usr/local/bin/nomad
 ```
 
 ## Run the agent as a service
+
+{{< tabs >}}
+{{< tab name="Linux (systemd)" >}}
+
+{{% steps %}}
+
+### Install the unit
 
 On Linux, run the agent with systemd. This unit is the one of the
 [single-node example](/docs/getting-started/examples/02-single-node):
@@ -73,8 +92,15 @@ OOMScoreAdjust=-1000
 WantedBy=multi-user.target
 ```
 
-The agent runs as root, which the client needs for bridge networking, [network rules](/docs/features/network-rules)
-(nftables) and the exec driver. Check the configuration before starting it:
+**The agent runs as root**, which the client needs for:
+
+- bridge networking,
+- [network rules](/docs/features/network-rules) (nftables),
+- the exec driver.
+
+### Check the configuration and start
+
+Check the configuration before starting it:
 
 ```shell
 norca config validate /etc/norca.d/
@@ -84,7 +110,15 @@ sudo systemctl daemon-reload && sudo systemctl enable --now norca
 `norca config validate` checks the syntax, the known keys and the values, including those of the Norca
 blocks, as the agent checks them when it starts.
 
+{{% /steps %}}
+
+{{< /tab >}}
+{{< tab name="Windows" >}}
+
 On Windows, see [Windows service](/docs/getting-started/windows-service).
+
+{{< /tab >}}
+{{< /tabs >}}
 
 ## Shell completion
 

@@ -7,7 +7,7 @@ weight: 2
 
 A development agent is a server and a client in one process. It keeps its state in memory, has no ACLs
 and no TLS, and listens on `127.0.0.1`. It is the quickest way to try Norca; everything is gone when
-it stops. Don't use it in production.
+it stops. **Don't use it in production.**
 
 {{% steps %}}
 
@@ -26,8 +26,8 @@ The CLI talks to `http://127.0.0.1:4646` by default (`NORCA_ADDR` changes it). O
 norca job init            # writes example.norca.hcl
 ```
 
-The example job runs a Redis container with the Docker driver; the agent's user must be allowed to use
-Docker.
+The example job runs a Redis container with the Docker driver; **the agent's user must be allowed to use
+Docker.**
 
 ### Plan and run it
 

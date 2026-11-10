@@ -29,13 +29,16 @@ cluster built like [03-three-node](/docs/getting-started/examples/03-three-node)
 (authoritative, nodes `10.0.0.11`–`13`) and `eu-2` (nodes `10.0.1.11`–`13`),
 connected by a VPN between the clouds. As in 03, each node of a region is
 its own datacenter (`dc-a`, `dc-b`, `dc-c`, one per availability zone).
-Every region has its own Raft, seal, secret store and backups; the outage of
-one region does not stop the other.
+Every region has its own Raft, seal, secret store and backups; **the outage of
+one region does not stop the other.**
 
-This shows: federation with ACL and secret replication, a multiregion deployment of
-the test application (one version, rolled out region by region), native
-mTLS across regions through a gateway, a pack release
-installed in both regions at once, and per-region backups.
+This shows:
+
+- federation with ACL and secret replication,
+- a multiregion deployment of the test application (one version, rolled out region by region),
+- native mTLS across regions through a gateway,
+- a pack release installed in both regions at once,
+- and per-region backups.
 
 A third region is added the same way as `eu-2`.
 
@@ -76,7 +79,7 @@ norca tls cert create -server -region eu-2 -ca ../norca-agent-ca.pem -key ../nor
   -additional-ipaddress 10.0.1.11     # eu-2-server-norca.pem
 ```
 
-Use the same gossip key (`server.encrypt`) in both regions: the servers of
+**Use the same gossip key (`server.encrypt`) in both regions:** the servers of
 a federation share one gossip pool.
 
 ### 2. Region eu-1
@@ -106,8 +109,8 @@ Put the two secret IDs into `region-eu-2.hcl` (`acl.replication_token`,
 Install every eu-2 node the same way (with its own `node.hcl` addresses and
 `region-eu-2.hcl` as `region.hcl`). Its `retry_join` list contains a server
 of eu-1, which federates the regions; no ACL bootstrap in eu-2, the tokens
-and policies are replicated from eu-1. Until the first replication is done,
-about a minute, requests to eu-2 are refused with `Permission denied`.
+and policies are replicated from eu-1. **Until the first replication is done,
+about a minute, requests to eu-2 are refused with `Permission denied`.**
 
 ```shell
 norca server members                     # the servers of both regions
@@ -142,7 +145,7 @@ norca admission-policy apply -region eu-2 ../policies/admission-apps.hcl   # adm
 norca namespace list -region eu-2
 ```
 
-Secrets are region-local unless they are replicated: `-replicate`, in the
+**Secrets are region-local unless they are replicated:** `-replicate`, in the
 authoritative region, copies the secret of test-app to eu-2 as a read-only
 replica, which the tasks there read like any other secret. Wait for it before
 step 5, the task waits for its secret.
@@ -219,8 +222,8 @@ The probe's sidecar connects to the gateway service of eu-1 (static port
 `test-api.service.apps.eu-1.norca` to a sidecar of test-api without
 terminating it.
 
-Intentions are regional: unlike ACL policies, namespaces and quotas they
-are not replicated from eu-1, so the intention is created with
+**Intentions are regional: unlike ACL policies, namespaces and quotas they
+are not replicated from eu-1,** so the intention is created with
 `-region eu-1`, where test-api runs; an intention in eu-2 has no effect on
 it. See [authorization](/docs/features/native-mtls/sidecar-and-gateway#authorization).
 

@@ -28,8 +28,8 @@ describes the release archives of the GitHub releases, the container image and
 building from source, and shows the systemd unit that runs the agent as a
 service. On Windows, see [Norca as a Windows service](/docs/getting-started/windows-service).
 
-Put the agent configuration files in `/etc/norca.d` and the data directory in
-`/opt/norca/data` (any absolute path works; set it with
+**Put the agent configuration files in `/etc/norca.d` and the data directory in
+`/opt/norca/data`** (any absolute path works; set it with
 [`data_dir`](/docs/configuration#data_dir)). The
 [deployment examples](/docs/getting-started/examples) contain complete
 configurations for a single node, a three node cluster and a multi-region

@@ -28,14 +28,14 @@ telemetry {
 
 Every agent then serves its metrics at `/v1/metrics?format=prometheus`; without
 `prometheus_metrics` the endpoint answers the Prometheus format with an error,
-and `/v1/metrics` returns JSON. The endpoint has no ACL check. With TLS on the
+and `/v1/metrics` returns JSON. **The endpoint has no ACL check.** With TLS on the
 HTTP API, scrape it over HTTPS with the CA of the agent certificates.
 
 ```shell
 curl --cacert norca-agent-ca.pem "https://127.0.0.1:4646/v1/metrics?format=prometheus"
 ```
 
-Metric names keep the Nomad prefix, as part of the compatibility surface:
+**Metric names keep the Nomad prefix**, as part of the compatibility surface:
 `nomad.backup.size_bytes` is `nomad_backup_size_bytes` in Prometheus.
 Dashboards and alerts written for Nomad v1.6.5 keep working.
 
@@ -82,8 +82,8 @@ Suggested alerts:
   failures in a row the leader also logs an error.
 
 `norca operator backup list` shows the same as a warning when the last
-successful backup is older than two intervals. The metrics come from the
-current leader only, so scrape all servers. See
+successful backup is older than two intervals. **The metrics come from the
+current leader only, so scrape all servers.** See
 [Backup and restore operations](/docs/operations/backup-restore).
 
 ### System bus
@@ -226,8 +226,8 @@ env {
 }
 ```
 
-The OTLP receiver has no authentication and no TLS: keep its ports on the
-private network (`host_network` of the pack). Task logs written to stdout and
+**The OTLP receiver has no authentication and no TLS: keep its ports on the
+private network** (`host_network` of the pack). Task logs written to stdout and
 stderr are not collected by the pack; send logs over OTLP, or read them with
 `norca alloc logs`.
 

@@ -84,14 +84,14 @@ There are several important messages that `norca agent` outputs:
 
 By default, any stop signal to an agent (interrupt or terminate) will cause the
 agent to exit after ensuring its internal state is committed to disk as
-needed. You can configuration additonal behaviors by setting shutdown
+needed. You can configure additional behaviors by setting shutdown
 [`leave_on_interrupt`][] or [`leave_on_terminate`][] to respond to the
 respective signals.
 
 For servers, when `leave_on_interrupt` or `leave_on_terminate` are set the
 server will notify other servers of their intention to leave the cluster, which
-allows them to leave the [consensus][] peer set. It is especially important that
-a server node be allowed to leave gracefully so that there will be a minimal
+allows them to leave the [consensus][] peer set. **It is especially important that
+a server node be allowed to leave gracefully** so that there will be a minimal
 impact on availability as the server leaves the consensus peer set. If a server
 does not gracefully leave, and will not return into service, the [`server
 force-leave` command][] should be used to eject it from the consensus peer set.
@@ -148,8 +148,8 @@ so both cases are handled the same. Once the network recovers or a crashed agent
 restarts the node status will be updated and normal operation resumed.
 
 To prevent an accumulation of nodes in a terminal state, Norca does periodic
-garbage collection of nodes. By default, if a node is in a failed or 'down'
-state for over 24 hours it will be garbage collected from the system.
+garbage collection of nodes. **By default, if a node is in a failed or 'down'
+state for over 24 hours it will be garbage collected from the system.**
 
 Servers are slightly more complex as they perform additional functions. They
 participate in a [gossip protocol](/docs/concepts/gossip/) both to cluster
@@ -173,7 +173,7 @@ Norca servers should be run with the lowest possible permissions. They need
 access to their own data directory and the ability to bind to their ports. You
 should create a `norca` user with the minimal set of required privileges.
 
-Norca clients should be run as `root` due to the OS isolation mechanisms that
+**Norca clients should be run as `root`** due to the OS isolation mechanisms that
 require root privileges. While it is possible to run Norca as an unprivileged
 user, careful testing must be done to ensure the task drivers and features
 you use function as expected. The Norca client's data directory should be

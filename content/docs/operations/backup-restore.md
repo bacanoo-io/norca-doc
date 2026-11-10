@@ -74,7 +74,7 @@ norca service info -verbose rustfs
 norca alloc logs -task create-buckets <alloc ID>     # "bucket norca-backup created"
 ```
 
-Norca never creates the backup bucket; `buckets` makes the pack create it
+**Norca never creates the backup bucket**; `buckets` makes the pack create it
 once the store is ready. With another store, create the bucket there. For
 RustFS on several nodes (`mode = "distributed"`) and the other variables, see
 the [rustfs pack README](https://github.com/bacanoo-io/norca-registry/blob/main/packs/rustfs/README.md).
@@ -168,7 +168,7 @@ for example nightly:
 rsync -a --exclude '.*.norca-tmp-*' /mnt/norca-backup/norca/ backup-host:/srv/norca-copy/
 ```
 
-Only folders with a `manifest.json` are complete backups. There are no
+**Only folders with a `manifest.json` are complete backups.** There are no
 download URLs for a directory: `norca operator backup download` names the file
 instead, and the files can be copied directly.
 
@@ -291,7 +291,7 @@ The `Backup` topic of the [event stream](/docs/features/event-stream) carries
 
 ## Test a restore
 
-A backup counts as good only once it was restored. Test regularly:
+**A backup counts as good only once it was restored.** Test regularly:
 
 1. **Browse.** Decrypting proves the identity and the integrity of the
    objects:
@@ -348,8 +348,8 @@ the job history across the backups.
 
 ## Restore a whole region
 
-A full restore returns the region to the time of a backup and loses every
-change since. Use it when the state is broken beyond selective repair, for
+**A full restore returns the region to the time of a backup and loses every
+change since.** Use it when the state is broken beyond selective repair, for
 example after a mass deletion.
 
 {{% steps %}}
@@ -415,7 +415,7 @@ too, as long as the store or the copy is reachable.
 
 Use the configuration of the lost region: the same `region`,
 `bootstrap_expect = 1`, ACLs as before, and the `backup` block so the new
-cluster backs up again. Do not start the other servers yet.
+cluster backs up again. **Do not start the other servers yet.**
 
 If the region used a seal other than the default (for example `shares`),
 initialize and unseal the new server first, so it can store the restored keys;
@@ -493,5 +493,5 @@ On a directory destination, copy `state.snap.age` from the folder that
 
 [`norca operator snapshot restore`](/docs/commands/operator/snapshot/restore)
 restores such a snapshot without its keys; Variables, workload identities and
-secrets of the backup are then unreadable. Prefer `restore-bootstrap`, which
-restores the keys with the state.
+secrets of the backup are then unreadable. **Prefer `restore-bootstrap`, which
+restores the keys with the state.**

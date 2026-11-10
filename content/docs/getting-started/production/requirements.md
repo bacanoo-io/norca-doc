@@ -13,9 +13,9 @@ significant network bandwidth. The core count and network recommendations are to
 ensure high throughput as Norca heavily relies on network communication and as
 the Servers are managing all the nodes in the region and performing scheduling.
 The memory and disk requirements are due to the fact that Norca stores all state
-in memory and will store two snapshots of this data onto disk, which causes high IO in busy clusters with lots of writes. Thus disk should
+in memory and will store two snapshots of this data onto disk, which causes high IO in busy clusters with lots of writes. **Thus disk should
 be at least 2 times the memory available to the server when deploying a high
-load cluster. When running on AWS prefer NVME or Provisioned IOPS SSD storage for data dir.
+load cluster.** When running on AWS prefer NVME or Provisioned IOPS SSD storage for data dir.
 
 These recommendations are guidelines and operators should always monitor the
 resource usage of Norca to determine if the machines are under or over-sized.
@@ -30,8 +30,8 @@ more detail.
 
 ## Network Topology
 
-**Norca servers** are expected to have sub 10 millisecond network latencies
-between each other to ensure liveness and high throughput scheduling. Norca
+**Norca servers** are expected to have **sub 10 millisecond network latencies
+between each other** to ensure liveness and high throughput scheduling. Norca
 servers can be spread across multiple datacenters if they have low latency
 connections between them to achieve high availability.
 
@@ -44,8 +44,8 @@ datacenter is then the failure domain of topology-aware service discovery
 `separate` and `spread` on `${node.datacenter}`.
 
 Norca servers uses Raft for state replication and Raft being highly consistent
-needs a quorum of servers to function, therefore we recommend running an odd
-number of Norca servers in a region. Usually running 3-5 servers in a region is
+needs a quorum of servers to function, therefore **we recommend running an odd
+number of Norca servers in a region.** Usually running 3-5 servers in a region is
 recommended. The cluster can withstand a failure of one server in a cluster of
 three servers and two failures in a cluster of five servers. Adding more servers
 to the quorum adds more time to replicate state and hence throughput decreases
@@ -60,10 +60,10 @@ of having a single "global" region and many datacenter.
 Norca clients make connections to servers on the RPC port and then maintain a
 persistent TCP connection. The server and client use this TCP connection for
 two-way communication. As a result, clients that are geographically distributed
-from the servers do not need to have publically routable IP addresses in order
+from the servers do not need to have publicly routable IP addresses in order
 to communicate with the servers (although the workloads running on the clients
-may need public IPs). All connections between Norca servers and between clients
-and servers must be secured with mTLS.
+may need public IPs). **All connections between Norca servers and between clients
+and servers must be secured with mTLS.**
 
 Norca clients are typically not required to be reachable from each other unless
 your workloads need to communicate with each other. The optional [ephemeral disk
@@ -74,16 +74,16 @@ other on their HTTP ports.
 
 Norca requires 3 different ports to work properly on servers and 2 on clients,
 some on TCP, UDP, or both protocols. Below we document the requirements for each
-port. If you use a firewall of any type, you must ensure that it is configured to
-allow the following traffic.
+port. **If you use a firewall of any type, you must ensure that it is configured to
+allow the following traffic.**
 
-- HTTP API (Default 4646). This is used by clients and servers to serve the HTTP
+- **HTTP API** (Default 4646). This is used by clients and servers to serve the HTTP
   API. TCP only.
 
-- RPC (Default 4647). This is used for internal RPC communication between client
+- **RPC** (Default 4647). This is used for internal RPC communication between client
   agents and servers, and for inter-server traffic. TCP only.
 
-- Serf WAN (Default 4648). This is used by servers to gossip both over the LAN and
+- **Serf WAN** (Default 4648). This is used by servers to gossip both over the LAN and
   WAN to other servers. It isn't required that Norca clients can reach this address.
   TCP and UDP.
 
@@ -137,7 +137,7 @@ runs the agent as `root`, which clients need. For server-only nodes you can add
 `User=norca` and `Group=norca` to its `[Service]` section and make that user the
 owner of the data directory.
 
-Norca clients must be run as `root` due to the OS isolation mechanisms that
+**Norca clients must be run as `root`** due to the OS isolation mechanisms that
 require root privileges (see also [Linux Capabilities][] below). The Norca
 client's data directory should be owned by `root` with filesystem permissions
 set to `0700`.
@@ -150,7 +150,7 @@ secrets, bind-mounting task directories, mounting volumes, and running some task
 driver plugins. Norca clients require `CAP_NET_ADMIN` for a variety of tasks to
 set up networking. You should run Norca clients as `root`, but running as `root`
 does not grant these required capabilities if Norca is running in a user
-namespace. Running Norca clients inside a user namespace is unsupported. See the
+namespace. **Running Norca clients inside a user namespace is unsupported.** See the
 [`capabilities(7)`][] man page for details on Linux capabilities.
 
 In order to run a task, Norca clients perform privileged operations normally
@@ -179,9 +179,12 @@ requires that the Norca client agent is also running as `root`.
 Although it's possible to run a Norca client agent as a non-root user or as
 `root` in a user namespace, to perform the privileged operations described above
 you also need to grant the client agent `CAP_SYS_ADMIN` and `CAP_NET_ADMIN`
-capabilities. Note that these capabilities are nearly functionally equivalent to
-running as `root` and that a process running with `CAP_SYS_ADMIN` can almost
-always escalate itself to "true" (unnamespaced) `root`.
+capabilities.
+
+> [!WARNING]
+> Note that these capabilities are nearly functionally equivalent to
+> running as `root` and that a process running with `CAP_SYS_ADMIN` can almost
+> always escalate itself to "true" (unnamespaced) `root`.
 
 Some task drivers delegate many of their privileged operations to an external
 process such as `dockerd` or `podman`. If you don't need `bridge` networking and
@@ -198,7 +201,7 @@ configuration:
   and typically either a patched kernel or kernel module (ex. `overlay.ko`)
   allowing unprivileged [overlay filesystem][] or a FUSE overlay filesystem.
 
-This is not a supported or well-tested configuration.
+**This is not a supported or well-tested configuration.**
 
 ## Running Norca in Docker
 

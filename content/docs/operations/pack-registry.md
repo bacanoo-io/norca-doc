@@ -13,7 +13,7 @@ without internet access. The pack commands themselves are described in
 ## Pinning a registry release
 
 The registry is released as a whole with tags `vMAJOR.MINOR.PATCH` that are never moved; `main` may
-change at any time. Pin a tag when adding the registry; the pack commands then use it:
+change at any time. **Pin a tag when adding the registry**; the pack commands then use it:
 
 ```shell
 norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.1.0
@@ -71,8 +71,8 @@ norca pack upgrade nats --registry=norca -f nats.hcl
 norca pack history nats
 ```
 
-In production namespaces (namespace meta `environment = "production"`) the upgrade is atomic: a
-failed step restores the previous revision. Otherwise pass `--atomic=true` to get the same behavior.
+In production namespaces (namespace meta `environment = "production"`) **the upgrade is atomic: a
+failed step restores the previous revision.** Otherwise pass `--atomic=true` to get the same behavior.
 If the new version misbehaves later, `norca pack rollback nats` applies the previous revision again.
 
 ### Remove the old tag
@@ -168,7 +168,7 @@ works like the original:
 norca pack registry add norca https://forgejo.internal/mirrors/norca-registry --ref=v0.1.0
 ```
 
-Git registries are not signed and not subject to the trust policy; prefer the OCI registry where
+**Git registries are not signed and not subject to the trust policy**; prefer the OCI registry where
 signatures matter.
 
 ### Images
@@ -190,8 +190,8 @@ image_digest = "sha256:<digest printed above>"
 Most packs have `image` and `image_digest`; the consul pack has `image_registry` and `image_digest`
 (and `download_base_url` for its release archive), and the Envoy image of the servers' injected mTLS
 gateway task comes from the node meta `norca.mtls.envoy_registry`, `norca.mtls.envoy_tag` and
-`norca.mtls.envoy_digest`. Whoever mirrors the images of third-party software takes on its license
-terms (for Consul: BSL 1.1).
+`norca.mtls.envoy_digest`. **Whoever mirrors the images of third-party software takes on its license
+terms** (for Consul: BSL 1.1).
 
 ## The test-app pack of the examples
 
@@ -227,7 +227,7 @@ norca pack uninstall test-app --namespace=apps
 | `mtls_sidecar` | `false` | needs `network_mode = "bridge"` |
 | `multiregion` | `[]` | `[{ name = "eu-1", count = 2 }, ...]` |
 
-`${...}` in variable files must be written as `$${...}`, so that it reaches the job unchanged. The
+**`${...}` in variable files must be written as `$${...}`**, so that it reaches the job unchanged. The
 scenarios have variable files for it ([local development](/docs/getting-started/examples/01-local-dev),
 [single node](/docs/getting-started/examples/02-single-node),
 [three nodes](/docs/getting-started/examples/03-three-node),

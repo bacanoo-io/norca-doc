@@ -28,7 +28,7 @@ encryption, the `shares` seal, scheduled age-encrypted backups to RustFS,
 a namespace with a quota and an admission policy, and the test application
 with secrets and health check roles.
 
-A single server has no failover: use it for labs, edge sites and small
+**A single server has no failover:** use it for labs, edge sites and small
 internal tools. [03-three-node](/docs/getting-started/examples/03-three-node) is the highly
 available version.
 
@@ -118,8 +118,8 @@ norca operator keyring rewrap -to shares     # 5 shares, threshold 3 (from norca
 norca operator seal-status
 ```
 
-Hand the shares to five different people. After every restart of the agent
-the server is sealed until three shares are entered: it serves everything
+Hand the shares to five different people. **After every restart of the agent
+the server is sealed until three shares are entered:** it serves everything
 that needs no decryption, but rejects Variables, workload identity signing,
 mTLS issuance and the secret store.
 
@@ -142,8 +142,8 @@ norca quota status apps
 ### 6. Secrets of the application
 
 Secrets are versioned and audited, and a task can read only what its job
-grants (`secret_access`). Values given on the command line end up in the
-shell history: read them from standard input or a file.
+grants (`secret_access`). **Values given on the command line end up in the
+shell history: read them from standard input or a file.**
 
 ```shell
 norca secret put -namespace apps -description "Database login of test-app" -owner demo \
@@ -194,8 +194,8 @@ next one is due. The console is at
 Without a store, a single server can keep its backups in a local directory
 instead: replace the `rustfs` destination with a
 [directory destination](/docs/configuration/backup#type--directory) and skip this
-step. The backups are then on the same disk as the server, so copy them off
-the machine regularly (or add a second destination elsewhere).
+step. The backups are then on the same disk as the server, so **copy them off
+the machine regularly** (or add a second destination elsewhere).
 
 ```hcl
 destination "local" {
@@ -255,8 +255,8 @@ norca operator backup restore -age-identity ~/backup-identity.txt -namespace app
   -job test-app -secret test-app/db <backup ID>
 ```
 
-A full restore of the region (`restore -full -confirm global`) needs a second
-administrator with another management token (`norca operator backup approve`);
+**A full restore of the region (`restore -full -confirm global`) needs a second
+administrator** with another management token (`norca operator backup approve`);
 `norca operator backup restore-bootstrap` builds a new cluster from a backup.
 
 ### 11. Observability

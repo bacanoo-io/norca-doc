@@ -14,15 +14,17 @@ to register the Norca application with the Windows Service Control Manager using
 > These steps should be run in a PowerShell session with Administrator
 > capabilities.
 
-## Register Norca with Windows
+{{% steps %}}
+
+### Register Norca with Windows
 
 Download the `windows_amd64` release archive from the
 [GitHub releases](https://github.com/bacanoo-io/norca/releases) of Norca (see
 [installation](/docs/getting-started/install)) and extract `norca.exe`.
 
-Use the [`sc.exe`] command to create a Service named "Norca". The binPath
+Use the [`sc.exe`] command to create a Service named "Norca". The `binPath`
 argument should include the fully qualified path to the Norca executable and any
-arguments to the `norca` command: agent, -config, etc.
+arguments to the `norca` command: `agent`, `-config`, etc.
 
 ```plaintext
 sc.exe create "Norca" binPath="«full path to norca.exe» agent -config=«path to config file or directory»" start= auto
@@ -36,16 +38,16 @@ If you get an error, please verify the path to the binary and check the
 arguments, by running the contents of `binPath` directly in a PowerShell session
 and observing the results.
 
-## Configure Norca to log to file
+### Configure Norca to log to file
 
 Because Windows services run non-interactively and Norca does not log to the
-Windows Event Viewer, you will need to configure file-based logging in Norca.
+Windows Event Viewer, **you will need to configure file-based logging in Norca.**
 
 To do this, set the [`log_file`][logging] argument in your Norca configuration
-file or in the binPath argument of the [`sc.exe`] command used to register the
+file or in the `binPath` argument of the [`sc.exe`] command used to register the
 service.
 
-## Start the Norca service
+### Start the Norca service
 
 You have two ways to start the service.
 
@@ -69,8 +71,10 @@ You have two ways to start the service.
         FLAGS              :
   ```
 
-The service automatically starts up during/after boot, so you don't need to
+**The service automatically starts up during/after boot**, so you don't need to
 launch Norca from the command-line again.
+
+{{% /steps %}}
 
 [`sc.exe`]: https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/sc-create
 [logging]: /docs/configuration#log_file

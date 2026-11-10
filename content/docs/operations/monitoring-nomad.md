@@ -14,8 +14,8 @@ All Norca agents, both servers and clients, report basic system and Go runtime
 metrics.
 
 Norca servers all report many metrics, but some metrics are specific to the
-leader server. Since leadership may change at any time, these metrics should be
-monitored on all servers. Missing (or 0) metrics from non-leaders may be safely
+leader server. **Since leadership may change at any time, these metrics should be
+monitored on all servers.** Missing (or 0) metrics from non-leaders may be safely
 ignored.
 
 Norca clients have separate metrics for the host they are running on as well as
@@ -23,8 +23,11 @@ for each allocation being run. Both of these metrics [must be explicitly
 enabled][telemetry-block].
 
 By default, the Norca agent collects telemetry data at a [1 second
-interval][collection-interval]. Note that Norca supports [gauges, counters, and
-timers][metric-types].
+interval][collection-interval].
+
+> [!NOTE]
+> Note that Norca supports [gauges, counters, and
+> timers][metric-types].
 
 There are three ways to obtain metrics from Norca:
 
@@ -32,8 +35,8 @@ There are three ways to obtain metrics from Norca:
   for the current Norca process. This endpoint supports Prometheus formatted
   metrics.
 
-- Send the USR1 signal to the Norca process. This will dump the current
-  telemetry information to STDERR (on Linux).
+- Send the `USR1` signal to the Norca process. This will dump the current
+  telemetry information to `STDERR` (on Linux).
 
 - Configure Norca to automatically forward metrics to a third-party provider
   such as [DataDog][datadog-telem], [Prometheus][prometheus-telem],
@@ -67,7 +70,7 @@ patterns.
   system as appropriate. In many cases, it may be ok if a given batch job fails
   occasionally, as long as it goes back to passing.
 
-# Key Performance Indicators
+## Key Performance Indicators
 
 Norca servers' memory, CPU, disk, and network usage all scales linearly with
 cluster size and scheduling throughput. The most important aspect of ensuring
@@ -89,8 +92,8 @@ The `nomad.raft.leader.lastContact` metric is a general indicator of
 Raft latency which can be used to observe how Raft timing is
 performing and guide infrastructure provisioning. If this number
 trends upwards, look at CPU, disk IOPs, and network
-latency. `nomad.raft.leader.lastContact` should not get too close to
-the leader lease timeout of 500ms.
+latency. **`nomad.raft.leader.lastContact` should not get too close to
+the leader lease timeout of 500ms.**
 
 The `nomad.raft.replication.appendEntries` metric is an indicator of
 the time it takes for a Raft transaction to be replicated to a quorum
@@ -220,8 +223,8 @@ points in the scheduling process.
 
 - **nomad.plan.wait_for_index** - The time required for the planner to wait for
   the Raft index of the plan to be processed. If this metric increases, refer
-  to the [Consensus Protocol (Raft)] section above. If this metric approaches 5
-  seconds, scheduling operations may fail and be retried. If possible reduce
+  to the [Consensus Protocol (Raft)] section above. **If this metric approaches 5
+  seconds, scheduling operations may fail and be retried.** If possible reduce
   scheduling load until metrics improve.
 
 - **nomad.plan.submit** - The time to submit a scheduler plan from the
@@ -236,8 +239,8 @@ points in the scheduling process.
   determine if the problem is in general leader resources or Raft
   performance.
 
-Upticks in any of the above metrics indicate a decrease in scheduler
-throughput.
+**Upticks in any of the above metrics indicate a decrease in scheduler
+throughput.**
 
 ## Capacity
 

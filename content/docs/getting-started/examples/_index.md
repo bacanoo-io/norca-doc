@@ -20,7 +20,7 @@ LoadBalancer operator, the mTLS gateway) come from the
 | [03-three-node](/docs/getting-started/examples/03-three-node) | 3 (server + client each) | run a highly available region: unseal per server, native mTLS and intentions, network rules, placement rules over datacenters, drains, operators |
 | [04-multi-region](/docs/getting-started/examples/04-multi-region) | 3 per region | federate regions (one per cloud): ACL and secret replication, multiregion deployments, cross-region mTLS gateway, multi-region pack installs |
 
-Each scenario builds on the previous one; read 02 before 03 and 03 before 04.
+**Each scenario builds on the previous one; read 02 before 03 and 03 before 04.**
 
 ## Prerequisites
 
@@ -36,8 +36,9 @@ Each scenario builds on the previous one; read 02 before 03 and 03 before 04.
 | The LoadBalancer operator (03) | Go, to build `norca-loadbalancer`, and the `raw_exec` driver |
 | Multi region (04) | A network between the regions (e.g. a WireGuard VPN) |
 
-Secrets, credentials and keys in these files are placeholders (`CHANGE_ME`).
-Never commit real ones.
+> [!WARNING]
+> Secrets, credentials and keys in these files are placeholders (`CHANGE_ME`).
+> **Never commit real ones.**
 
 ## Getting the norca binary
 
@@ -53,7 +54,7 @@ sudo install bin/norca /usr/local/bin/norca
 norca version                     # Norca v0.3.0 (Nomad API 1.6.5 compatible)
 ```
 
-Without `-tags ui` the binary works the same but serves no web UI.
+**Without `-tags ui` the binary works the same but serves no web UI.**
 
 On Windows, for the CLI and the web UI against these clusters (the clients
 of the scenarios run Linux with Docker), `windows.bat` in the root of the
@@ -64,10 +65,15 @@ committed UI and needs no Node or Yarn).
 ## The pack registry
 
 The operations packs are in the [Norca pack registry](https://github.com/bacanoo-io/norca-registry),
-a separate repository: `rustfs` (the backup store of 02), `loadbalancer-operator`
-(03), `mtls-gateway` (04), `openobserve` and `otel-collector`
-(02–04; `postgres` for OpenObserve in cluster mode), and `consul`. Add it once on
-the machine you run the CLI on, pinned to a release tag:
+a separate repository:
+
+- `rustfs` (the backup store of 02),
+- `loadbalancer-operator` (03),
+- `mtls-gateway` (04),
+- `openobserve` and `otel-collector` (02–04; `postgres` for OpenObserve in cluster mode),
+- and `consul`.
+
+Add it once on the machine you run the CLI on, pinned to a release tag:
 
 ```shell
 norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.3.0
@@ -181,9 +187,9 @@ norca job validate <job file>                             # without an agent: st
 `norca config validate` checks the syntax, the known keys and the values,
 including those of the Norca blocks (`keyring`, `backup`, `autoscaler`,
 `mtls`, `admission`, `secrets`, `bus`, `dns`, `consul_compat`) as the agent checks
-them when it starts; the placeholders (`CHANGE_ME`) must be replaced first.
-Without a reachable agent `norca job validate` skips the server-side
-checks (admission, mTLS injection, typed scaling policies), so a job with
+them when it starts; **the placeholders (`CHANGE_ME`) must be replaced first.**
+**Without a reachable agent `norca job validate` skips the server-side
+checks** (admission, mTLS injection, typed scaling policies), so a job with
 only a gateway service (no task, like `04-multi-region/mtls-gateway.norca.hcl`
 or the rendered `mtls-gateway` pack) fails there although the servers accept
 it.
