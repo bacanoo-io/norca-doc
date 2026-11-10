@@ -111,7 +111,7 @@ consul {
   [bind_addr](#bind_addr).
 
   If the bind address is `0.0.0.0` then the IP address of the default private
-  network interface advertised. The `advertise` values may include an
+  network interface is advertised. The `advertise` values may include an
   alternate port, but otherwise default to the port used by the bind address.
   The values support [go-sockaddr/template format][go-sockaddr/template].
 
@@ -371,8 +371,8 @@ its configuration. The fields that currently support reloading are:
 agent.**
 
 > [!WARNING]
-> If the Norca agent receives a `SIGHUP` during initialization, it may crash
-> (see GH-3885). Ensure that the Norca agent is able to receive RPC traffic
+> If the Norca agent receives a `SIGHUP` during initialization, it may crash.
+> Ensure that the Norca agent is able to receive RPC traffic
 > before attempting to reload its configuration.
 
 ## Examples

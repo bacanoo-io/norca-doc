@@ -178,7 +178,7 @@ This example shows pointing the Norca agent at a different Consul address.
 > that you should **never** point directly at a Consul server; always point to a
 > local client.
 
-In this example, the Consul server is bound and listening on the
+In this example, the local Consul agent is bound and listening on the
 node's private IP address instead of localhost, so we use that:
 
 ```hcl
@@ -206,7 +206,7 @@ consul {
 
 Consul does not allow ACL policies associated with namespaces to use agent
 permissions. Norca requires `agent:read` permissions. In order to use the
-`consul_namespace` feature, **Norca will need a token generated in Consul's
+[`namespace`](#namespace) parameter, **Norca will need a token generated in Consul's
 default namespace.** That token should be created with `agent:read` as well
 as a `namespace` block with the other relevant permissions for running Norca
 in the intended namespace. The Consul policy below shows an example policy

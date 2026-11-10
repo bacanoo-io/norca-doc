@@ -210,6 +210,8 @@ project which have the given `tag_value`.
 
 #### Authentication &amp; Precedence
 
+Credentials are searched using the following paths, in order of precedence.
+
 1. Use credentials from `credentials_file`, if provided.
 2. Use JSON file from `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
 3. Use JSON file in a location known to the gcloud command-line tool.
@@ -220,4 +222,3 @@ project which have the given `tag_value`.
 
 Discovery requires a [GCE Service
 Account](https://cloud.google.com/compute/docs/access/service-accounts).
-Credentials are searched using the following paths, in order of precedence.

@@ -143,7 +143,7 @@ client {
   how the Norca client will connect to Norca servers. The `start_join` field
   is not supported on the client. The retry_join fields may directly specify
   the server address or use go-discover syntax for auto-discovery. See the
-  documentation for more detail.
+  [server_join documentation][server-join] for more detail.
 
 - `state_dir` `(string: "[data_dir]/client")` - Specifies the directory to use
   to store client state. By default, this is the top-level
@@ -252,7 +252,9 @@ client {
   [system bus](/docs/features/system-bus#task-group-usage). The servers ask for it while
   the [built-in autoscaler](/docs/configuration/autoscaler) or the
   [metrics store](/docs/configuration/metrics_store) is enabled; with `enabled = true` (default)
-  the client then reports every `client_metrics_interval`.
+  the client then reports every
+  [`client_metrics_interval`](/docs/configuration/autoscaler#client_metrics_interval) of the
+  servers' `autoscaler` block.
   - `enabled = false` turns the reports
     off on this node, for example when an external monitoring system collects the usage: **its task
     groups then get no built-in autoscaler metrics and no history**, and the node no
@@ -574,7 +576,7 @@ see the [drivers documentation](/docs/drivers/).
   }
     ```
 
-- `block_query_wait` `(string: "5m")` - This is amount of time in seconds to wait
+- `block_query_wait` `(string: "5m")` - This is the amount of time to wait
   for the results of a blocking query. Many endpoints in Consul support a feature known as
   "blocking queries". A blocking query is used to wait for a potential change
   using long polling.
@@ -808,6 +810,7 @@ the values below are for illustrative purposes only.
 ```hcl
 client {
   enabled       = true
+  network_speed = 500
   node_class    = "prod"
 
   meta {
@@ -830,6 +833,6 @@ client {
 [landlock]: https://docs.kernel.org/userspace-api/landlock.html
 [`leave_on_interrupt`]: /docs/configuration#leave_on_interrupt
 [`leave_on_terminate`]: /docs/configuration#leave_on_terminate
-[migrate]: /docs/job-specification/migrate/
+[`migrate`]: /docs/job-specification/migrate/
 [`norca node drain -self -no-deadline`]: /docs/commands/node/drain/
 [`TimeoutStopSec`]: https://www.freedesktop.org/software/systemd/man/systemd.service.html#TimeoutStopSec=

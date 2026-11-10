@@ -78,17 +78,13 @@ agent certificates.
   cluster is being upgraded to TLS, and removed after the migration is
   complete.** This allows the agent to accept both TLS and plaintext traffic.
 
-- `tls_cipher_suites` `string: "")` - Specifies the TLS cipher suites that will
+- `tls_cipher_suites` `(string: "")` - Specifies the TLS cipher suites that will
   be used by the agent as a comma-separated string. Known insecure ciphers are
   disabled (3DES and RC4). By default, an agent is configured to use
   `TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384`,
   `TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384`,
   `TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305`,
   `TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305`,
-  `TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256`,
-  `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256`,
-  `TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384`,
-  `TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384`,
   `TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256` and
   `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256`.
 
@@ -114,8 +110,8 @@ The following examples only show the `tls` blocks. Remember that the
 ### Enabling TLS
 
 This example shows enabling TLS configuration. This enables mTLS communication
-between all servers and clients using the default system CA bundle and
-certificates.
+between all servers and clients using the CA and certificate files that it
+names.
 
 ```hcl
 tls {
@@ -123,8 +119,8 @@ tls {
   rpc  = true
 
   ca_file   = "/etc/certs/ca.crt"
-  cert_file = "/etc/certs/nomad.crt"
-  key_file  = "/etc/certs/nomad.key"
+  cert_file = "/etc/certs/norca.crt"
+  key_file  = "/etc/certs/norca.key"
 }
 ```
 
@@ -169,4 +165,4 @@ established will use the updated configuration, and **any outstanding old
 connections will be closed.** This process works when upgrading to TLS,
 downgrading from it, as well as rolling certificates.
 
-[raft]: https://github.com/hashicorp/serf 'Serf by HashiCorp'
+[raft]: /docs/concepts/consensus

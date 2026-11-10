@@ -74,7 +74,7 @@ vault {
   the SNI host when connecting to Vault via TLS.
 
 - `tls_skip_verify` `(bool: false)` - Specifies if SSL peer validation should be
-  enforced.
+  skipped.
 
   > [!CAUTION]
   > It is **strongly discouraged** to disable SSL verification. Instead, you

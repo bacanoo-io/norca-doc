@@ -84,8 +84,8 @@ server {
     after Norca has been initialized with an encryption key, then **the provided key
     is ignored** and a warning will be displayed.
 
-  See the encryption
-  documentation for more details on this option and its impact on
+  See the [encryption
+  documentation](/docs/security/) for more details on this option and its impact on
   the cluster.
 
 - `event_buffer_size` `(int: 1000)` - Specifies the number of events generated
@@ -496,7 +496,7 @@ server {
 
 The Norca servers can automatically bootstrap if Consul is configured. For a
 more detailed explanation, please see the
-automatic Norca bootstrapping documentation.
+[automatic Norca bootstrapping documentation](/docs/configuration/consul/).
 
 ### Restricting Schedulers
 
@@ -511,7 +511,7 @@ server {
 }
 ```
 
-### Bootstrapping with a Custom Scheduler Config ((#configuring-scheduler-config))
+### Bootstrapping with a Custom Scheduler Config {#configuring-scheduler-config}
 
 While bootstrapping a cluster, you can use the `default_scheduler_config` block
 to prime the cluster with a [`SchedulerConfig`][update-scheduler-config]. The
@@ -549,7 +549,7 @@ server {
 }
 ```
 
-## Client Heartbeats ((#client-heartbeats))
+## Client Heartbeats {#client-heartbeats}
 
 > [!WARNING]
 > This is an advanced topic. It is most beneficial to clusters over 1,000
