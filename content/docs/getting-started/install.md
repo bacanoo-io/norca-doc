@@ -27,7 +27,7 @@ cd norca/norca
 make dev                          # writes bin/norca and copies it to $GOBIN
 # or: go build -tags ui -o norca .
 sudo install bin/norca /usr/local/bin/norca
-norca version                     # Norca v0.1.0 (Nomad API 1.6.5 compatible)
+norca version                     # Norca v0.3.0 (Nomad API 1.6.5 compatible)
 ```
 
 The `ui` build tag embeds the web UI (its assets are committed in

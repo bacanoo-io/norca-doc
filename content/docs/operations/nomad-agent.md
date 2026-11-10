@@ -52,7 +52,7 @@ $ sudo norca agent -dev
              Log Level: INFO
                 Region: global (DC: dc1)
                 Server: true
-               Version: 0.1.0 (Nomad API 1.6.5 compatible)
+               Version: 0.3.0 (Nomad API 1.6.5 compatible)
 
 ==> Norca agent started! Log data will stream in below:
 
@@ -124,7 +124,7 @@ $ sudo systemctl kill norca -s SIGUSR1
 You can then read those metrics in the service logs:
 
 ```shell
-$ journalctl -u nomad
+$ journalctl -u norca
 ```
 
 ## Lifecycle

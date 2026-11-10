@@ -47,7 +47,7 @@ web UI embedded (the `ui` build tag; the UI assets are committed in
 `norca/command/agent/bindata_assetfs.go`):
 
 ```shell
-cd nomad
+cd norca
 make dev                          # bin/norca, also copied to $GOBIN
 # or: go build -tags ui -o norca .
 sudo install bin/norca /usr/local/bin/norca
@@ -76,13 +76,13 @@ a separate repository:
 Add it once on the machine you run the CLI on, pinned to a release tag:
 
 ```shell
-norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.3.0
+norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.1.0
 norca pack registry list
 norca pack run rustfs --registry=norca --name=rustfs -f 02-single-node/rustfs.hcl
 ```
 
 Pack commands without `--ref` use the packs at the ref the registry was added
-with (here `v0.3.0`); without `--name` the release is named after the pack. See
+with (here `v0.1.0`); without `--name` the release is named after the pack. See
 [refs and deployment names](/docs/commands/pack#refs-and-deployment-names).
 
 Without network access to GitHub, use a checkout of the registry by path
@@ -106,7 +106,7 @@ For the operations packs:
 
 ```shell
 curl -X POST "$NORCA_ADDR/v1/pack-registry" -H "X-Nomad-Token: $NORCA_TOKEN" \
-  -d '{"Name": "norca", "Spec": {"type": "git", "source": "https://github.com/bacanoo-io/norca-registry", "defaultRef": "v0.3.0", "syncInterval": "1h"}}'
+  -d '{"Name": "norca", "Spec": {"type": "git", "source": "https://github.com/bacanoo-io/norca-registry", "defaultRef": "v0.1.0", "syncInterval": "1h"}}'
 ```
 
 A private git or OCI source takes `"authSecret": {"namespace": "default", "path": "<variable>"}`:

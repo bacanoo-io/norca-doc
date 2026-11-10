@@ -37,10 +37,10 @@ available version.
 - Linux with Docker, the [CNI reference plugins](https://github.com/containernetworking/plugins/releases)
   in `/opt/cni/bin` (bridge networking), `curl` 7.75 or newer and
   [age](https://github.com/FiloSottile/age) (`age-keygen`).
-- The `norca` binary in `/usr/local/bin` (see [../README.md](/docs/getting-started/examples#getting-the-norca-binary)).
+- The `norca` binary in `/usr/local/bin` (see [Getting the norca binary](/docs/getting-started/examples#getting-the-norca-binary)).
 - The [Norca pack registry](https://github.com/bacanoo-io/norca-registry) for the RustFS store (step 7):
   git and access to GitHub, or a checkout of the registry (see
-  [../README.md](/docs/getting-started/examples#the-pack-registry)).
+  [The pack registry](/docs/getting-started/examples#the-pack-registry)).
 - This directory and [../policies](https://github.com/bacanoo-io/norca/tree/main/example/policies) on the machine.
 - Below, `10.0.0.10` is the address of the machine: replace it everywhere.
 
@@ -161,7 +161,7 @@ access key and the secret key are the values of
 ```shell
 norca secret put rustfs/root access_key=norca-backup secret_key=-   # type the secret key, then Ctrl-D
 
-norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.3.0
+norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.1.0
 norca pack run rustfs --registry=norca --name=rustfs -f rustfs.hcl
 norca service info -verbose rustfs
 norca alloc logs -task create-buckets <alloc ID>     # "bucket norca-backup created"

@@ -102,7 +102,7 @@ signals.
 | `nomad.nomad.heartbeat.active`               | Number of active heartbeat timers. Each timer represents a Norca Client connection                                                                                                                                | # of heartbeat timers          | Gauge   |
 | `nomad.nomad.heartbeat.invalidate`           | The length of time it takes to invalidate a Norca Client due to failed heartbeats                                                                                                                                 | ms / Heartbeat Invalidation    | Timer   |
 | `nomad.nomad.plan.evaluate`                  | Time to validate a scheduler Plan. Higher values cause lower scheduling throughput. Similar to `nomad.plan.submit` but does not include RPC time or time in the Plan Queue                                        | ms / Plan Evaluation           | Timer   |
-| `nomad.nomad.plan.node_rejected`             | Number of times a node has had a plan rejected. A node with a high rate of rejections may have an underlying issue causing it to be unschedulable. Refer to this link for more information | # of rejected plans            | Counter |
+| `nomad.nomad.plan.node_rejected`             | Number of times a node has had a plan rejected. A node with a high rate of rejections may have an underlying issue causing it to be unschedulable. Refer to [Plan rejection tracker](/docs/operations/monitoring-nomad#plan-rejection-tracker) for more information | # of rejected plans            | Counter |
 | `nomad.nomad.plan.queue_depth`               | Number of scheduler Plans waiting to be evaluated                                                                                                                                                                 | # of plans                     | Gauge   |
 | `nomad.nomad.plan.submit`                    | Time to submit a scheduler Plan. Higher values cause lower scheduling throughput                                                                                                                                  | ms / Plan Submit               | Timer   |
 | `nomad.nomad.rpc.query`                      | Number of RPC queries                                                                                                                                                                                             | RPC Queries / `interval`       | Counter |
@@ -122,9 +122,9 @@ The Norca client emits metrics related to the resource usage of the allocations
 and tasks running on it and the node itself. **Operators have to explicitly turn
 on publishing host and allocation metrics.** Publishing allocation and host
 metrics can be turned on by setting the value of `publish_allocation_metrics`
-`publish_node_metrics` to `true`.
+and `publish_node_metrics` to `true`.
 
-By default the collection interval is 1 second but it can be changed by the
+By default the collection interval is 1 second but it can be changed by
 changing the value of the `collection_interval` key in the `telemetry`
 configuration block.
 
@@ -132,7 +132,7 @@ Please see the [agent configuration](/docs/configuration/telemetry/)
 page for more details.
 
 Additional labels are emitted for [parameterized](/docs/job-specification/parameterized/) and
-[periodic](/docs/job-specification/parameterized/) jobs. Norca
+[periodic](/docs/job-specification/periodic/) jobs. Norca
 emits the parent job id as a new label `parent_id`. Also, the labels `dispatch_id`
 and `periodic_id` are emitted, containing the ID of the specific invocation of the
 parameterized or periodic job respectively. For example, a dispatch job with the id

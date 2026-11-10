@@ -38,7 +38,7 @@ features; **everything is gone when the agent stops.**
 - Linux (or macOS) with Docker; the agent's user must be allowed to use
   Docker.
 - The `norca` binary built with the web UI (see
-  [../README.md](/docs/getting-started/examples#getting-the-norca-binary)).
+  [Getting the norca binary](/docs/getting-started/examples#getting-the-norca-binary)).
 - Optional: `dig` and `curl`.
 
 ## Files

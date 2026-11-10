@@ -33,7 +33,7 @@ IBM and is not affiliated with them.
 ## Conventions
 
 - The binary and the CLI are called `norca`. A copy or symlink named `nomad` behaves identically
-  ([compatibility alias](/docs/getting-started/install#compatibility-alias-nomad)).
+  ([compatibility alias](/docs/getting-started/install#the-nomad-compatibility-alias)).
 - Names that are part of the Nomad compatibility surface are unchanged: the HTTP API (Nomad API 1.6.5
   compatible), the `X-Nomad-Token` header, the
   `provider = "nomad"` service provider and the metric names.

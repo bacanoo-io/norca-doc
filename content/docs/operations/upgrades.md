@@ -16,12 +16,12 @@ Every Norca binary carries two versions:
 
 ```shell
 $ norca version
-Norca v0.1.0 (Nomad API 1.6.5 compatible)
+Norca v0.3.0 (Nomad API 1.6.5 compatible)
 ```
 
 | Version | Value | Used for |
 | --- | --- | --- |
-| Norca version | `0.1.0` | The product version. The Norca features gate on it. |
+| Norca version | `0.3.0` | The product version. The Norca features gate on it. |
 | Compatibility version | `1.6.5` | The HTTP API and the protocols. Nomad's own feature gates, Autopilot and external API clients compare against it. |
 
 The servers gossip both: the Serf tag `build` keeps the compatibility version,
@@ -115,6 +115,5 @@ page of the UI. See [Web UI](/docs/features/web-ui).
 ## The `nomad` alias
 
 Scripts that call `nomad` keep working with a copy of the binary, or a
-symlink to it, named `nomad`. The CLI reads `NORCA_*` environment variables
-and falls back to the `NORCA_*` names; see
+symlink to it, named `nomad`. The CLI reads `NORCA_*` environment variables; see
 [Compatibility](/docs/introduction/compatibility#environment-variables-of-the-cli).

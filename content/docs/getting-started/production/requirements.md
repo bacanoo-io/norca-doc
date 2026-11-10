@@ -55,7 +55,7 @@ so we don't recommend having more than seven servers in a region.
 are not participating in Raft. Thus clients can have 100+ millisecond latency to
 their servers. This allows having a set of Norca servers that service clients
 that can be spread geographically over a continent or even the world in the case
-of having a single "global" region and many datacenter.
+of having a single "global" region and many datacenters.
 
 Norca clients make connections to servers on the RPC port and then maintain a
 persistent TCP connection. The server and client use this TCP connection for

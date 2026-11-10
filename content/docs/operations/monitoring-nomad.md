@@ -193,7 +193,7 @@ points in the scheduling process.
   will be re-evaluated so that changes in cluster resources can be
   used for the blocked evaluation's allocations. An increase in
   blocked evaluations may mean that the cluster's clients are low in
-  resources or that job have been submitted that can never have all
+  resources or that jobs have been submitted that can never have all
   their allocations placed.
 
 - **nomad.broker.total_unacked** - The number of unacknowledged
@@ -305,7 +305,7 @@ latency and packet loss for the [Serf] address.
 [metrics-api-endpoint]: /docs/api/metrics/
 [prometheus-telem]: /docs/configuration/telemetry#prometheus
 [`plan_rejection_tracker`]: /docs/configuration/server#plan_rejection_tracker
-[serf]: /docs/configuration#serf-1
+[serf]: /docs/configuration#advertise
 [statsd-exporter]: https://github.com/prometheus/statsd_exporter
 [statsd-telem]: /docs/configuration/telemetry#statsd
 [statsite-telem]: /docs/configuration/telemetry#statsite
