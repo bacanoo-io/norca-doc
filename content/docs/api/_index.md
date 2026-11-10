@@ -21,9 +21,9 @@ the `http` address and port. This `address:port` must be accessible locally. If
 you bind to `127.0.0.1:4646`, the API is only available _from that host_. If you
 bind to a private internal IP, the API will be available from within that
 network. If you bind to a public IP, the API will be available from the public
-Internet (not recommended).
+Internet **(not recommended)**.
 
-The default port for the Norca HTTP API is `4646`. This can be overridden via
+**The default port for the Norca HTTP API is `4646`.** This can be overridden via
 the Norca configuration block. Here is an example curl request to query a Norca
 server with the default configuration:
 
@@ -74,15 +74,15 @@ administration.
 
 ## ACLs
 
-Several endpoints in Norca use or require ACL tokens to operate. The token are used to authenticate the request and determine if the request is allowed based on the associated authorizations. Tokens are specified per-request by using the `X-Nomad-Token` request header or with the Bearer scheme in the authorization header set to the `SecretID` of an ACL Token.
+Several endpoints in Norca use or require ACL tokens to operate. The tokens are used to authenticate the request and determine if the request is allowed based on the associated authorizations. Tokens are specified per-request by using the `X-Nomad-Token` request header or with the Bearer scheme in the authorization header set to the `SecretID` of an ACL Token.
 
-The secret ID of a client node is not an ACL token: with ACLs enabled, the servers accept it only on the requests client nodes make themselves and deny it with `403` everywhere else. See [client node identity](/docs/concepts/acl#client-node-identity).
+**The secret ID of a client node is not an ACL token**: with ACLs enabled, the servers accept it only on the requests client nodes make themselves and deny it with `403` everywhere else. See [client node identity](/docs/concepts/acl#client-node-identity).
 
 For more details about ACLs, see the [ACL concepts](/docs/concepts/acl) page.
 
 ## Authentication
 
-When ACLs are enabled, a Norca token should be provided to API requests using the `X-Nomad-Token` header or with the Bearer scheme in the authorization header. When using authentication, clients should communicate via TLS.
+When ACLs are enabled, a Norca token should be provided to API requests using the `X-Nomad-Token` header or with the Bearer scheme in the authorization header. **When using authentication, clients should communicate via TLS.**
 
 Here is an example using curl with `X-Nomad-Token`:
 
@@ -131,9 +131,9 @@ $ curl --get https://localhost:4646/v1/<path> --data-urlencode 'filter=<filter e
 ```
 
 Some endpoints may have other query parameters that are used for filtering, but
-they can't be used with the `filter` query parameter. Doing so will result in a
+**they can't be used with the `filter` query parameter**. Doing so will result in a
 `400` status error response. These query parameters are usually backed by a
-database index, so they may be prefereable over an equivalent simple `filter`
+database index, so they may be preferable over an equivalent simple `filter`
 expression due to better resource usage and performance.
 
 ### Creating Expressions
@@ -584,7 +584,7 @@ be present in the response, indicating that there is nothing more to return.
 
 List results are usually returned in ascending order by their internal key,
 such as their `ID`. Some endpoints may return data sorted by their
-`CreateIndex` value, which roughly corelates to their creation order. The
+`CreateIndex` value, which roughly correlates to their creation order. The
 result order may be reversed using the `reverse=true` query parameter when
 supported by the endpoint.
 
@@ -610,9 +610,9 @@ timeout was reached or that there was an idempotent write that does not affect
 the result of the query.
 
 In addition to `index`, endpoints that support blocking will also honor a `wait`
-parameter specifying a maximum duration for the blocking request. This is
-limited to 10 minutes. If not set, the wait time defaults to 5 minutes. This
-value can be specified in the form of "10s" or "5m" (i.e., 10 seconds or 5
+parameter specifying a maximum duration for the blocking request. **This is
+limited to 10 minutes. If not set, the wait time defaults to 5 minutes.** This
+value can be specified in the form of `"10s"` or `"5m"` (i.e., 10 seconds or 5
 minutes, respectively). A small random amount of additional wait time is added
 to the supplied maximum `wait` time to spread out the wake up time of any
 concurrent requests. This adds up to `wait / 16` additional time to the maximum
@@ -627,15 +627,15 @@ distributed system.
 
 The two read modes are:
 
-- `default` - If not specified, the default is strongly consistent in almost all
-  cases. However, there is a small window in which a new leader may be elected
+- `default` - If not specified, the default is **strongly consistent in almost all
+  cases**. However, there is a small window in which a new leader may be elected
   during which the old leader may service stale values. The trade-off is fast
   reads but potentially stale values. The condition resulting in stale reads is
   hard to trigger, and most clients should not need to worry about this case.
   Also, note that this race condition only applies to reads, not writes.
 
 - `stale` - This mode allows any server to service the read regardless of
-  whether it is the leader. This means reads can be arbitrarily stale; however,
+  whether it is the leader. This means **reads can be arbitrarily stale**; however,
   results are generally consistent to within 50 milliseconds of the leader. The
   trade-off is very fast and scalable reads with a higher likelihood of stale
   values. Since this mode allows reads without a leader, a cluster that is
@@ -653,7 +653,7 @@ staleness of a result and take appropriate action.
 
 By default, any request to the HTTP API will default to the region on which the
 machine is servicing the request. If the agent runs in "region1", the request
-will query the region "region1". A target region can be explicitly request using
+will query the region "region1". A target region can be explicitly requested using
 the `?region` query parameter. The request will be transparently forwarded and
 serviced by a server in the requested region.
 
@@ -673,8 +673,8 @@ $ curl \
 By default, the output of all HTTP API requests is minimized JSON. If the client
 passes `pretty` on the query string, formatted JSON will be returned.
 
-In general, clients should prefer a client-side parser like `jq` instead of
-server-formatted data. Asking the server to format the data takes away
+**In general, clients should prefer a client-side parser like `jq` instead of
+server-formatted data.** Asking the server to format the data takes away
 processing cycles from more important tasks.
 
 ```shell
@@ -684,7 +684,7 @@ $ curl https://localhost:4646/v1/page?pretty
 ## HTTP Methods
 
 Norca's API aims to be RESTful, although there are some exceptions. The API
-responds to the standard HTTP verbs GET, PUT, and DELETE. Each API method will
+responds to the standard HTTP verbs `GET`, `PUT`, and `DELETE`. Each API method will
 clearly document the verb(s) it responds to and the generated response. The same
 path with different verbs may trigger different behavior. For example:
 
@@ -701,9 +701,9 @@ the `GET` operation reads all jobs.
 Individual API's will contain further documentation in the case that more
 specific response codes are returned but all clients should handle the following:
 
-- 200 and 204 as success codes.
-- 400 indicates a validation failure and if a parameter is modified in the
+- `200` and `204` as success codes.
+- `400` indicates a validation failure and if a parameter is modified in the
   request, it could potentially succeed.
-- 403 marks that the client isn't authenticated for the request.
-- 404 indicates an unknown resource.
-- 5xx means that the client should not expect the request to succeed if retried.
+- `403` marks that the client isn't authenticated for the request.
+- `404` indicates an unknown resource.
+- `5xx` means that the client should not expect the request to succeed if retried.

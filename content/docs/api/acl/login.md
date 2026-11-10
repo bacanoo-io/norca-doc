@@ -11,8 +11,8 @@ token.
 
 ## Authenticate with an externally issued token
 
-This endpoint creates an ACL Token. The request is always forwarded to the
-authoritative region.
+This endpoint creates an ACL Token. **The request is always forwarded to the
+authoritative region.**
 
 | Method | Path                         | Produces           |
 | ------ | ---------------------------- | ------------------ |

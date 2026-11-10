@@ -9,8 +9,8 @@ The `/v1/service/external` and `/v1/services/external` endpoints (Norca) manage
 not tied to an allocation. Once registered, external services are read like any other service, with
 [`GET /v1/service/:service_name`](/docs/api/services#read-service).
 
-All endpoints require every server of the region to run Norca. Durations in request bodies are
-nanoseconds.
+**All endpoints require every server of the region to run Norca.** **Durations in request bodies are
+nanoseconds.**
 
 ## Register External Service
 
@@ -29,10 +29,10 @@ The table below shows this endpoint's support for
 | ---------------- | ------------ |
 | `NO`             | `namespace:register-external-service`; also `operator:write` for static registrations |
 
-A registration without a TTL check that no client node owns is static: it never expires and needs
-`operator:write`. A registration with `http` or `tcp` checks must be sent to a **client** agent, whose
-node then owns it, runs the checks and removes it when the node goes down; a server-only agent rejects
-it.
+A registration without a TTL check that no client node owns is static: **it never expires and needs
+`operator:write`**. A registration with `http` or `tcp` checks must be sent to a **client** agent, whose
+node then owns it, runs the checks and removes it when the node goes down; **a server-only agent rejects
+it**.
 
 ### Parameters
 
@@ -193,10 +193,10 @@ form. They do not change any state; the web UI uses them for its HCL editor.
 | ---------------- | ------------------------------------------------------------- |
 | `NO`             | `namespace:register-external-service` or `namespace:read-job` |
 
-`parse` takes `Text` (the HCL, or with `JSON: true` the JSON form) and returns `Items` (each with a
-`Namespace` and a `Service` in the payload form above, marked `Declared`) and `Problems` (each with a
-`Message` and the `Line` of an HCL error). A file with errors is answered with `200` and its `Problems`.
-`format` takes `Items` and returns the HCL `Text`.
+- `parse` takes `Text` (the HCL, or with `JSON: true` the JSON form) and returns `Items` (each with a
+  `Namespace` and a `Service` in the payload form above, marked `Declared`) and `Problems` (each with a
+  `Message` and the `Line` of an HCL error). **A file with errors is answered with `200` and its `Problems`.**
+- `format` takes `Items` and returns the HCL `Text`.
 
 ### Sample Request
 

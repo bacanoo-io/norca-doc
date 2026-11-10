@@ -14,13 +14,16 @@ used. For a CLI to perform these operations manually, please see the
 documentation for the [`norca var`] commands.
 
 With ACLs enabled, Variables are listed, read and written only with an ACL
-token or a workload identity. The secret ID of a client node is not accepted
-(`403`); see [client node identity](/docs/concepts/acl#client-node-identity).
+token or a workload identity. **The secret ID of a client node is not accepted
+(`403`)**; see [client node identity](/docs/concepts/acl#client-node-identity).
 
 ## List Variables
 
-This endpoint lists all variables. Note this API returns only variable metadata
-without decrypting the variable body.
+This endpoint lists all variables.
+
+> [!NOTE]
+> Note this API returns only variable metadata
+> without decrypting the variable body.
 
 | Method | Path       | Produces           |
 |--------|------------|--------------------|
@@ -150,8 +153,8 @@ The table below shows this endpoint's support for [blocking queries] and
   set, this will override the request body.
 
 - `cas` `(int: <unset>)` - If set, the variable will only be updated if the
-  `cas` value matches the current variables `ModifyIndex`. If the `cas` value is
-  0, the variable is only created if it does not already exist. This paradigm
+  `cas` value matches the current variables `ModifyIndex`. **If the `cas` value is
+  `0`, the variable is only created if it does not already exist.** This paradigm
   allows check-and-set style updates.
 
 ## Restrictions
@@ -159,10 +162,10 @@ The table below shows this endpoint's support for [blocking queries] and
 Variable paths are restricted to [RFC3986][] URL-safe characters that don't
 conflict with the use of the characters `@` and `.` in template blocks. This
 includes alphanumeric characters and the special characters `-`, `_`, `~`, and
-`/`. Paths may be up to 128 bytes long. The following regex matches the allowed
+`/`. **Paths may be up to 128 bytes long.** The following regex matches the allowed
 paths: `^[a-zA-Z0-9-_~/]{1,128}$`
 
-Variable items are restricted to 64KiB in size. This limit is calculated by
+**Variable items are restricted to 64KiB in size.** This limit is calculated by
 taking the sum of the length in bytes of all of the unencrypted keys and values
 in the `Items` field.
 
@@ -210,7 +213,7 @@ created by the server:
 ### Sample Response for Conflict
 
 In the case of a compare-and-set conflict, the API will return HTTP error code
-409 and a response body showing the conflicting variable. If the provided ACL
+`409` and a response body showing the conflicting variable. If the provided ACL
 token does not also have `read` permissions to the variable path, the response
 will include only metadata and not the `Items` field:
 
@@ -278,7 +281,7 @@ $ curl \
 ### Sample Response for Conflict
 
 In the case of a compare-and-set conflict on delete, the API will return HTTP
-error code 409 and a response body showing the conflicting variable. If the
+error code `409` and a response body showing the conflicting variable. If the
 provided ACL token does not also have `read` permissions to the variable path,
 the response will include only metadata and not the `Items` field:
 

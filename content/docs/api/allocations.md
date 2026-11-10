@@ -27,8 +27,8 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `prefix` `(string: "")`- Specifies a string to filter allocations based on an
-  ID prefix. Because the value is decoded to bytes, the prefix must have an
-  even number of hexadecimal characters (0-9a-f). This is specified as a query
+  ID prefix. Because the value is decoded to bytes, **the prefix must have an
+  even number of hexadecimal characters** (0-9a-f). This is specified as a query
   string parameter.
 
 - `next_token` `(string: "")` - This endpoint supports paging. The `next_token`
@@ -37,7 +37,7 @@ The table below shows this endpoint's support for
   previous response.
 
 - `per_page` `(int: 0)` - Specifies a maximum number of allocations to return
-  for this request. If omitted, the response is not paginated. The value of the
+  for this request. **If omitted, the response is not paginated.** The value of the
   `X-Nomad-NextToken` header of the last response can be used as the
   `next_token` of the next request to fetch additional pages.
 
@@ -52,8 +52,8 @@ The table below shows this endpoint's support for
   `AllocatedResources` field in the response.
 
 - `task_states` `(bool: true)` - Specifies whether or not to include the
-  `TaskStates` field in the response. TaskStates are included by default but
-  can represent a large percentage of the overall response size. Clusters with
+  `TaskStates` field in the response. **`TaskStates` are included by default but
+  can represent a large percentage of the overall response size.** Clusters with
   a large number of allocations may set `task_states=false` to significantly
   reduce the size of the response.
 
@@ -232,8 +232,8 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `:alloc_id` `(string: <required>)`- Specifies the UUID of the allocation. This
-  must be the full UUID, not the short 8-character one. This is specified as
+- `:alloc_id` `(string: <required>)`- Specifies the UUID of the allocation. **This
+  must be the full UUID, not the short 8-character one.** This is specified as
   part of the path.
 
 ### Sample Request
@@ -548,7 +548,7 @@ $ curl \
 
 - `Job` - A copy of the job at the time that the allocation is created or
   updated. This is primarily intended for use by the Norca client when running
-  the allocation, and it may include stale information on some job fields.
+  the allocation, and **it may include stale information on some job fields**.
   Up-to-date information about the job status is available from the
   [jobs API](/docs/api/jobs/); take care to fetch the version of the job
   associated with this allocation.
@@ -605,7 +605,7 @@ $ curl \
       it has exceeded its restart policy.
 
     - `Downloading Artifacts` - The task is downloading the artifact(s)
-    - specified in the task.
+      specified in the task.
 
     - `Failed Artifact Download` - Artifact(s) specified in the task failed to
       download.
@@ -644,14 +644,17 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `:alloc_id` `(string: <required>)`- Specifies the UUID of the allocation. This
-  must be the full UUID, not the short 8-character one. This is specified as
+- `:alloc_id` `(string: <required>)`- Specifies the UUID of the allocation. **This
+  must be the full UUID, not the short 8-character one.** This is specified as
   part of the path.
 
 - `no_shutdown_delay` `(bool: false)` - Ignore the group and task
   [`shutdown_delay`] configuration so that there is no delay between service
-  deregistration and task shutdown. Note that using this parameter will result
-  in failed network connections to the allocation being stopped.
+  deregistration and task shutdown.
+
+  > [!WARNING]
+  > Note that using this parameter will result
+  > in failed network connections to the allocation being stopped.
 
 ### Sample Request
 
@@ -672,8 +675,8 @@ $ curl -X POST \
 ## Evict Allocation
 
 This endpoint (Norca) stops and reschedules an allocation like a migration, but
-only if the [disruption budget](/docs/features/disruption-budget) of its task
-group allows it. The budget is checked by the leader in the same state store
+**only if the [disruption budget](/docs/features/disruption-budget) of its task
+group allows it**. The budget is checked by the leader in the same state store
 transaction that marks the allocation for migration, so concurrent evictions
 cannot exceed it together. Allocations of task groups without a
 [`disruption`](/docs/job-specification/disruption) block can always be evicted.
@@ -692,8 +695,8 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `:alloc_id` `(string: <required>)`- Specifies the UUID of the allocation. This
-  must be the full UUID, not the short 8-character one. This is specified as
+- `:alloc_id` `(string: <required>)`- Specifies the UUID of the allocation. **This
+  must be the full UUID, not the short 8-character one.** This is specified as
   part of the path.
 
 - `no_shutdown_delay` `(bool: false)` - Ignore the group and task
@@ -712,7 +715,7 @@ The table below shows this endpoint's support for
   `disruption budget exceeded: task group "web" has 2 healthy allocations and requires 2`.
   Retry later.
 
-All servers of the region must run Norca 0.1.0 or later. A successful eviction
+**All servers of the region must run Norca 0.1.0 or later.** A successful eviction
 is published on the event stream with the type `AllocationEvicted` (topics
 `Allocation` and `Evaluation`).
 
@@ -750,8 +753,8 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `:alloc_id` `(string: <required>)`- Specifies the UUID of the allocation. This
-  must be the full UUID, not the short 8-character one. This is specified as
+- `:alloc_id` `(string: <required>)`- Specifies the UUID of the allocation. **This
+  must be the full UUID, not the short 8-character one.** This is specified as
   part of the path.
 
 ### Sample Payload
@@ -763,7 +766,7 @@ The table below shows this endpoint's support for
 }
 ```
 
-If `Task` is omitted, the signal will be sent to all tasks in the allocation.
+**If `Task` is omitted, the signal will be sent to all tasks in the allocation.**
 
 ### Sample Request
 
@@ -796,8 +799,8 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `:alloc_id` `(string: <required>)`- Specifies the UUID of the allocation. This
-  must be the full UUID, not the short 8-character one. This is specified as
+- `:alloc_id` `(string: <required>)`- Specifies the UUID of the allocation. **This
+  must be the full UUID, not the short 8-character one.** This is specified as
   part of the path.
 
 - `TaskName` `(string: "")` - Specifies the individual task to restart. Cannot
@@ -847,8 +850,8 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `:alloc_id` `(string: <required>)`- Specifies the UUID of the allocation. This
-  must be the full UUID, not the short 8-character one. This is specified as
+- `:alloc_id` `(string: <required>)`- Specifies the UUID of the allocation. **This
+  must be the full UUID, not the short 8-character one.** This is specified as
   part of the path.
 - `command` `(string: <required>)` - Specifies the command to be executed. This
   must be a JSON-encoded array of the command to be executed, e.g. `["echo", "hi"]`
@@ -862,7 +865,7 @@ The table below shows this endpoint's support for
 ### Request Frames
 
 Request frames represent the `stdin` stream from the command as well as TTY resize events.
-When `?ws_handshake=true`, the first request frame must contain the authentication token.
+When `?ws_handshake=true`, **the first request frame must contain the authentication token.**
 
 The following are valid formats:
 
@@ -940,7 +943,7 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:alloc_id` `(string: <required>)` - Specifies the service name. This is
-specified as part of the path.
+  specified as part of the path.
 
 - `namespace` `(string: "default")` - Specifies the target namespace.
 
@@ -995,7 +998,7 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:alloc_id` `(string: <required>)` - Specifies the allocation ID. This is
-specified as part of the path.
+  specified as part of the path.
 
 ### Sample Request
 

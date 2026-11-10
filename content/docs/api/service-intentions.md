@@ -5,7 +5,7 @@ description: "The /v1/service-intention endpoints manage the service intentions 
 ---
 
 The `/v1/service-intentions` and `/v1/service-intention` endpoints (Norca) manage
-[service intentions](/docs/features/native-mtls/intentions). Intentions are regional: requests are
+[service intentions](/docs/features/native-mtls/intentions). **Intentions are regional**: requests are
 answered by the servers of the region of the request (the `region` parameter).
 
 An intention has these fields:
@@ -127,7 +127,8 @@ This endpoint creates an intention, or replaces the intention with the same key.
 | ---------------- | --------------------------- |
 | `NO`             | `namespace:write-intention` |
 
-The `write-intention` capability is not part of any policy shorthand; grant it explicitly.
+> [!IMPORTANT]
+> **The `write-intention` capability is not part of any policy shorthand; grant it explicitly.**
 
 ### Parameters
 

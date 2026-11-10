@@ -8,8 +8,8 @@ The [cluster pack registries](/docs/features/packages/catalog) are custom object
 cluster-scoped kind `packs.norca.io/Registry` of a region. The leader fetches them into its pack cache
 and indexes their packs; these endpoints manage them, read the catalog and the install form of a pack,
 and install packs rendered by the leader. The web UI uses them under **Packages**. All endpoints take
-the `region` query parameter. Writes, pack details and renders are forwarded to the leader; any agent
-can serve them.
+the `region` query parameter. **Writes, pack details and renders are forwarded to the leader; any agent
+can serve them.**
 
 Registries are authorized against the rules of the `namespace "*"` block:
 
@@ -24,7 +24,7 @@ namespace "*" {
 Reading also works with `read` or `write` on `packs.norca.io/Release` in any namespace. Installing a
 pack needs what [installing a release](/docs/api/releases#install-or-upgrade-release) needs: object
 `write` on `packs.norca.io/Release` in the namespace of the release, and the permissions for every
-resource of the pack, which is applied with the caller's token.
+resource of the pack, **which is applied with the caller's token**.
 
 Spec and status of a registry use the camelCase keys below; the pack entries use PascalCase.
 
@@ -126,9 +126,12 @@ This endpoint creates or updates a registry and syncs it before it returns.
   aren't signed by one of them can't be installed.
 
 - `Spec.authSecret` `(object: nil)` - The Variable with the credentials of a private `git` or `oci`
-  source: `namespace` (default `default`) and `path`. Its items are `username` and `password` (or
-  `token`) for OCI and `https://` git sources, `ssh_private_key` and `known_hosts` for git ssh sources.
-  The token of the request needs `read` on that Variable; without it the request fails with `403`, and
+  source: `namespace` (default `default`) and `path`. Its items are
+
+  - `username` and `password` (or `token`) for OCI and `https://` git sources,
+  - `ssh_private_key` and `known_hosts` for git ssh sources.
+
+  **The token of the request needs `read` on that Variable**; without it the request fails with `403`, and
   a missing Variable or items that don't fit the source with `400`
   ([private registries](/docs/features/packages/catalog#private-registries)).
 
@@ -149,8 +152,8 @@ This endpoint creates or updates a registry and syncs it before it returns.
 ### Response
 
 The registry, with the status of the sync. A source the servers can't fetch is saved with
-`Status.phase` `Error` and the error in `Status.message`; a failed sync of an existing registry keeps
-the packs of its last good sync.
+`Status.phase` `Error` and the error in `Status.message`; **a failed sync of an existing registry keeps
+the packs of its last good sync**.
 
 ## Sync registry
 
@@ -195,11 +198,11 @@ otherwise directly in the region of the request.
 $ curl -X POST -H "X-Nomad-Token: $TOKEN"     -d '{"Source": "oci://ghcr.io/acme/packs", "Pack": "web", "Version": "1.4.0"}'     https://localhost:4646/v1/pack-registries/notify-push
 ```
 
-A registry is synced at most once a minute on push notices.
+**A registry is synced at most once a minute on push notices.**
 
 ## Delete registry
 
-This endpoint removes a registry and its cache. Releases installed from it keep running.
+This endpoint removes a registry and its cache. **Releases installed from it keep running.**
 
 | Method   | Path                       | Produces           |
 | -------- | -------------------------- | ------------------ |
@@ -317,8 +320,8 @@ parameter.
 
 - `Version` `(string: "")` - The pack version; the newest by default.
 
-- `Values` `(map: nil)` - The variable values. Values of variables with a `secret` block are moved to
-  their Variable item and never stored.
+- `Values` `(map: nil)` - The variable values. **Values of variables with a `secret` block are moved to
+  their Variable item and never stored.**
 
 - `Secrets` `(array: nil)` - Secret Variables items (`Path`, `Items`; the namespace of the release by
   default), as in [install or upgrade](/docs/api/releases#install-or-upgrade-release).

@@ -9,8 +9,8 @@ upstream:
 The programming libraries listed on this page can be used to consume the API
 more conveniently. Norca keeps the Nomad HTTP API (Nomad API 1.6.5
 compatible), so client libraries written for the Nomad API can be used with
-Norca for the endpoints that Nomad v1.6.5 has. The Norca additions to the API
-are available only through the Go package of Norca.
+Norca for the endpoints that Nomad v1.6.5 has. **The Norca additions to the API
+are available only through the Go package of Norca.**
 
 ## Norca Library
 

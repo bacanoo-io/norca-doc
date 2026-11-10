@@ -10,9 +10,9 @@ The `/agent` endpoints are used to interact with the local Norca agent.
 
 ## List Members
 
-This endpoint queries the agent for the known peers in the gossip pool. This
-endpoint is only applicable to servers. Due to the nature of gossip, this is
-eventually consistent.
+This endpoint queries the agent for the known peers in the gossip pool. **This
+endpoint is only applicable to servers.** Due to the nature of gossip, this is
+**eventually consistent**.
 
 | Method | Path             | Produces           |
 | ------ | ---------------- | ------------------ |
@@ -380,8 +380,8 @@ $ curl \
 
 ## Join Agent
 
-This endpoint introduces a new member to the gossip pool. This endpoint is only
-eligible for servers.
+This endpoint introduces a new member to the gossip pool. **This endpoint is only
+eligible for servers.**
 
 | Method | Path          | Produces           |
 | ------ | ------------- | ------------------ |
@@ -422,7 +422,7 @@ $ curl \
 
 This endpoint forces a member of the gossip pool from the `"failed"` state to
 the `"left"` state. This allows the consensus protocol to remove the peer and
-stop attempting replication. This is only applicable for servers.
+stop attempting replication. **This is only applicable for servers.**
 
 | Method | Path                 | Produces           |
 | ------ | -------------------- | ------------------ |
@@ -456,7 +456,7 @@ $ curl \
 This endpoint returns whether or not the agent is healthy. When using Consul it
 is the endpoint Norca will register for its own health checks.
 
-When the agent is unhealthy 500 will be returned along with JSON response
+**When the agent is unhealthy `500` will be returned** along with JSON response
 containing an error message.
 
 | Method | Path            | Produces           |
@@ -497,9 +497,12 @@ $ curl \
 
 This endpoint returns data about the agent's host environment from the
 perspective of the agent. It is included in the archive produced by
-`norca operator debug`. Known sensitive environment variables are shown as
-`<redacted>`, but the response may still contain sensitive
-information.
+`norca operator debug`.
+
+> [!WARNING]
+> Known sensitive environment variables are shown as
+> `<redacted>`, but **the response may still contain sensitive
+> information.**
 
 | Method | Path          | Produces           |
 | ------ | ------------- | ------------------ |
@@ -609,7 +612,7 @@ The table below shows this endpoint's support for
   string containing a node-id to target for streaming.
 
 - `server_id` `(string: "server1.global")` - Specifies a text
-  string containing a server name or "leader" to target a specific remote server
+  string containing a server name or `"leader"` to target a specific remote server
   or leader for streaming.
 
 - `plain` `(bool: false)` - Specifies if the response should be JSON or
@@ -643,13 +646,13 @@ fields:
 - `Data` - A base64 encoding of the bytes being streamed.
 
 - `FileEvent` - An event that could cause a change in the streams position. The
-  possible value for this endpoint is "log".
+  possible value for this endpoint is `"log"`.
 
 - `Offset` - Offset is the offset into the stream.
 
 ## Agent Runtime Profiles
 
-This endpoint is the equivalent of Go's /debug/pprof endpoint but is protected
+This endpoint is the equivalent of Go's `/debug/pprof` endpoint but is protected
 by ACLs and supports remote forwarding to a client node or server. See the
 [Golang documentation](https://golang.org/pkg/runtime/pprof/#Profile) for a list
 of available profiles.
@@ -671,11 +674,11 @@ The table below shows this endpoint's support for
 
 ### Default Behavior
 
-This endpoint is enabled whenever ACLs are enabled. Due to the potentially
+**This endpoint is enabled whenever ACLs are enabled.** Due to the potentially
 sensitive nature of data contained in profiles, as well as their significant
-performance impact, the agent/pprof endpoint is protected by a high level ACL:
-`agent:write`. For these reasons its recommended to leave [`enable_debug`][]
-unset and only use the ACL-protected endpoints.
+performance impact, the `agent/pprof` endpoint is protected by a high level ACL:
+`agent:write`. For these reasons **it's recommended to leave [`enable_debug`][]
+unset and only use the ACL-protected endpoints.**
 
 The following table explains when each endpoint is available:
 
@@ -702,9 +705,9 @@ The following table explains when each endpoint is available:
   request for.
 
 - `debug` `(int: 0)` - Specifies if a given pprof profile should be returned as
-  human readable plain text instead of the pprof binary format. Defaults to 0,
-  setting to 1 enables human readable plain text. For goroutine profiles,
-  setting to 2 extends the plain text format with additional information helpful
+  human readable plain text instead of the pprof binary format. Defaults to `0`,
+  setting to `1` enables human readable plain text. For goroutine profiles,
+  setting to `2` extends the plain text format with additional information helpful
   for debugging stalled goroutines.
 
 ### Sample Request
@@ -823,7 +826,7 @@ $ curl \
 ## Read scheduler worker configuration
 
 This endpoint returns data about the agent's scheduler configuration from
-the perspective of the agent. This is only applicable for servers.
+the perspective of the agent. **This is only applicable for servers.**
 
 | Method | Path                       | Produces           |
 | ------ | -------------------------- | ------------------ |
@@ -867,11 +870,11 @@ $ curl \
 ## Update scheduler worker configuration
 
 This allows a Norca operator to modify the server's running scheduler
-configuration, which will remain in effect until another update or until the
-node is restarted. For durable changes to this value, set the corresponding
+configuration, which **will remain in effect until another update or until the
+node is restarted**. For durable changes to this value, set the corresponding
 values—[`num_schedulers`][] and [`enabled_schedulers`][]—in the node's
 configuration file. The response contains the configuration after attempting
-to apply the provided values. This is only applicable for servers.
+to apply the provided values. **This is only applicable for servers.**
 
 | Method | Path                       | Produces           |
 | ------ | -------------------------- | ------------------ |

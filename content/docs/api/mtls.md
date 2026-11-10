@@ -5,14 +5,14 @@ description: "The /v1/mtls endpoints read the native mTLS trust bundle of a regi
 ---
 
 The `/v1/mtls` endpoints (Norca) read the trust bundle of [native mTLS](/docs/features/native-mtls) and
-rotate the certificate authority of a region. Workload certificates are not issued through the HTTP API:
+rotate the certificate authority of a region. **Workload certificates are not issued through the HTTP API**:
 clients request them over RPC for the tasks they run.
 
 ## Read Trust Bundle
 
 This endpoint returns the trust bundle of the region: the CA certificates of the region (the active one
 and retired ones that still have valid certificates) and, with `federation` enabled, those of the other
-regions. The certificates are public, so the endpoint requires no ACL capability. The roots of the
+regions. The certificates are public, so **the endpoint requires no ACL capability**. The roots of the
 region come first.
 
 | Method | Path             | Produces           |
@@ -72,8 +72,8 @@ $ norca operator api /v1/mtls/roots | jq -r '.Roots[].RootCert' > norca-mtls-ca.
 
 This endpoint replaces the active CA of the region with a new one. The previous CA loses its key and
 stays in the trust bundle until `leaf_cert_ttl` plus one hour after the rotation; clients re-issue the
-certificates it signed. The leader also rotates the CA by itself after two thirds of its lifetime and
-when the trust domain changes.
+certificates it signed. **The leader also rotates the CA by itself after two thirds of its lifetime and
+when the trust domain changes.**
 
 | Method | Path                 | Produces           |
 | ------ | -------------------- | ------------------ |

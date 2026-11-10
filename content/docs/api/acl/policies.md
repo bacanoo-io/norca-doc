@@ -76,7 +76,7 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `Name` `(string: <required>)` - Specifies the name of the policy.
-  Creates the policy if the name does not exist, otherwise updates the existing policy.
+  **Creates the policy if the name does not exist, otherwise updates the existing policy.**
 
 - `Description` `(string: <optional>)` - Specifies a human readable description.
 

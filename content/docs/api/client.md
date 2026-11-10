@@ -11,15 +11,15 @@ The `/client` endpoints are used to interact with the Norca clients.
 Both clients and servers can handle client endpoints. This is particularly
 useful for when a direct connection to a client is not possible due to the
 network configuration. For high volume access to the client endpoints,
-particularly endpoints streaming file contents, direct access to the node
-should be preferred as it avoids adding additional load to the servers.
+particularly endpoints streaming file contents, **direct access to the node
+should be preferred** as it avoids adding additional load to the servers.
 
 When accessing the endpoints via the server, if the desired node is ambiguous
-based on the URL, an additional `?node_id` query parameter must be provided to
-disambiguate.
+based on the URL, **an additional `?node_id` query parameter must be provided to
+disambiguate.**
 
 The [`/node`](/docs/api/nodes/) endpoints provide node information that
-are retried from Norca servers.
+are retrieved from Norca servers.
 
 ## Read Dynamic Node Metadata
 
@@ -37,10 +37,11 @@ with the following fields:
   `Meta` and `Static`, this object may contain `null` values to differentiate
   "unset" keys from keys with an empty string value (`""`).
 
-Note that [`/v1/node/:node_id`][api-node-read] only contains the `Meta` object.
-It may take up to 10 seconds for dynamic Node metadata to be sent to Servers
-and visible through the Node API. Use the Node API to see the version of Node
-metadata the scheduler uses.
+> [!NOTE]
+> Note that [`/v1/node/:node_id`][api-node-read] only contains the `Meta` object.
+> **It may take up to 10 seconds for dynamic Node metadata to be sent to Servers
+> and visible through the Node API.** Use the Node API to see the version of Node
+> metadata the scheduler uses.
 
 | Method | Path                  | Produces           |
 | ------ | --------------------- | ------------------ |
@@ -58,9 +59,9 @@ The table below shows this endpoint's support for
 
 - `:node_id` `(string: <optional>)` - Specifies the node to query.
   This is required when the endpoint is being accessed via a server. Defaults
-  to the node recieving the request otherwise. This is specified as part of
-  the URL.  Note, this must be the _full_ node ID, not the short 8-character
-  one. This must be specified as part of the path (`?node_id=...`).
+  to the node receiving the request otherwise. This is specified as part of
+  the URL.  **Note, this must be the _full_ node ID, not the short 8-character
+  one.** This must be specified as part of the path (`?node_id=...`).
 
 ### Sample Request
 
@@ -102,8 +103,8 @@ Formatted by appending `?pretty` above.
 This endpoint updates dynamic Node metadata on a specific Client agent. Since
 dynamic Node metadata is only periodically synchronized to Norca Servers, the
 `Meta` returned in this API may not be reflected in the
-[`/v1/node/:node_id`][api-node-read] API for up to 10 seconds. Scheduling uses
-the Node API version of `Meta`.
+[`/v1/node/:node_id`][api-node-read] API for up to 10 seconds. **Scheduling uses
+the Node API version of `Meta`.**
 
 For convenience this endpoint returns the same response as a GET.
 
@@ -123,9 +124,9 @@ The table below shows this endpoint's support for
 
 - `NodeID` or `:node_id` `(string: <optional>)` - Specifies the node to query.
   This is required when the endpoint is being accessed via a server. Defaults
-  to the node recieving the request otherwise. This is specified as part of
-  the URL.  Note, this must be the _full_ node ID, not the short 8-character
-  one. This may be specified as part of the path (`?node_id=...`) or request
+  to the node receiving the request otherwise. This is specified as part of
+  the URL.  **Note, this must be the _full_ node ID, not the short 8-character
+  one.** This may be specified as part of the path (`?node_id=...`) or request
   (`NodeID: "..."`).
 
 - `Meta` `(object: <required>)` - Specifies the Node metadata keys to update.
@@ -133,7 +134,7 @@ The table below shows this endpoint's support for
 
     - `<key>` `(string: <optional>)` - Specifies a metadata key to update to a
       particular value. Since `""` is a valid value and distinct from unset,
-      the `null` value is used to mark a key as unset. Keys must be valid
+      **the `null` value is used to mark a key as unset**. Keys must be valid
       dotted HCL identifiers. For example `connect.log_level` is a valid key
       while `some/path` is not.
 
@@ -206,8 +207,8 @@ The table below shows this endpoint's support for
 
 - `node_id` `(string: <optional>)` - Specifies the node to query. This is
   required when the endpoint is being accessed via a server. This is specified as
-  part of the URL. Note, this must be the _full_ node ID, not the short
-  8-character one. This is specified as part of the path.
+  part of the URL. **Note, this must be the _full_ node ID, not the short
+  8-character one.** This is specified as part of the path.
 
 ### Sample Request
 
@@ -381,8 +382,8 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:alloc_id` `(string: <required>)` - Specifies the allocation ID to query.
-  This is specified as part of the URL. Note, this must be the _full_ allocation
-  ID, not the short 8-character one. This is specified as part of the path.
+  This is specified as part of the URL. **Note, this must be the _full_ allocation
+  ID, not the short 8-character one.** This is specified as part of the path.
 
 ### Sample Request
 
@@ -464,8 +465,8 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:alloc_id` `(string: <required>)` - Specifies the allocation ID to query.
-  This is specified as part of the URL. Note, this must be the _full_ allocation
-  ID, not the short 8-character one. This is specified as part of the path.
+  This is specified as part of the URL. **Note, this must be the _full_ allocation
+  ID, not the short 8-character one.** This is specified as part of the path.
 
 - `path` `(string: "/")` - Specifies the path of the file to read, relative to
   the root of the allocation directory.
@@ -508,8 +509,8 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:alloc_id` `(string: <required>)` - Specifies the allocation ID to query.
-  This is specified as part of the URL. Note, this must be the _full_ allocation
-  ID, not the short 8-character one. This is specified as part of the path.
+  This is specified as part of the URL. **Note, this must be the _full_ allocation
+  ID, not the short 8-character one.** This is specified as part of the path.
 
 - `path` `(string: "/")` - Specifies the path of the file to read, relative to
   the root of the allocation directory.
@@ -552,8 +553,8 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:alloc_id` `(string: <required>)` - Specifies the allocation ID to query.
-  This is specified as part of the URL. Note, this must be the _full_ allocation
-  ID, not the short 8-character one. This is specified as part of the path.
+  This is specified as part of the URL. **Note, this must be the _full_ allocation
+  ID, not the short 8-character one.** This is specified as part of the path.
 
 - `path` `(string: "/")` - Specifies the path of the file to read, relative to
   the root of the allocation directory.
@@ -595,7 +596,7 @@ fields:
 - `Data` - A base64 encoding of the bytes being streamed.
 
 - `FileEvent` - An event that could cause a change in the streams position. The
-  possible values are "file deleted" and "file truncated".
+  possible values are `"file deleted"` and `"file truncated"`.
 
 - `Offset` - Offset is the offset into the stream.
 
@@ -603,8 +604,11 @@ fields:
 
 ## Stream Logs
 
-This endpoint streams a task's stderr/stdout logs. Note that if logging is set
-to [disabled=true][] for the task, this endpoint will return a 404 error.
+This endpoint streams a task's stderr/stdout logs.
+
+> [!NOTE]
+> Note that if logging is set
+> to [disabled=true][] for the task, this endpoint will return a `404` error.
 
 | Method | Path                           | Produces     |
 | ------ | ------------------------------ | ------------ |
@@ -621,8 +625,8 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:alloc_id` `(string: <required>)` - Specifies the allocation ID to query.
-  This is specified as part of the URL. Note, this must be the _full_ allocation
-  ID, not the short 8-character one. This is specified as part of the path.
+  This is specified as part of the URL. **Note, this must be the _full_ allocation
+  ID, not the short 8-character one.** This is specified as part of the path.
 
 - `task` `(string: <required>)` - Specifies the name of the task inside the
   allocation to stream logs from.
@@ -633,9 +637,9 @@ The table below shows this endpoint's support for
 
 - `offset` `(int: 0)` - Specifies the offset to start streaming from.
 
-- `origin` `(string: "start|end")` - Specifies either "start" or "end" and
+- `origin` `(string: "start|end")` - Specifies either `"start"` or `"end"` and
   applies the offset relative to either the start or end of the logs
-  respectively. Defaults to "start".
+  respectively. Defaults to `"start"`.
 
 - `plain` `(bool: false)` - Return just the plain text without framing. This can
   be useful when viewing logs in a browser.
@@ -669,7 +673,7 @@ fields:
 - `Data` - A base64 encoding of the bytes being streamed.
 
 - `FileEvent` - An event that could cause a change in the streams position. The
-  possible values are "file deleted" and "file truncated".
+  possible values are `"file deleted"` and `"file truncated"`.
 
 - `Offset` - Offset is the offset into the stream.
 
@@ -694,8 +698,8 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:alloc_id` `(string: <required>)` - Specifies the allocation ID to query.
-  This is specified as part of the URL. Note, this must be the _full_ allocation
-  ID, not the short 8-character one. This is specified as part of the path.
+  This is specified as part of the URL. **Note, this must be the _full_ allocation
+  ID, not the short 8-character one.** This is specified as part of the path.
 
 - `path` `(string: "/")` - Specifies the path of the file to read, relative to
   the root of the allocation directory.
@@ -747,8 +751,8 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:alloc_id` `(string: <required>)` - Specifies the allocation ID to query.
-  This is specified as part of the URL. Note, this must be the _full_ allocation
-  ID, not the short 8-character one. This is specified as part of the path.
+  This is specified as part of the URL. **Note, this must be the _full_ allocation
+  ID, not the short 8-character one.** This is specified as part of the path.
 
 - `path` `(string: "/")` - Specifies the path of the file to read, relative to
   the root of the allocation directory.
@@ -775,8 +779,11 @@ $ norca operator api \
 ## GC Allocation
 
 This endpoint forces a garbage collection of a particular, stopped allocation
-on a node. Note that the allocation will still exist on the server and appear
-in server responses.
+on a node.
+
+> [!NOTE]
+> Note that the allocation will still exist on the server and appear
+> in server responses.
 
 | Method | Path                                 | Produces           |
 | ------ | ------------------------------------ | ------------------ |
@@ -793,8 +800,8 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:alloc_id` `(string: <required>)` - Specifies the allocation ID to query.
-  This is specified as part of the URL. Note, this must be the _full_ allocation
-  ID, not the short 8-character one. This is specified as part of the path.
+  This is specified as part of the URL. **Note, this must be the _full_ allocation
+  ID, not the short 8-character one.** This is specified as part of the path.
 
 ### Sample Request
 
@@ -823,8 +830,8 @@ The table below shows this endpoint's support for
 
 - `node_id` `(string: <optional>)` - Specifies the node to target. This is
   required when the endpoint is being accessed via a server. This is specified as
-  part of the URL. Note, this must be the _full_ node ID, not the short
-  8-character one. This is specified as part of the path.
+  part of the URL. **Note, this must be the _full_ node ID, not the short
+  8-character one.** This is specified as part of the path.
 
 ### Sample Request
 

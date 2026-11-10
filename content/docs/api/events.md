@@ -14,8 +14,10 @@ This endpoint streams a server's backlog of events as well as new events as they
 The stream will be kept alive until the connection is closed. The format of the response
 body will be valid [ndjson](http://ndjson.org/). This means splitting the streaming
 response at every `\n` character will guarantee each message is a valid JSON object.
-Note that each JSON object may include multiple events (high server activity) or no
-events (heartbeating to keep the connection open).
+
+> [!NOTE]
+> Note that each JSON object may include multiple events (high server activity) or no
+> events (heartbeating to keep the connection open).
 
 | Method | Path               | Produces           |
 | ------ | ------------------ | ------------------ |
@@ -24,8 +26,9 @@ events (heartbeating to keep the connection open).
 The table below shows this endpoint's [required ACLs](/docs/api#acls). Due to
 the nature of this endpoint individual topics require specific policies.
 
-Note that if you do not include a `topic` parameter all topics will be included
-by default, requiring a management token.
+> [!IMPORTANT]
+> Note that if you do not include a `topic` parameter **all topics will be included
+> by default, requiring a management token**.
 
 | Topic        | ACL Required         |
 | ------------ | -------------------- |
@@ -51,9 +54,9 @@ The topics added by Norca and their ACLs are listed under
   next available index, unless `exact=true` is set.
 
 - `exact` `(bool: false)` - (Norca) Requires every event with an index at or
-  after `index` to be delivered. `index` must be positive. If the server can no
+  after `index` to be delivered. `index` must be positive. **If the server can no
   longer guarantee that, it responds with `410 Gone` and the client has to
-  resynchronize. See [resumable subscriptions](#resumable-subscriptions).
+  resynchronize.** See [resumable subscriptions](#resumable-subscriptions).
 
 - `namespace` `(string: "default")` - Specifies the target namespace to filter
   on. Specifying `*` includes all namespaces for event types that support
@@ -61,14 +64,15 @@ The topics added by Norca and their ACLs are listed under
   token, or an ACL Policy that explicitly applies to all namespaces (`*`).
 
 - `topic` `(topic:filter_key: "*:*")` - Specifies a topic to subscribe to and
-  filter on. The default is to subscribe to all topics. Multiple topics may be
+  filter on. **The default is to subscribe to all topics.** Multiple topics may be
   specified by passing multiple `topic` parameters. A valid topic parameter
   includes a `topic` type and an optional `filter_key` separated by a colon
-  `:`. As an example `?topic=Deployment:redis` would subscribe to all
-  `Deployment` events for a job redis. an additional topic
-  `&topic=Deployment:web` would include deployment events for redis and web. To
-  only subscribe to `Node` events a topic parameter of `?topic=Node` without a
-  separator value would be used. `?topic=Node:*` is also valid.
+  `:`.
+  - As an example `?topic=Deployment:redis` would subscribe to all
+    `Deployment` events for a job redis. An additional topic
+    `&topic=Deployment:web` would include deployment events for redis and web.
+  - To only subscribe to `Node` events a topic parameter of `?topic=Node` without a
+    separator value would be used. `?topic=Node:*` is also valid.
 
 ### Event Topics
 
@@ -449,7 +453,7 @@ these topics a `filter_key` containing `*` is a glob pattern, for example
 | `Backup`           | `BackupCompleted`, `BackupFailed`, `BackupUpdated`, `BackupDeleted`, `BackupRestoreRequested`, `BackupRestoreApproved`, `BackupRestoreStarted`, `BackupRestoreFinished`, `BackupRestoreRejected` |
 
 `Scaling`, `JobAdmissionDenied` and `VariableAdmissionDenied` events are
-published only by the leader.
+**published only by the leader**.
 
 ### Resumable Subscriptions
 
@@ -461,7 +465,7 @@ With `exact=true` a subscription starts exactly at `index`:
 | `400`           | `exact=true` without a positive `index`.                                                 |
 | `410 Gone`      | Events at or after `index` may be missing; list the objects again and resume from the index of the listing. |
 
-To resume after the last processed event, pass its index plus one.
+**To resume after the last processed event, pass its index plus one.**
 
 ```shell
 $ curl -s -v -N \
@@ -471,5 +475,5 @@ $ curl -s -v -N \
 ### Tokens
 
 In addition to ACL tokens, the `X-Nomad-Token` header may carry a workload
-identity. Its permissions come from the ACL policies bound to its job, and the
-subscription ends when its allocation stops.
+identity. Its permissions come from the ACL policies bound to its job, and **the
+subscription ends when its allocation stops**.

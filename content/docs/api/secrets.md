@@ -5,17 +5,17 @@ description: "The /secrets and /secret endpoints list, read, write, delete and d
 ---
 
 The `/secrets` and `/secret` endpoints (Norca) manage the secrets of the
-[built-in secret store](/docs/features/secrets). Values are only returned by an explicit value read, which
-is executed by the leader and audited; listings and metadata never contain values, only a keyed value
+[built-in secret store](/docs/features/secrets). **Values are only returned by an explicit value read**, which
+is executed by the leader and audited; **listings and metadata never contain values**, only a keyed value
 hash. For the CLI, see [`norca secret`](/docs/commands/secret). The dynamic secrets engines and their
 leases have their own endpoints: [Secret engines](/docs/api/secret-engines).
 
 All endpoints act on the namespace given with the `namespace` query parameter (default `default`). Paths
-use letters, digits, `-`, `_`, `~` and `/`. While the store is sealed, requests fail with status 503
-(`server is sealed`).
+use letters, digits, `-`, `_`, `~` and `/`. **While the store is sealed, requests fail with status 503
+(`server is sealed`).**
 
 With ACLs enabled, every endpoint needs an ACL token or a workload identity with the capabilities
-listed below. The secret ID of a client node is not accepted (`403`); see
+listed below. **The secret ID of a client node is not accepted (`403`)**; see
 [client node identity](/docs/concepts/acl#client-node-identity).
 
 ## List Secrets
@@ -165,9 +165,11 @@ Reads the items of a version of a secret. The read runs on the leader and produc
 
 ## Write a Secret
 
-Writes a new version of a secret and/or its metadata. With `Items`, a new version is written. With only
-`Meta`, the metadata of an existing secret is replaced and no version is written. Without `Meta`, an
-existing secret keeps its metadata and a new one gets the defaults.
+Writes a new version of a secret and/or its metadata.
+
+- With `Items`, a new version is written.
+- With only `Meta`, the metadata of an existing secret is replaced and **no version is written**.
+- Without `Meta`, an existing secret keeps its metadata and a new one gets the defaults.
 
 | Method | Path               | Produces           |
 |--------|--------------------|--------------------|
@@ -183,16 +185,22 @@ existing secret keeps its metadata and a new one gets the defaults.
   writes only if the secret does not exist. A mismatch fails with status 409. Query parameter.
 - `Items` `(map[string]string)` - The items of the new version: at most 64 KiB in total; keys use letters,
   digits, `_`, `.` and `-`.
-- `Meta` `(object)` - `Description`, `Owner`, `Labels`, `ExpiresAt` (RFC 3339), `RotateEvery`
-  (nanoseconds), `Rotate` (`{"Job": "<job>"}`: the rotation job, a parameterized job of the secret's
-  namespace; requires `RotateEvery`; `null` for none), `MaxVersions` (1–100, default 10), `Replicate`
-  (`bool`: copy the secret to the other regions as a read-only replica; only in the authoritative
-  region, 400 elsewhere; `false` removes the replicas). `Meta` replaces all metadata fields; leave it
-  out to keep the current metadata. See
+- `Meta` `(object)` -
+
+  - `Description`, `Owner`, `Labels`,
+  - `ExpiresAt` (RFC 3339),
+  - `RotateEvery` (nanoseconds),
+  - `Rotate` (`{"Job": "<job>"}`: the rotation job, a parameterized job of the secret's
+    namespace; requires `RotateEvery`; `null` for none),
+  - `MaxVersions` (1–100, default 10),
+  - `Replicate` (`bool`: copy the secret to the other regions as a read-only replica; only in the
+    authoritative region, 400 elsewhere; `false` removes the replicas).
+
+  **`Meta` replaces all metadata fields; leave it out to keep the current metadata.** See
   [expiry and rotation](/docs/features/secrets/secrets#expiry-and-rotation) and
   [replication between regions](/docs/features/secrets/secrets#replication-between-regions).
 
-A replica is read-only outside the authoritative region: this endpoint and the delete, undelete and
+**A replica is read-only outside the authoritative region**: this endpoint and the delete, undelete and
 destroy endpoints fail there with status 409, `secret "<path>" is replicated from the authoritative
 region "<region>" and is read-only in region "<region>"; change it in region "<region>"`.
 
@@ -253,7 +261,7 @@ Parameters: `versions` and `cas`, as for [Delete Versions](#delete-versions).
 
 ## Destroy Versions or a Secret
 
-Destroys versions permanently; without `versions`, the whole secret with all of its versions and its
+**Destroys versions permanently**; without `versions`, the whole secret with all of its versions and its
 metadata, and the response's `Secret` is `null`.
 
 | Method | Path                       | Produces           |
@@ -295,7 +303,8 @@ and `SecretDeleted` events whose `Secret` carries `Replica`.
 The replication between regions uses three server-to-server RPCs over the region RPC, which have no
 HTTP endpoint and accept only servers (the server certificate of the requesting region with
 `verify_server_hostname`; with ACLs, a management token, the region's `replication_token`):
-`Secret.ReplicationList` (blocking query on the metadata of the replicated secrets),
-`Secret.Replicate` (the state of one secret and the values of requested versions, encrypted for the
-requesting region; executed and audited by the authoritative leader) and `Secret.ReplicationKey` (the
-replication public key of a region).
+
+- `Secret.ReplicationList` (blocking query on the metadata of the replicated secrets),
+- `Secret.Replicate` (the state of one secret and the values of requested versions, encrypted for the
+  requesting region; executed and audited by the authoritative leader) and
+- `Secret.ReplicationKey` (the replication public key of a region).

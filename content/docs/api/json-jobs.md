@@ -239,8 +239,8 @@ The `Job` object supports the following keys:
 - `AllAtOnce` - Controls whether the scheduler can make partial placements if
   optimistic scheduling resulted in an oversubscribed node. This does not
   control whether all allocations for the job, where all would be the desired
-  count for each task group, must be placed atomically. This should only be
-  used for special circumstances. Defaults to `false`.
+  count for each task group, must be placed atomically. **This should only be
+  used for special circumstances.** Defaults to `false`.
 
 - `Constraints` - A list to define additional constraints where a job can be
   run. See the constraint reference for more details.
@@ -252,7 +252,7 @@ The `Job` object supports the following keys:
   for more details.
 
 - `Datacenters` - A list of datacenters in the region which are eligible
-  for task placement. This must be provided, and does not have a default.
+  for task placement. **This must be provided, and does not have a default.**
 
 - `NodePool` - The node pool in which the job can be placed. Defaults to `"default"`.
 
@@ -263,14 +263,14 @@ The `Job` object supports the following keys:
 
 - `ConsulToken` - Specifies the Consul token that proves the submitter of the
   job has access to the Service Identity policies associated with the job's
-  Consul Connect enabled services. This field is only used to transfer the
-  token and is not stored after job submission.
+  Consul Connect enabled services. **This field is only used to transfer the
+  token and is not stored after job submission.**
 
 - `VaultToken` - Specifies the Vault token that proves the submitter of the job
-  has access to the specified policies in the `vault` block. This field is
-  only used to transfer the token and is not stored after job submission.
+  has access to the specified policies in the `vault` block. **This field is
+  only used to transfer the token and is not stored after job submission.**
 
-- `Namespace` - The namespace to execute the job in, defaults to "default".
+- `Namespace` - The namespace to execute the job in, defaults to `"default"`.
 
 - `ParameterizedJob` - Specifies the job as a parameterized job such that it can
   be dispatched against. The `ParameterizedJob` object supports the following
@@ -284,7 +284,7 @@ The `Job` object supports the following keys:
 
   - `Payload` - Specifies the requirement of providing a payload when
     dispatching against the parameterized job. The options for this field are
-    "optional", "required" and "forbidden". The default value is "optional".
+    `"optional"`, `"required"` and `"forbidden"`. The default value is `"optional"`.
 
 - `DispatchIdempotencyToken` - Optional identifier used to prevent more than one
   instance of the job from being dispatched.
@@ -295,10 +295,10 @@ The `Job` object supports the following keys:
   of 16 KiB**.
 
 - `Priority` - Specifies the job priority which is used to prioritize
-  scheduling and access to resources. Must be between 1 and 100 inclusively,
-  and defaults to 50.
+  scheduling and access to resources. **Must be between `1` and `100` inclusively,
+  and defaults to `50`.**
 
-- `Region` - The region to run the job in, defaults to "global".
+- `Region` - The region to run the job in, defaults to `"global"`.
 
 - `Type` - Specifies the job type and switches which scheduler
   is used. Norca provides the `service`, `system` and `batch` schedulers,
@@ -311,8 +311,8 @@ The `Job` object supports the following keys:
   details on the update block, please see below.
 
 - `Periodic` - `Periodic` allows the job to be scheduled at fixed times, dates
-  or intervals. The periodic expression is always evaluated in the UTC
-  timezone to ensure consistent evaluation when Norca Servers span multiple
+  or intervals. **The periodic expression is always evaluated in the UTC
+  timezone** to ensure consistent evaluation when Norca Servers span multiple
   time zones. The `Periodic` object is optional and supports the following attributes:
 
   - `Enabled` - `Enabled` determines whether the periodic job will spawn child
@@ -328,7 +328,7 @@ The `Job` object supports the following keys:
     periodic expression. `cron` is the only supported `SpecType` currently.
 
   - `Spec` - A cron expression configuring the interval the job is launched
-    at. Supports predefined expressions such as "@daily" and "@weekly" See
+    at. Supports predefined expressions such as `"@daily"` and `"@weekly"` See
     [here](https://github.com/gorhill/cronexpr#implementation) for full
     documentation of supported cron specs and the predefined expressions.
 
@@ -341,8 +341,8 @@ The `Job` object supports the following keys:
     Conflicts with `Spec`.
 
   - <a id="prohibit_overlap">`ProhibitOverlap`</a> - `ProhibitOverlap` can be set
-    to true to enforce that the periodic job doesn't spawn a new instance of the
-    job if any of the previous jobs are still running. It is defaulted to false.
+    to `true` to enforce that the periodic job doesn't spawn a new instance of the
+    job if any of the previous jobs are still running. It is defaulted to `false`.
 
   An example `periodic` block:
 
@@ -407,15 +407,15 @@ attributes:
   - `MinHealthyTime` - Specifies duration a task must be considered healthy
     before the migration is considered healthy.
 
-- `Name` - The name of the task group. Must be specified.
+- `Name` - The name of the task group. **Must be specified.**
 
 - `RestartPolicy` - Specifies the restart policy to be applied to tasks in this group.
   If omitted, a default policy for batch and non-batch jobs is used based on the
   job type. See the [restart policy reference](#restart_policy) for more details.
 
 - `ReschedulePolicy` - Specifies the reschedule policy to be applied to tasks in this group.
-  If omitted, a default policy is used for batch and service jobs. System jobs are not eligible
-  for rescheduling. See the [reschedule policy reference](#reschedule_policy) for more details.
+  If omitted, a default policy is used for batch and service jobs. **System jobs are not eligible
+  for rescheduling.** See the [reschedule policy reference](#reschedule_policy) for more details.
 
 - `Scaling` - Specifies the autoscaling policy for the task group. This is primarily for supporting
   external autoscalers. See the [scaling policy reference](#scaling_policy) for more details.
@@ -484,8 +484,11 @@ The `Task` object supports the following keys:
   - `File` - If `true` the `secrets/nomad_token` file will be created.
 
 - `KillSignal` - Specifies a configurable kill signal for a task, where the
-  default is SIGINT. Note that this is only supported for drivers which accept
-  sending signals (currently `docker`, `exec`, `raw_exec`, and `java` drivers).
+  default is `SIGINT`.
+
+  > [!NOTE]
+  > Note that this is only supported for drivers which accept
+  > sending signals (currently `docker`, `exec`, `raw_exec`, and `java` drivers).
 
 - `KillTimeout` - `KillTimeout` is a time duration in nanoseconds. It can be
   used to configure the time between signaling a task it will be killed and
@@ -494,7 +497,7 @@ The `Task` object supports the following keys:
   elapsed. The default `KillTimeout` is 5 seconds.
 
 - `Leader` - Specifies whether the task is the leader task of the task group. If
-  set to true, when the leader task completes, all other tasks within the task
+  set to `true`, when the leader task completes, all other tasks within the task
   group will be gracefully shutdown.
 
 - `LogConfig` - This allows configuring log rotation for the `stdout` and `stderr`
@@ -502,7 +505,7 @@ The `Task` object supports the following keys:
 
 - `Meta` - Annotates the task group with opaque metadata.
 
-- `Name` - The name of the task. This field is required.
+- `Name` - The name of the task. **This field is required.**
 
 - `Resources` - Provides the resource requirements of the task.
   See the resources reference for more details.
@@ -617,15 +620,15 @@ The `Task` object supports the following keys:
     - `Timeout`: This indicates how long Consul will wait for a health
       check query to succeed.
 
-    - `Method`: The HTTP method to use for HTTP checks. Defaults to GET.
+    - `Method`: The HTTP method to use for HTTP checks. Defaults to `GET`.
 
     - `Body`: The HTTP body to use for HTTP checks. Defaults to an empty string.
 
     - `Path`: The path of the HTTP endpoint which Consul will query to query
       the health of a service if the type of the check is `http`. Norca
       will add the IP of the service and the port, users are only required
-      to add the relative URL of the health check endpoint. Absolute paths
-      are not allowed.
+      to add the relative URL of the health check endpoint. **Absolute paths
+      are not allowed.**
 
     - `Protocol`: This indicates the protocol for the HTTP checks. Valid
       options are `http` and `https`. We default it to `http`.
@@ -646,10 +649,10 @@ The `Task` object supports the following keys:
         service is restarted. Defaults to `0` which disables health-based restarts.
 
       - `Grace`: The duration to wait after a task starts or restarts
-        before counting unhealthy checks count against the limit. Defaults to "1s".
+        before counting unhealthy checks count against the limit. Defaults to `"1s"`.
 
       - `IgnoreWarnings`: Treat checks that are warning as passing.
-        Defaults to false which means warnings are considered unhealthy.
+        Defaults to `false` which means warnings are considered unhealthy.
 
 - `ShutdownDelay` - Specifies the duration to wait when killing a task between
   removing it from Consul and sending it a shutdown signal. Ideally services
@@ -662,7 +665,7 @@ The `Task` object supports the following keys:
   data populated from environment variables, Consul and Vault.
 
 - `User` - Set the user that will run the task. It defaults to the same user
-  the Norca client is being run as. This can only be set on Linux platforms.
+  the Norca client is being run as. **This can only be set on Linux platforms.**
 
 ### Resources
 
@@ -694,15 +697,15 @@ The Device object supports the following keys:
 - `Name` - Specifies the device required. The following inputs are valid:
 
   - `<device_type>`: If a single value is given, it is assumed to be the device
-    type, such as "gpu", or "fpga".
+    type, such as `"gpu"`, or `"fpga"`.
 
   - `<vendor>/<device_type>`: If two values are given separated by a `/`, the
     given device type will be selected, constraining on the provided vendor.
-    Examples include "nvidia/gpu" or "amd/gpu".
+    Examples include `"nvidia/gpu"` or `"amd/gpu"`.
 
   - `<vendor>/<device_type>/<model>`: If three values are given separated by a `/`, the
     given device type will be selected, constraining on the provided vendor, and
-    model name. Examples include "nvidia/gpu/1080ti" or "nvidia/gpu/2080ti".
+    model name. Examples include `"nvidia/gpu/1080ti"` or `"nvidia/gpu/2080ti"`.
 
 * `Count` - The count of devices being requested per task. Defaults to 1.
 
@@ -721,14 +724,14 @@ The `EphemeralDisk` object supports the following keys:
 - `Migrate` - Specifies that the Norca client should make a best-effort attempt
   to migrate the data from a remote machine if placement cannot be made on the
   original node. During data migration, the task will block starting until the
-  data migration has completed. Value is a boolean and the default is false.
+  data migration has completed. Value is a boolean and the default is `false`.
 
-- `SizeMB` - Specifies the size of the ephemeral disk in MB. Default is 300.
+- `SizeMB` - Specifies the size of the ephemeral disk in MB. Default is `300`.
 
 - `Sticky` - Specifies that Norca should make a best-effort attempt to place the
   updated allocation on the same machine. This will move the `local/` and
   `alloc/data` directories to the new allocation. Value is a boolean and the
-  default is false.
+  default is `false`.
 
 <a id="reschedule_policy"></a>
 
@@ -758,7 +761,7 @@ The `ReschedulePolicy` object supports the following keys:
 - `MaxDelay` - `MaxDelay` is an upper bound on the delay beyond which it will not increase. This parameter is used when
   `DelayFunction` is `exponential` or `fibonacci`, and is ignored when `constant` delay is used.
 
-- `Unlimited` - `Unlimited` enables unlimited reschedule attempts. If this is set to true
+- `Unlimited` - `Unlimited` enables unlimited reschedule attempts. If this is set to `true`
   the `Attempts` and `Interval` fields are not used.
 
 <a id="restart_policy"></a>
@@ -775,7 +778,7 @@ The `RestartPolicy` object supports the following keys:
   number of failures happen, behavior is controlled by `Mode`.
 
 - `Delay` - A duration to wait before restarting a task. It is specified in
-  nanoseconds. A random jitter of up to 25% is added to the delay.
+  nanoseconds. **A random jitter of up to 25% is added to the delay.**
 
 - `Mode` - `Mode` is given as a string and controls the behavior when the task
   fails more than `Attempts` times in an `Interval`. Possible values are listed
@@ -788,8 +791,8 @@ The `RestartPolicy` object supports the following keys:
 
 ### Update
 
-Specifies the task group update strategy. When omitted, rolling updates are
-disabled. The update block can be specified at the job or task group level.
+Specifies the task group update strategy. **When omitted, rolling updates are
+disabled.** The update block can be specified at the job or task group level.
 When specified at the job, the update block is inherited by all task groups.
 When specified in both the job and in a task group, the blocks are merged with
 the task group's taking precedence. The `Update` object supports the following
@@ -801,15 +804,15 @@ attributes:
 - `HealthCheck` - Specifies the mechanism in which allocations health is
   determined. The potential values are:
 
-  - "checks" - Specifies that the allocation should be considered healthy when
+  - `"checks"` - Specifies that the allocation should be considered healthy when
     all of its tasks are running and their associated checks are healthy,
     and unhealthy if any of the tasks fail or not all checks become healthy.
-    This is a superset of "task_states" mode.
+    This is a superset of `"task_states"` mode.
 
-  - "task_states" - Specifies that the allocation should be considered healthy
+  - `"task_states"` - Specifies that the allocation should be considered healthy
     when all its tasks are running and unhealthy if tasks fail.
 
-  - "manual" - Specifies that Norca should not automatically determine health
+  - `"manual"` - Specifies that Norca should not automatically determine health
     and that the operator will specify allocation health using the [HTTP
     API](/docs/api/deployments#set-allocation-health-in-deployment).
 
@@ -870,7 +873,7 @@ The `Constraint` object supports the following keys:
 
 - `RTarget` - Specifies the value to compare the attribute against.
   This can be a literal value, another attribute or a regular expression if
-  the `Operator` is in "regexp" mode.
+  the `Operator` is in `"regexp"` mode.
 
 - `Operand` - Specifies the test to be performed on the two targets. It takes on the
   following values:
@@ -920,7 +923,7 @@ The `Affinity` object supports the following keys:
 
 - `RTarget` - Specifies the value to compare the attribute against.
   This can be a literal value, another attribute or a regular expression if
-  the `Operator` is in "regexp" mode.
+  the `Operator` is in `"regexp"` mode.
 
 - `Operand` - Specifies the test to be performed on the two targets. It takes on the
   following values:
@@ -953,8 +956,8 @@ The `LogConfig` object configures the log rotation policy for a task's `stdout` 
   `MB`.
 
 If the amount of disk resource requested for the task is less than the total
-amount of disk space needed to retain the rotated set of files, Norca will return
-a validation error when a job is submitted.
+amount of disk space needed to retain the rotated set of files, **Norca will return
+a validation error when a job is submitted.**
 
 ```json
 {
@@ -1091,7 +1094,7 @@ README][ct].
   - `"script"` - run a script
 
 - `ChangeSignal` - Specifies the signal to send to the task as a string like
-  "SIGUSR1" or "SIGINT". This option is required if the `ChangeMode` is
+  `"SIGUSR1"` or `"SIGINT"`. This option is required if the `ChangeMode` is
   `signal`.
 
 - `ChangeScript` - Configures the script triggered on template change.  This
@@ -1102,13 +1105,13 @@ README][ct].
   - `Command` - Specifies the full path to a script or executable that is to be
     executed on template change. Path is relative to the driver, e.g., if running
     with a container driver the path must be existing in the container. This
-    option is required is the `change_mode` is `script`.
+    option is required if the `change_mode` is `script`.
 
   - `Args` - List of arguments that are passed to the script that is to be
     executed on template change.
 
   - `Timeout` - Timeout for script execution specified using a label suffix like
-    "30s" or "1h". Default value is `"5s"`.
+    `"30s"` or `"1h"`. Default value is `"5s"`.
 
   - `FailOnError` - If `true`, Norca will kill the task if the script execution
     fails. If `false`, script failure will be logged but the task will continue
@@ -1117,15 +1120,15 @@ README][ct].
 - `DestPath` - Specifies the location where the resulting template should be
   rendered, relative to the task directory.
 
-- `EmbeddedTmpl` - Specifies the raw template to execute. One of `SourcePath`
-  or `EmbeddedTmpl` must be specified, but not both. This is useful for smaller
+- `EmbeddedTmpl` - Specifies the raw template to execute. **One of `SourcePath`
+  or `EmbeddedTmpl` must be specified, but not both.** This is useful for smaller
   templates, but we recommend using `SourcePath` for larger templates.
 
 - `Envvars` - Specifies the template should be read back as environment
   variables for the task.
 
 - `LeftDelim` - Specifies the left delimiter to use in the template. The default
-  is "{{" for some templates, it may be easier to use a different delimiter that
+  is `"{{"` for some templates, it may be easier to use a different delimiter that
   does not conflict with the output file itself.
 
 - `Perms` - Specifies the rendered template's permissions. File permissions are
@@ -1148,13 +1151,13 @@ README][ct].
   > feature will also **not** work with Docker Desktop.
 
 - `RightDelim` - Specifies the right delimiter to use in the template. The default
-  is "}}" for some templates, it may be easier to use a different delimiter that
+  is `"}}"` for some templates, it may be easier to use a different delimiter that
   does not conflict with the output file itself.
 
 - `SourcePath` - Specifies the path to the template to be rendered. `SourcePath`
   is mutually exclusive with `EmbeddedTmpl` attribute. The source can be fetched
-  using an [`Artifact`](#artifact) resource. The template must exist on the
-  machine prior to starting the task; it is not possible to reference a template
+  using an [`Artifact`](#artifact) resource. **The template must exist on the
+  machine prior to starting the task**; it is not possible to reference a template
   inside of a Docker container, for example.
 
 - `Splay` - Specifies a random amount of time to wait between 0 ms and the given
@@ -1192,9 +1195,9 @@ The `Spread` object supports the following keys:
 - `SpreadTarget` - Specifies a list of attribute values and percentages. This is an optional field, when
   left empty Norca will evenly spread allocations across values of the attribute.
 
-  - `Value` - The value of a specific target attribute, like "dc1" for `${node.datacenter}`.
-  - `Percent` - Desired percentage of allocations for this attribute value. The sum of
-    all spread target percentages must add up to 100.
+  - `Value` - The value of a specific target attribute, like `"dc1"` for `${node.datacenter}`.
+  - `Percent` - Desired percentage of allocations for this attribute value. **The sum of
+    all spread target percentages must add up to 100.**
 
 - `Weight` - A non zero weight, valid values are from -100 to 100. Used to express
   relative preference when there is more than one spread or affinity.
@@ -1213,8 +1216,8 @@ The `Scaling` object supports the following keys:
   is the `Count` specified in the task group. Attempts to set the task group `Count` below `Min` will
   result in a 400 error during job registration.
 
-- `Max` - The maximum allowable count for the task group. This is required if a scaling policy is provided.
-  This must be larger than `Min`. Attempts to set the task group `Count` above `Max` wil result in a 400
+- `Max` - The maximum allowable count for the task group. **This is required if a scaling policy is provided.**
+  This must be larger than `Min`. Attempts to set the task group `Count` above `Max` will result in a 400
   error during job registration.
 
 - `Enabled` - An optional boolean (default: `true`). This indicates to the autoscaler that this

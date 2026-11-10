@@ -11,8 +11,8 @@ JetStream embedded in the Norca servers.
 ## Read Bus Status
 
 This endpoint returns the status of the bus of the server that answers the
-request, or of the server named by `server_id`. The status is local to the
-server: the request is not forwarded to the leader.
+request, or of the server named by `server_id`. **The status is local to the
+server: the request is not forwarded to the leader.**
 
 | Method | Path               | Produces           |
 | ------ | ------------------ | ------------------ |
@@ -96,8 +96,10 @@ $ curl -H "X-Nomad-Token: $NORCA_TOKEN" \
 }
 ```
 
-`Enabled` is `false`, and the other fields are empty, when the server runs
-without a bus. `Clustered` is `false` while the region has a single server
-and the bus runs a standalone JetStream. `MetaLeader` is empty while
-JetStream has no meta leader, for example before the region's other servers
-joined.
+- `Enabled` is `false`, and the other fields are empty, when the server runs
+  without a bus.
+- `Clustered` is `false` while the region has a single server
+  and the bus runs a standalone JetStream.
+- `MetaLeader` is empty while
+  JetStream has no meta leader, for example before the region's other servers
+  joined.

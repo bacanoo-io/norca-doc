@@ -15,15 +15,18 @@ are used. For instructions on how to use the CLI to perform these operations
 manually, please see the documentation for the [`norca operator root keyring`]
 commands.
 
-With ACLs enabled, the endpoints need a management token; the secret ID of a
+With ACLs enabled, **the endpoints need a management token**; the secret ID of a
 client node is not accepted (`403`), see
 [client node identity](/docs/concepts/acl#client-node-identity).
 
 ## List Keys
 
-This endpoint retrieves a list of root keys known to the cluster. Note that only
-key metadata is returned and the key material is never made available via the
-HTTP API.
+This endpoint retrieves a list of root keys known to the cluster.
+
+> [!NOTE]
+> Note that only
+> key metadata is returned and the key material is never made available via the
+> HTTP API.
 
 | Method | Path                        | Produces           |
 |--------|-----------------------------|--------------------|
@@ -92,8 +95,8 @@ The table below shows this endpoint's support for [blocking queries] and
 ### Parameters
 
 - `full` `(bool: false)` - Decrypt all existing variables and re-encrypt with
-  the new key. This API request will immediately return and the re-encryption
-  process will run asynchronously on the leader.
+  the new key. **This API request will immediately return and the re-encryption
+  process will run asynchronously on the leader.**
 
 ### Sample Request
 

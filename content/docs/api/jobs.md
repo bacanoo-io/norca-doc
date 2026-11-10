@@ -331,7 +331,7 @@ The table below shows this endpoint's support for
 - `:job_id` `(string: <required>)` - Specifies the ID of the job (as specified in
   the job file during submission). This is specified as part of the path.
 - `namespace` `(string: "default")` - Specifies the namespace of the job. If not specified,
-  defaults to "default". This is specified as a URL query parameter.
+  defaults to `"default"`. This is specified as a URL query parameter.
 
 ### Sample Request
 
@@ -563,8 +563,8 @@ $ curl \
 ## Read Job Submission
 
 This endpoint reads original source information about a specific version of a single
-job. The data this endpoint provides is only available if it was provided with the
-original job during job registration. Only the most recent 6 job source files are
+job. **The data this endpoint provides is only available if it was provided with the
+original job during job registration.** Only the most recent 6 job source files are
 retained.
 
 | Method | Path                           | Produces           |
@@ -635,7 +635,7 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `diffs` `(bool: false)` - Specifies if the Diffs field should be populated,
+- `diffs` `(bool: false)` - Specifies if the `Diffs` field should be populated,
   containing the structured diff between the current and last job version.
 
 - `:job_id` `(string: <required>)` - Specifies the ID of the job (as specified in
@@ -1768,7 +1768,7 @@ The table below shows this endpoint's support for
   IDs.
 
 - `Payload` `(string: "")` - Specifies a base64 encoded string containing the
-  payload. This is limited to 65536 bytes (64KiB).
+  payload. **This is limited to 65536 bytes (64KiB).**
 
 - `Meta` `(meta<string|string>: nil)` - Specifies arbitrary metadata to pass to
   the job.
@@ -1837,7 +1837,7 @@ The table below shows this endpoint's support for
   reverting to the specified job.
 
 - `ConsulToken` `(string:"")` - Optional value specifying the [consul token](/docs/commands/job/revert/)
-  used for Consul [service identity polity authentication checking](/docs/configuration/consul#allow_unauthenticated).
+  used for Consul [service identity policy authentication checking](/docs/configuration/consul#allow_unauthenticated).
 
 - `VaultToken` `(string: "")` - Optional value specifying the [vault token](/docs/commands/job/revert/)
   used for Vault [policy authentication checking](/docs/configuration/vault#allow_unauthenticated).
@@ -2015,7 +2015,7 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:job_id` `(string: <required>)` - Specifies the ID of the job (as specified in
-- the job file during submission). This is specified as part of the path.
+  the job file during submission). This is specified as part of the path.
 
 - `Job` `(string: <required>)` - Specifies the JSON definition of the job.
 
@@ -2201,14 +2201,14 @@ $ curl \
   occurred for the Task Group.
 
 - `Annotations` - Annotations include the `DesiredTGUpdates`, which tracks what
-- the scheduler would do given enough resources for each Task Group.
+  the scheduler would do given enough resources for each Task Group.
 
 ## Force New Periodic Instance
 
 This endpoint forces a new instance of the periodic job. A new instance will be
 created even if it violates the job's
 [`prohibit_overlap`](/docs/job-specification/periodic#prohibit_overlap)
-settings. As such, this should be only used to immediately run a periodic job.
+settings. **As such, this should be only used to immediately run a periodic job.**
 
 | Method | Path                             | Produces           |
 | ------ | -------------------------------- | ------------------ |
@@ -2270,10 +2270,10 @@ The table below shows this endpoint's support for
   of the job.
 
 - `global` `(bool: false)` - Stop a multi-region job in all its regions. By default,
-  job stop will stop only a single region at a time. Ignored for single-region jobs.
+  job stop will stop **only a single region at a time**. Ignored for single-region jobs.
 
 - `purge` `(bool: false)` - Specifies that the job should be stopped and purged
-  immediately. This means the job will not be queryable after being stopped. If
+  immediately. **This means the job will not be queryable after being stopped.** If
   not set, the job will be purged by the garbage collector.
 
 - `namespace` `(string: "default")` - Specifies the target namespace. If ACL is
@@ -2282,8 +2282,11 @@ access. This is specified as a query string parameter.
 
 - `no_shutdown_delay` `(bool: false)` - Ignore the group and task `shutdown_delay`
   configuration so that there is no delay between service deregistration and task
-  shutdown. Note that using this flag will result in failed network connections
-  to the allocations being stopped.
+  shutdown.
+
+  > [!WARNING]
+  > Note that using this flag will result in failed network connections
+  > to the allocations being stopped.
 
 ### Sample Request
 
@@ -2425,7 +2428,7 @@ $ curl \
 
 This endpoint performs a scaling action against a job.
 Currently, this endpoint supports scaling the count for a task group.
-This will return a 400 error if the job has an active deployment.
+**This will return a 400 error if the job has an active deployment.**
 
 | Method | Path                    | Produces           |
 | ------ | ----------------------- | ------------------ |
@@ -2447,7 +2450,7 @@ The table below shows this endpoint's support for
 - `Count` `(int: <optional>)` - Specifies the new task group count.
 
 - `Target` `(json: required)` - JSON map containing the target of the scaling operation.
-  Must contain a field `Group` with the name of the task group that is the target of this scaling action.
+  **Must contain a field `Group`** with the name of the task group that is the target of this scaling action.
 
 - `Message` `(string: <optional>)` - Description of the scale action, persisted as part of the scaling event.
   Indicates information or reason for scaling; one of `Message` or `Error` must be provided.

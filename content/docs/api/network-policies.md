@@ -6,14 +6,14 @@ description: "The /network-policy and /admin-network-policy endpoints manage net
 
 The `/network-policies`, `/network-policy`, `/admin-network-policies` and
 `/admin-network-policy` endpoints (Norca) manage
-[network rules](/docs/features/network-rules). Network policies belong to a
-namespace; admin network policies are cluster-wide. The HCL file format used by
+[network rules](/docs/features/network-rules). **Network policies belong to a
+namespace; admin network policies are cluster-wide.** The HCL file format used by
 the CLI is described in the
 [network policy specification](/docs/other-specifications/network-policy); the
 API uses the JSON form below.
 
-All write endpoints require every server of the region to run Norca 0.1.0 or
-later.
+**All write endpoints require every server of the region to run Norca 0.1.0 or
+later.**
 
 ## Policy Objects
 
@@ -58,9 +58,13 @@ and `DefaultDeny`, and its rules must have an `Action` (`allow`, `deny` or
 }
 ```
 
-A peer (`NetworkPolicyPeer`) is either `{"CIDR": [...], "Except": [...]}`
-(`Except` takes prefixes out of the `CIDR` blocks) or
-`{"Namespace": "...", "Selector": {...}}` (allocations on the same node). The
+A peer (`NetworkPolicyPeer`) is either
+
+- `{"CIDR": [...], "Except": [...]}`
+  (`Except` takes prefixes out of the `CIDR` blocks) or
+- `{"Namespace": "...", "Selector": {...}}` (allocations on the same node).
+
+The
 fields, defaults and limits are those of the
 [specification](/docs/other-specifications/network-policy).
 
@@ -151,7 +155,7 @@ $ curl \
 - `namespace` `(string: "default")` - The namespace of the policy if the
   payload has no `Namespace`. The namespace must exist.
 
-The payload is a network policy object. `Enforcement` defaults to `required`.
+The payload is a network policy object. **`Enforcement` defaults to `required`.**
 
 ### Sample Request
 

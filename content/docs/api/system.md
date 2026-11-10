@@ -6,13 +6,13 @@ upstream:
   path: "website/content/api-docs/system.mdx"
 ---
 
-The `/system` endpoints are used to for system maintenance and should not be
-necessary for most users.
+The `/system` endpoints are used for system maintenance and **should not be
+necessary for most users**.
 
 ## Force GC
 
 This endpoint initializes a garbage collection of jobs, evaluations, allocations, and
-nodes. This is an asynchronous operation.
+nodes. **This is an asynchronous operation.**
 
 | Method | Path            | Produces           |
 | ------ | --------------- | ------------------ |

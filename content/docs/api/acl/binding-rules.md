@@ -122,8 +122,8 @@ The table below shows this endpoint's support for
   field.
 
 - `AuthMethod` `(string: <required>)` - Name of the auth method for which this
-  rule applies to. This is a required field and the method must exist within state
-  before the cluster administrator can create the rule.
+  rule applies to. This is a required field and **the method must exist within state
+  before the cluster administrator can create the rule.**
 
 - `Selector` `(string: "")` - A boolean expression that matches against verified
   identity attributes returned from the auth method during login.  This is
@@ -142,9 +142,9 @@ The table below shows this endpoint's support for
   at login time. Valid values are `role`, `policy`, and `management`.
 
 - `BindName` `(string: <required>)` - Target of the binding. Can be lightly
-  templated using HIL ${foo} syntax from available field names. If the bind
-  type is set to `management`, this should not be set. How it is used depends
-  on the BindType.
+  templated using HIL `${foo}` syntax from available field names. **If the bind
+  type is set to `management`, this should not be set.** How it is used depends
+  on the `BindType`.
 
 ### Sample Payload
 
@@ -218,8 +218,8 @@ queries](/docs/api#blocking-queries) and [required ACLs](/docs/api#acls).
   time. Valid values are `role`, `policy`, and `management`.
 
 - `BindName` `(string: "")` - Target of the binding. Can be lightly templated
-  using HIL ${foo} syntax from available field names. How it is used depends on
-  the BindType.
+  using HIL `${foo}` syntax from available field names. How it is used depends on
+  the `BindType`.
 
 ### Sample Payload
 

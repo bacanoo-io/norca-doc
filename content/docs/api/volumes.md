@@ -29,7 +29,7 @@ The table below shows this endpoint's support for
 
 - `type` `(string: "")` - Specifies the type of volume to
   query. Currently only supports `csi`. This is specified as a query
-  string parameter. Returns an empty list if omitted.
+  string parameter. **Returns an empty list if omitted.**
 
 - `node_id` `(string: "")` - Specifies a string to filter volumes
   based on an Node ID prefix. Because the value is decoded to bytes,
@@ -278,8 +278,8 @@ $ curl \
 ## Register Volume
 
 This endpoint registers an external volume with Norca. The volume must exist
-in the external storage provider (see [Create Volume] below). It is an error
-to register an already registered volume.
+in the external storage provider (see [Create Volume] below). **It is an error
+to register an already registered volume.**
 
 | Method | Path                        | Produces           |
 | ------ | --------------------------- | ------------------ |
@@ -344,7 +344,7 @@ $ curl \
 ## Create Volume
 
 This endpoint creates a volume in an external storage provider and registers
-it with Norca. It is an error to create an already-registered volume. Only CSI
+it with Norca. **It is an error to create an already-registered volume.** Only CSI
 plugins that implement the [Controller][csi_plugins_internals] interface with
 the `CREATE_DELETE_VOLUME` capability support this endpoint.
 
@@ -416,8 +416,8 @@ $ curl \
 
 ## Deregister Volume
 
-This endpoint deregisters an external volume with Norca. It is an error to
-deregister a volume that is in use.
+This endpoint deregisters an external volume with Norca. **It is an error to
+deregister a volume that is in use.**
 
 | Method   | Path                        | Produces           |
 | -------- | --------------------------- | ------------------ |
@@ -438,8 +438,8 @@ The table below shows this endpoint's support for
   path.
 
 - `force` `(bool: false)` - Force deregistration of the volume and immediately
-  drop claims for terminal allocations. Returns an error if the volume has
-  running allocations. This does not detach the volume from client nodes.
+  drop claims for terminal allocations. **Returns an error if the volume has
+  running allocations. This does not detach the volume from client nodes.**
   This is specified as a query string parameter.
 
 ### Sample Request
@@ -453,8 +453,8 @@ $ curl \
 ## Delete Volume
 
 This endpoint deletes an external volume from the storage provider, and
-deregisters it from Norca. It is an error to delete a volume that is in
-use. Only CSI plugins that implement the [Controller][csi_plugins_internals]
+deregisters it from Norca. **It is an error to delete a volume that is in
+use.** Only CSI plugins that implement the [Controller][csi_plugins_internals]
 interface with the `CREATE_DELETE_VOLUME` capability support this endpoint.
 
 | Method   | Path                               | Produces           |
@@ -491,8 +491,8 @@ $ curl \
 
 ## Detach Volume
 
-This endpoint detaches an external volume from a Norca client node. It is an
-error to detach a volume that is in use.
+This endpoint detaches an external volume from a Norca client node. **It is an
+error to detach a volume that is in use.**
 
 | Method   | Path                               | Produces           |
 | -------- | ---------------------------------- | ------------------ |

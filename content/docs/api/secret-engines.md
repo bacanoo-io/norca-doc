@@ -6,16 +6,16 @@ description: "The /secret-engines, /secret-engine, /secret-leases and /secret-le
 
 The `/secret-engine{s}` and `/secret-lease{s}` endpoints (Norca) manage the
 [dynamic secrets engines](/docs/features/secrets/dynamic) of the built-in secret store and the leases of
-the credentials they create. Neither an engine nor a lease contains a credential: an engine names the
+the credentials they create. **Neither an engine nor a lease contains a credential**: an engine names the
 service of its operator, a lease holds the operator's reference of its credential. Credentials are created for tasks only, by their client
-over the server RPC (`SecretLease.Create`, `Renew`, `Revoke` with the task's workload identity); there is
-no HTTP endpoint that returns one. For the CLI, see [`norca secret engine`](/docs/commands/secret/engine)
+over the server RPC (`SecretLease.Create`, `Renew`, `Revoke` with the task's workload identity); **there is
+no HTTP endpoint that returns one**. For the CLI, see [`norca secret engine`](/docs/commands/secret/engine)
 and [`norca secret lease`](/docs/commands/secret/lease).
 
 All endpoints act on the namespace given with the `namespace` query parameter (default `default`).
 Writes and revocations are executed by the leader and audited (operations
-`engine-write`, `engine-delete`, `lease-revoke` on the `SecretAccess` topic). While the
-secret store is sealed, writes fail with status 503.
+`engine-write`, `engine-delete`, `lease-revoke` on the `SecretAccess` topic). **While the
+secret store is sealed, writes fail with status 503.**
 
 ## List Engines
 
@@ -101,8 +101,8 @@ Returns 404 if there is no engine of that name.
 |------------------|--------------|
 | `NO` | `namespace:write-secret-engine` |
 
-The operator may start after its engine: the write doesn't call it. The type of an existing engine can't be
-changed. An invalid configuration fails with 400.
+The operator may start after its engine: the write doesn't call it. **The type of an existing engine can't be
+changed.** An invalid configuration fails with 400.
 
 ### Parameters
 
@@ -121,7 +121,7 @@ changed. An invalid configuration fails with 400.
   - `Name` `(string: <required>)`.
   - `TTL` `(duration: 1h)` - The lease duration; a renewal extends the lease by it. At least 1s.
   - `MaxTTL` `(duration: 24h, or TTL if longer)` - The longest life of a credential; at least `TTL`.
-  - `Config` `(map[string]string: nil)` - Passed to the operator. It must hold nothing secret.
+  - `Config` `(map[string]string: nil)` - Passed to the operator. **It must hold nothing secret.**
   - `Params` `([]string: nil)` - The keys of the `params` a job may send.
 
 Durations are nanoseconds in JSON.
@@ -151,7 +151,7 @@ $ curl -X PUT -H "X-Nomad-Token: $NORCA_TOKEN" -d @postgres.json \
 |------------------|--------------|
 | `NO` | `namespace:write-secret-engine` |
 
-Fails with 409 while the engine has live leases (revoke them first). The ended leases are removed with
+**Fails with 409 while the engine has live leases (revoke them first).** The ended leases are removed with
 the engine. `cas` makes the delete conditional.
 
 ## Revoke the Leases of an Engine
@@ -179,9 +179,14 @@ Revokes every live lease of the engine (reason `operator`) and returns their IDs
 |------------------|--------------|
 | `YES` | `namespace:read-secret-engine` |
 
-Parameters: `engine` (only the leases of this engine), `namespace` (`*` for all namespaces the token may
-read), `prefix` (a lease ID prefix), `per_page`, `next_token`. Revoked leases are listed until their
-credential has expired.
+Parameters:
+
+- `engine` (only the leases of this engine),
+- `namespace` (`*` for all namespaces the token may read),
+- `prefix` (a lease ID prefix),
+- `per_page`, `next_token`.
+
+**Revoked leases are listed until their credential has expired.**
 
 ```json
 [
@@ -238,10 +243,13 @@ new credential from its client.
 
 ## Events
 
-The `Secret` topic of the [event stream](/docs/api/events) carries `SecretEngineUpserted` and
-`SecretEngineDeleted` (key: the engine name; payload `{"Engine": {...}}`) and `SecretLeaseCreated`,
-`SecretLeaseRenewed`, `SecretLeaseRevoked` and `SecretLeaseDeleted` (key: the lease ID, filter key: the
-engine; payload `{"Lease": {...}}`). They are visible with `read-secret-engine` in their namespace.
+The `Secret` topic of the [event stream](/docs/api/events) carries
+
+- `SecretEngineUpserted` and `SecretEngineDeleted` (key: the engine name; payload `{"Engine": {...}}`) and
+- `SecretLeaseCreated`, `SecretLeaseRenewed`, `SecretLeaseRevoked` and `SecretLeaseDeleted` (key: the
+  lease ID, filter key: the engine; payload `{"Lease": {...}}`).
+
+They are visible with `read-secret-engine` in their namespace.
 
 ## Internal RPCs
 

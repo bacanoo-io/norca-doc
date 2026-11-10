@@ -11,7 +11,7 @@ a metric, the list of the series, and the usage summary of a task group.
 ## Read History
 
 Every server keeps the full history, so the server that answers the request
-reads its own store; the request is not forwarded to the leader.
+reads its own store; **the request is not forwarded to the leader**.
 
 | Method | Path                  | Produces           |
 | ------ | --------------------- | ------------------ |
@@ -43,13 +43,16 @@ The table below shows this endpoint's support for
   node metric needs all four labels as the series list shows them: `node`,
   and the `dc`, `pool` and `class` of the node.
 - `quota` `(string: "")` - The quota of a quota metric.
-- The labels of the other metrics are parameters of the same name: `ns` for
-  `norca.jobs.*` and `norca.lb.*`, `name` for `norca.lb.*`, `destination`
-  for `norca.backup.size_bytes` and `duration_seconds`, `webhook` for
-  `norca.security.webhook_*`, `group` for `norca.nodegroup.*` and `type`
-  for `norca.nodegroup.condition`, `kind` for `norca.objects.*`, `peer` for
-  `norca.server.raft_append_entries_seconds`. A metric without labels
-  (`norca.sched.*`, for example) takes none.
+- The labels of the other metrics are parameters of the same name:
+  - `ns` for `norca.jobs.*` and `norca.lb.*`,
+  - `name` for `norca.lb.*`,
+  - `destination` for `norca.backup.size_bytes` and `duration_seconds`,
+  - `webhook` for `norca.security.webhook_*`,
+  - `group` for `norca.nodegroup.*` and `type` for `norca.nodegroup.condition`,
+  - `kind` for `norca.objects.*`,
+  - `peer` for `norca.server.raft_append_entries_seconds`.
+
+  A metric without labels (`norca.sched.*`, for example) takes none.
 - `from` `(string: "1h")` - The start of the history: an RFC 3339 time, Unix
   seconds, or a duration before now.
 - `to` `(string: "")` - The end of the history (exclusive), in the same
@@ -196,10 +199,10 @@ server metrics (`null` when the store is disabled). `Series` counts the
 series of both stores, which `MaxSeries` limits; `Hosts.Series` the part in
 the hosts store. `Retention`, `MaxDiskSize`, `Hosts.Retention`,
 `Hosts.MaxDiskSize` and `MaxSeries` are the effective values, which a
-[reload](/docs/configuration/metrics_store#reload) of the server changes. An
+[reload](/docs/configuration/metrics_store#reload) of the server changes. **An
 `Oldest` point younger than the retention of its store, on a store that has
 run for longer, means that its disk cap (`max_disk_size` or
-`host_max_disk_size`) removed partitions before their time.
+`host_max_disk_size`) removed partitions before their time.**
 
 ```json
 {

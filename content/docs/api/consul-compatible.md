@@ -8,7 +8,7 @@ A Norca client with [`consul_compat`](/docs/configuration/consul_compat) enabled
 Consul's documented HTTP API on its own listener (default `127.0.0.1:8500`), from the native service
 catalog. This page lists what is served; see the
 [feature page](/docs/features/service-discovery/consul-compatible-api) for the concepts. The API is not a
-Consul agent: every path that is not listed here answers `501 Not Implemented`.
+Consul agent: **every path that is not listed here answers `501 Not Implemented`**.
 
 ## Common behaviour
 
@@ -76,7 +76,7 @@ registrations.
 
 Method `PUT`; other methods answer `405`. These endpoints register
 [external services](/docs/features/service-discovery/external-services) owned by the client node: the
-node runs their `http` and `tcp` checks, and the registrations are removed when the node goes down.
+node runs their `http` and `tcp` checks, and **the registrations are removed when the node goes down**.
 Writes go to the region of the client.
 
 | Path | Body or parameters | Effect |

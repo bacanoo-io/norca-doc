@@ -79,8 +79,8 @@ $ curl \
 
   - `RejectJobRegistration` `(bool: false)` - When `true`, the server will return
     permission denied errors for job registration, job dispatch, and job scale APIs,
-    unless the ACL token for the request is a management token. If ACLs are disabled,
-    no user will be able to register jobs. This allows operators to shed load from
+    unless the ACL token for the request is a management token. **If ACLs are disabled,
+    no user will be able to register jobs.** This allows operators to shed load from
     automated processes during incident response.
 
   - `PauseEvalBroker` `(bool: false)` - When set to `true`, the eval broker which
@@ -90,16 +90,16 @@ $ curl \
   - `PreemptionConfig` `(PreemptionConfig)` - Options to enable preemption for various schedulers.
 
     - `SystemSchedulerEnabled` `(bool: true)` - Specifies whether preemption for system jobs is enabled. Note that
-      this defaults to true.
+      **this defaults to `true`**.
 
     - `SysBatchSchedulerEnabled` `(bool: false)` - Specifies whether preemption for system batch jobs is enabled. Note that
-      this defaults to false.
+      **this defaults to `false`**.
 
     - `BatchSchedulerEnabled` `(bool: false)` - Specifies whether preemption for batch jobs is enabled. Note that
-      this defaults to false and must be explicitly enabled.
+      **this defaults to `false` and must be explicitly enabled**.
 
     - `ServiceSchedulerEnabled` `(bool: false)` - Specifies whether preemption for service jobs is enabled. Note that
-      this defaults to false and must be explicitly enabled.
+      **this defaults to `false` and must be explicitly enabled**.
 
   - `CreateIndex` - The Raft index at which the config was created.
   - `ModifyIndex` - The Raft index at which the config was modified.
@@ -123,8 +123,8 @@ The table below shows this endpoint's support for
 ### Bootstrap Configuration Element
 
 The [`default_scheduler_config`][] attribute of the server block will provide a
-starting value for this configuration. Once bootstrapped, the value in the
-server state is authoritative.
+starting value for this configuration. **Once bootstrapped, the value in the
+server state is authoritative.**
 
 ### Parameters
 
@@ -162,8 +162,8 @@ server state is authoritative.
 
 - `RejectJobRegistration` `(bool: false)` - When `true`, the server will return
   permission denied errors for job registration, job dispatch, and job scale APIs,
-  unless the ACL token for the request is a management token. If ACLs are disabled,
-  no user will be able to register jobs. This allows operators to shed load from
+  unless the ACL token for the request is a management token. **If ACLs are disabled,
+  no user will be able to register jobs.** This allows operators to shed load from
   automated processes during incident response.
 
 - `PauseEvalBroker` `(bool: false)` - When set to `true`, the eval broker which
@@ -174,20 +174,20 @@ server state is authoritative.
   various schedulers.
 
   - `SystemSchedulerEnabled` `(bool: true)` - Specifies whether preemption for
-    system jobs is enabled. Note that if this is set to true, then system jobs
-    can preempt any other jobs.
+    system jobs is enabled. Note that if this is set to `true`, then **system jobs
+    can preempt any other jobs**.
 
   - `SysBatchSchedulerEnabled` `(bool: false)` <sup>1.2</sup> - Specifies
     whether preemption for system batch jobs is enabled. Note that if this is
-    set to true, then system batch jobs can preempt any other jobs.
+    set to `true`, then **system batch jobs can preempt any other jobs**.
 
   - `BatchSchedulerEnabled` `(bool: false)` - Specifies
     whether preemption for batch jobs is enabled. Note that if this is set to
-    true, then batch jobs can preempt any other jobs.
+    `true`, then **batch jobs can preempt any other jobs**.
 
   - `ServiceSchedulerEnabled` `(bool: false)` - Specifies
     whether preemption for service jobs is enabled. Note that if this is set to
-    true, then service jobs can preempt any other jobs.
+    `true`, then **service jobs can preempt any other jobs**.
 
 ### Sample Response
 
@@ -199,8 +199,8 @@ server state is authoritative.
 ```
 
 - `Updated` - Indicates that the configuration was updated when a `cas` value is
-  provided. For non-CAS requests, this field will be false even though the
-  update is applied.
+  provided. **For non-CAS requests, this field will be `false` even though the
+  update is applied.**
 
 - `Index` - Current Raft index when the request was received.
 

@@ -10,7 +10,7 @@ The `/node/pool` endpoints are used to query for and interact with node pools.
 
 ## List Node Pools
 
-This endpoint list all node pools.
+This endpoint lists all node pools.
 
 | Method | Path             | Produces           |
 | ------ | ---------------- | ------------------ |
@@ -134,8 +134,8 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `Name` `(string: <required>)` - Specifies the node pool to create or update.
-  Must have fewer than 128 characters. Only alphanumeric, `-`, and `_` are
-  allowed.
+  **Must have fewer than 128 characters. Only alphanumeric, `-`, and `_` are
+  allowed.**
 
 - `Description` `(string: "")` - Specifies the optional human-readable
   description of the node pool. Must have fewer than 256 characters.
@@ -144,8 +144,8 @@ The table below shows this endpoint's support for
   metadata to attach to the node pool. Node pool metadata is not used by
   Norca and is intended for use by operators and third party tools.
 
-- `SchedulerConfiguration` - Not supported in Norca: a request that sets it is
-  rejected. The [global scheduler configuration](/docs/api/operator/scheduler)
+- `SchedulerConfiguration` - **Not supported in Norca: a request that sets it is
+  rejected.** The [global scheduler configuration](/docs/api/operator/scheduler)
   applies to every node pool.
 
 ### Sample Payload
@@ -199,7 +199,7 @@ $ norca operator api -X DELETE /v1/node/pool/prod-eng
 
 ## List Node Pool Nodes
 
-This endpoint list the nodes in a node pool.
+This endpoint lists the nodes in a node pool.
 
 | Method | Path                             | Produces           |
 | ------ | -------------------------------- | ------------------ |
@@ -329,7 +329,7 @@ $ norca operator api /v1/node/pool/prod-eng/nodes?os=true
 ]
 ```
 
-# List Node Pool Jobs
+## List Node Pool Jobs
 
 This endpoint lists the jobs in a node pool.
 

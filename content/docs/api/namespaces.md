@@ -26,7 +26,7 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `prefix` `(string: "")`- Specifies a string to filter namespaces on based on
+- `prefix` `(string: "")` - Specifies a string to filter namespaces on based on
   an index prefix. This is specified as a query string parameter.
 
 ### Sample Request
@@ -87,7 +87,7 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `:namespace` `(string: <required>)`- Specifies the namespace to query.
+- `:namespace` `(string: <required>)` - Specifies the namespace to query.
 
 ### Sample Request
 
@@ -131,14 +131,14 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `Name` `(string: <required>)`- Specifies the namespace to create or
+- `Name` `(string: <required>)` - Specifies the namespace to create or
   update.
 
 - `Description` `(string: "")` - Specifies an optional human-readable
   description of the namespace.
 
 - `Meta` `(object: null)` - Optional object with string keys and values of
-  metadata to attach to the namespace. Namespace metadata is not used by Norca
+  metadata to attach to the namespace. **Namespace metadata is not used by Norca**
   and is intended for use by operators and third party tools.
 
 - `Quota` `(string: "")` - Specifies the name of a quota specification to
@@ -148,7 +148,7 @@ The table below shows this endpoint's support for
   in the namespace. These values are checked at job submission.
 
   - `EnabledTaskDrivers` `(array<string>: [])` - List of task drivers allowed
-    in the namespace. If empty all task drivers are allowed.
+    in the namespace. **If empty all task drivers are allowed.**
 
   - `DisabledTaskDrivers` `(array<string>: [])` - List of task drivers disabled
     in the namespace.
@@ -203,7 +203,7 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `:namespace` `(string: <required>)`- Specifies the namespace to delete.
+- `:namespace` `(string: <required>)` - Specifies the namespace to delete.
 
 ### Sample Request
 

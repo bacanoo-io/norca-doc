@@ -33,11 +33,11 @@ including only data readable with the given token.
 ### Parameters
 
 - `Prefix` `(string: <required>)` - Specifies the identifier against which
-  matches will be found. For example, if the given prefix were "a", potential
-  matches might be "abcd", or "aabb".
+  matches will be found. For example, if the given prefix were `"a"`, potential
+  matches might be `"abcd"`, or `"aabb"`.
 - `Context` `(string: <required>)` - Defines the scope in which a search for a
-  prefix operates. Contexts can be: "jobs", "evals", "allocs", "nodes",
-  "node_pools", "deployment", "plugins", "volumes" or "all", where "all" means
+  prefix operates. Contexts can be: `"jobs"`, `"evals"`, `"allocs"`, `"nodes"`,
+  `"node_pools"`, `"deployment"`, `"plugins"`, `"volumes"` or `"all"`, where `"all"` means
   every context will be searched.
 
 ### Sample Payload (for all contexts)
@@ -87,7 +87,7 @@ $ curl \
 
 - `Matches` - A map of contexts to matching arrays of identifiers.
 
-- `Truncations` - Search results are capped at 20; if more matches were found for a particular context, it will be `true`.
+- `Truncations` - **Search results are capped at 20**; if more matches were found for a particular context, it will be `true`.
 
 ### Sample Payload (for a specific context)
 
@@ -129,8 +129,8 @@ all contexts. For better control over the performance implications of fuzzy
 searching on Norca servers, aspects of fuzzy searching can be tuned through
 the <code>[search]</code> block in Norca agent config.
 
-Fuzzy search results are ordered starting with closest matching terms. Items of
-a name that exactly matches the search term are listed first.
+Fuzzy search results are ordered starting with closest matching terms. **Items of
+a name that exactly matches the search term are listed first.**
 
 | Method | Path               | Produces           |
 | ------ | ------------------ | ------------------ |
@@ -152,16 +152,17 @@ results including only data readable with the given token.
 ### Parameters
 
 - `Text` `(string: <required>)` - Specifies the identifier against which
-  matches will be found. For example, if the given text were "py", potential
-  fuzzy matches might be "python", "spying", or "happy".
+  matches will be found. For example, if the given text were `"py"`, potential
+  fuzzy matches might be `"python"`, `"spying"`, or `"happy"`.
 
 - `Context` `(string: <required>)` - Defines the scope in which a search for a
-  prefix operates. Contexts can be: "jobs", "allocs", "nodes", "node_pools",
-  "plugins", or "all", where "all" means every context will be searched. When
-  "all" is selected, additional prefix matches will be included for the
-  "deployments", "evals", and "volumes" types. When searching in the "jobs"
-  context, results that fuzzy match "groups", "services", "tasks", "images",
-  "commands", and "classes" are also included in the results.
+  prefix operates. Contexts can be: `"jobs"`, `"allocs"`, `"nodes"`, `"node_pools"`,
+  `"plugins"`, or `"all"`, where `"all"` means every context will be searched.
+  - When `"all"` is selected, additional prefix matches will be included for the
+    `"deployments"`, `"evals"`, and `"volumes"` types.
+  - When searching in the `"jobs"`
+    context, results that fuzzy match `"groups"`, `"services"`, `"tasks"`, `"images"`,
+    `"commands"`, and `"classes"` are also included in the results.
 
 ### Scope
 

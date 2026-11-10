@@ -13,7 +13,7 @@ types.
 
 This endpoint validates a Norca job file. The local Norca agent forwards the
 request to the leader. In the event the leader cannot be reached the agent verifies
-the job file locally but skips validating driver configurations.
+the job file locally but **skips validating driver configurations**.
 
 > [!WARNING]
 > This endpoint accepts a **JSON job file**, not an HCL job file.

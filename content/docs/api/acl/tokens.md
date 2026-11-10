@@ -15,8 +15,8 @@ This endpoint is used to bootstrap the ACL system and provide the initial manage
 An operator created token can be provided in the body of the request to bootstrap the cluster
 if required. If no header is provided the cluster will return a generated management token.
 The provided token should be presented in a UUID format.
-This request is always forwarded to the authoritative region. It can only be invoked once
-until a bootstrap reset is performed.
+This request is always forwarded to the authoritative region. **It can only be invoked once
+until a bootstrap reset is performed.**
 
 | Method | Path             | Produces           |
 | ------ | ---------------- | ------------------ |
@@ -106,7 +106,7 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `global` `(bool: false)` - If true, only return ACL tokens that are
+- `global` `(bool: false)` - If `true`, only return ACL tokens that are
   replicated globally to all regions.
 
 - `prefix` `(string: "")` - Specifies a string to filter ACL tokens based on an
@@ -191,13 +191,13 @@ The table below shows this endpoint's support for
   `management` type tokens, otherwise must specify at least one policy for
   `client` type tokens.
 
-- `Global` `(bool: <optional>)` - If true, indicates this token should be
+- `Global` `(bool: <optional>)` - If `true`, indicates this token should be
   replicated globally to all regions. Otherwise, this token is created local to
   the target region.
 
 - `ExpirationTime` `(time: "")` - If set, this represents the point after which
-  a token should be considered revoked and is eligible for destruction. The
-  default unset value represents NO expiration.
+  a token should be considered revoked and is eligible for destruction. **The
+  default unset value represents NO expiration.**
 
 - `ExpirationTTL` `(duration: 0s)` - This is a convenience field and if set will
   initialize the `ExpirationTime` field to a value of `CreateTime` +
@@ -243,8 +243,11 @@ $ curl \
 ## Update Token
 
 This endpoint updates an existing ACL Token. If the token is a global token, the request
-is forwarded to the authoritative region. Note that a token cannot be switched from global
-to local or visa versa.
+is forwarded to the authoritative region.
+
+> [!NOTE]
+> Note that a token cannot be switched from global
+> to local or vice versa.
 
 | Method | Path                      | Produces           |
 | ------ | ------------------------- | ------------------ |
@@ -260,7 +263,7 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `AccessorID` `(string: <required>)` - Specifies the token (by accessor) that is being updated. Must match payload body and request path.
+- `AccessorID` `(string: <required>)` - Specifies the token (by accessor) that is being updated. **Must match payload body and request path.**
 
 - `Name` `(string: <optional>)` - Specifies the human readable name of the token.
 
@@ -417,7 +420,7 @@ $ curl \
 ## Upsert One-Time Token
 
 This endpoint creates a one-time token for the ACL token provided in the
-`X-Nomad-Token` header. Returns 403 if the token header is not set.
+`X-Nomad-Token` header. **Returns 403 if the token header is not set.**
 
 | Method | Path                 | Produces           |
 | ------ | -------------------- | ------------------ |

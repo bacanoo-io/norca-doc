@@ -138,8 +138,8 @@ The response is a single object in the form shown above.
 This endpoint creates or updates the spec and the metadata of an object. The
 server fills in the schema defaults, runs the type-bound webhooks, validates the
 object against the schema and the CEL rules, and increases `Generation` when the
-spec changed. The status is kept. `Labels`, `ManagedBy` and `Owners` are
-replaced; `Finalizers` in the body are added to the stored ones.
+spec changed. **The status is kept.** `Labels`, `ManagedBy` and `Owners` are
+replaced; **`Finalizers` in the body are added to the stored ones**.
 
 | Method | Path                            | Produces           |
 | ------ | ------------------------------- | ------------------ |
@@ -181,9 +181,9 @@ stored).
 
 ## Delete Object
 
-This endpoint deletes an object. An object with finalizers is only marked for
-deletion (`DeletionTime` and `DeletionPropagation` are set) and the marked
-object is returned; it disappears when its finalizers are removed.
+This endpoint deletes an object. **An object with finalizers is only marked for
+deletion** (`DeletionTime` and `DeletionPropagation` are set) and the marked
+object is returned; **it disappears when its finalizers are removed**.
 
 | Method   | Path                            | Produces           |
 | -------- | ------------------------------- | ------------------ |
@@ -212,8 +212,8 @@ $ curl \
 
 ## Update the Status
 
-This endpoint replaces the status of an object. Controllers use it; the spec is
-not changed and the generation does not increase. The status is validated
+This endpoint replaces the status of an object. Controllers use it; **the spec is
+not changed and the generation does not increase**. The status is validated
 against the schema and the CEL rules (with `request.operation = "status"`).
 
 | Method | Path                                   | Produces           |
@@ -243,8 +243,8 @@ stored object.
 
 ## Update the Finalizers
 
-This endpoint adds and removes finalizers. Removing the last finalizer of an
-object marked for deletion deletes it. Finalizers can't be added to an object
+This endpoint adds and removes finalizers. **Removing the last finalizer of an
+object marked for deletion deletes it.** Finalizers can't be added to an object
 marked for deletion (`409`).
 
 | Method | Path                                       | Produces           |
@@ -302,7 +302,7 @@ This endpoint returns the event log of an object, oldest first.
 
 This endpoint adds events to the log of an object (at most 10 per request). The
 server sets `Reporter`, the times and the count; a repetition of the newest
-event increases its count. The log keeps the last 20 events.
+event increases its count. **The log keeps the last 20 events.**
 
 | Method | Path                                   | Produces           |
 | ------ | -------------------------------------- | ------------------ |
@@ -358,7 +358,7 @@ This endpoint returns the scale subresource of an object of a kind with a
 
 This endpoint sets the replica count of an object at the spec path of its kind.
 The change is validated like a spec change and recorded as a `Scaled` event.
-The `managed_by` identity of the object is not enforced.
+**The `managed_by` identity of the object is not enforced.**
 
 | Method | Path                                  | Produces           |
 | ------ | ------------------------------------- | ------------------ |

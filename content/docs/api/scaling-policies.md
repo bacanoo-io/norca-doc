@@ -26,16 +26,19 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `job` `(string: "")`- Specifies the job ID to filter policies by.
+- `job` `(string: "")` - Specifies the job ID to filter policies by.
 
 - `type` `(string: "")` - Specifies the type of scaling policy to filter by. `horizontal` is
   the only supported value.
 
 - `engine` `(string: "")` - (Norca) Returns only the policies of an engine:
-  `builtin` (evaluated by the [built-in autoscaler](/docs/features/autoscaler)) or
-  `external`. A policy without an `engine` belongs to the
-  [`default_engine`](/docs/configuration/autoscaler) of the servers. Any other
-  value returns a `400` error. An external autoscaler that runs next to the
+
+  - `builtin` (evaluated by the [built-in autoscaler](/docs/features/autoscaler)) or
+  - `external`.
+
+  A policy without an `engine` belongs to the
+  [`default_engine`](/docs/configuration/autoscaler) of the servers. **Any other
+  value returns a `400` error.** An external autoscaler that runs next to the
   built-in one lists its policies with `engine=external`.
 
 Each entry of the response also has an `Engine` field (Norca): the engine set in

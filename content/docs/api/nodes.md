@@ -31,8 +31,8 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `prefix` `(string: "")`- Specifies a string to filter nodes based on an ID
-  prefix. Because the value is decoded to bytes, the prefix must have an even
-  number of hexadecimal characters (0-9a-f). This is specified as a query
+  prefix. Because the value is decoded to bytes, **the prefix must have an even
+  number of hexadecimal characters** (0-9a-f). This is specified as a query
   string parameter.
 
 - `next_token` `(string: "")` - This endpoint supports paging. The `next_token`
@@ -41,7 +41,7 @@ The table below shows this endpoint's support for
   response.
 
 - `per_page` `(int: 0)` - Specifies a maximum number of nodes to return for
-  this request. If omitted, the response is not paginated. The value of the
+  this request. **If omitted, the response is not paginated.** The value of the
   `X-Nomad-NextToken` header of the last response can be used as the
   `next_token` of the next request to fetch additional pages.
 
@@ -172,8 +172,8 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `:node_id` `(string: <required>)`- Specifies the ID of the node. This must be
-  the full UUID, not the short 8-character one. This is specified as part of the
+- `:node_id` `(string: <required>)`- Specifies the ID of the node. **This must be
+  the full UUID, not the short 8-character one.** This is specified as part of the
   path.
 
 ### Sample Request
@@ -531,8 +531,8 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `:node_id` `(string: <required>)`- Specifies the UUID of the node. This must
-  be the full UUID, not the short 8-character one. This is specified as part of
+- `:node_id` `(string: <required>)`- Specifies the UUID of the node. **This must
+  be the full UUID, not the short 8-character one.** This is specified as part of
   the path.
 
 ### Sample Request
@@ -905,8 +905,8 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `:node_id` `(string: <required>)`- Specifies the UUID of the node. This must
-  be the full UUID, not the short 8-character one. This is specified as part of
+- `:node_id` `(string: <required>)`- Specifies the UUID of the node. **This must
+  be the full UUID, not the short 8-character one.** This is specified as part of
   the path.
 
 ### Sample Request
@@ -955,9 +955,9 @@ $ curl \
 
 ## Drain Node
 
-This endpoint toggles the drain mode of the node. When draining is enabled, no
+This endpoint toggles the drain mode of the node. **When draining is enabled, no
 further allocations will be assigned to this node, and existing allocations will
-be migrated to new nodes. See the [`migrate` block](/docs/job-specification/migrate)
+be migrated to new nodes.** See the [`migrate` block](/docs/job-specification/migrate)
 and the [`norca node drain`](/docs/commands/node/drain) command for suggested usage.
 
 | Method | Path                      | Produces           |
@@ -974,26 +974,26 @@ The table below shows this endpoint's support for
 
 A client node drains itself for
 [`drain_on_shutdown`](/docs/configuration/client#drain_on_shutdown-block) with
-its own secret ID instead of an ACL token. With ACLs enabled, a node secret ID
-can drain only the node it belongs to; draining any other node with it is
+its own secret ID instead of an ACL token. With ACLs enabled, **a node secret ID
+can drain only the node it belongs to**; draining any other node with it is
 denied with `403`.
 
 ### Parameters
 
-- `:node_id` `(string: <required>)`- Specifies the UUID of the node. This must
-  be the full UUID, not the short 8-character one. This is specified as part of
+- `:node_id` `(string: <required>)`- Specifies the UUID of the node. **This must
+  be the full UUID, not the short 8-character one.** This is specified as part of
   the path.
 
 - `DrainSpec` `(object: <optional>)` - Specifies if drain mode should be
-  enabled. A missing or null value disables an existing drain.
+  enabled. **A missing or `null` value disables an existing drain.**
 
   - `Deadline` `(int: <required>)` - Specifies how long to wait in nanoseconds
     for allocations to finish migrating before they are force stopped. This is
     also how long batch jobs are given to complete before being migrated.
 
   - `IgnoreSystemJobs` `(bool: false)` - Specifies whether or not to stop system
-    jobs as part of a drain. By default system jobs will be stopped after all
-    other allocations have migrated or the deadline is reached. Setting this to
+    jobs as part of a drain. **By default system jobs will be stopped after all
+    other allocations have migrated or the deadline is reached.** Setting this to
     `true` means system jobs are always left running.
 
 - `MarkEligible` `(bool: false)` - Specifies whether to mark a node as eligible
@@ -1038,8 +1038,8 @@ $ curl \
 
 ## Purge Node
 
-This endpoint purges a node from the system. Nodes can still join the cluster if
-they are alive.
+This endpoint purges a node from the system. **Nodes can still join the cluster if
+they are alive.**
 
 | Method | Path                      | Produces           |
 | ------ | ------------------------- | ------------------ |
@@ -1055,8 +1055,8 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `:node_id` `(string: <required>)`- Specifies the UUID of the node. This must
-  be the full UUID, not the short 8-character one. This is specified as part of
+- `:node_id` `(string: <required>)`- Specifies the UUID of the node. **This must
+  be the full UUID, not the short 8-character one.** This is specified as part of
   the path.
 
 ### Sample Request
@@ -1101,8 +1101,8 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `:node_id` `(string: <required>)`- Specifies the UUID of the node. This must
-  be the full UUID, not the short 8-character one. This is specified as part of
+- `:node_id` `(string: <required>)`- Specifies the UUID of the node. **This must
+  be the full UUID, not the short 8-character one.** This is specified as part of
   the path.
 
 - `Eligibility` `(string: <required>)` - Either `eligible` or `ineligible`.
@@ -1137,7 +1137,7 @@ $ curl \
 
 #### Field Reference
 
-- Events - A list of the last 10 node events for this node. A node event is a
+- `Events` - A list of the last 10 node events for this node. A node event is a
   high level concept of noteworthy events for a node.
 
   Each node event has the following fields:

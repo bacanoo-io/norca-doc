@@ -8,7 +8,7 @@ The `/object-kind` endpoints register, read and delete object kinds: the types o
 the custom objects of the [operator framework](/docs/features/operator-framework).
 The objects themselves are managed with the [objects API](/docs/api/objects).
 
-Kinds are cluster-wide; the `namespace` parameter does not apply. Writes are
+**Kinds are cluster-wide; the `namespace` parameter does not apply.** Writes are
 rejected until all servers of the region run a Norca version that supports
 custom objects.
 
@@ -156,8 +156,8 @@ definition.
 - `dry_run` `(bool: false)` - Validate and compile the kind without writing it.
   This is specified as a query string parameter.
 
-The body is the kind in the JSON form above. Unlike in the HCL format, an
-omitted `Namespaced` is `false` (cluster-scoped). `Approval` fields in the body are
+The body is the kind in the JSON form above. **Unlike in the HCL format, an
+omitted `Namespaced` is `false` (cluster-scoped).** `Approval` fields in the body are
 ignored: a write with a management token (or with ACLs disabled) approves the
 webhooks, other writes keep the approvals of unchanged webhooks and leave the
 others pending.
@@ -227,9 +227,12 @@ The body is the kind, as for a write.
 }
 ```
 
-`Objects` is the number of stored objects checked, `Pending` the number at an
-older schema version, `Changed` the number the migration changes, and `Failed`
-the number that would be invalid. At most 20 failures and 3 samples are
+- `Objects` is the number of stored objects checked,
+- `Pending` the number at an older schema version,
+- `Changed` the number the migration changes, and
+- `Failed` the number that would be invalid.
+
+At most 20 failures and 3 samples are
 returned. `Migration` is `null` when the write does not require checking the
 stored objects.
 
@@ -260,8 +263,8 @@ The response is the updated kind.
 
 ## Delete Object Kind
 
-This endpoint deletes an object kind. A kind that still has objects can't be
-deleted (`409`).
+This endpoint deletes an object kind. **A kind that still has objects can't be
+deleted (`409`).**
 
 | Method   | Path                           | Produces           |
 | -------- | ------------------------------ | ------------------ |

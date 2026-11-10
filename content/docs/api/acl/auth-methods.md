@@ -29,13 +29,13 @@ The table below shows this endpoint's support for
 
 - `Name` `(string: <required>)` - Names is the identifier of the ACL Auth
   Method.  The name can contain alphanumeric characters, dashes, and underscores.
-  This name must be unique and must not exceed 128 characters.
+  **This name must be unique and must not exceed 128 characters.**
 
 - `Type` `(string: <required>)` - ACL Auth Role SSO identifier.
 
 - `TokenLocality` `(string: <required>)` - Defines whether the ACL Auth Method
   creates a local or global token when performing SSO login. This field must be
-  set to either "local" or "global"
+  set to either `"local"` or `"global"`
 
 - `MaxTokenTTL` `(duration: <required>)` - Defines the maximum life of a token created
   by this method. When set, it will initialize the `ExpirationTime` field on all
@@ -51,7 +51,7 @@ The table below shows this endpoint's support for
   specific to Norca.
 
   - `OIDCDiscoveryURL` `(string: <required>)` - The OIDC Discovery URL, without
-    any .well-known component (base path).
+    any `.well-known` component (base path).
 
   - `OIDCClientID` `(string: <required>)` - The OAuth Client ID configured with
     your OIDC provider.
@@ -61,11 +61,11 @@ The table below shows this endpoint's support for
 
   - `OIDCScopes` `(array<string>)` - List of OIDC scopes.
 
-  - `BoundAudiences` `(array<string>)` - List of aud claims that are valid for
+  - `BoundAudiences` `(array<string>)` - List of `aud` claims that are valid for
     login; any match is sufficient.
 
   - `AllowedRedirectURIs` `(array<string>)` - A list of allowed values for
-    redirect_uri. Must be non-empty.
+    `redirect_uri`. **Must be non-empty.**
 
   - `DiscoveryCaPem` `(array<string>)` - PEM encoded CA certs for use by the TLS
     client used to talk with the OIDC Discovery URL. If not set, system
@@ -187,14 +187,14 @@ queries](/docs/api#blocking-queries) and [required ACLs](/docs/api#acls).
 
 - `Name` `(string: <required>)` - Names is the identifier of the ACL Auth
   Method.  The name can contain alphanumeric characters, dashes, and underscores.
-  This name must be unique and must not exceed 128 characters.
+  **This name must be unique and must not exceed 128 characters.**
 
 - `Type` `(string: <required>)` - ACL Auth Role SSO identifier. Currently, the
   only supported Type is "OIDC."
 
 - `TokenLocality` `(string: "")` - Defines whether the ACL Auth Method
   creates a local or global token when performing SSO login. This field must be
-  set to either "local" or "global"
+  set to either `"local"` or `"global"`
 
 - `MaxTokenTTL` `(duration: <required>)` - Defines the maximum life of a token created
   by this method. When set it will initialize the `ExpirationTime` field on all
@@ -210,7 +210,7 @@ queries](/docs/api#blocking-queries) and [required ACLs](/docs/api#acls).
   specific to Norca.
 
   - `OIDCDiscoveryURL` `(string: "")` - The OIDC Discovery URL, without
-    any .well-known component (base path).
+    any `.well-known` component (base path).
 
   - `OIDCClientID` `(string: "")` - The OAuth Client ID configured with
     your OIDC provider.
@@ -220,11 +220,11 @@ queries](/docs/api#blocking-queries) and [required ACLs](/docs/api#acls).
 
   - `OIDCScopes` `(array<string>)` - List of OIDC scopes.
 
-  - `BoundAudiences` `(array<string>)` - List of aud claims that are valid for
+  - `BoundAudiences` `(array<string>)` - List of `aud` claims that are valid for
     login; any match is sufficient.
 
   - `AllowedRedirectURIs` `(array<string>)` - A list of allowed values for
-    redirect_uri. Must be non-empty.
+    `redirect_uri`. **Must be non-empty.**
 
   - `DiscoveryCaPem` `(array<string>)` - PEM encoded CA certs for use by the TLS
     client used to talk with the OIDC Discovery URL. If not set, system

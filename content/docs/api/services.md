@@ -163,8 +163,8 @@ The table below shows this endpoint's support for
 | `NO`             | `namespace:submit-job` |
 
 Client nodes remove the registrations of the allocations they run with their
-secret ID instead of an ACL token. With ACLs enabled, a node secret ID can
-remove only registrations of its own node; any other registration is denied
+secret ID instead of an ACL token. With ACLs enabled, **a node secret ID can
+remove only registrations of its own node**; any other registration is denied
 with `403`.
 
 ### Parameters
@@ -190,17 +190,20 @@ Norca adds health, topology and external services to the native catalog (see
 
 ### Additional parameters of Read Service
 
-- `healthy` `(bool: <see below>)` - With `true`, only healthy instances are returned (and those of
-  services with `discovery { include_not_ready = true }`); with `false`, every instance. Without the
-  parameter, requests from the workloads of a client (templates and the Task API) follow the client's
-  [`native_service_discovery { default_healthy_only }`](/docs/configuration/native_service_discovery),
-  and all other requests return every instance.
+- `healthy` `(bool: <see below>)` -
+
+  - With `true`, only healthy instances are returned (and those of
+    services with `discovery { include_not_ready = true }`);
+  - with `false`, every instance.
+  - Without the parameter, requests from the workloads of a client (templates and the Task API) follow the client's
+    [`native_service_discovery { default_healthy_only }`](/docs/configuration/native_service_discovery),
+    and all other requests return every instance.
 
 - `near` `(string: "")` - `self` (or `_agent`) selects and orders the instances by the
   [topology preference](/docs/features/service-discovery/topology) of the service relative to the client
   agent that receives the request, and fails over to the regions of the service's `failover` list when the
-  local region has no instance left. `none` turns this off. Requests from the workloads of a client are
-  topology-aware by default; other requests only with `near=self`, which needs a client agent.
+  local region has no instance left. `none` turns this off. **Requests from the workloads of a client are
+  topology-aware by default**; other requests only with `near=self`, which needs a client agent.
 
 ### Additional fields of service registrations
 

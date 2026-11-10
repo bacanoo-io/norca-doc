@@ -37,8 +37,8 @@ The table below shows this endpoint's support for
   `X-Nomad-NextToken` header from the previous response.
 
 - `per_page` `(int: 0)` - Specifies a maximum number of evaluations to
-  return for this request. If omitted, the response is not
-  paginated. The `ID` of the last evaluation in the response can be
+  return for this request. **If omitted, the response is not
+  paginated.** The `ID` of the last evaluation in the response can be
   used as the `last_token` of the next request to fetch additional
   pages.
 
@@ -126,7 +126,7 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:eval_id` `(string: <required>)`- Specifies the UUID of the evaluation. This
-  must be the full UUID, not the short 8-character one. This is specified as
+  **must be the full UUID, not the short 8-character one.** This is specified as
   part of the path.
 
 - `related` `(bool: false)` - Specifies if related evaluations should be
@@ -212,10 +212,11 @@ eval broker should be paused via the
 [operator scheduler update configuration][update_scheduler_configuration] API
 endpoint.
 
-This API endpoint should be used cautiously and only in outage situations where
-there is a large backlog of evaluations not being processed. During most normal
-and outage scenarios, Norca's reconciliation and state management will handle
-evaluations as needed.
+> [!WARNING]
+> **This API endpoint should be used cautiously and only in outage situations where
+> there is a large backlog of evaluations not being processed.** During most normal
+> and outage scenarios, Norca's reconciliation and state management will handle
+> evaluations as needed.
 
 | Method    | Path              | Produces           |
 | --------- | ----------------- | ------------------ |
@@ -232,7 +233,7 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `EvalIDs` `(array<string>: <required>)`- An array of evaluation UUIDs to
-  delete. This must be a full length UUID and not a prefix.
+  delete. **This must be a full length UUID and not a prefix.**
 
 ### Sample Payload
 
@@ -274,7 +275,7 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:eval_id` `(string: <required>)`- Specifies the UUID of the evaluation. This
-  must be the full UUID, not the short 8-character one. This is specified as
+  **must be the full UUID, not the short 8-character one.** This is specified as
   part of the path.
 
 ### Sample Request
@@ -385,12 +386,15 @@ $ curl \
 
 ## Count Evaluations
 
-This endpoint counts evaluations. Note that Norca's state store architecture
-makes calculating this count unexpectedly expensive (similar in cost to the List
-API), and this API was designed for use during recovery operations with the
-`norca eval delete` command. It is not recommended to use this API for
-monitoring. The `nomad.nomad.broker.*`  metrics are better for that use
-case. See the [metrics reference][] for details.
+This endpoint counts evaluations.
+
+> [!NOTE]
+> Note that Norca's state store architecture
+> makes calculating this count unexpectedly expensive (similar in cost to the List
+> API), and this API was designed for use during recovery operations with the
+> `norca eval delete` command. **It is not recommended to use this API for
+> monitoring.** The `nomad.nomad.broker.*` metrics are better for that use
+> case. See the [metrics reference][] for details.
 
 | Method | Path                    | Produces           |
 |--------|-------------------------|--------------------|

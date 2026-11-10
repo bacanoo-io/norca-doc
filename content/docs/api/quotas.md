@@ -7,10 +7,10 @@ upstream:
 ---
 
 The `/quota` endpoints are used to query for and interact with quota
-specifications (see [namespace quotas](/docs/features/quotas)). Quota
+specifications (see [namespace quotas](/docs/features/quotas)). **Quota
 specifications are written in the authoritative region and replicated to the
 other regions; the usage endpoints return the usage of the region that answers
-the request.
+the request.**
 
 The examples below show the fields that quotas use; the `RegionLimit`,
 `TaskDefaults` and `TaskMax` objects of a response also contain the other
@@ -34,7 +34,7 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `prefix` `(string: "")`- Specifies a string to filter quota specifications on
+- `prefix` `(string: "")` - Specifies a string to filter quota specifications on
   based on a name prefix. This is specified as a query string parameter.
 
 ### Sample Request
@@ -106,7 +106,7 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `:quota` `(string: <required>)`- Specifies the quota specification to query
+- `:quota` `(string: <required>)` - Specifies the quota specification to query
   where the identifier is the quota's name.
 
 ### Sample Request
@@ -123,8 +123,8 @@ response above. A missing quota returns `404`.
 
 ## Create or Update Quota Specification
 
-This endpoint is used to create or update a quota specification. The request is
-forwarded to the authoritative region.
+This endpoint is used to create or update a quota specification. **The request is
+forwarded to the authoritative region.**
 
 | Method         | Path                                  | Produces           |
 | -------------- | ------------------------------------- | ------------------ |
@@ -186,8 +186,8 @@ $ curl \
 
 ## Delete Quota Specification
 
-This endpoint is used to delete a quota specification. A quota that is still
-attached to a namespace cannot be deleted.
+This endpoint is used to delete a quota specification. **A quota that is still
+attached to a namespace cannot be deleted.**
 
 | Method   | Path               | Produces           |
 | -------- | ------------------ | ------------------ |
@@ -203,7 +203,7 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `:quota` `(string: <required>)`- Specifies the quota specification to delete
+- `:quota` `(string: <required>)` - Specifies the quota specification to delete
   where the identifier is the quota's name.
 
 ### Sample Request
@@ -232,7 +232,7 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `prefix` `(string: "")`- Specifies a string to filter quota usages on based on
+- `prefix` `(string: "")` - Specifies a string to filter quota usages on based on
   a name prefix. This is specified as a query string parameter.
 
 ### Sample Request
@@ -295,7 +295,7 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `:quota` `(string: <required>)`- Specifies the quota specification to query
+- `:quota` `(string: <required>)` - Specifies the quota specification to query
   where the identifier is the quota's name.
 
 ### Sample Request

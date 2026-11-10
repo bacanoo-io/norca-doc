@@ -6,7 +6,7 @@ description: "The /operator/seal, /operator/unseal and /operator/keyring/rewrap 
 
 These endpoints (Norca) show and manage the [keyring seal](/docs/features/secrets/seal): the seal status of
 the servers, entering unseal shares, recovering a restored secret store, and moving the keyring to another
-seal. Shares are always sent in the request body, never in the URL. For the CLI, see
+seal. **Shares are always sent in the request body, never in the URL.** For the CLI, see
 [`norca operator seal-status`](/docs/commands/operator/seal-status),
 [`norca operator unseal`](/docs/commands/operator/unseal) and
 [`norca operator keyring rewrap`](/docs/commands/operator/keyring-rewrap).
@@ -70,10 +70,13 @@ Returns the seal configuration of the region and the seal status of every server
 }
 ```
 
-`Config` is `null` in a region that uses the implicit `aead` seal. During a rewrap, `Config.Rewrap` holds
-the rewrap ID, the target seals (`To`), the servers that are done (`Done`) and sealed (`Sealed`), and the
-start time. A server that could not be reached has only its name, ID, address and `Error`. The response
-also carries the usual query metadata fields.
+- `Config` is `null` in a region that uses the implicit `aead` seal.
+- During a rewrap, `Config.Rewrap` holds
+  the rewrap ID, the target seals (`To`), the servers that are done (`Done`) and sealed (`Sealed`), and the
+  start time.
+- A server that could not be reached has only its name, ID, address and `Error`.
+- The response
+  also carries the usual query metadata fields.
 
 ## Enter an Unseal Share
 
@@ -170,5 +173,6 @@ Starts moving the root keys and the secret store key of the region to another se
 }
 ```
 
-`Shares` is returned only for a rewrap to `shares`, and only in this response: the shares are stored
-nowhere.
+> [!IMPORTANT]
+> `Shares` is returned only for a rewrap to `shares`, and **only in this response: the shares are stored
+> nowhere.**

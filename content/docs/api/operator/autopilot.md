@@ -105,13 +105,13 @@ The table below shows this endpoint's support for
   cluster. Only takes effect if all servers are running Raft protocol version 3
   or higher. Must be a duration value such as `30s`.
 
-- `EnableRedundancyZones` `(bool: false)` - Not supported in Norca: the
+- `EnableRedundancyZones` `(bool: false)` - **Not supported in Norca**: the
   request is rejected when this is `true`.
 
-- `DisableUpgradeMigration` `(bool: false)` - Not supported in Norca: the
+- `DisableUpgradeMigration` `(bool: false)` - **Not supported in Norca**: the
   request is rejected when this is `true`.
 
-- `EnableCustomUpgrades` `(bool: false)` - Not supported in Norca: the request
+- `EnableCustomUpgrades` `(bool: false)` - **Not supported in Norca**: the request
   is rejected when this is `true`.
 
 ## Read Health
@@ -208,5 +208,5 @@ $ curl \
 
   - `StableSince` is the time this server has been in its current `Healthy` state.
 
-  The HTTP status code will indicate the health of the cluster. If `Healthy` is true, then a
-  status of 200 will be returned. If `Healthy` is false, then a status of 429 will be returned.
+  **The HTTP status code will indicate the health of the cluster.** If `Healthy` is `true`, then a
+  status of `200` will be returned. If `Healthy` is `false`, then a status of `429` will be returned.

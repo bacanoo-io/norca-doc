@@ -11,7 +11,7 @@ The `/acl/oidc` endpoints are used to log in to Norca via an OIDC provider.
 ## Get an OIDC authentication URL
 
 This endpoint creates a URL which will allow the caller to navigate to their
-OIDC provider and log in. The returned string is URL encoded.
+OIDC provider and log in. **The returned string is URL encoded.**
 
 | Method | Path                    | Produces           |
 | ------ | ----------------------- | ------------------ |
@@ -31,8 +31,8 @@ The table below shows this endpoint's support for
   method to use.
 
 - `RedirectURI` `(string: <required>)` - The URI that the response will be sent
-  to when authorization is finished. The value must be included within the auth
-  method's allowed redirect URIs listing.
+  to when authorization is finished. **The value must be included within the auth
+  method's allowed redirect URIs listing.**
 
 - `ClientNonce` `(string: <required>)` - A randomly generated string to prevent
   replay attacks.
@@ -87,8 +87,8 @@ The table below shows this endpoint's support for
   method to use and will match that used within the call to generate the URL.
 
 - `RedirectURI` `(string: <required>)` - The URI that the response will be sent
-  to when authorization is finished. The value must be included within the auth
-  method's allowed redirect URIs listing.
+  to when authorization is finished. **The value must be included within the auth
+  method's allowed redirect URIs listing.**
 
 - `ClientNonce` `(string: <required>)` - A randomly generated string to prevent
   replay attacks that will match that used within the call to generate the URL.

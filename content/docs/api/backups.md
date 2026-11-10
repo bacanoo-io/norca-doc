@@ -15,7 +15,7 @@ servers of that region. Endpoints that decrypt a backup (contents, diff,
 restore, approve) take the age identity of the administrators in the request
 body (`AgeIdentity`); the GET form of contents and diff takes it in the
 `X-Norca-Age-Identity` header, with several identities separated by commas.
-The identity is used for the request only and is never stored or logged.
+**The identity is used for the request only and is never stored or logged.**
 
 ## List Backups
 
@@ -96,8 +96,8 @@ backup is older than two intervals).
 
 ## Take a Backup
 
-This endpoint takes a manual backup on the leader, into every destination. By
-default the request returns when the backup is uploaded and verified.
+This endpoint takes a manual backup on the leader, into every destination. **By
+default the request returns when the backup is uploaded and verified.**
 
 | Method | Path                  | Produces           |
 | ------ | --------------------- | ------------------ |
@@ -176,8 +176,8 @@ The response is the updated backup record.
 ## Delete a Backup
 
 This endpoint deletes a backup from the destinations that allow pruning, and
-its record. Pinned backups and the newest backups kept by `min_keep` can't be
-deleted.
+its record. **Pinned backups and the newest backups kept by `min_keep` can't be
+deleted.**
 
 | Method   | Path                       | Produces           |
 | -------- | -------------------------- | ------------------ |
@@ -190,8 +190,8 @@ deleted.
 ## Browse a Backup
 
 This endpoint downloads a backup, decrypts it and loads it into a separate
-in-memory state, then returns one type of its content. The running cluster is
-not touched. Variables are returned with their key names only; secrets with
+in-memory state, then returns one type of its content. **The running cluster is
+not touched.** Variables are returned with their key names only; secrets with
 their paths, metadata and value hashes.
 
 | Method | Path                                | Produces           |
@@ -212,13 +212,15 @@ their paths, metadata and value hashes.
   `service-intentions`, `external-services`, `object-kinds`, `custom-objects` (pack releases and
   cluster registries among them), `secret-engines`, `secret-leases`,
   `node-pools` or
-  `consul-kv`. The types from `acl-tokens` on are returned in `Objects`
-  (`Namespace`, `ID`, `Detail`, `ModifyIndex`), under the read rules of their
-  own list endpoints.
-  `job-versions` requires `job`. `consul-kv` lists the keys of the Consul KV
-  of the system bus with their size, revision and the SHA-256 of their value,
-  never the value; the Variables rules of `consul/kv/<key>` in the namespace
-  of the request (`default` by default) apply.
+  `consul-kv`.
+  - The types from `acl-tokens` on are returned in `Objects`
+    (`Namespace`, `ID`, `Detail`, `ModifyIndex`), under the read rules of their
+    own list endpoints.
+  - `job-versions` requires `job`.
+  - `consul-kv` lists the keys of the Consul KV
+    of the system bus with their size, revision and the SHA-256 of their value,
+    **never the value**; the Variables rules of `consul/kv/<key>` in the namespace
+    of the request (`default` by default) apply.
 
 - `namespace` `(string: "")` - The namespace, as a query parameter; `*` for all
   namespaces. Objects in namespaces the token can't read are hidden.
@@ -366,8 +368,8 @@ requested, approved or rejected it.
 This endpoint approves a pending full restore as the second administrator and
 runs it: an automatic, pinned backup of the current state is taken first, the
 keys of the backup are added to the keystore of every server, and the Raft
-state of the backup is restored. The requester can't approve their own
-request.
+state of the backup is restored. **The requester can't approve their own
+request.**
 
 | Method | Path                                                | Produces           |
 | ------ | --------------------------------------------------- | ------------------ |
@@ -397,8 +399,8 @@ request.
 
 ## Download URL of a Backup Object
 
-This endpoint returns a pre-signed URL of an encrypted backup object, valid
-for 15 minutes. Only S3 destinations sign URLs: for a backup kept only on
+This endpoint returns a pre-signed URL of an encrypted backup object, **valid
+for 15 minutes**. **Only S3 destinations sign URLs**: for a backup kept only on
 directory destinations, or with a directory destination named in
 `destination`, the endpoint answers `400 Bad Request` with an error that
 names the file on the servers, for example `download URLs are not available
@@ -426,7 +428,7 @@ The response has the fields `URL` and `ExpiresAt`.
 ## Restore Root Keys
 
 This endpoint adds root keys of a backup to the keystore of every server of
-the region, next to the existing keys; no key is removed or replaced. It is
+the region, next to the existing keys; **no key is removed or replaced**. It is
 used before the Raft state of a backup is restored, for example by
 [`operator backup restore-bootstrap`](/docs/commands/operator/backup/restore-bootstrap),
 so the Variables and workload identities of the backup stay readable.

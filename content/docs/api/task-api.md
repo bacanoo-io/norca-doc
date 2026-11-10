@@ -30,14 +30,14 @@ to Norca.
 
 Unlike the agent's HTTP API, the Task API *always requires authentication* even
 if [ACLs][acl] are disabled.  This allows Norca to always make the Task API
-available even if the workload is untrusted. If ACLs are enabled, the anonymous
-policy is not available via the Task API.
+available even if the workload is untrusted. **If ACLs are enabled, the anonymous
+policy is not available via the Task API.**
 
 Both [ACL Tokens][acl-tokens] and [Workload Identities][workload-id] are
 accepted. Once the Task API has authenticated the credentials, the normal
 endpoint-specific authorization is applied when ACLs are enabled.
 
-The Workload Identity should be used by tasks accessing the Task API.
+**The Workload Identity should be used by tasks accessing the Task API.**
 
 An ACL Token should be used when an operator is accessing the Task API via
 [`norca alloc exec`][alloc-exec] or when a task is proxying Norca HTTP requests
@@ -45,10 +45,10 @@ on behalf of an authenticated user. The Task API could be used by a proxy
 presenting Norca's UI with a standard TLS certificate for browsers.
 
 If [`task.user`][task-user] is set in the jobspec, the Task API will only be
-usable by that user. Otherwise the Unix Domain Socket is accessible by any
-user.
+usable by that user. **Otherwise the Unix Domain Socket is accessible by any
+user.**
 
-mTLS is never enabled for the Task API since traffic never leaves the node.
+**mTLS is never enabled for the Task API** since traffic never leaves the node.
 
 ## Using the Task API
 

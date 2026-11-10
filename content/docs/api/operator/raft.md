@@ -73,10 +73,10 @@ $ curl \
 
   - `Address` `(string)` - The `ip:port` for the server.
 
-  - `Leader` `(bool)` - is either "true" or "false" depending on the server's
+  - `Leader` `(bool)` - is either `"true"` or `"false"` depending on the server's
     role in the Raft configuration.
 
-  - `Voter` `(bool)` - is "true" or "false", indicating if the server has a vote
+  - `Voter` `(bool)` - is `"true"` or `"false"`, indicating if the server has a vote
     in the Raft configuration. Future versions of Norca may add support for
     non-voting servers.
 
@@ -100,10 +100,10 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `address` `(string: <optional>)` - Specifies the server to remove as
-  `ip:port`. This cannot be provided along with the `id` parameter.
+  `ip:port`. **This cannot be provided along with the `id` parameter.**
 
 - `id` `(string: <optional>)` - Specifies the server to remove as
-  `id`. This cannot be provided along with the `address` parameter.
+  `id`. **This cannot be provided along with the `address` parameter.**
 
 ### Sample Request
 

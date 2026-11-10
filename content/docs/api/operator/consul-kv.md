@@ -12,9 +12,11 @@ The `/operator/consul-kv` endpoints manage the Consul KV of the
 This endpoint copies the keys of the Consul KV kept in Variables (the
 `variables` backend) into the `consul-kv` bucket of the
 [system bus](/docs/features/system-bus). The keys are the Variables below
-`path` in the namespace of the request. Keys already in the bucket are never
-overwritten; the Variables are left in place. Keys with flags are skipped.
-Only the keys the token may `read` as Variables are copied.
+`path` in the namespace of the request.
+
+- **Keys already in the bucket are never overwritten**; the Variables are left in place.
+- Keys with flags are skipped.
+- Only the keys the token may `read` as Variables are copied.
 
 | Method | Path                               | Produces           |
 | ------ | ---------------------------------- | ------------------ |
@@ -67,14 +69,14 @@ $ curl -X POST -H "X-Nomad-Token: $NORCA_TOKEN" \
 ## Restore the Consul KV
 
 This endpoint replaces the Consul KV bucket of the system bus with the given
-keys: keys that are not listed are removed. [`operator backup
+keys: **keys that are not listed are removed**. [`operator backup
 restore-bootstrap`](/docs/commands/operator/backup/restore-bootstrap) uses it.
 
 | Method | Path | Produces |
 | --- | --- | --- |
 | `PUT` | `/v1/operator/consul-kv/restore` | `application/json` |
 
-It requires a management token.
+**It requires a management token.**
 
 ### Parameters
 

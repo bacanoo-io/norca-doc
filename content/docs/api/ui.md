@@ -6,7 +6,7 @@ upstream:
   path: "website/content/api-docs/ui.mdx"
 ---
 
-The Norca UI is accessible at `/ui`. It is not namespaced by version. A request to `/` will also redirect to `/ui`.
+The Norca UI is accessible at `/ui`. **It is not namespaced by version.** A request to `/` will also redirect to `/ui`.
 
 ## List Jobs
 
@@ -203,7 +203,7 @@ description of the event.
 
 ## Allocation File System
 
-This page will show either a directory listing of a path or the file at a path, depending on whether or not the path is a directory. Specifying no file path will show the root of the allocation file system. The file system is also navigible from the UI. Each entry in the directory listing will include the file size (assuming a file) and the last modified time.
+This page will show either a directory listing of a path or the file at a path, depending on whether or not the path is a directory. Specifying no file path will show the root of the allocation file system. The file system is also navigable from the UI. Each entry in the directory listing will include the file size (assuming a file) and the last modified time.
 
 If the file is text based, the UI will render the text inline and the stream the file contents as it updates. If the file is a well-known image format, the image will be rendered inline. In all other cases, the UI will prompt a download link.
 
@@ -240,7 +240,7 @@ to `stderr`.
 
 ## Task File System
 
-This page will show either a directory listing of a path or the file at a path, depending on whether or not the path is a directory. Specifying no file path will show the root of the task file system (which is within the allocation file system). The file system is also navigible from the UI. Each entry in the directory listing will include the file size (assuming a file) and the last modified time.
+This page will show either a directory listing of a path or the file at a path, depending on whether or not the path is a directory. Specifying no file path will show the root of the task file system (which is within the allocation file system). The file system is also navigable from the UI. Each entry in the directory listing will include the file size (assuming a file) and the last modified time.
 
 If the file is text based, the UI will render the text inline and the stream the file contents as it updates. If the file is a well-known image format, the image will be rendered inline. In all other cases, the UI will prompt a download link.
 
@@ -296,7 +296,7 @@ This page is meant to be rendered in a popup window.
 
 ### Parameters
 
-- `allocation` `(string: "")` - An allocation ID that specifies which allocation to exec into. When not specified, an allocation for the specified task group is chosen at random.
+- `allocation` `(string: "")` - An allocation ID that specifies which allocation to exec into. **When not specified, an allocation for the specified task group is chosen at random.**
 
 ## Clients List
 
@@ -316,7 +316,7 @@ table.
   or ascending. This is specified as a query string parameter.
 
 - `search` `(string: "")` - Specifies a regular expression used to filter the list of
-  visible clients . This is specified as a query string parameter.
+  visible clients. This is specified as a query string parameter.
 
 - `page` `(int: 1)` - Specifies the page in the clients list that should be visible. This
   is specified as a query string parameter.
@@ -505,10 +505,12 @@ This page includes a visualization of all starting and running allocations group
 ## ACL Tokens
 
 This page lets you enter an ACL token (both accessor ID and secret ID) to use with the UI.
-If the cluster does not have ACLs enabled, this page is unnecessary. If the cluster has an
-anonymous policy that grants cluster-wide read access, this page is unnecessary. If the
-anonymous policy only grants partial read access, then providing an ACL Token will
-authenticate all future requests to allow read access to additional resources.
+
+- If the cluster does not have ACLs enabled, this page is unnecessary.
+- If the cluster has an anonymous policy that grants cluster-wide read access, this
+  page is unnecessary.
+- If the anonymous policy only grants partial read access, then providing an ACL Token
+  will authenticate all future requests to allow read access to additional resources.
 
 | Path                  | Produces    |
 | --------------------- | ----------- |

@@ -14,7 +14,7 @@ installed with `plan-pack` and `deploy-pack`, described in the
 
 Releases are custom objects of the built-in kind `packs.norca.io/Release` in a namespace, with
 revisions of the kind `packs.norca.io/ReleaseRevision`. They can be read with the object API too, but
-only these endpoints write them. All endpoints are bound to a namespace (`namespace` query parameter
+**only these endpoints write them**. All endpoints are bound to a namespace (`namespace` query parameter
 or `X-Nomad-Namespace`, default `default`) and a region (`region`).
 
 The table below shows the ACL capabilities each endpoint needs. They are object capabilities of the
@@ -28,9 +28,9 @@ namespace "apps" {
 }
 ```
 
-Writing a release grants nothing else: every resource of the release is applied with the caller's
-token through the normal endpoint of its type, so the token also needs the permissions for those
-resources (for example `submit-job` for a job, or a management token for an ACL policy). Resources the
+**Writing a release grants nothing else**: every resource of the release is applied with the caller's
+token through the normal endpoint of its type, so **the token also needs the permissions for those
+resources** (for example `submit-job` for a job, or a management token for an ACL policy). Resources the
 release adopts without writing them (all of them with `RecordOnly`, and the multiregion jobs another
 region of a multi-region install registers) need the same permissions, and `TakeOwnership` needs
 object `write` on `packs.norca.io/Release` in the namespace of every release resources are taken
@@ -121,8 +121,8 @@ $ curl \
 ## Install or upgrade release
 
 This endpoint installs a release, or upgrades it with a new revision. The leader runs one operation
-per release at a time; a concurrent operation gets `409 Conflict`, as does a resource owned by
-another release without `TakeOwnership`.
+per release at a time; **a concurrent operation gets `409 Conflict`, as does a resource owned by
+another release without `TakeOwnership`**.
 
 | Method         | Path                | Produces           |
 | -------------- | ------------------- | ------------------ |
@@ -147,15 +147,19 @@ another release without `TakeOwnership`.
 - `Values` `(map: nil)` - The variable overrides, recorded in the revision (secret-looking values
   redacted); `ValuesHash` a hash of all overrides and var files.
 
-- `Resources` `(array: <required>)` - The rendered resources. Each has `Type` (`namespace`, `quota`,
-  `acl-policy`, `variable`, `object-kind`, `admission-policy`, `object` or `job`), `Source` (the
-  template file), and the resource in the field of its type: `Namespace`, `Quota`, `ACLPolicy`,
-  `Variable`, `ObjectKind`, `AdmissionPolicy`, `Object`, or `Job` (API form) with an optional
-  `Submission`. A Variables resource lists its secret item names in `SecretKeys`. At most 256
-  resources.
+- `Resources` `(array: <required>)` - The rendered resources. Each has
+
+  - `Type` (`namespace`, `quota`, `acl-policy`, `variable`, `object-kind`, `admission-policy`,
+    `object` or `job`),
+  - `Source` (the template file), and
+  - the resource in the field of its type: `Namespace`, `Quota`, `ACLPolicy`, `Variable`,
+    `ObjectKind`, `AdmissionPolicy`, `Object`, or `Job` (API form) with an optional `Submission`.
+
+  A Variables resource lists its secret item names in `SecretKeys`. **At most 256
+  resources.**
 
 - `Secrets` `(array: nil)` - Secret Variables items (`Namespace`, `Path`, `Items`), written to the
-  Variables but never stored in the release.
+  Variables but **never stored in the release**.
 
 - `Atomic` `(bool: <optional>)` - Restore the previous state on failure; if unset, the namespace
   decides (production namespaces are atomic).

@@ -15,10 +15,10 @@ Raft [consensus protocol](/docs/concepts/consensus/).
 Snapshots are exposed as gzipped tar archives which internally contain the Raft
 metadata required to restore, as well as a binary serialized version of the
 Norca server state. The contents are covered internally by SHA-256 hashes.
-These hashes are verified during snapshot restore operations. The structure of
+These hashes are verified during snapshot restore operations. **The structure of
 the archive is internal to Norca and not intended to be used other than for
 restore operations. The archives are not designed to be modified before a
-restore.
+restore.**
 
 | Method | Path                    | Produces                 |
 | :----- | :---------------------- | ------------------------ |
@@ -32,8 +32,8 @@ The table below shows this endpoint's support for
 | ---------------- | ------------ |
 | `NO`             | `management` |
 
-With ACLs enabled, a request without a management token gets `403 Permission
-denied` and no snapshot data. This includes a token that can't be resolved and
+With ACLs enabled, **a request without a management token gets `403 Permission
+denied` and no snapshot data.** This includes a token that can't be resolved and
 the secret ID of a client node.
 
 ### Parameters
@@ -55,8 +55,11 @@ The above example results in a tarball named `snapshot.tgz` in the current worki
 
 This endpoint restores a point-in-time snapshot of the Norca server state.
 
-Restores involve a potentially dangerous low-level Raft operation that is not
-designed to handle server failures during a restore. This operation is primarily
+> [!WARNING]
+> Restores involve a potentially dangerous low-level Raft operation that is not
+> designed to handle server failures during a restore.
+
+This operation is primarily
 intended to be used when recovering from a disaster, restoring into a fresh
 cluster of Norca servers.
 
@@ -75,8 +78,8 @@ The table below shows this endpoint's support for
 | ---------------- | ------------ |
 | `NO`             | `management` |
 
-With ACLs enabled, a request without a management token gets `403 Permission
-denied` and the snapshot is not restored. This includes a token that can't be
+With ACLs enabled, **a request without a management token gets `403 Permission
+denied` and the snapshot is not restored.** This includes a token that can't be
 resolved and the secret ID of a client node.
 
 ### Sample Request

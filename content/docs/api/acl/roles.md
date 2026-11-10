@@ -29,7 +29,7 @@ The table below shows this endpoint's support for
 
 - `Name` `(string: <required>)` - Specifies the human-readable name of the ACL
   Role. The name can contain alphanumeric characters, dashes, and underscores.
-  This name must be unique and must not exceed 128 characters.
+  **This name must be unique and must not exceed 128 characters.**
 
 - `Description` `(string: <optional>)` - A free form human-readable description
   of the ACL Role. It must not exceed 256 characters.
@@ -99,11 +99,11 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `ID` `(string: <required>)` - Specifies the ACL Role, by ID, that is being
-  updated. Must match payload body and request path.
+  updated. **Must match payload body and request path.**
 
 - `Name` `(string: <required>)` - Specifies the human-readable name of the ACL
   Role. The name can contain alphanumeric characters, dashes, and underscores.
-  This name must be unique a must not exceed 128 characters.
+  **This name must be unique and must not exceed 128 characters.**
 
 - `Description` `(string: <optional>)` - A free form human-readable description
   of the ACL Role. It must not exceed 256 characters.

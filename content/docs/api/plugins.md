@@ -28,9 +28,9 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
-- `type` `(string: "")`- Specifies the type of plugin to
+- `type` `(string: "")` - Specifies the type of plugin to
   query. Currently only supports `csi`. This is specified as a query
-  string parameter. Returns an empty list if omitted.
+  string parameter. **Returns an empty list if omitted.**
 
 ### Sample Request
 

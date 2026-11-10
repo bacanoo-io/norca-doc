@@ -27,8 +27,8 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `prefix` `(string: "")`- Specifies a string to filter deployments based on
-  an ID prefix. Because the value is decoded to bytes, the prefix must have an
-  even number of hexadecimal characters (0-9a-f) .This is specified as a query
+  an ID prefix. Because the value is decoded to bytes, **the prefix must have an
+  even number of hexadecimal characters (0-9a-f)**. This is specified as a query
   string parameter and is used before any `filter` expression is applied.
 
 - `namespace` `(string: "default")` - Specifies the target namespace.
@@ -41,8 +41,8 @@ The table below shows this endpoint's support for
   `X-Nomad-NextToken` header from the previous response.
 
 - `per_page` `(int: 0)` - Specifies a maximum number of deployments to
-  return for this request. If omitted, the response is not
-  paginated. The `ID` of the last deployment in the response can be
+  return for this request. **If omitted, the response is not
+  paginated.** The `ID` of the last deployment in the response can be
   used as the `last_token` of the next request to fetch additional
   pages.
 
@@ -115,7 +115,7 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:deployment_id` `(string: <required>)`- Specifies the UUID of the deployment.
-  This must be the full UUID, not the short 8-character one. This is specified
+  **This must be the full UUID, not the short 8-character one.** This is specified
   as part of the path.
 
 ### Sample Request
@@ -172,7 +172,7 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:deployment_id` `(string: <required>)`- Specifies the UUID of the deployment.
-  This must be the full UUID, not the short 8-character one. This is specified
+  **This must be the full UUID, not the short 8-character one.** This is specified
   as part of the path.
 
 ### Sample Request
@@ -289,9 +289,9 @@ $ curl \
 
 This endpoint is used to mark a deployment as failed. This should be done to
 force the scheduler to stop creating allocations as part of the deployment or to
-cause a rollback to a previous job version. This endpoint only triggers a rollback
+cause a rollback to a previous job version. **This endpoint only triggers a rollback
 if the most recent stable version of the job has a different specification than
-the job being reverted.
+the job being reverted.**
 
 | Method | Path                                 | Produces           |
 | ------ | ------------------------------------ | ------------------ |
@@ -308,7 +308,7 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:deployment_id` `(string: <required>)`- Specifies the UUID of the deployment.
-  This must be the full UUID, not the short 8-character one. This is specified
+  **This must be the full UUID, not the short 8-character one.** This is specified
   as part of the path.
 
 ### Sample Request
@@ -351,7 +351,7 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:deployment_id` `(string: <required>)`- Specifies the UUID of the deployment.
-  This must be the full UUID, not the short 8-character one. This is specified
+  **This must be the full UUID, not the short 8-character one.** This is specified
   as part of the path and in the JSON payload.
 
 - `Pause` `(bool: false)` - Specifies whether to pause or resume the deployment.
@@ -405,7 +405,7 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:deployment_id` `(string: <required>)`- Specifies the UUID of the deployment.
-  This must be the full UUID, not the short 8-character one. This is specified
+  **This must be the full UUID, not the short 8-character one.** This is specified
   as part of the path and JSON payload.
 
 - `All` `(bool: false)` - Specifies whether all task groups should be promoted.
@@ -454,10 +454,10 @@ This endpoint is used to set the health of an allocation that is in the
 deployment manually. In some use cases, automatic detection of allocation health
 may not be desired. As such those task groups can be marked with an upgrade
 policy that uses `health_check = "manual"`. Those allocations must have their
-health marked manually using this endpoint. Marking an allocation as healthy
+health marked manually using this endpoint. **Marking an allocation as healthy
 will allow the rolling upgrade to proceed. Marking it as failed will cause the
-deployment to fail. This endpoint only triggers a rollback if the most recent stable
-version of the job has a different specification than the job being reverted.
+deployment to fail.** **This endpoint only triggers a rollback if the most recent stable
+version of the job has a different specification than the job being reverted.**
 
 | Method | Path                                              | Produces           |
 | ------ | ------------------------------------------------- | ------------------ |
@@ -474,7 +474,7 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:deployment_id` `(string: <required>)`- Specifies the UUID of the deployment.
-  This must be the full UUID, not the short 8-character one. This is specified
+  **This must be the full UUID, not the short 8-character one.** This is specified
   as part of the path and the JSON payload.
 
 - `HealthyAllocationIDs` `(array<string>: nil)` - Specifies the set of
@@ -539,7 +539,7 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:deployment_id` `(string: <required>)`- Specifies the UUID of the deployment.
-  This must be the full UUID, not the short 8-character one. This is specified
+  **This must be the full UUID, not the short 8-character one.** This is specified
   as part of the path.
 
 - `DeploymentID` `(string: <required>)` - The same UUID, in the JSON body.
@@ -585,7 +585,7 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `:deployment_id` `(string: <required>)`- Specifies the UUID of the deployment.
-  This must be the full UUID, not the short 8-character one. This is specified
+  **This must be the full UUID, not the short 8-character one.** This is specified
   as part of the path.
 
 - `DeploymentID` `(string: <required>)` - The same UUID, in the JSON body.

@@ -7,9 +7,9 @@ description: "The /admission-policies and /admission-policy endpoints manage the
 The `/admission-policies` and `/admission-policy` endpoints are used to manage
 the CEL [admission policies](/docs/other-specifications/admission-policy) of a
 region (see [dynamic admission control](/docs/features/admission-control)).
-Admission policies are stored per region; they are not replicated to other
-regions. Webhooks are configured in the
-[server configuration](/docs/configuration/admission) and have no API.
+Admission policies are stored per region; **they are not replicated to other
+regions**. Webhooks are configured in the
+[server configuration](/docs/configuration/admission) and **have no API**.
 
 ## List Admission Policies
 
@@ -115,8 +115,8 @@ above. A missing policy returns `404`.
 ## Create or Update Admission Policy
 
 This endpoint creates or updates an admission policy. The servers compile the
-CEL expressions of the rules and reject the policy (`400`) if one of them does
-not compile.
+CEL expressions of the rules and **reject the policy (`400`) if one of them does
+not compile**.
 
 | Method         | Path                                                         | Produces           |
 | -------------- | ------------------------------------------------------------ | ------------------ |
