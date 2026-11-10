@@ -274,7 +274,7 @@ namespace "*" {
   NATS-triggered syncs, the catalog, the install form, server-side plan and install, and upgrades of
   releases installed from a cluster registry.
 - The form installs into the region of the UI; multi-region installs are set with the CLI. Lists of
-  objects are edited as JSON.
+  objects whose items have no declared attributes are edited as JSON.
 
 ## Design
 

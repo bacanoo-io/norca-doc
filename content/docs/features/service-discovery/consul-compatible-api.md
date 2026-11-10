@@ -55,12 +55,15 @@ Write endpoints (PUT), added for self-registering applications (design phase 4):
 | `/v1/agent/check/update/:id` | Sets a TTL check from a body with `Status` and `Output` |
 
 The Consul KV (`GET`, `PUT` and `DELETE /v1/kv/:key`, with `recurse`, `keys`, `separator`, `raw`,
-`cas`, `flags` and blocking queries), for consul-template's `key`, `keyOrDefault`, `ls` and `tree`,
-Traefik's and Spring Cloud's Consul KV configuration and similar tools. The keys live in Norca
-Variables below `consul/kv` (default) or in a NATS JetStream key-value bucket, set by
-`consul_compat { kv { backend } }`:
+`cas`, `flags` and blocking queries) is served for consul-template's `key`, `keyOrDefault`, `ls` and
+`tree`, Traefik's and Spring Cloud's Consul KV configuration and similar tools. Where the keys live is set
+by `consul_compat { kv { backend } }`: `auto` (default) keeps them in the bucket `consul-kv` of the
+[system bus](/docs/features/system-bus) when the servers run one, else in Norca Variables below
+`consul/kv`; `bus` and `variables` choose one of the two, `nats` a JetStream key-value bucket of an
+external NATS, and `disabled` turns the KV off. The `bus` backend behaves like `nats` (the revision is
+the `ModifyIndex`, no `flags`), with the ACL rules checked by the servers:
 
-| | `variables` (default) | `nats` |
+| | `variables` | `nats` |
 | --- | --- | --- |
 | Storage | Raft of the region, encrypted, in the Norca backups | The JetStream bucket (`consul-kv`), with its replicas |
 | Needs | Nothing | A NATS server with JetStream, e.g. of the `nats` pack |
@@ -154,7 +157,7 @@ All keys are in the `client { consul_compat { ... } }` block. Full reference:
 | `datacenter_from` | string | `"region"` | `"region"` or `"datacenter"`: what a Consul datacenter is. Also applies to the datacenter label of `*.service.consul` DNS names. |
 | `namespaces` | list(string) | `["default"]` | Namespaces shown; the first without a prefix. |
 | `anonymous_token` | string | `""` | Nomad ACL token for requests without a token; use a read-only token. |
-| `kv` | block | | KV backend: `backend` (`"variables"`, `"nats"`, `"disabled"`), `namespace`, `path`, `nats { urls, bucket, ... }`. |
+| `kv` | block | | KV backend: `backend` (`"auto"` (default), `"bus"`, `"variables"`, `"nats"`, `"disabled"`), `namespace`, `path`, `nats { urls, bucket, ... }`. |
 
 ## CLI and API
 

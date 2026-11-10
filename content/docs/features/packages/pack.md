@@ -10,9 +10,8 @@ This page goes into detail on the use of `norca pack`, the package manager built
 binary. For an overview see [Package management](/docs/features/packages); for writing your own packs
 and registries see [Writing packs](/docs/features/packages/writing-packs).
 
-`norca pack` talks to the cluster at `NORCA_ADDR` (or `NORCA_ADDR`, or `--address`). With ACLs
-enabled, a token with the right permissions must be set in `NORCA_TOKEN` (or `NORCA_TOKEN`, or
-`--token`). All subcommands are listed by `norca pack --help`; every subcommand has its own
+`norca pack` talks to the cluster at `NORCA_ADDR` (or `--address`). With ACLs
+enabled, a token with the right permissions must be set in `NORCA_TOKEN` (or `--token`). All subcommands are listed by `norca pack --help`; every subcommand has its own
 `--help` and a page in the [`norca pack` reference](/docs/commands/pack).
 
 ## The pack cache
@@ -257,8 +256,7 @@ norca pack plan hello_world --exit-code-no-changes=0 --exit-code-makes-changes=0
 
 #### Using environment variables
 
-The following environment variables override the default exit codes (the `NORCA_PACK_` names are
-accepted as a fallback):
+The following environment variables override the default exit codes:
 
 - `NORCA_PACK_PLAN_EXIT_CODE_NO_CHANGES` - Exit code when the plan shows no changes (default: 0)
 - `NORCA_PACK_PLAN_EXIT_CODE_MAKES_CHANGES` - Exit code when the plan shows changes (default: 1)

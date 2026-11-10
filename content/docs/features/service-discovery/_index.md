@@ -143,8 +143,8 @@ curl 'http://127.0.0.1:8500/v1/health/service/test-app?passing'
 - The DNS server listens on the host. **Workloads in `bridge` networking do not get it as their
   nameserver automatically**; they find services through templates, the Task API or an address of the
   host that they can reach.
-- **The Consul-compatible API is not a Consul agent**: Consul KV, sessions, prepared queries, Connect and
-  every other endpoint answer `501 Not Implemented`.
+- **The Consul-compatible API is not a Consul agent**: sessions, transactions, prepared queries, Connect
+  and every other endpoint it does not list answer `501 Not Implemented`.
 
 ## Design
 

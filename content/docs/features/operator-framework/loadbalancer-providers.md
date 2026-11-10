@@ -175,7 +175,7 @@ finalizer keeps the `LoadBalancer` object, and the operator tries again.
 
 ## Running a provider
 
-A provider is an ordinary application. Three things matter in a real
+A provider is an ordinary application. Four things matter in a real
 deployment, and `norca-provider` (below) shows each of them.
 
 **The registered port is not the port it listens on.** A provider that runs in
@@ -288,17 +288,15 @@ operator calls it (idempotent `PUT`, changing and empty targets, `DELETE` of
 what does not exist, the token, an internal request of a class without the
 capability). The README of the repository describes the interface.
 
-The whole chain is tested in the lab (`norca-lab`, `.\run-tests.ps1 -Cases ...`)
-with ACLs on, as jobs with their workload identity:
+The whole chain is tested with ACLs on, as jobs with their workload identity.
+The provider runs as:
 
-| Case | The provider runs as |
-| --- | --- |
-| `loadbalancer` | a raw_exec job; it listens on 18444 and registers 18443 (an `iptables` redirect stands in for a port mapping) |
-| `loadbalancer-docker` | a Docker container in bridge mode with a real port mapping (host 18443, container 8443), on the task API socket |
-| `loadbalancer-docker-net` | the same container without the socket: over HTTPS with the CA and the workload identity token |
-| `loadbalancer-docker-tls` | the same with an **https provider**: its certificate is signed by the CA of the cluster, and the operator runs with `-class-ca-file` and without `-class-allow-http`; the certificate is not trusted without that CA |
+- a raw_exec job; it listens on 18444 and registers 18443 (an `iptables` redirect stands in for a port mapping)
+- a Docker container in bridge mode with a real port mapping (host 18443, container 8443), on the task API socket
+- the same container without the socket: over HTTPS with the CA and the workload identity token
+- the same with an **https provider**: its certificate is signed by the CA of the cluster, and the operator runs with `-class-ca-file` and without `-class-allow-http`; the certificate is not trusted without that CA
 
-They check a wrong token that is retried, traffic through the load balancer from
+The tests check a wrong token that is retried, traffic through the load balancer from
 another node with round robin, targets that follow the service, an unknown and
 an unsupported class, a dynamic parameter changed in the registration, a
 provider that stops (the heartbeat) and comes back, and the removal of a

@@ -27,7 +27,7 @@ flowchart LR
   sel --> answer["A / AAAA / SRV / CNAME"]
 ```
 
-**Names.** With the default domain `nomad` (configurable with `domain`):
+**Names.** With the default domain `norca` (configurable with `domain`):
 
 | Name | Answer |
 | --- | --- |
@@ -87,7 +87,7 @@ dig @127.0.0.1 -p 8600 _test-app._tcp.service.apps.norca SRV
 dig @127.0.0.1 -p 8600 test-app.service.apps.eu-1.norca A
 ```
 
-To use the server as the resolver of the host for the `nomad` zone only, point a forwarding resolver
+To use the server as the resolver of the host for the `norca` zone only, point a forwarding resolver
 (for example systemd-resolved, dnsmasq or unbound) at `127.0.0.1:8600` for that zone.
 
 ## Configuration reference
@@ -98,7 +98,7 @@ All keys are in the `client { dns { ... } }` block. Full reference: [dns](/docs/
 | --- | --- | --- | --- |
 | `enabled` | bool | `false` | Start the DNS server. |
 | `bind` | string | `"127.0.0.1:8600"` | Address to listen on, over UDP and TCP. |
-| `domain` | string | `"nomad"` | Domain of the native catalog. |
+| `domain` | string | `"norca"` | Domain of the native catalog. |
 | `consul_compat` | bool | `false` | Answer `*.service.consul` names as well. Not allowed with `domain = "consul"`. |
 | `recursors` | list(string) | `[]` | Nameservers (`host` or `host:port`) for other names. |
 | `ttl` | duration | `"5s"` | TTL of the answers. |

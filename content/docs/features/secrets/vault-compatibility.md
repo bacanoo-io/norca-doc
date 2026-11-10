@@ -53,7 +53,7 @@ Configured rules replace the defaults. For example, `vault_kv "kv/data/" { path 
 `<mount>/static-creds/<role>`, `<mount>/sts/<role>`) fail with "requires a Vault/OpenBao provider or the
 built-in dynamic engine, which is used with a secret block naming the engine and the role"; unmapped
 paths fail as well. **Neither falls back.** The [built-in dynamic engine](/docs/features/secrets/dynamic)
-delivers its credentials (NATS credentials files) through `secret` blocks only: a credential must be
+delivers its credentials through `secret` blocks only: a credential must be
 renewed and revoked with its task, which a template call or the Vault-compatible endpoint can't do.
 
 Vault-style lookups are resolved like every lookup (explicit `provider:` prefix, client routes on the

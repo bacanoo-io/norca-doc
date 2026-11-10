@@ -2,7 +2,7 @@
 title: "Embedded secret store"
 linkTitle: "Secret store"
 weight: 50
-description: "A built-in, sealed, versioned and audited secret store that delivers secrets to tasks as files and environment variables, with Vault-compatible lookups and dynamic NATS credentials."
+description: "A built-in, sealed, versioned and audited secret store that delivers secrets to tasks as files and environment variables, with Vault-compatible lookups and dynamic credentials from operators."
 ---
 
 > [!NOTE]

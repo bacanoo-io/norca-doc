@@ -307,7 +307,7 @@ job "postgres-operator" {
 }
 ```
 
-Norca never handles that credential: reads are audited, backups include it with the secret store, and a
+Norca stores that credential but never uses it: reads are audited, backups include it with the secret store, and a
 compromised operator exposes one target system, not the servers. An operator rotates it with the
 [expiry and rotation](/docs/features/secrets/secrets#expiry-and-rotation) of secrets, through its `change_mode`.
 

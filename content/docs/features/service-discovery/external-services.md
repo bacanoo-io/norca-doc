@@ -148,7 +148,7 @@ External services need no agent configuration. The fields of a registration:
 | `Checks` | list | – | `ttl`, `http` or `tcp` checks; see the [API](/docs/api/external-services) |
 | `DeregisterCriticalAfter` | duration | `1h` (`0` if `Declared`) | Time critical before deregistration; `0` keeps the service |
 | `Declared` | bool | `false` | Marks a service declared in a file or edited as HCL (source `apply`); its `http` and `tcp` checks need `CheckedBy` |
-| `CheckedBy` | object | � | `NodePool` and `Datacenters` (patterns) of the nodes that may run the checks; the servers choose one. Excludes `NodeID` |
+| `CheckedBy` | object | – | `NodePool` and `Datacenters` (patterns) of the nodes that may run the checks; the servers choose one. Excludes `NodeID` |
 
 ## CLI and API
 
