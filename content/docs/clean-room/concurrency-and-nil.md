@@ -17,21 +17,21 @@ relative to the `nomad` directory (`norca` since 2026-11-02) of the norca reposi
 | ID | Finding | Verdict | Commit |
 | --- | --- | --- | --- |
 | NIL-01 | `StartTask` dereferences `cfg.Resources.LinuxResources` | Invalid | — |
-| NIL-02 | The cpuset reconciler dereferences `LinuxResources` of every task | Partially valid | `ca7ac046e` |
+| NIL-02 | The cpuset reconciler dereferences `LinuxResources` of every task | Partially valid | `d25baac98` |
 | NIL-03 | `ExecTaskStreaming` closes nil output streams | Invalid | — |
 | NIL-04 | `shutdownLogger` kills a nil plugin client | Invalid | — |
 | NIL-05 | The bus uses a nil NATS server | Invalid | — |
-| FD-01 | The image archive stays open when `LoadImage` fails | Valid | `ca7ac046e` |
-| FD-02 | The stdout FIFO stays open when stderr fails to open | Valid | `ca7ac046e` |
+| FD-01 | The image archive stays open when `LoadImage` fails | Valid | `d25baac98` |
+| FD-02 | The stdout FIFO stays open when stderr fails to open | Valid | `d25baac98` |
 | FD-03 | Double close and unclosed streams in the docker logger | Invalid | — |
-| FD-04 | Stdin of a streaming exec is never closed | Valid | `ca7ac046e` |
-| CHAN-01 | The `WaitTask` goroutine blocks forever on an unbuffered channel | Valid | `ca7ac046e` |
-| CHAN-02 | The fingerprint goroutine blocks on send and cannot stop | Valid | `ca7ac046e` |
+| FD-04 | Stdin of a streaming exec is never closed | Valid | `d25baac98` |
+| CHAN-01 | The `WaitTask` goroutine blocks forever on an unbuffered channel | Valid | `d25baac98` |
+| CHAN-02 | The fingerprint goroutine blocks on send and cannot stop | Valid | `d25baac98` |
 | CHAN-03 | The stats collector timer leaks and stops firing | Invalid | — |
-| CHAN-04 | The KV lister is not stopped on an early return | Partially valid | `fd4d0f8ff` |
+| CHAN-04 | The KV lister is not stopped on an early return | Partially valid | `32e5db098` |
 | LOCK-01 | `InspectImage` runs under the global image lock | Won't fix (by design) | — |
-| LOCK-02 | A finished pull deletes a newer pull's future | Valid | `ca7ac046e` |
-| LOCK-03 | Backup loads hold the cache lock | Partially valid | `395800bff` |
+| LOCK-02 | A finished pull deletes a newer pull's future | Valid | `d25baac98` |
+| LOCK-03 | Backup loads hold the cache lock | Partially valid | `6c0a3a5f3` |
 
 ## Nil dereferences
 
@@ -62,7 +62,7 @@ when it was present. There the panic is possible, in a background goroutine.
 
 **Fix.** `trackedTasks` skips tasks without `Resources` or `LinuxResources`;
 they have no cpuset cgroup to reconcile. File:
-`drivers/docker/reconcile_cpuset.go`. Commit `ca7ac046e`.
+`drivers/docker/reconcile_cpuset.go`. Commit `d25baac98`.
 
 **Test.** None dedicated: the case needs a task restored from a handle without
 Linux resources.
@@ -111,7 +111,7 @@ successful `LoadImage`; when the load fails, the descriptor stays open.
 **Verdict: valid.**
 
 **Fix.** The archive is closed with `defer f.Close()` right after it is
-opened. File: `drivers/docker/driver.go`. Commit `ca7ac046e`.
+opened. File: `drivers/docker/driver.go`. Commit `d25baac98`.
 
 **Test.** None dedicated: the failing load needs a Docker daemon.
 
@@ -123,7 +123,7 @@ stderr FIFO; when the second open fails, it returns without closing the first.
 **Verdict: valid.**
 
 **Fix.** The stdout FIFO is closed before the error is returned. File:
-`drivers/docker/docklog/docker_logger.go`. Commit `ca7ac046e`.
+`drivers/docker/docklog/docker_logger.go`. Commit `d25baac98`.
 
 **Test.** None dedicated.
 
@@ -150,7 +150,7 @@ goroutine of `StreamToExecOptions`; left open, that goroutine can block on a
 write after the exec has ended.
 
 **Fix.** `ExecTaskStreaming` also defers `opts.Stdin.Close()`. File:
-`drivers/docker/driver.go`. Commit `ca7ac046e`.
+`drivers/docker/driver.go`. Commit `d25baac98`.
 
 **Test.** None dedicated: the exec needs a running container.
 
@@ -166,7 +166,7 @@ deferred `close` never runs and the goroutine leaks.
 
 **Fix.** The channel has a buffer of one, which holds the single result, so
 `handleWait` always completes and closes it. File: `drivers/docker/driver.go`.
-Commit `ca7ac046e`.
+Commit `d25baac98`.
 
 **Test.** `TestDriver_WaitTask_NoReader` in `drivers/docker/cleanroom_test.go`:
 the context is cancelled, nobody reads, and the result is still buffered and
@@ -182,7 +182,7 @@ the goroutine no longer sees the cancellation of its context.
 
 **Fix.** The send is a `select` that also returns when the caller's context or
 the driver's context ends. File: `drivers/docker/fingerprint.go`. Commit
-`ca7ac046e`.
+`d25baac98`.
 
 **Test.** None dedicated.
 
@@ -199,7 +199,7 @@ collected by the Go runtime (since Go 1.23; Norca builds with Go 1.27), so it
 does not leak. Nothing was changed in the collector.
 
 **Test.** `TestDriver_DockerStatsCollector_EarlyTimer` in
-`drivers/docker/cleanroom_test.go` (commit `ca7ac046e`) proves the recovery:
+`drivers/docker/cleanroom_test.go` (commit `d25baac98`) proves the recovery:
 the timer fires before any stats, and stats are still emitted once Docker
 sends them.
 
@@ -215,7 +215,7 @@ already ended the lister's subscription, so it did not stay open. The lister
 was still not stopped explicitly, and ended only after the return.
 
 **Fix.** Both functions stop the lister with a deferred `lister.Stop()`. File:
-`norca/bus_kv.go`. Commit `fd4d0f8ff`, which added the Consul KV migration and
+`norca/bus_kv.go`. Commit `32e5db098`, which added the Consul KV migration and
 the carry-over to a clustered bus in the same code.
 
 **Test.** None dedicated to the early return; the export and import paths are
@@ -250,7 +250,7 @@ deleted: later callers start duplicate pulls, and pull loggers are cleared.
 **Fix.** A caller deletes the entry, and clears the pull loggers, only when the
 entry is still its own future. The loggers were cleared by the pull goroutine
 before; they are now cleared together with the future. File:
-`drivers/docker/coordinator.go`. Commit `ca7ac046e`.
+`drivers/docker/coordinator.go`. Commit `d25baac98`.
 
 **Test.** `TestDockerCoordinator_PullImage_KeepsNewerFuture` in
 `drivers/docker/cleanroom_test.go`: a caller joins a pull, the pull finishes
@@ -272,7 +272,7 @@ load of another backup.
 **Fix.** The cache has its own lock, and the loads are serialized under a
 separate load lock. A request looks up the cache first; on a miss it takes the
 load lock and looks again, since the load it waited for may have cached the
-same backup. File: `norca/backup/load.go`. Commit `395800bff`.
+same backup. File: `norca/backup/load.go`. Commit `6c0a3a5f3`.
 
 **Test.** `TestManager_LoadCacheHitDoesNotWait` in
 `norca/backup/directory_test.go`: a cached backup is served while another

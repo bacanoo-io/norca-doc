@@ -10,25 +10,25 @@ weight: 1
 The review covered the Docker task driver (`drivers/docker` in the norca
 repository): the stop and recovery of tasks, registry authentication, image
 reference counting, ports and bind mounts. It reported 12 findings. The fixes
-are in commit `ca7ac046e` of the norca repository; the tests named below are
+are in commit `d25baac98` of the norca repository; the tests named below are
 in `drivers/docker/cleanroom_test.go` unless another file is given. See the
 [section page](/docs/clean-room) for the process.
 
 | ID | Finding | Verdict | Commit |
 | --- | --- | --- | --- |
-| 1.1 | A `kill_timeout` below one second becomes an immediate SIGKILL | Valid | `ca7ac046e` |
+| 1.1 | A `kill_timeout` below one second becomes an immediate SIGKILL | Valid | `d25baac98` |
 | 1.2 | Race after a custom kill signal: `DestroyTask` finds the container still running | Invalid | — |
 | 1.3 | `RecoverTask` kills a running container when the logger cannot be restored | Won't fix (by design) | — |
 | 1.4 | `DestroyTask` reports success when the container cannot be removed | Won't fix (by design) | — |
 | 1.5 | Opening the log FIFO blocks without a reader | Invalid | — |
-| 2.1 | `authIsEmpty` treats token-only credentials as empty | Partially valid | `ca7ac046e` |
-| 2.2 | A credential helper without credentials aborts pulls of public images | Valid | `ca7ac046e` |
-| 2.3 | Concurrent pulls of an image are shared between different credentials | Partially valid | `ca7ac046e` |
+| 2.1 | `authIsEmpty` treats token-only credentials as empty | Partially valid | `d25baac98` |
+| 2.2 | A credential helper without credentials aborts pulls of public images | Valid | `d25baac98` |
+| 2.3 | Concurrent pulls of an image are shared between different credentials | Partially valid | `d25baac98` |
 | 3.1 | A running container with the same name is adopted | Won't fix (by design) | — |
-| 3.2 | The image reference leaks when a task fails to start | Valid | `ca7ac046e` |
+| 3.2 | The image reference leaks when a task fails to start | Valid | `d25baac98` |
 | 3.3 | Every port is published on both TCP and UDP | Won't fix (by design) | — |
-| 3.4 | The SELinux label makes an invalid bind (`ro:z`) | Valid | `ca7ac046e` |
-| extra | The docker logger plugin process leaks when its launch fails | Valid (not in the report) | `ca7ac046e` |
+| 3.4 | The SELinux label makes an invalid bind (`ro:z`) | Valid | `d25baac98` |
+| extra | The docker logger plugin process leaks when its launch fails | Valid (not in the report) | `d25baac98` |
 
 ## Stop and lifecycle
 

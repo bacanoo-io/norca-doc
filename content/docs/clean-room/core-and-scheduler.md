@@ -10,21 +10,21 @@ weight: 4
 The review, part of the second round, covered the node and allocation
 endpoints of the servers, the drainer, the core structures (job, allocation,
 node, evaluation) and the scheduler stack with its feasibility iterators. It
-reported 8 findings. The fixes are in commit `638d03672` of the norca
+reported 8 findings. The fixes are in commit `4e4b1eaa3` of the norca
 repository. Paths are relative to the `nomad` directory (`norca` since 2026-11-02) of the norca
 repository. See the [section page](/docs/clean-room) for the process.
 
 | ID | Finding | Verdict | Commit |
 | --- | --- | --- | --- |
-| CORE-SEC-01 | `Node.UpdateAlloc` checks only the node of the first allocation | Valid (worse than reported) | `638d03672` |
+| CORE-SEC-01 | `Node.UpdateAlloc` checks only the node of the first allocation | Valid (worse than reported) | `4e4b1eaa3` |
 | CORE-NIL-01 | `tasksUpdated` dereferences a missing `LogConfig` | Invalid | — |
 | CORE-NIL-02 | `tasksUpdated` dereferences a removed or renamed task group | Invalid | — |
 | CORE-NIL-03 | Stop, evict, node evaluations and the drainer dereference `alloc.Job` | Invalid | — |
 | CORE-NIL-04 | `AllocAffinityFeasibilityIterator.SetTaskGroup` dereferences a nil group | Invalid | — |
-| CORE-SCHED-01 | A task group without a network keeps the network of the previous group | Valid | `638d03672` |
-| CORE-SCHED-02 | `NetworkChecker.SetNetwork` doubles the port list with zero ports | Valid (low impact) | `638d03672` |
+| CORE-SCHED-01 | A task group without a network keeps the network of the previous group | Valid | `4e4b1eaa3` |
+| CORE-SCHED-02 | `NetworkChecker.SetNetwork` doubles the port list with zero ports | Valid (low impact) | `4e4b1eaa3` |
 | CORE-SCHED-03 | The shallow copy in `genericAllocUpdateFn` shares data with the state store | Invalid | — |
-| extra | `Node.UpdateStatus` never checks the caller | Valid (not in the report) | `638d03672` |
+| extra | `Node.UpdateStatus` never checks the caller | Valid (not in the report) | `4e4b1eaa3` |
 
 ## Node and allocation endpoints
 
@@ -59,7 +59,7 @@ updates of several nodes in one request (`norca/drainer_int_test.go`,
 the allocations of another node, whatever node it names in the request, and
 with ACLs enabled only with its own secret ID.
 
-**Commit.** `638d03672`.
+**Commit.** `4e4b1eaa3`.
 
 ## Nil dereferences
 
@@ -133,7 +133,7 @@ it for a group without a network. Files: `scheduler/feasible.go`,
 `scheduler/stack_test.go`: a group without a network is not checked against
 the network of the group placed before it.
 
-**Commit.** `638d03672`.
+**Commit.** `4e4b1eaa3`.
 
 ### CORE-SCHED-02 Zero ports in `NetworkChecker.SetNetwork`
 
@@ -150,7 +150,7 @@ skipped by the check, so the results were right; only the work was wasted.
 
 **Test.** `TestNetworkChecker_SetNetwork` in `scheduler/feasible_test.go`.
 
-**Commit.** `638d03672`.
+**Commit.** `4e4b1eaa3`.
 
 ### CORE-SCHED-03 Shallow copy in `genericAllocUpdateFn`
 
@@ -190,7 +190,7 @@ anything else needs node write) and `TestHeartbeat_InvalidateHeartbeat_ACL`
 in `norca/heartbeat_test.go` (the leader marks a node down with ACLs
 enabled).
 
-**Commit.** `638d03672`.
+**Commit.** `4e4b1eaa3`.
 
 ### Left unchanged
 

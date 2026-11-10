@@ -299,11 +299,11 @@ first five minutes of the baseline. The raw results are in `norca-lab/bench/resu
 
 | Run | Norca | Content |
 | --- | --- | --- |
-| Baseline | `74d33c1d2` | `hashicorp/raft` v1.5.0, `raft-boltdb`, BoltDB client state |
-| Phase 1 | `1b29fe48d` | the raft fork, `hashicorp/go-metrics` (soak skipped) |
-| Phase 2 | `dd2661b5a` | the raft log on Badger |
-| Phase 3 | `d7ebb576f` | the client state on Badger |
-| Final | `ad0579914` | phase 3 with the regenerated notices (the same code, run again) |
+| Baseline | `1a57898d8` | `hashicorp/raft` v1.5.0, `raft-boltdb`, BoltDB client state |
+| Phase 1 | `6a016dfec` | the raft fork, `hashicorp/go-metrics` (soak skipped) |
+| Phase 2 | `cacdde71e` | the raft log on Badger |
+| Phase 3 | `249e54fda` | the client state on Badger |
+| Final | `18bfacb14` | phase 3 with the regenerated notices (the same code, run again) |
 
 ### Cluster tests
 
@@ -385,7 +385,7 @@ The open points of the final run were taken up the same day:
   `num_memtables`; see the [server configuration](/docs/configuration/server/#badger-profiles).
   The lab now runs `small`.
 
-A full run with the `small` profile (`norca-lab/bench/results/20261103-1154-small-vt4k-b089d81e0`),
+A full run with the `small` profile (`norca-lab/bench/results/20261103-1154-small-vt4k-ef3066912`),
 against the final run with `default`:
 
 | | Final (`default`) | `small`, 4 KB threshold |

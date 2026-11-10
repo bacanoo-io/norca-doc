@@ -10,21 +10,21 @@ weight: 6
 The review, part of the second round, covered the CSI volume watcher
 (`norca/volumewatcher` in the norca repository), which runs on the leader and
 releases the claims of terminated allocations on CSI volumes. It reported 7
-findings. The fixes are in commit `78dd6309d` of the norca repository; the
+findings. The fixes are in commit `d2529f1c9` of the norca repository; the
 tests named below are in `norca/volumewatcher/volumes_watcher_test.go`. Paths
 are relative to the `nomad` directory (`norca` since 2026-11-02) of the norca repository. See the
 [section page](/docs/clean-room) for the process.
 
 | ID | Finding | Verdict | Commit |
 | --- | --- | --- | --- |
-| VOLWATCH-DEADLOCK-01 | `Notify` blocks with the watcher lock held | Valid | `78dd6309d` |
-| VOLWATCH-RACE-01 | A late goroutine of the previous leadership term removes the new watcher | Partially valid | `78dd6309d` |
-| VOLWATCH-SPIN-01 | `watchVolumes` retries without a pause when the query fails | Partially valid (latent) | `78dd6309d`, `acc64ca1e` |
+| VOLWATCH-DEADLOCK-01 | `Notify` blocks with the watcher lock held | Valid | `d2529f1c9` |
+| VOLWATCH-RACE-01 | A late goroutine of the previous leadership term removes the new watcher | Partially valid | `d2529f1c9` |
+| VOLWATCH-SPIN-01 | `watchVolumes` retries without a pause when the query fails | Partially valid (latent) | `d2529f1c9`, `0f87349fd` |
 | VOLWATCH-RACE-02 | `getVolume` writes the volume under a read lock | Invalid | — |
-| VOLWATCH-KEY-01 | The watch list key `ID + Namespace` collides | Valid | `78dd6309d` |
+| VOLWATCH-KEY-01 | The watch list key `ID + Namespace` collides | Valid | `d2529f1c9` |
 | VOLWATCH-RETRY-01 | A failed unpublish is never retried | Invalid | — |
-| VOLWATCH-DEAD-01 | Unused fields and functions | Partially valid | `78dd6309d` |
-| extra | Data race on the state store of the watcher | Valid (not in the report) | `78dd6309d` |
+| VOLWATCH-DEAD-01 | Unused fields and functions | Partially valid | `d2529f1c9` |
+| extra | Data race on the state store of the watcher | Valid (not in the report) | `d2529f1c9` |
 
 ## Locking and leadership
 
@@ -63,7 +63,7 @@ watcher is in a slow unpublish RPC block neither the volumes watcher nor the
 leader step-down) and `TestVolumeWatch_Remove` (a volume watcher leaves the
 watch list only when no update is queued for it).
 
-**Commit.** `78dd6309d`.
+**Commit.** `d2529f1c9`.
 
 ### VOLWATCH-RACE-01 Late goroutine of the previous leadership term
 
@@ -89,7 +89,7 @@ the previous term that finishes late does not remove the current term's
 watcher for the same volume. `TestVolumeWatch_Remove` checks that a watcher
 never removes another watcher stored under its key.
 
-**Commit.** `78dd6309d`.
+**Commit.** `d2529f1c9`.
 
 ## Other findings
 
@@ -116,7 +116,7 @@ the wait. It fails on the old loop, which retried at once with index 0. The
 state store itself returns no such error, so the test needs the replaceable
 query.
 
-**Commit.** `78dd6309d` (fix), `acc64ca1e` (test).
+**Commit.** `d2529f1c9` (fix), `0f87349fd` (test).
 
 ### VOLWATCH-RACE-02 Write under a read lock in `getVolume`
 
@@ -145,7 +145,7 @@ string. Files: `norca/volumewatcher/volumes_watcher.go`,
 **Test.** `TestVolumeWatch_NamespacedKeys`: volumes whose ID and namespace
 concatenate to the same string get their own watchers.
 
-**Commit.** `78dd6309d`.
+**Commit.** `d2529f1c9`.
 
 ### VOLWATCH-RETRY-01 No retry of a failed unpublish
 
@@ -176,7 +176,7 @@ the context of the watcher, which the flush on a leadership change cancels.
 
 **Test.** None: the change removes code only.
 
-**Commit.** `78dd6309d`.
+**Commit.** `d2529f1c9`.
 
 ## Found during the checking
 
@@ -193,4 +193,4 @@ reported it.
 **Test.** `TestVolumeWatch_RapidLeadershipChanges`, which toggles leadership
 while volumes change and is meant to be run with the race detector.
 
-**Commit.** `78dd6309d`.
+**Commit.** `d2529f1c9`.

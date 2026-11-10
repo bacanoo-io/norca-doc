@@ -11,22 +11,22 @@ The review, part of the third round, covered the controller SDK
 (`controller` in the norca repository), the runtime that custom controllers
 are built on: object kinds and their storage, the informer, owner references,
 the event recorder, status updates and the serving of webhooks. It reported 7
-findings. The fixes are in commit `ab139db20` of the norca repository. Paths
+findings. The fixes are in commit `1e23e9e83` of the norca repository. Paths
 are relative to the `nomad` directory (`norca` since 2026-11-02) of the norca repository. See the
 [section page](/docs/clean-room) for the process, and
 [Controllers](/docs/features/operator-framework/controllers) for the SDK.
 
 | ID | Finding | Verdict | Commit |
 | --- | --- | --- | --- |
-| CTRL-COLLISION-01 | Groups that differ only in dots and dashes map to the same Variables path | Valid (less severe than reported) | `ab139db20` |
+| CTRL-COLLISION-01 | Groups that differ only in dots and dashes map to the same Variables path | Valid (less severe than reported) | `1e23e9e83` |
 | CTRL-OWNER-01 | An empty namespace in allocation, evaluation and deployment events loses the owner | Invalid | — |
-| CTRL-LEAK-01 | `EventRecorder.last` grows without limit; `Forget` is never called | Valid | `ab139db20` |
-| CTRL-DESERIALIZE-01 | `Objects.List` skips invalid objects silently | Partially valid | `ab139db20` |
-| CTRL-GOROUTINE-LEAK-01 | `webhook.Serve` leaks its shutdown goroutine when serving fails | Valid | `ab139db20` |
-| CTRL-STATUS-RACE-01 | A conflict retry of `UpdateStatus` writes a status computed for the old spec | Partially valid | `ab139db20` |
+| CTRL-LEAK-01 | `EventRecorder.last` grows without limit; `Forget` is never called | Valid | `1e23e9e83` |
+| CTRL-DESERIALIZE-01 | `Objects.List` skips invalid objects silently | Partially valid | `1e23e9e83` |
+| CTRL-GOROUTINE-LEAK-01 | `webhook.Serve` leaks its shutdown goroutine when serving fails | Valid | `1e23e9e83` |
+| CTRL-STATUS-RACE-01 | A conflict retry of `UpdateStatus` writes a status computed for the old spec | Partially valid | `1e23e9e83` |
 | CTRL-NIL-01 | A nil `*Object` panics in `Observe`, `Observed` and `OwnerReference` | Won't fix (by design) | — |
-| extra | The group rule of the SDK accepts groups that are not DNS subdomains | Valid (not in the report) | `ab139db20` |
-| extra | `webhook.Serve` returns before the requests in progress finish, and keeps serving after a failure | Valid (not in the report) | `ab139db20` |
+| extra | The group rule of the SDK accepts groups that are not DNS subdomains | Valid (not in the report) | `1e23e9e83` |
+| extra | `webhook.Serve` returns before the requests in progress finish, and keeps serving after a failure | Valid (not in the report) | `1e23e9e83` |
 
 ## Object paths and owners
 
@@ -72,7 +72,7 @@ references differ even without the owner kind),
 `ui/tests/unit/utils/objects-secrets-test.js`. The UI unit test was not run:
 the UI test build does not work on the Windows machine of the clean room.
 
-**Commit.** `ab139db20`.
+**Commit.** `1e23e9e83`.
 
 ### CTRL-OWNER-01 Empty namespace in owned job events
 
@@ -115,7 +115,7 @@ of the controller's informer calls `Forget`. Files: `controller/lifecycle.go`,
 `TestNativeController_RecorderForgetsDeleted` in `controller/native_test.go`
 (the first event of an object re-created with the same name is recorded).
 
-**Commit.** `ab139db20`.
+**Commit.** `1e23e9e83`.
 
 ### CTRL-DESERIALIZE-01 Invalid objects skipped by `Objects.List`
 
@@ -135,7 +135,7 @@ gone. File: `controller/objects.go`.
 
 **Test.** `TestObjects_ListLogsInvalid` in `controller/lifecycle_test.go`.
 
-**Commit.** `ab139db20`.
+**Commit.** `1e23e9e83`.
 
 ## Webhook serving
 
@@ -155,7 +155,7 @@ related defects, listed [below](#webhookserve-shutdown-and-failure).
 **Test.** `TestServe_FailureDoesNotLeak` in `controller/webhook/webhook_test.go`:
 repeated failing calls of `Serve` leave no goroutine behind.
 
-**Commit.** `ab139db20`.
+**Commit.** `1e23e9e83`.
 
 ## Status and nil objects
 
@@ -184,7 +184,7 @@ documented for a missing object. File: `controller/objects.go`.
 Variables object) and `TestNativeObjects_StatusNotAppliedToRecreated`, both
 in `controller/controller_test.go`.
 
-**Commit.** `ab139db20`.
+**Commit.** `1e23e9e83`.
 
 ### CTRL-NIL-01 Nil objects
 
@@ -215,7 +215,7 @@ case DNS subdomain of at most 253 characters. File: `controller/object.go`.
 **Test.** `TestKind_Paths` in `controller/object_test.go` (groups that are
 not DNS subdomains are rejected).
 
-**Commit.** `ab139db20`.
+**Commit.** `1e23e9e83`.
 
 ### `webhook.Serve` shutdown and failure
 
@@ -233,7 +233,7 @@ graceful shutdown; when serving fails, it closes the server. File:
 a failure has no test: the failing listener of `TestServe_FailureDoesNotLeak`
 accepts no connection.
 
-**Commit.** `ab139db20`.
+**Commit.** `1e23e9e83`.
 
 ## Behaviour changes of the SDK
 

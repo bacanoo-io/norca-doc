@@ -16,12 +16,12 @@ reported **six findings, all valid and all fixed.** Paths are relative to the
 
 | ID | Finding | Verdict | Commit |
 | --- | --- | --- | --- |
-| SEC-01 | Release revisions expose the decrypted values of Variables | Valid | `2103ea370` |
-| SEC-02 | Backup read lists every ACL policy and role | Valid | `2103ea370` |
-| SEC-03 | Variables list access shows the item names in backups | Valid | `2103ea370` |
-| SEC-04 | A node secret gives direct access to the whole Consul KV bucket on the bus | Valid | `c6c7b0d00`, `677ba8f22` |
-| SEC-05 | Event subjects carry no namespace | Valid | `2103ea370` |
-| SEC-06 | `GetAllocRules` tells existing allocations from missing ones | Valid (low risk) | `2103ea370` |
+| SEC-01 | Release revisions expose the decrypted values of Variables | Valid | `72f634912` |
+| SEC-02 | Backup read lists every ACL policy and role | Valid | `72f634912` |
+| SEC-03 | Variables list access shows the item names in backups | Valid | `72f634912` |
+| SEC-04 | A node secret gives direct access to the whole Consul KV bucket on the bus | Valid | `77aa0af7e`, `8aa389f27` |
+| SEC-05 | Event subjects carry no namespace | Valid | `72f634912` |
+| SEC-06 | `GetAllocRules` tells existing allocations from missing ones | Valid (low risk) | `72f634912` |
 
 ## SEC-01 Release revisions expose decrypted Variables
 
@@ -58,7 +58,7 @@ and the content, a token without Variables read gets the job only and no
 content, the object API and the object events carry no content, and the stored
 object keeps it.
 
-**Commit.** `2103ea370`. See also the [permissions of
+**Commit.** `72f634912`. See also the [permissions of
 releases](/docs/features/packages/releases#permissions).
 
 ## SEC-02 Backup read lists every ACL policy and role
@@ -78,7 +78,7 @@ only, as the ACL endpoints do. File: `norca/backup_browse.go`.
 non-management token gets no ACL policies in the contents or in the diff, the
 management token gets them in the contents.
 
-**Commit.** `2103ea370`. See [browsing and selective
+**Commit.** `72f634912`. See [browsing and selective
 restore](/docs/features/backup-restore#browsing-and-selective-restore).
 
 ## SEC-03 Variables list access shows item names in backups
@@ -98,7 +98,7 @@ Variable; with `list` alone the path is shown without them. File:
 **Test.** `TestBackupEndpoint_ACL` in `norca/backup_endpoint_test.go`: a token
 with `list` gets the path without the item names.
 
-**Commit.** `2103ea370`.
+**Commit.** `72f634912`.
 
 ## SEC-04 Node secret and the Consul KV bucket on the bus
 
@@ -111,7 +111,7 @@ directly on the bus, without any ACL check.**
 
 **Verdict: valid.**
 
-**Fix, first part (commit `c6c7b0d00`).** Nodes no longer have access to the
+**Fix, first part (commit `77aa0af7e`).** Nodes no longer have access to the
 bucket. A node may publish its telemetry subject only. The bus KV backend of
 the clients calls a new server RPC endpoint, `ConsulKV.Get`, `ConsulKV.Put` and
 `ConsulKV.Delete`, with the token of the KV request; the servers check the
@@ -127,7 +127,7 @@ the rules of the namespace and path named in the KV request. A token with
 Variables write on any path could therefore write every key, by naming a path
 it may write.
 
-**Fix, second part (commit `677ba8f22`).** The NATS keys of the bucket are
+**Fix, second part (commit `8aa389f27`).** The NATS keys of the bucket are
 `<namespace>.<path>.<key>`, so the rules of a namespace and path cover exactly
 the keys kept under them, as with the Variables backend. The migration from
 Variables, the carry-over to a clustered bus, backup contents, diff and
@@ -171,7 +171,7 @@ receives the events of the namespace `shop` only. Files: `norca/bus/events.go`,
 **Test.** `TestBusEvents_Publish` in `norca/bus_events_test.go` checks the
 subject `nomad.global.<namespace>.Job`.
 
-**Commits.** norca `2103ea370`; documentation: the system bus page; the
+**Commits.** norca `72f634912`; documentation: the system bus page; the
 multi-datacenter example of the deployer norca-deployer `cf9d8ef`. See [the
 event stream](/docs/features/system-bus#the-event-stream).
 
@@ -196,4 +196,4 @@ allocations it does not have yet. File: `norca/network_policy_endpoint.go`.
 the same answer for an existing and a missing allocation; one with them gets
 an empty rule set for a missing allocation.
 
-**Commit.** `2103ea370`. See [network rules](/docs/features/network-rules).
+**Commit.** `72f634912`. See [network rules](/docs/features/network-rules).

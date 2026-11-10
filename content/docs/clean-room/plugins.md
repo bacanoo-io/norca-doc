@@ -12,24 +12,24 @@ the norca repository): the gRPC clients and servers of task drivers and
 device plugins, the CSI client, the shared attribute structures and the
 serving of a plugin binary. It looked for goroutine and resource leaks, races,
 lost arguments and panics, and reported 10 findings. The fixes are in commit
-`bcd1a9bd1` of the norca repository. Paths are relative to the `nomad`
+`cc4d34a8f` of the norca repository. Paths are relative to the `nomad`
 directory (`norca` since 2026-11-02) of the norca repository. See the
 [section page](/docs/clean-room) for the process.
 
 | ID | Finding | Verdict | Commit |
 | --- | --- | --- | --- |
-| PLUG-LEAK-01 | The stream handlers block forever on the error send | Valid | `bcd1a9bd1` |
-| PLUG-LEAK-02 | The `WaitTask` goroutine blocks on an unbuffered channel | Valid | `bcd1a9bd1` |
-| PLUG-PIPE-01 | Exec stdin is never closed, the exec input goroutine leaks, the `TaskEvents` server ignores its context | Partially valid | `bcd1a9bd1` |
+| PLUG-LEAK-01 | The stream handlers block forever on the error send | Valid | `cc4d34a8f` |
+| PLUG-LEAK-02 | The `WaitTask` goroutine blocks on an unbuffered channel | Valid | `cc4d34a8f` |
+| PLUG-PIPE-01 | Exec stdin is never closed, the exec input goroutine leaks, the `TaskEvents` server ignores its context | Partially valid | `cc4d34a8f` |
 | PLUG-CONC-01 | Race, connection and timer leak in the CSI `ensureConnected` | Invalid | — |
-| PLUG-ARG-01 | `CreateNetwork` drops the `NetworkCreateRequest` | Partially valid | `bcd1a9bd1` |
-| PLUG-CSI-01 | A matching block device capability is skipped | Valid (only after a mismatching capability) | `bcd1a9bd1` |
-| PLUG-ATTR-01 | `Attribute.Comparable` is not symmetric | Partially valid | `bcd1a9bd1` |
-| PLUG-NIL-01 | Missing nil checks in the protobuf and struct converters | Partially valid | `bcd1a9bd1` |
+| PLUG-ARG-01 | `CreateNetwork` drops the `NetworkCreateRequest` | Partially valid | `cc4d34a8f` |
+| PLUG-CSI-01 | A matching block device capability is skipped | Valid (only after a mismatching capability) | `cc4d34a8f` |
+| PLUG-ATTR-01 | `Attribute.Comparable` is not symmetric | Partially valid | `cc4d34a8f` |
+| PLUG-NIL-01 | Missing nil checks in the protobuf and struct converters | Partially valid | `cc4d34a8f` |
 | PLUG-PANIC-01 | The server panics when attaching error details fails | Invalid | — |
-| PLUG-SRV-01 | An unsupported plugin type exits silently with code 0 | Partially valid | `bcd1a9bd1` |
-| extra | The eventer drops expired consumers without closing their channels | Valid (not in the report) | `bcd1a9bd1` |
-| extra | The exec input goroutine can block on a full error channel | Valid (not in the report) | `bcd1a9bd1` |
+| PLUG-SRV-01 | An unsupported plugin type exits silently with code 0 | Partially valid | `cc4d34a8f` |
+| extra | The eventer drops expired consumers without closing their channels | Valid (not in the report) | `cc4d34a8f` |
+| extra | The exec input goroutine can block on a full error channel | Valid (not in the report) | `cc4d34a8f` |
 
 ## Leaks
 
@@ -58,7 +58,7 @@ context. The error is still delivered whenever there is room for it. Files:
 in `plugins/device/client_test.go`: the stream fails after the consumer
 cancelled with a value left unread, and the handlers still return.
 
-**Commit.** `bcd1a9bd1`.
+**Commit.** `cc4d34a8f`.
 
 ### PLUG-LEAK-02 `WaitTask` on an unbuffered channel
 
@@ -75,7 +75,7 @@ waiting reader gets the same result as before. File:
 **Test.** `TestDriverClient_WaitTaskCancelled` in
 `plugins/drivers/client_test.go`.
 
-**Commit.** `bcd1a9bd1`.
+**Commit.** `cc4d34a8f`.
 
 ### PLUG-PIPE-01 Exec streams and the `TaskEvents` server
 
@@ -114,7 +114,7 @@ input reaches the plugin as a half-close) and
 `TestDriverServer_TaskEventsClientGone` (the handler returns when the client
 goes away although the driver never closes its channel).
 
-**Commit.** `bcd1a9bd1`.
+**Commit.** `cc4d34a8f`.
 
 ## Concurrency
 
@@ -154,7 +154,7 @@ drivers ignore it and older clients send it empty as before. File:
 **Test.** `TestDriverClient_CreateNetworkHostname` in
 `plugins/drivers/client_test.go`.
 
-**Commit.** `bcd1a9bd1`.
+**Commit.** `cc4d34a8f`.
 
 ### PLUG-CSI-01 Matching block device capability skipped
 
@@ -174,7 +174,7 @@ options to compare. File: `plugins/csi/client.go`.
 **Test.** `TestCompareCapabilities_BlockAfterMismatch` in
 `plugins/csi/client_test.go`.
 
-**Commit.** `bcd1a9bd1`.
+**Commit.** `cc4d34a8f`.
 
 ### PLUG-ATTR-01 Asymmetric `Attribute.Comparable`
 
@@ -194,7 +194,7 @@ with nothing, so `Comparable` gives the same answer in both directions. File:
 **Test.** `TestAttribute_ComparableSymmetric` in
 `plugins/shared/structs/attribute_test.go`.
 
-**Commit.** `bcd1a9bd1`.
+**Commit.** `cc4d34a8f`.
 
 ## Panics
 
@@ -227,7 +227,7 @@ not panic the client) and `TestDriverClient_WaitTaskNoResult` (a wait
 response without a result does not panic), both in
 `plugins/drivers/client_test.go`.
 
-**Commit.** `bcd1a9bd1`.
+**Commit.** `cc4d34a8f`.
 
 ### PLUG-PANIC-01 Panic when attaching error details
 
@@ -254,7 +254,7 @@ shows it), and the process exits with code 1. File: `plugins/serve.go`.
 **Test.** `TestServe_UnsupportedExitCode` in `plugins/serve_test.go`, which
 runs the test binary in a child process because `serve` calls `os.Exit`.
 
-**Commit.** `bcd1a9bd1`.
+**Commit.** `cc4d34a8f`.
 
 ## Found during the checking
 
@@ -273,7 +273,7 @@ hanging.
 **Test.** `TestEventer_gcConsumersCloses` in
 `drivers/shared/eventer/eventer_test.go`.
 
-**Commit.** `bcd1a9bd1`.
+**Commit.** `cc4d34a8f`.
 
 ### Exec input errors on a full channel
 
@@ -288,7 +288,7 @@ single error anyway. File: `plugins/drivers/execstreaming.go`.
 **Test.** The "unexpected messages" subtest of
 `TestStreamToExecOptions_InputEnd` in `plugins/drivers/client_test.go`.
 
-**Commit.** `bcd1a9bd1`.
+**Commit.** `cc4d34a8f`.
 
 ### Left unchanged
 
