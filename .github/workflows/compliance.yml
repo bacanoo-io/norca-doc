@@ -31,7 +31,6 @@ jobs:
 
   dco:
     name: DCO
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -39,7 +38,21 @@ jobs:
         with:
           fetch-depth: 0
       - name: Check Signed-off-by
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          BEFORE: ${{ github.event.before }}
         run: |
+          # The commits of the pull request, or those a push to main brings. A push
+          # that creates the branch, or replaces it (the commit before the push is
+          # not in the clone), checks every commit.
+          if [ "$EVENT" = pull_request ]; then
+            range="origin/$BASE_REF..HEAD"
+          elif [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            range="$BEFORE..HEAD"
+          else
+            range=HEAD
+          fi
           missing=$(git log --no-merges --format='%H %(trailers:key=Signed-off-by,valueonly,separator=;)' \
-            origin/${{ github.base_ref }}..HEAD | awk 'NF<2 {print $1}')
+            $range | awk 'NF<2 {print $1}')
           if [ -n "$missing" ]; then echo "Missing DCO sign-off: $missing" >&2; exit 1; fi
