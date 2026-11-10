@@ -9,11 +9,14 @@ upstream:
 **Placement:** `tls`
 
 The `tls` block configures Norca's TLS communication via HTTP and RPC to enforce
-secure cluster communication between servers, clients, and between. Note that in
-most cases, this is mutual TLS (mTLS) where both ends of the connection
-authenticate each other. The Norca documentation will typically use "TLS" to
-refer to this communication except when it is potentially ambiguous between TLS
-and mTLS.
+secure cluster communication between servers, clients, and between.
+
+> [!NOTE]
+> Note that in
+> most cases, this is mutual TLS (mTLS) where both ends of the connection
+> authenticate each other. The Norca documentation will typically use "TLS" to
+> refer to this communication except when it is potentially ambiguous between TLS
+> and mTLS.
 
 ```hcl
 tls {
@@ -45,13 +48,18 @@ agent certificates.
   certificates that are no longer trusted, such as a node CA whose key was
   stolen. An incoming connection whose client certificate chains through a
   certificate with the public key of one of them is refused, on RPC, on the
-  event bus and on the HTTPS API with `verify_https_client`. The match is on the
-  public key, so a CA issued again with the same key is refused too. Set it on
-  the servers. The list is checked when a connection is made, and the file is
-  read again when it changes; when it can't be read any more, the last list
-  that could be read stays in force. A missing or empty file at start is an
-  error. Connections that are open already stay open until a `SIGHUP`: the file
-  is part of the TLS configuration, so the reload closes them.
+  event bus and on the HTTPS API with `verify_https_client`.
+  - The match is on the
+    public key, so a CA issued again with the same key is refused too.
+  - **Set it on
+    the servers.**
+  - The list is checked when a connection is made, and the file is
+    read again when it changes; when it can't be read any more, the last list
+    that could be read stays in force.
+  - **A missing or empty file at start is an
+    error.**
+  - **Connections that are open already stay open until a `SIGHUP`:** the file
+    is part of the TLS configuration, so the reload closes them.
 
 - `http` `(bool: false)` - Specifies if TLS should be enabled on the HTTP
   endpoints on the Norca agent, including the API. By default this is non-mutual
@@ -63,29 +71,29 @@ agent certificates.
 - `rpc` `(bool: false)` - Toggle the option to enable mTLS on the RPC endpoints
   and [Raft][raft] traffic. When this setting is activated, it establishes
   protection both between Norca servers and from the clients back to the
-  servers, ensuring mutual authentication. Setting `rpc=true` is required for
-  secure operation of Norca.
+  servers, ensuring mutual authentication. **Setting `rpc=true` is required for
+  secure operation of Norca.**
 
-- `rpc_upgrade_mode` `(bool: false)` - This option should be used only when the
+- `rpc_upgrade_mode` `(bool: false)` - **This option should be used only when the
   cluster is being upgraded to TLS, and removed after the migration is
-  complete. This allows the agent to accept both TLS and plaintext traffic.
+  complete.** This allows the agent to accept both TLS and plaintext traffic.
 
 - `tls_cipher_suites` `string: "")` - Specifies the TLS cipher suites that will
   be used by the agent as a comma-separated string. Known insecure ciphers are
   disabled (3DES and RC4). By default, an agent is configured to use
-  TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-  TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-  TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
-  TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
-  TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-  TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-  TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-  TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-  TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 and
-  TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256.
+  `TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384`,
+  `TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384`,
+  `TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305`,
+  `TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305`,
+  `TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256`,
+  `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256`,
+  `TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384`,
+  `TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384`,
+  `TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256` and
+  `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256`.
 
 - `tls_min_version` `(string: "tls12")`- Specifies the minimum supported version
-  of TLS. Accepted values are "tls10", "tls11", "tls12".
+  of TLS. Accepted values are `"tls10"`, `"tls11"`, `"tls12"`.
 
 - `verify_https_client` `(bool: false)` - Specifies agents should require client
   certificates for all incoming HTTPS requests, effectively upgrading
@@ -137,10 +145,10 @@ tls {
 
 `distrusted.pem` holds the certificate of the lost CA (more can follow, one PEM
 block each), then send the servers a `SIGHUP` to close the connections that are
-open. The nodes it signed can no longer connect; issue a new node CA for the
+open. **The nodes it signed can no longer connect;** issue a new node CA for the
 nodes that stay and replace their certificates.
 
-To see that it works, watch the nodes, not the logs: the nodes of the CA go
+To see that it works, **watch the nodes, not the logs:** the nodes of the CA go
 down once their heartbeats run out. A refused connection is not always in the log of a
 server; whether it is depends on where the connection fails.
 
@@ -149,13 +157,16 @@ server; whether it is depends on where the connection fails.
 Norca supports dynamically reloading both client and server TLS
 configuration. To reload an agent's TLS configuration, first update the TLS
 block in the agent's configuration file and then send the Norca agent a `SIGHUP`
-signal. Note that this will only reload a subset of the configuration file,
-including the TLS configuration.
+signal.
+
+> [!NOTE]
+> Note that this will only reload a subset of the configuration file,
+> including the TLS configuration.
 
 The agent reloads all its network connections when there are changes to its
 TLS configuration during a config reload via `SIGHUP`. Any new connections
-established will use the updated configuration, and any outstanding old
-connections will be closed. This process works when upgrading to TLS,
+established will use the updated configuration, and **any outstanding old
+connections will be closed.** This process works when upgrading to TLS,
 downgrading from it, as well as rolling certificates.
 
 [raft]: https://github.com/hashicorp/serf 'Serf by HashiCorp'

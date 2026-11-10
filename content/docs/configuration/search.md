@@ -30,11 +30,11 @@ server {
 
 - `limit_query` `(int: 20)` - Specifies the maximum number of Norca objects to
   search through per context type in the Norca server before truncating results.
-  Setting this parameter to a high value may degrade Norca server performance.
+  **Setting this parameter to a high value may degrade Norca server performance.**
 
 - `limit_results` `(int: 100)` - Specifies the maximum number of matching results
   to accumulate per context type in the API response before truncating results.
-  Setting this parameter to a high value may cause excessively large API response sizes.
+  **Setting this parameter to a high value may cause excessively large API response sizes.**
 
 - `min_term_length` `(int: 2)` - Specifies the minimum size of the search term
   allowed for matching with the fuzzy search API. Setting this value higher can

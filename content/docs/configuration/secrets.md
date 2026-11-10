@@ -9,9 +9,14 @@ description: "The \"secrets\" blocks of the server and the client configure the 
 - `server -> secrets`
 - `client -> secrets`
 
-The `secrets` blocks (Norca) configure the [built-in secret store](/docs/features/secrets). The server
-block sets the audit file and the acceptance of jobs with `vault` blocks without Vault; the client block
-sets the provider routes and the [Vault compatibility](/docs/features/secrets/vault-compatibility). The
+The `secrets` blocks (Norca) configure the [built-in secret store](/docs/features/secrets).
+
+- The server
+  block sets the audit file and the acceptance of jobs with `vault` blocks without Vault;
+- the client block
+  sets the provider routes and the [Vault compatibility](/docs/features/secrets/vault-compatibility).
+
+The
 seal of the store is configured in the [`keyring`](/docs/configuration/keyring) block.
 
 ## Server `secrets` block
@@ -34,7 +39,7 @@ server {
 ### Server `secrets` Parameters
 
 - `audit_file` `(string: "")` - Path of the append-only audit file of this server. Every value read and
-  every write of a secret executed by this server (the leader) is recorded, never a value. Empty disables
+  every write of a secret executed by this server (the leader) is recorded, **never a value.** Empty disables
   the file; the `SecretAccess` event topic is always published.
 
 - `audit_rotate_bytes` `(int: 0)` - Rotates the audit file before it grows beyond this size in bytes. `0`
@@ -94,7 +99,7 @@ client {
 
 - `vault_kv` <code>([vault_kv](#vault_kv-parameters): nil)</code> - Maps Vault KV paths to secrets of the
   built-in store, for Vault-style lookups on an agent without a Vault integration. The label is the Vault
-  path prefix, ending in `/`. Repeatable. Configured rules replace the defaults `kv/data/` (KV v2),
+  path prefix, ending in `/`. Repeatable. **Configured rules replace the defaults** `kv/data/` (KV v2),
   `secret/data/` (KV v2) and `secret/` (KV v1), all with `path = ""`.
 
 - `vault_compat` <code>([vault_compat](#vault_compat-parameters): nil)</code> - Configures the Vault
@@ -102,8 +107,8 @@ client {
 
 ### `route` Parameters
 
-- `provider` `(string: <required>)` - The provider: `norca` or `vault`. A route to a provider the client
-  doesn't have (`vault` without an enabled `vault` block) is a configuration error at agent start.
+- `provider` `(string: <required>)` - The provider: `norca` or `vault`. **A route to a provider the client
+  doesn't have (`vault` without an enabled `vault` block) is a configuration error at agent start.**
 
 ### `vault_kv` Parameters
 
@@ -116,7 +121,7 @@ client {
 
 ### `vault_compat` Parameters
 
-The settings apply only when the agent has no Vault integration.
+**The settings apply only when the agent has no Vault integration.**
 
 - `enabled` `(bool: true)` - Serves the Vault `secret` template function and the task `vault` blocks from
   the built-in store. `false` keeps the Nomad behaviour without Vault.

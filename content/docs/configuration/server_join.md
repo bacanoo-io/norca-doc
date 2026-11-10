@@ -60,14 +60,14 @@ server_join {
   join attempts.
 
 - `retry_max` `(int: 0)` - Specifies the maximum number of join attempts to be
-  made before exiting with a return code of 1. By default, this is set to 0
-  which is interpreted as infinite retries.
+  made before exiting with a return code of 1. **By default, this is set to `0`
+  which is interpreted as infinite retries.**
 
 - `start_join` `(array<string>: [])` - Specifies a list of server addresses to
-  join on startup. If Norca is unable to join with any of the specified
-  addresses, agent startup will fail. See the
+  join on startup. **If Norca is unable to join with any of the specified
+  addresses, agent startup will fail.** See the
   [server address format](#server-address-format) section for more information
-  on the format of the string. This field is defined only for Norca servers and
+  on the format of the string. **This field is defined only for Norca servers** and
   will result in a configuration parse error if included in a client
   configuration.
 
@@ -147,17 +147,17 @@ region which have the given `tag_key` and `tag_value`.
 
 #### Authentication &amp; Precedence
 
-- Static credentials `access_key_id=... secret_access_key=...`
-- Environment variables (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`)
-- Shared credentials file (`~/.aws/credentials` or the path specified by `AWS_SHARED_CREDENTIALS_FILE`)
-- ECS task role metadata (container-specific).
-- EC2 instance role metadata.
+1. Static credentials `access_key_id=... secret_access_key=...`
+2. Environment variables (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`)
+3. Shared credentials file (`~/.aws/credentials` or the path specified by `AWS_SHARED_CREDENTIALS_FILE`)
+4. ECS task role metadata (container-specific).
+5. EC2 instance role metadata.
 
-  The only required IAM permission is `ec2:DescribeInstances`, and it is
-  recommended that you make a dedicated key used only for auto-joining. If the
-  region is omitted it will be discovered through the local instance's [EC2
-  metadata
-  endpoint](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-identity-documents.html).
+**The only required IAM permission is `ec2:DescribeInstances`**, and it is
+recommended that you make a dedicated key used only for auto-joining. If the
+region is omitted it will be discovered through the local instance's [EC2
+metadata
+endpoint](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-identity-documents.html).
 
 ### Microsoft Azure
 
@@ -188,8 +188,8 @@ Use these configuration parameters when using Virtual Machine Scale Sets (Consul
 - `resource_group` - the name of the resource group to filter on.
 - `vm_scale_set` - the name of the virtual machine scale set to filter on.
 
-  When using tags the only permission needed is the `ListAll` method for `NetworkInterfaces`. When using
-  Virtual Machine Scale Sets the only role action needed is `Microsoft.Compute/virtualMachineScaleSets/*/read`.
+When using tags the only permission needed is the `ListAll` method for `NetworkInterfaces`. When using
+Virtual Machine Scale Sets the only role action needed is `Microsoft.Compute/virtualMachineScaleSets/*/read`.
 
 ### Google Compute Engine
 
@@ -210,13 +210,13 @@ project which have the given `tag_value`.
 
 #### Authentication &amp; Precedence
 
-- Use credentials from `credentials_file`, if provided.
-- Use JSON file from `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
-- Use JSON file in a location known to the gcloud command-line tool.
-- On Windows, this is `%APPDATA%/gcloud/application_default_credentials.json`.
-- On other systems, `$HOME/.config/gcloud/application_default_credentials.json`.
-- On Google Compute Engine, use credentials from the metadata
-  server. In this final case any provided scopes are ignored.
+1. Use credentials from `credentials_file`, if provided.
+2. Use JSON file from `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
+3. Use JSON file in a location known to the gcloud command-line tool.
+   - On Windows, this is `%APPDATA%/gcloud/application_default_credentials.json`.
+   - On other systems, `$HOME/.config/gcloud/application_default_credentials.json`.
+4. On Google Compute Engine, use credentials from the metadata
+   server. In this final case any provided scopes are ignored.
 
 Discovery requires a [GCE Service
 Account](https://cloud.google.com/compute/docs/access/service-accounts).

@@ -34,7 +34,7 @@ client {
 
 - `max_kill_timeout` `(string: "30s")` - Specifies the maximum amount of time a
   job is allowed to wait to exit. Individual jobs may customize their own kill
-  timeout, but it may not exceed this value.
+  timeout, but **it may not exceed this value.**
 
 - `disable_remote_exec` `(bool: false)` - Specifies if the client should disable
   remote task execution to tasks running on this client.
@@ -43,15 +43,18 @@ client {
   The range of user IDs (inclusive) that the client hands out to tasks without
   a `user` on drivers that run such tasks as anonymous users, such as
   [`exec2`](/docs/drivers/exec2/#dynamic-users). Each task gets its own ID as
-  UID and GID while it may run. Choose a range that no user or group of the
-  node uses; the client does not start if the range is empty or not positive.
+  UID and GID while it may run. **Choose a range that no user or group of the
+  node uses;** the client does not start if the range is empty or not positive.
 
 - `state_store` `(string: "badger")` - The store of the client state:
   `badger` (in `<data_dir>/client/state`) or `boltdb` (the BoltDB file
-  `<data_dir>/client/state.db`). A client does not start when its state
-  directory holds only the other store: to switch a client, drain it, stop it,
-  remove the state, change the setting and start it; it gets its allocations
-  from the servers again.
+  `<data_dir>/client/state.db`).
+
+  > [!IMPORTANT]
+  > **A client does not start when its state
+  > directory holds only the other store:** to switch a client, drain it, stop it,
+  > remove the state, change the setting and start it; it gets its allocations
+  > from the servers again.
 
 - `badger` - A nested object that tunes the [Badger](https://github.com/dgraph-io/badger)
   database of the client state (`<data_dir>/client/state`), where the client
@@ -61,7 +64,7 @@ client {
   included, with the client values of the
   [profiles](/docs/configuration/server/#badger-profiles); the `default` profile
   of a client is 16 MB × 2 memtables, 16 MB block and 8 MB index cache and
-  64 MB value log files. Choose the profile by the memory of the node: `small`
+  64 MB value log files. **Choose the profile by the memory of the node:** `small`
   for 2–4 GB, `default` for 8–16 GB, `large` for 32 GB or more; see
   [which profile for which system](/docs/configuration/server/#badger-profiles).
 
@@ -75,7 +78,7 @@ client {
   to force network fingerprinting on. When run in dev mode, this defaults to the
   loopback interface. When not in dev mode, the interface attached to the
   default route is used. The scheduler chooses from these fingerprinted IP
-  addresses when allocating ports for tasks. This value support [go-sockaddr/template
+  addresses when allocating ports for tasks. This value supports [go-sockaddr/template
   format][go-sockaddr/template].
 
   If no non-local IP addresses are found, Norca could fingerprint link-local IPv6
@@ -86,14 +89,14 @@ client {
 - `cpu_total_compute` `(int: 0)` - Specifies an override for the total CPU
   compute. This value should be set to `# Cores * Core MHz`. For example, a
   quad-core running at 2 GHz would have a total compute of 8000 (4 \* 2000). Most
-  clients can determine their total CPU compute automatically, and thus in most
-  cases this should be left unset.
+  clients can determine their total CPU compute automatically, and thus **in most
+  cases this should be left unset.**
 
 - `memory_total_mb` `(int:0)` - Specifies an override for the total memory. If set,
   this value overrides any detected memory.
 
 - `disk_total_mb` `(int:0)` - Specifies an override for the total disk space
-  fingerprint attribute. This value is not used by the scheduler unless you have
+  fingerprint attribute. **This value is not used by the scheduler** unless you have
   constraints set on the attribute `unique.storage.bytestotal`. The actual total
   disk space can be determined via the [Read Stats API](/docs/api/client#read-stats)
 
@@ -143,7 +146,7 @@ client {
   documentation for more detail.
 
 - `state_dir` `(string: "[data_dir]/client")` - Specifies the directory to use
-  to store client state. By default, this is - the top-level
+  to store client state. By default, this is the top-level
   [data_dir](/docs/configuration#data_dir) suffixed with
   "client", like `"/opt/norca/client"`. This must be an absolute path.
 
@@ -159,8 +162,8 @@ client {
 - `gc_max_allocs` `(int: 50)` - Specifies the maximum number of allocations
   which a client will track before triggering a garbage collection of terminal
   allocations. This will _not_ limit the number of allocations a node can run at
-  a time, however after `gc_max_allocs` every new allocation will cause terminal
-  allocations to be GC'd.
+  a time, however **after `gc_max_allocs` every new allocation will cause terminal
+  allocations to be GC'd.**
 
 - `gc_parallel_destroys` `(int: 2)` - Specifies the maximum number of
   parallel destroys allowed by the garbage collector. This value should be
@@ -213,7 +216,7 @@ client {
 
 - `cgroup_parent` `(string: "/nomad")` - Specifies the cgroup parent for which cgroup
   subsystems managed by Norca will be mounted under. Currently this only applies to the
-  `cpuset` subsystems. This field is ignored on non Linux platforms.
+  `cpuset` subsystems. **This field is ignored on non Linux platforms.**
 
 - `native_service_discovery` <code>([native_service_discovery](/docs/configuration/native_service_discovery): nil)</code> -
   (Norca) Makes the service lookups of the client's workloads (templates, Task API) return only
@@ -227,9 +230,12 @@ client {
   Runs the Consul-compatible HTTP API on top of the native service catalog.
 
 - `bus` - (Norca) Whether the client uses the [system bus](/docs/features/system-bus) of the
-  servers. With `enabled = true` (default), the client connects to the bus when a feature needs
-  it. It logs in with its node secret, and uses TLS when the agent uses TLS for RPC. The servers
-  send their bus addresses with the heartbeat. `enabled = false` keeps the client off the bus.
+  servers.
+  - With `enabled = true` (default), the client connects to the bus when a feature needs
+    it. It logs in with its node secret, and uses TLS when the agent uses TLS for RPC. The servers
+    send their bus addresses with the heartbeat.
+  - `enabled = false` keeps the client off the bus.
+
   The Consul KV of `consul_compat` does not use this connection: the client reaches the bucket of
   the bus through the RPC of the servers, whatever this setting.
 
@@ -246,11 +252,13 @@ client {
   [system bus](/docs/features/system-bus#task-group-usage). The servers ask for it while
   the [built-in autoscaler](/docs/configuration/autoscaler) or the
   [metrics store](/docs/configuration/metrics_store) is enabled; with `enabled = true` (default)
-  the client then reports every `client_metrics_interval`. `enabled = false` turns the reports
-  off on this node, for example when an external monitoring system collects the usage: its task
-  groups then get no built-in autoscaler metrics and no history, and the node no
-  [node metrics](/docs/configuration/metrics_store#node-metrics). A client off the bus
-  (`bus { enabled = false }`) reports nothing either.
+  the client then reports every `client_metrics_interval`.
+  - `enabled = false` turns the reports
+    off on this node, for example when an external monitoring system collects the usage: **its task
+    groups then get no built-in autoscaler metrics and no history**, and the node no
+    [node metrics](/docs/configuration/metrics_store#node-metrics).
+  - A client off the bus
+    (`bus { enabled = false }`) reports nothing either.
 
   ```hcl
   client {
@@ -297,8 +305,8 @@ environment with the most commonly used parts of the operating system. Please
 see the [Norca `exec` driver documentation](/docs/drivers/exec#chroot) for
 the full list.
 
-As of Nomad 1.2, Norca will never attempt to embed the `alloc_dir` in the
-chroot as doing so would cause infinite recursion.
+As of Nomad 1.2, **Norca will never attempt to embed the `alloc_dir` in the
+chroot** as doing so would cause infinite recursion.
 
 ### `options` Parameters
 
@@ -336,8 +344,8 @@ see the [drivers documentation](/docs/drivers/).
   ```
 
 - `"env.denylist"` `(string: see below)` - Specifies a comma-separated list of
-  environment variable keys not to pass to these tasks. Norca passes the host
-  environment variables to `exec`, `raw_exec` and `java` tasks. If specified,
+  environment variable keys not to pass to these tasks. **Norca passes the host
+  environment variables to `exec`, `raw_exec` and `java` tasks.** If specified,
   the defaults are overridden. If a value is provided, **all** defaults are
   overridden (they are not merged).
 
@@ -476,7 +484,7 @@ see the [drivers documentation](/docs/drivers/).
   artifacts downloaded via HTTP. Set to `0` to not enforce a limit.
 
 - `gcs_timeout` `(string: "30m")` - Specifies the maximum duration in which a
-  Google Cloud Storate operation must complete before it is canceled. Set to
+  Google Cloud Storage operation must complete before it is canceled. Set to
   `0` to not enforce a limit.
 
 - `git_timeout` `(string: "30m")` - Specifies the maximum duration in which a
@@ -512,8 +520,8 @@ see the [drivers documentation](/docs/drivers/).
 
 - `function_denylist` `([]string: ["plugin", "writeToFile"])` - Specifies a
   list of template rendering functions that should be disallowed in job specs.
-  By default the `plugin` and `writeToFile` functions are disallowed as they
-  allow unrestricted root access to the host.
+  By default the `plugin` and `writeToFile` functions are disallowed as **they
+  allow unrestricted root access to the host.**
 
 - `disable_file_sandbox` `(bool: false)` - Allows templates access to arbitrary
   files on the client host via the `file` function. By default, templates can
@@ -532,12 +540,16 @@ see the [drivers documentation](/docs/drivers/).
   templates whenever rendered variables from Consul, Norca, or Vault change. However in
   order to minimize how often tasks are restarted or reloaded, Norca will configure Consul
   Template with a backoff timer that will tick on an interval equal to the specified `min`
-  value. Consul Template will always wait at least the as long as the `min` value specified.
-  If the underlying data has not changed between two tick intervals, Consul Template will
-  re-render. If the underlying data has changed, Consul Template will delay re-rendering
-  until the underlying data stabilizes for at least one tick interval, or the configured
-  `max` duration has elapsed. Once the `max` duration has elapsed, Consul Template will
-  re-render the template with the data available at the time. This is useful to enable in
+  value. Consul Template will always wait at least as long as the `min` value specified.
+  - If the underlying data has not changed between two tick intervals, Consul Template will
+    re-render.
+  - If the underlying data has changed, Consul Template will delay re-rendering
+    until the underlying data stabilizes for at least one tick interval, or the configured
+    `max` duration has elapsed.
+  - Once the `max` duration has elapsed, Consul Template will
+    re-render the template with the data available at the time.
+
+  This is useful to enable in
   systems where Consul is in a degraded state, or the referenced data values are changing
   rapidly, because it will reduce the number of times a template is rendered. This
   configuration is also exposed in the _task template block_ to allow overrides per task.
@@ -662,8 +674,8 @@ client {
 #### `host_volume` Parameters
 
 - `path` `(string: "", required)` - Specifies the path on the host that should
-  be used as the source when this volume is mounted into a task. The path must
-  exist on client startup.
+  be used as the source when this volume is mounted into a task. **The path must
+  exist on client startup.**
 
 - `read_only` `(bool: false)` - Specifies whether the volume should only ever be
   allowed to be mounted `read_only`, or if it should be writeable.
@@ -702,9 +714,9 @@ client {
 ### `drain_on_shutdown` Block
 
 The `drain_on_shutdown` block controls the behavior of the client when
-[`leave_on_interrupt`][] or [`leave_on_terminate`][] are set. By default
+[`leave_on_interrupt`][] or [`leave_on_terminate`][] are set. **By default
 `drain_on_shutdown` is not configured and clients will not drain on any
-signal.
+signal.**
 
 If `drain_on_shutdown` is configured, the node will drain itself when receiving
 the appropriate signal (`SIGINT` for `leave_on_interrupt` or `SIGTERM` on
@@ -713,11 +725,12 @@ drain -self -no-deadline`][]. The client drains itself with its node secret ID
 and needs no ACL token for it; with ACLs enabled, the servers let a node secret
 ID drain only its own node.
 
-Note that even if no deadline is set, your init system may send `SIGKILL` to
-Norca if the drain takes longer than allowed by the service shutdown. For
-example, when running under Linux with `systemd`, you should adjust the
-[`TimeoutStopSec`][] value in the `norca.service` unit file to account for
-enough time for the client to drain.
+> [!WARNING]
+> Note that even if no deadline is set, **your init system may send `SIGKILL` to
+> Norca if the drain takes longer than allowed by the service shutdown.** For
+> example, when running under Linux with `systemd`, you should adjust the
+> [`TimeoutStopSec`][] value in the `norca.service` unit file to account for
+> enough time for the client to drain.
 
 ```hcl
 client {
@@ -736,10 +749,13 @@ client {
   from the client, regardless of their [`migrate`][] block. Defaults to 1 hour.
 
 - `force` `(bool: false)` - Setting to `true` drains all the allocations on the
-  client immediately, ignoring the [`migrate`][] block. Note if you have
-  multiple allocations for the same job on the draining client without
-  additional allocations on other clients, this will result in an outage for
-  that job until the drain is complete.
+  client immediately, ignoring the [`migrate`][] block.
+
+  > [!WARNING]
+  > Note if you have
+  > multiple allocations for the same job on the draining client without
+  > additional allocations on other clients, **this will result in an outage for
+  > that job until the drain is complete.**
 
 - `ignore_system_jobs` `(bool: false)` - Setting to `true` allows the drain to
   complete without stopping system job allocations. By default system jobs (and

@@ -24,11 +24,11 @@ acl {
 ## `acl` Parameters
 
 - `enabled` `(bool: false)` - Specifies if ACL enforcement is enabled. All other
-  ACL configuration options depend on this value. All agents should have the
-  same value for this parameter. For example the Norca command line will
+  ACL configuration options depend on this value. **All agents should have the
+  same value for this parameter.** For example the Norca command line will
   send requests for client endpoints such as `alloc exec` directly to Norca
   clients whenever they are accessible. In this scenario, the client will
-  enforce ACLs, so both servers and clients should have ACLs enabled.
+  enforce ACLs, so **both servers and clients should have ACLs enabled.**
 
 - `token_ttl` `(string: "30s")` - Specifies the maximum time-to-live (TTL) for
   cached ACL tokens. This does not affect servers, since they do not cache tokens.

@@ -8,11 +8,11 @@ description: "The \"bus\" block configures the system bus: the NATS server with 
 
 The `bus` block configures the system bus of a server: a NATS server with
 JetStream that runs inside the Norca server process. The servers of a region
-form one NATS cluster. The bus carries Norca's own traffic. It is not a
-message broker for applications: applications use their own NATS, for
+form one NATS cluster. The bus carries Norca's own traffic. **It is not a
+message broker for applications:** applications use their own NATS, for
 example the `nats` pack.
 
-The bus is enabled by default on servers.
+**The bus is enabled by default on servers.**
 
 ```hcl
 server {
@@ -68,8 +68,8 @@ ports {
   - `max_age` `(string: "72h")` - How long events are kept.
   - `max_bytes` `(string: "1GiB")` - The size limit of the stream, within
     `max_storage`. Without it the stream takes at most a quarter of
-    `max_storage`. JetStream reserves this space together with the 64MiB of
-    the pack push notices; both must stay below `max_storage`, so that the
+    `max_storage`. JetStream reserves this space together with the `64MiB` of
+    the pack push notices; **both must stay below `max_storage`**, so that the
     Consul KV bucket still fits.
   - `topics` `(array<string>: ["*"])` - The published topics, for example
     `["Job", "Deployment", "Allocation"]`; `"*"` publishes all.
@@ -83,11 +83,15 @@ block:
   [bus rights](/docs/other-specifications/acl-policy#bus-rules).
 - `bus_cluster` (`4650`) - The routes between the servers of a region.
 
-The listeners bind to the address of the RPC listener. Servers advertise both
-ports to each other in their gossip tags. Each server opens a route to the
-`bus_cluster` port of the region's other servers at their gossip address, the
-same address that Raft uses. The defaults differ from the NATS defaults
-(4222, 6222), so a `nats` pack on a server node does not collide with the bus.
+- The listeners bind to the address of the RPC listener.
+- Servers advertise both
+  ports to each other in their gossip tags.
+- Each server opens a route to the
+  `bus_cluster` port of the region's other servers at their gossip address, the
+  same address that Raft uses.
+
+The defaults differ from the NATS defaults
+(4222, 6222), so **a `nats` pack on a server node does not collide with the bus.**
 
 ## Security
 
@@ -98,13 +102,13 @@ same address that Raft uses. The defaults differ from the NATS defaults
     (`server.<region>.norca`, signed by the agent CA) in both directions.
   - Client connections need no client certificate.
 
-  Without RPC TLS the bus is not encrypted, like RPC.
+  **Without RPC TLS the bus is not encrypted**, like RPC.
 - **Authentication.** A node logs in with its node ID and node secret. It may
   publish only its own usage subject. Anyone else needs an ACL token whose
   policies have a [`bus` rule](/docs/other-specifications/acl-policy#bus-rules);
   management tokens may use every subject. When a token is deleted, or its
-  policies or a node change, the affected connections are closed within
-  seconds and reconnect with their new rights.
+  policies or a node change, **the affected connections are closed within
+  seconds** and reconnect with their new rights.
 
 ## Clustering
 
@@ -113,11 +117,14 @@ JetStream runs clustered when the region has or expects more than one server
 configuration). A clustered server waits for its peers like Raft does.
 
 A region with a single server runs a standalone JetStream. When a second
-server joins, the bus of the first server restarts clustered. Its standalone
-store is moved to `[data_dir]/server/bus.standalone`. The server carries the
-keys of the Consul KV over into the clustered bucket (a key already there is
-kept) and marks the store as carried over; the other streams, such as the
-event history, are not carried over.
+server joins, the bus of the first server restarts clustered:
+
+1. Its standalone
+   store is moved to `[data_dir]/server/bus.standalone`.
+2. The server carries the
+   keys of the Consul KV over into the clustered bucket (a key already there is
+   kept) and marks the store as carried over; **the other streams, such as the
+   event history, are not carried over.**
 
 [`norca operator bus status`](/docs/commands/operator/bus/status) shows the
 routes, the JetStream meta leader, the usage and the connections of a server.

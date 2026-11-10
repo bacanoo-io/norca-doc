@@ -8,7 +8,7 @@ description: "The dns block of the client configuration runs the built-in DNS se
 
 The `dns` block (Norca) configures the [built-in DNS server](/docs/features/service-discovery/dns) of a
 client. The server answers `<service>.service.norca` names (and optionally `*.service.consul` names) with
-the healthy instances of the native catalog, over UDP and TCP. It is off by default.
+the healthy instances of the native catalog, over UDP and TCP. **It is off by default.**
 
 ```hcl
 client {
@@ -52,7 +52,7 @@ client {
   which can read the services of every namespace of its own region (the `namespaces` setting limits
   what is answered). With ACLs enabled, names of other regions and the
   [native mTLS](/docs/features/native-mtls/sidecar-and-gateway#cross-region-gateway) sidecars of the
-  client that reach other regions need a token that is valid in every region, for example a global token
+  client that reach other regions **need a token that is valid in every region**, for example a global token
   with `read-job` on the namespaces involved.
 
 ## `dns` Examples

@@ -48,16 +48,18 @@ The following options are available on all telemetry configurations.
   runtime metrics of nodes.
 
 - `filter_default` `(bool: true)` - This controls whether to allow metrics that
-  have not been specified by the filter. Defaults to true, which will allow all
-  metrics when no filters are provided. When set to false with no filters, no
-  metrics will be sent.
+  have not been specified by the filter. Defaults to `true`, which will allow all
+  metrics when no filters are provided. **When set to `false` with no filters, no
+  metrics will be sent.**
 
 - `prefix_filter` `(list: [])` - This is a list of filter rules to apply for
   allowing/blocking metrics by prefix. A leading "<b>+</b>" will enable any
-  metrics with the given prefix, and a leading "<b>-</b>" will block them. If
-  there is overlap between two rules, the more specific rule will take
-  precedence. Blocking will take priority if the same prefix is listed multiple
-  times.
+  metrics with the given prefix, and a leading "<b>-</b>" will block them.
+  - If
+    there is overlap between two rules, **the more specific rule will take
+    precedence.**
+  - **Blocking will take priority** if the same prefix is listed multiple
+    times.
 
 ```python
 ['-nomad.raft', '+nomad.raft.apply', '-nomad.memberlist']
@@ -107,7 +109,7 @@ These `telemetry` parameters apply to
 
 - `datadog_tags` `(list: [])` - Specifies a list of global tags that will be
   added to all telemetry packets sent to DogStatsD. It is a list of strings,
-  where each string looks like "my_tag_name:my_tag_value".
+  where each string looks like `"my_tag_name:my_tag_value"`.
 
 ```hcl
 telemetry {
@@ -152,7 +154,7 @@ These `telemetry` parameters apply to
   activation of metrics which already exist and are not currently active. If
   check management is enabled, the default behavior is to add new metrics as
   they are encountered. If the metric already exists in the check, it will
-  not be activated. This setting overrides that behavior.
+  not be activated. **This setting overrides that behavior.**
 
 - `circonus_check_instance_id` `(string: "<hostname>:<application>")` - Serves
   to uniquely identify the metrics coming from this _instance_. It can be used

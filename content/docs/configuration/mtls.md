@@ -8,8 +8,8 @@ description: "The mtls block of the server configuration configures the native m
 
 The `mtls` block (Norca) configures the certificate authority of
 [native mTLS](/docs/features/native-mtls). The leader of each region runs the CA; it signs the workload
-certificates of task groups with an [`mtls`](/docs/job-specification/mtls) service. The CA is on by
-default and only used by jobs with an `mtls` block.
+certificates of task groups with an [`mtls`](/docs/job-specification/mtls) service. **The CA is on by
+default and only used by jobs with an `mtls` block.**
 
 ```hcl
 server {
@@ -25,13 +25,13 @@ server {
 
 ## `mtls` Parameters
 
-- `enabled` `(bool: true)` - Runs the certificate authority of the region. With `false`, jobs with
-  `mtls` blocks are rejected.
+- `enabled` `(bool: true)` - Runs the certificate authority of the region. With `false`, **jobs with
+  `mtls` blocks are rejected.**
 
 - `trust_domain` `(string: "<authoritative region>.norca")` - The SPIFFE trust domain of the region:
   lowercase letters, digits, `.`, `-` and `_`. The default uses the
   [`authoritative_region`](/docs/configuration/server) (or the region when it is not
-  set), so the regions of a federation share a trust domain. Changing it rotates the CA.
+  set), so the regions of a federation share a trust domain. **Changing it rotates the CA.**
 
 - `leaf_cert_ttl` `(string: "24h")` - Lifetime of workload certificates. At least 10 minutes. Clients
   renew a certificate after two thirds of its lifetime.
@@ -40,20 +40,24 @@ server {
   `leaf_cert_ttl`. The leader rotates the CA after two thirds of its lifetime.
 
 - `federation` `(bool: true)` - Copies the CA certificates of the other regions of the federation into
-  the trust bundle of the region, so their workloads are trusted. Required for cross-region connections
-  through the [gateway](/docs/features/native-mtls/sidecar-and-gateway#cross-region-gateway).
+  the trust bundle of the region, so their workloads are trusted. **Required for cross-region connections
+  through the [gateway](/docs/features/native-mtls/sidecar-and-gateway#cross-region-gateway).**
 
 ## Key material
 
-The CA key is stored in the Raft state, encrypted with the active root key of the keyring, like
-Variables. It is replicated to every server and included in snapshots and backups; a full restore
-restores the keyring first, so the key can be decrypted. After a root key rotation the leader re-encrypts
-the CA key with the new root key. A retired CA loses its key and stays in the trust bundle until
-`leaf_cert_ttl` plus one hour after the rotation.
+**The CA key is stored in the Raft state, encrypted with the active root key of the keyring**, like
+Variables.
+
+- It is replicated to every server and included in snapshots and backups; a full restore
+  restores the keyring first, so the key can be decrypted.
+- After a root key rotation the leader re-encrypts the CA key with the new root key.
+- A retired CA loses its key and stays in the trust bundle until `leaf_cert_ttl` plus one hour after
+  the rotation.
 
 ## `mtls` Examples
 
-### Shorter certificates
+{{< tabs >}}
+{{< tab name="Shorter certificates" >}}
 
 ```hcl
 server {
@@ -63,7 +67,8 @@ server {
 }
 ```
 
-### A region that does not trust the others
+{{< /tab >}}
+{{< tab name="A region that does not trust the others" >}}
 
 ```hcl
 server {
@@ -72,3 +77,6 @@ server {
   }
 }
 ```
+
+{{< /tab >}}
+{{< /tabs >}}

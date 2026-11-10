@@ -7,8 +7,8 @@ description: "The \"admission\" block of the server configuration configures the
 **Placement:** `server -> admission`
 
 The `admission` block configures the webhooks of
-[dynamic admission control](/docs/features/admission-control). Webhooks can only
-be configured here, never through the API, so that a token cannot register a
+[dynamic admission control](/docs/features/admission-control). **Webhooks can only
+be configured here, never through the API**, so that a token cannot register a
 webhook that would see every job. The CEL admission policies are cluster objects
 managed with [`norca admission-policy`](/docs/commands/admission-policy) and need
 no configuration.
@@ -38,10 +38,11 @@ server {
 }
 ```
 
-The admission chain runs on the leader, so set the same block on every server.
-The webhooks are read when the server starts; a configuration reload does not
-change them. When several files define a webhook with the same name, the later
-one replaces it; other webhooks are appended.
+- The admission chain runs on the leader, so **set the same block on every server.**
+- The webhooks are read when the server starts; **a configuration reload does not
+  change them.**
+- When several files define a webhook with the same name, the later
+  one replaces it; other webhooks are appended.
 
 ## `admission` Parameters
 
@@ -57,13 +58,15 @@ metrics.
 - `url` `(string: <required>)` - The absolute `http` or `https` URL the admission
   review is posted to. Redirects are not followed.
 
-- `mode` `(string: "validate")` - `validate`: the webhook accepts or rejects the
-  final job, after the CEL admission policies. `mutate`: the webhook may also
-  change the job with a JSON Patch; it runs after the built-in mutators and
-  before the built-in validators.
+- `mode` `(string: "validate")` -
+  - `validate`: the webhook accepts or rejects the
+    final job, after the CEL admission policies.
+  - `mutate`: the webhook may also
+    change the job with a JSON Patch; it runs after the built-in mutators and
+    before the built-in validators.
 
-- `timeout` `(string: "5s")` - The timeout of one call. A webhook is called once,
-  without retries.
+- `timeout` `(string: "5s")` - The timeout of one call. **A webhook is called once,
+  without retries.**
 
 - `failure_policy` `(string: "fail")` - What happens when the webhook cannot be
   called, times out, answers with a status other than `200` or with an invalid
@@ -128,8 +131,8 @@ and `kind` and a `response` object (at most 16 MiB):
 - `message` - The reason of a rejection, shown to the submitter.
 - `warnings` - Warnings returned to the submitter.
 - `patch` - Only for mutating webhooks: an RFC 6902 JSON Patch against the job,
-  as a JSON array or a base64 encoded string of one. The patch must not change
-  the job ID, namespace or region.
+  as a JSON array or a base64 encoded string of one. **The patch must not change
+  the job ID, namespace or region.**
 
 Webhooks bound to custom object kinds are declared in the object kind, not
 here; see the [operator framework](/docs/features/operator-framework/object-kinds).

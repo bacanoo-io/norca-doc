@@ -51,15 +51,15 @@ server {
 
 - `bootstrap_expect` `(int: required)` - Specifies the number of server nodes to
   wait for before bootstrapping. It is most common to use the odd-numbered
-  integers `3` or `5` for this value, depending on the cluster size. A value of
+  integers `3` or `5` for this value, depending on the cluster size. **A value of
   `1` does not provide any fault tolerance and is not recommended for production
-  use cases.
+  use cases.**
 
 - `data_dir` `(string: "[data_dir]/server")` - Specifies the directory to use
   for server-specific data, including the replicated log. By default, this is
   the top-level [data_dir](/docs/configuration#data_dir) suffixed with "server",
-  like `"/opt/norca/server"`. The top-level option must be set, even when
-  setting this value. This must be an absolute path.
+  like `"/opt/norca/server"`. **The top-level option must be set, even when
+  setting this value.** This must be an absolute path.
 
 - `enabled` `(bool: false)` - Specifies if this agent should run in server mode.
   All other server options depend on this value being set.
@@ -75,12 +75,16 @@ server {
   Norca server's gossip network traffic. This key must be 32 bytes that are
   [RFC4648] "URL and filename safe" base64-encoded. You can generate an
   appropriately-formatted key with the [`norca operator gossip keyring
-  generate`] command. The provided key is automatically persisted to the data
-  directory and loaded automatically whenever the agent is restarted. This means
-  that to encrypt Norca server's gossip protocol, this option only needs to be
-  provided once on each agent's initial startup sequence. If it is provided
-  after Norca has been initialized with an encryption key, then the provided key
-  is ignored and a warning will be displayed. See the encryption
+  generate`] command.
+  - The provided key is automatically persisted to the data
+    directory and loaded automatically whenever the agent is restarted. This means
+    that to encrypt Norca server's gossip protocol, **this option only needs to be
+    provided once on each agent's initial startup sequence.**
+  - If it is provided
+    after Norca has been initialized with an encryption key, then **the provided key
+    is ignored** and a warning will be displayed.
+
+  See the encryption
   documentation for more details on this option and its impact on
   the cluster.
 
@@ -88,7 +92,7 @@ server {
   by the server to be held in memory. Increasing this value enables new
   subscribers to have a larger look back window when initially subscribing.
   Decreasing will lower the amount of memory used for the event buffer.
-  (Norca) The default is 1000 instead of 100, so that
+  (Norca) **The default is 1000 instead of 100**, so that
   [resumable subscriptions](/docs/features/event-stream#resumable-subscriptions)
   can resume from an older index.
 
@@ -111,15 +115,21 @@ server {
 
 - `eval_gc_threshold` `(string: "1h")` - Specifies the minimum time an
   evaluation must be in the terminal state before it is eligible for garbage
-  collection. This is specified using a label suffix like "30s" or "1h". Note
-  that batch job evaluations are controlled via `batch_eval_gc_threshold`.
+  collection. This is specified using a label suffix like "30s" or "1h".
+
+  > [!NOTE]
+  > Note
+  > that batch job evaluations are controlled via `batch_eval_gc_threshold`.
 
 - `batch_eval_gc_threshold` `(string: "24h")` - Specifies the minimum time an
   evaluation stemming from a batch job must be in the terminal state before it is
   eligible for garbage collection. This is specified using a label suffix like
-  "30s" or "1h". Note that the threshold is a necessary but insufficient condition
-  for collection, and the most recent evaluation won't be garbage collected even if
-  it breaches the threshold.
+  "30s" or "1h".
+
+  > [!NOTE]
+  > Note that the threshold is a necessary but insufficient condition
+  > for collection, and **the most recent evaluation won't be garbage collected even if
+  > it breaches the threshold.**
 
 - `deployment_gc_threshold` `(string: "1h")` - Specifies the minimum time a
   deployment must be in the terminal state before it is eligible for garbage
@@ -142,7 +152,7 @@ server {
 
 - `default_scheduler_config` <code>([scheduler_configuration][update-scheduler-config]:
   nil)</code> - Specifies the initial default scheduler config when
-  bootstrapping cluster. The parameter is ignored once the cluster is bootstrapped or
+  bootstrapping cluster. **The parameter is ignored once the cluster is bootstrapped** or
   value is updated through the [API endpoint][update-scheduler-config]. See [the
   example section](#configuring-scheduler-config) for more details
   `default_scheduler_config` was introduced in Nomad 0.10.4.
@@ -167,8 +177,8 @@ server {
   increased to meet the target rate. See [Client Heartbeats](#client-heartbeats)
   below for details.
 
-- `non_voting_server` `(bool: false)` - Accepted for compatibility. Norca has
-  no read replicas: Autopilot promotes every stable server to a voter, so this
+- `non_voting_server` `(bool: false)` - Accepted for compatibility. **Norca has
+  no read replicas:** Autopilot promotes every stable server to a voter, so this
   has no lasting effect.
 
 - `num_schedulers` `(int: [num-cores])` - Specifies the number of parallel
@@ -184,11 +194,14 @@ server {
   (in `<data_dir>/server/raft/badger`) or `boltdb` (the BoltDB file
   `<data_dir>/server/raft/raft.db`, tuned with `raft_boltdb`). Choose BoltDB on
   machines where memory matters more than write speed (see the comparison
-  below), or as a fallback. A server does not start when its raft directory
-  holds only the other store: to switch a server, stop it, remove
-  `<data_dir>/server/raft/`, change the setting and start it; it rejoins the
-  cluster from the leader's snapshot. Switch one server at a time; servers of
-  one cluster may use different stores.
+  below), or as a fallback.
+
+  > [!IMPORTANT]
+  > **A server does not start when its raft directory
+  > holds only the other store:** to switch a server, stop it, remove
+  > `<data_dir>/server/raft/`, change the setting and start it; it rejoins the
+  > cluster from the leader's snapshot. **Switch one server at a time;** servers of
+  > one cluster may use different stores.
 
 - `raft_boltdb` - A nested object for the BoltDB raft log
   (`raft_store = "boltdb"`):
@@ -196,8 +209,8 @@ server {
       BoltDB file with every commit: faster writes, a longer start.
 
 - `badger` - A nested object that tunes the [Badger](https://github.com/dgraph-io/badger)
-  database of the raft log (`<data_dir>/server/raft/badger`). Writes are always
-  durable; the options trade memory against compaction work and disk space.
+  database of the raft log (`<data_dir>/server/raft/badger`). **Writes are always
+  durable;** the options trade memory against compaction work and disk space.
   `profile` sets all of them for the size of the machine, and every other key
   overrides the profile's value.
     - `profile` `(string: "default")` - `small` for servers with 2-4 GB of
@@ -259,10 +272,10 @@ server {
 
   The Badger memory is the memtables (`mem_table_size_mb` × `num_memtables`)
   plus the block and index caches; the agent itself and its other state come on
-  top, and a burst of large raft entries needs room beyond it. A server whose
-  agent is also a client needs both blocks. On the 2 GB lab machines the
+  top, and a burst of large raft entries needs room beyond it. **A server whose
+  agent is also a client needs both blocks.** On the 2 GB lab machines **the
   `default` server profile ran out of memory under large raft batches, while
-  `small` did not; the cluster sizes of `default` and `large` are estimates
+  `small` did not;** the cluster sizes of `default` and `large` are estimates
   from the memory they need, not measurements.
 
   Why Badger needs a profile and BoltDB (`raft_store = "boltdb"`) does not: BoltDB
@@ -299,7 +312,7 @@ server {
   increase sensitivity while higher values relax timings and reduce sensitivity.
   Tuning this affects the time it takes Norca to detect leader failures and to
   perform leader elections, at the expense of requiring more network and CPU
-  resources for better performance. The maximum allowed value is 10.
+  resources for better performance. **The maximum allowed value is 10.**
 
   By default, Norca will use the highest-performance timing, currently equivalent
   to setting this to a value of 1. Increasing the timings makes leader election
@@ -331,8 +344,8 @@ server {
   a follower instead of being forced to send an entire snapshot. This value can
   be tuned during operation by a hot configuration reload.
 
-- `redundancy_zone` `(string: "")` - Not supported in Norca: redundancy zones
-  are not available, and the agent refuses to start when this is set.
+- `redundancy_zone` `(string: "")` - **Not supported in Norca:** redundancy zones
+  are not available, and **the agent refuses to start when this is set.**
 
 - `rejoin_after_leave` `(bool: false)` - Specifies if Norca will ignore a
   previous leave and attempt to rejoin the cluster when starting. By default,
@@ -356,8 +369,8 @@ server {
   fields may directly specify the server address or use go-discover syntax for
   auto-discovery. See the [server_join documentation][server-join] for more detail.
 
-- `upgrade_version` `(string: "")` - Not supported in Norca: custom upgrade
-  versions are not available, and the agent refuses to start when this is set.
+- `upgrade_version` `(string: "")` - **Not supported in Norca:** custom upgrade
+  versions are not available, and **the agent refuses to start when this is set.**
 
 - `search` <code>([search][search]: nil)</code> - Specifies configuration parameters
   for the Norca search API.
@@ -369,16 +382,19 @@ server {
    A valid value must be between `50` and `job_max_priority`.
 
 - `job_max_source_size` `(string: "1M")` - Specifies the size limit of the associated
-  job source content when registering a job. Note this is not a limit on the actual
-  size of a job. If the limit is exceeded, the original source is simply discarded
-  and no error is returned from the job API.
+  job source content when registering a job.
+
+  > [!NOTE]
+  > Note this is not a limit on the actual
+  > size of a job. **If the limit is exceeded, the original source is simply discarded
+  > and no error is returned from the job API.**
 
 - `job_tracked_versions` `(int: 6)` - Specifies the number of historic job versions that
   are kept.
 
 - `mtls` <code>([mtls](/docs/configuration/mtls): nil)</code> - (Norca) Configures the native
   mTLS certificate authority of the region: trust domain, certificate lifetimes and the
-  federated trust bundle. On by default.
+  federated trust bundle. **On by default.**
 
 - `native_service_discovery` <code>([native_service_discovery](/docs/configuration/native_service_discovery#server-block): nil)</code> -
   (Norca) Sets the overflow fraction the servers fill in for service `discovery` blocks that
@@ -436,14 +452,14 @@ more details.
 - `node_window` `(string: "5m")` - The time window for when plan rejections for
   a node should be considered.
 
-If you observe too many false positives (clients being marked as ineligible
-even if they don't present any problem) you may want to increase
-`node_threshold`.
+- If you observe too many false positives (clients being marked as ineligible
+  even if they don't present any problem) you may want to **increase
+  `node_threshold`.**
 
-Or if you are noticing jobs not being scheduled due to plan rejections for the
-same `node_id` and the client is not being set as ineligible you can try
-increasing the `node_window` so more historical rejections are taken into
-account.
+- Or if you are noticing jobs not being scheduled due to plan rejections for the
+  same `node_id` and the client is not being set as ineligible you can try
+  **increasing the `node_window`** so more historical rejections are taken into
+  account.
 
 ## `server` Examples
 
@@ -555,8 +571,8 @@ tradeoffs:
   functional Client and its workloads to be marked as `down` and the work
   rescheduled.
 
-While Norca Clients can connect to any Server, all heartbeats are forwarded to
-the leader for processing. Since this heartbeat processing consumes resources,
+While Norca Clients can connect to any Server, **all heartbeats are forwarded to
+the leader for processing.** Since this heartbeat processing consumes resources,
 Norca adjusts the rate at which Clients heartbeat based on cluster size. The
 goal is to try to keep the resource cost of processing heartbeats constant
 regardless of cluster size.
@@ -581,8 +597,11 @@ Other factors modify this base TTL:
   Server in case they were directly connected to a leader that crashed.
 
 For example, given the default values for heartbeat parameters, different sized
-clusters will use the following TTLs for the heartbeats. Note that the `Server TTL`
-simply adds the `heartbeat_grace` parameter to the TTL Clients are given.
+clusters will use the following TTLs for the heartbeats.
+
+> [!NOTE]
+> Note that the `Server TTL`
+> simply adds the `heartbeat_grace` parameter to the TTL Clients are given.
 
 | Clients | Client TTL  | Server TTL  | Safe after elections |
 | ------- | ----------- | ----------- | -------------------- |
@@ -593,11 +612,11 @@ simply adds the `heartbeat_grace` parameter to the TTL Clients are given.
 | 10000   | 200s - 400s | 210s - 410s | NO (see below)       |
 
 Regardless of size, all clients will have a Server TTL of
-`failover_heartbeat_ttl` after a leader election. It should always be larger
-than the maximum Client TTL for your cluster size in order to prevent marking
+`failover_heartbeat_ttl` after a leader election. **It should always be larger
+than the maximum Client TTL for your cluster size** in order to prevent marking
 live Clients as `down`.
 
-For clusters over 5000 Clients you should increase `failover_heartbeat_ttl`
+**For clusters over 5000 Clients you should increase `failover_heartbeat_ttl`**
 using the following formula:
 
 ```

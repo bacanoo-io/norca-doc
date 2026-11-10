@@ -13,8 +13,8 @@ server, and of the custom objects. The clients
 publish their usage on
 the [system bus](/docs/features/system-bus#task-group-usage); every server
 reads every report, samples the rest itself, and keeps the history in its
-data directory, in an embedded time-series store. The history is never
-written to Raft and is not part of the backups.
+data directory, in an embedded time-series store. **The history is never
+written to Raft and is not part of the backups.**
 
 The store has two parts, each with its own retention and disk cap:
 
@@ -29,9 +29,9 @@ The store has two parts, each with its own retention and disk cap:
 
 A query reads the part that keeps its metric; `max_series` covers both.
 
-The store is enabled by default on servers. It needs the
-[system bus](/docs/configuration/bus): without the bus the clients report no
-usage and nothing is stored. While the store or the
+**The store is enabled by default on servers.** It needs the
+[system bus](/docs/configuration/bus): **without the bus the clients report no
+usage and nothing is stored.** While the store or the
 [built-in autoscaler](/docs/configuration/autoscaler) is enabled, the servers
 ask the clients for their usage.
 
@@ -58,12 +58,15 @@ server {
 
 - `retention` `(string: "30d")` - How long the points are kept: from `1h` to
   `30d` (`720h`). It takes a duration (`"168h"`, `"90m"`) or whole days,
-  optionally followed by a duration (`"7d"`, `"1d12h"`). The store drops a
-  whole partition once the retention has passed since the partition was
-  written to disk, so the oldest point can be up to two partitions older than
-  the retention. A [reload](#reload) applies a new retention without a
-  restart. It applies to the main store; the hosts store has
-  `host_retention`.
+  optionally followed by a duration (`"7d"`, `"1d12h"`).
+  - The store drops a
+    whole partition once the retention has passed since the partition was
+    written to disk, so **the oldest point can be up to two partitions older than
+    the retention.**
+  - A [reload](#reload) applies a new retention without a
+    restart.
+  - It applies to the main store; the hosts store has
+    `host_retention`.
 
 - `host_retention` `(string: "7d")` - How long the points of the hosts store
   are kept: the [node metrics](#node-metrics) and the
@@ -72,20 +75,22 @@ server {
   partitions. A [reload](#reload) applies it without a restart.
 
 - `partition_duration` `(string: "6h")` - The time range of a partition, in
-  both stores. The points of the two newest partitions are kept in memory and
-  in a write-ahead log, the older ones in compressed files mapped into memory.
-  A report older than one partition before the newest one is dropped. It must
-  not be longer than `retention` nor `host_retention`; without it, a retention
-  shorter than six hours sets the partition to the shorter retention
-  (`retention = "2h"` gives two-hour partitions).
+  both stores.
+  - The points of the two newest partitions are kept in memory and
+    in a write-ahead log, the older ones in compressed files mapped into memory.
+  - **A report older than one partition before the newest one is dropped.**
+  - It must
+    not be longer than `retention` nor `host_retention`; without it, a retention
+    shorter than six hours sets the partition to the shorter retention
+    (`retention = "2h"` gives two-hour partitions).
 
 - `sample_interval` `(string: "30s")` - The resolution of the history. The
   reports of an interval are combined into one point per task group: the
   averages weighted by the number of samples, and the largest maximum.
 
-- `max_disk_size` `(string: "4GiB")` - The disk cap of the main store. Above
+- `max_disk_size` `(string: "4GiB")` - The disk cap of the main store. **Above
   it the oldest partitions of the main store are removed first, whatever
-  their age. A [reload](#reload) applies it without a restart.
+  their age.** A [reload](#reload) applies it without a restart.
 
 - `host_max_disk_size` `(string: "1GiB")` - The disk cap of the hosts store,
   enforced the same way on the partitions of the hosts store only. With the
@@ -95,14 +100,14 @@ server {
 - `max_series` `(int: 50000)` - The largest number of series, of both stores
   together. Every task group has 28 series (the average and the maximum of 14
   metrics), every series of the other metrics counts 2 (a node has up to 7,
-  so 14); the series beyond the limit are not stored. A series without a
+  so 14); **the series beyond the limit are not stored.** A series without a
   point within the retention of its store no longer counts (see
   [Forgotten series](#forgotten-series)). A [reload](#reload) applies it to
   new series.
 
 - `wal_buffered_size` `(int: 4096)` - The bytes the write-ahead log buffers
   before it writes them: `0` writes every point, `-1` disables the log, so
-  the newest points are lost when the server stops abruptly.
+  **the newest points are lost when the server stops abruptly.**
 
 ## Reload
 
@@ -111,20 +116,20 @@ running store, without a restart:
 
 - `retention` and `host_retention`, each to its own store: a shorter
   retention removes the partitions now past it at once; a longer one keeps
-  what is still on disk longer. What was already removed does not come back.
+  what is still on disk longer. **What was already removed does not come back.**
 - `max_disk_size` and `host_max_disk_size`, each to its own store: applied at
   the next maintenance of the store, within a minute.
 - `max_series`: applies to new series; the series stored already stay.
 
 `partition_duration`, `sample_interval` and `wal_buffered_size` shape the
-files and the sampling: a reload that changes them logs a warning and keeps
-the running values until the next restart. Turning the store on or off with
+files and the sampling: **a reload that changes them logs a warning and keeps
+the running values until the next restart.** Turning the store on or off with
 `enabled` also needs a restart. A reload with an invalid block (a retention
 outside `1h` to `30d`, or a `partition_duration` longer than a retention)
 changes nothing and logs the error.
 
-Each server has its own store and its own configuration: give the servers of
-a region the same retentions and disk caps, so that they answer the same
+Each server has its own store and its own configuration: **give the servers of
+a region the same retentions and disk caps**, so that they answer the same
 query with the same range. The [deployer](/docs/deployer/configuration#metrics_store)
 writes the same block to every server. The effective values of a server are
 in the output of
@@ -167,8 +172,8 @@ the garbage collection drops out without lowering the sum.
 `exec` and `java` drivers report the swap of the task's cgroup
 (`memory.swap.current` on cgroups v2, `memsw` minus the memory on v1), `exec2`
 `memory.swap.current`, `raw_exec` the swap of the task's processes, and
-`docker` the swap of the container on cgroups v1. `docker` on cgroups v2 does
-not measure the swap: its task groups have no points of this metric rather
+`docker` the swap of the container on cgroups v1. **`docker` on cgroups v2 does
+not measure the swap:** its task groups have no points of this metric rather
 than a zero. A kernel without swap accounting (cgroups v2 without
 `memory.swap.current`) reports zero.
 
@@ -204,8 +209,8 @@ series counts 2 towards `max_series`.
 
 The label `class` is the node class. The series with `class` empty covers all the nodes of the datacenter and node pool, whatever their class; every node class that is set has a series of its own with the nodes of that class only. A series counts 2 towards `max_series`, so a node class adds six series per datacenter and pool.
 
-The `used` values come from the clients' usage reports: a node whose latest
-report is older than two report intervals counts as using nothing.
+The `used` values come from the clients' usage reports: **a node whose latest
+report is older than two report intervals counts as using nothing.**
 
 ### Node metrics
 
@@ -224,25 +229,28 @@ one second by default), its maximum the largest one.
 | `norca.node.disk_total_mb` | size of that file system, in MiB |
 | `norca.node.inodes_used_percent` | inodes in use on that file system, in percent |
 
-The labels are `node` (the node ID), `dc`, `pool` and `class`. The server
-takes the datacenter, node pool and node class from the node in its state, not
-from the report; the report of a node the state does not know is not stored.
-The node metrics are kept in the hosts store, for `host_retention` (7 days by
-default) within `host_max_disk_size`. A node has up to 14 series (7 metrics):
-7 days of them take about 0.3 GB per 1 000 nodes, 30 days about 1.2 GB, so
-with many nodes or a longer `host_retention` plan `host_max_disk_size` and
-`max_series` for them; the series of a node that is gone are
-[forgotten](#forgotten-series) after `host_retention`. A client with
-[`usage`](/docs/configuration/client) disabled or off the bus reports no
-statistics of its host either. The statistics of devices (GPUs) are not
-stored.
+- The labels are `node` (the node ID), `dc`, `pool` and `class`. The server
+  takes the datacenter, node pool and node class from the node in its state, not
+  from the report; the report of a node the state does not know is not stored.
+- The node metrics are kept in the hosts store, for `host_retention` (7 days by
+  default) within `host_max_disk_size`.
+- A node has up to 14 series (7 metrics):
+  7 days of them take about 0.3 GB per 1 000 nodes, 30 days about 1.2 GB, so
+  **with many nodes or a longer `host_retention` plan `host_max_disk_size` and
+  `max_series` for them;** the series of a node that is gone are
+  [forgotten](#forgotten-series) after `host_retention`.
+- A client with
+  [`usage`](/docs/configuration/client) disabled or off the bus reports no
+  statistics of its host either.
+- **The statistics of devices (GPUs) are not
+  stored.**
 
 ### Scheduler and control plane metrics
 
 Every sample interval each server also samples the scheduler and the control
 plane. What only the leader has (the eval broker, the plan queue, the blocked
 evaluations, the heartbeats, the secrets watchers and the autoscaler) is
-stored by the leader only: after a leader change the history continues in the
+**stored by the leader only:** after a leader change the history continues in the
 store of the new leader. The jobs and the backups come from the state, which
 every server has. The security events and the store's own values are those of
 the server that stores them.
@@ -287,19 +295,24 @@ sample interval on that server (the sum over a step of the history).
 
 Every sample interval each server also samples its own Raft log and
 replication, its RPC requests and its own
-[system bus](/docs/configuration/bus) into its own store. The series have no
-`server` label: the store of a server holds the values of that server only.
-To see the history of one server, send the
-[history request](/docs/api/metrics-store#read-history) to it, or to any
-server with `server_id` set to it. Only `raft_append_entries_seconds` has a
-label, `peer`: the Raft server ID of the follower the leader sent the
-requests to. A server has 11 series of its own and, while it is the leader,
-one more for every other server: with 3 servers up to 13 series, which count
-26 towards `max_series` (a series counts 2). The server metrics are kept in
-the hosts store, for `host_retention` (7 days by default) within
-`host_max_disk_size`. The `peer` series of a server that left, or that the
-server no longer leads, are [forgotten](#forgotten-series) after
-`host_retention`.
+[system bus](/docs/configuration/bus) into its own store.
+
+- The series have no
+  `server` label: **the store of a server holds the values of that server only.**
+  To see the history of one server, send the
+  [history request](/docs/api/metrics-store#read-history) to it, or to any
+  server with `server_id` set to it.
+- Only `raft_append_entries_seconds` has a
+  label, `peer`: the Raft server ID of the follower the leader sent the
+  requests to.
+- A server has 11 series of its own and, while it is the leader,
+  one more for every other server: with 3 servers up to 13 series, which count
+  26 towards `max_series` (a series counts 2).
+- The server metrics are kept in
+  the hosts store, for `host_retention` (7 days by default) within
+  `host_max_disk_size`. The `peer` series of a server that left, or that the
+  server no longer leads, are [forgotten](#forgotten-series) after
+  `host_retention`.
 
 | Metric | Value |
 | --- | --- |
@@ -316,22 +329,29 @@ server no longer leads, are [forgotten](#forgotten-series) after
 | `norca.bus.jetstream_messages` | messages of those streams |
 | `norca.bus.routes` | other servers of the region the bus has a route to (counted by server, not by connection); 0 for a single server |
 
-On a follower `raft_last_contact_seconds` grows between the heartbeats of the
-leader and is usually well below a second; a value that keeps rising means the
-server lost the leader. A `raft_commit_lag` or `raft_fsm_pending` that stays
-above zero means the state machine of the server falls behind. A
-`raft_commit_seconds` that rises with one `raft_append_entries_seconds` points
-at a slow follower or the network to it; one that rises with all of them at
-the disk or the load of the leader. The bus values are totals over the
-streams, not per stream: a token with full rights on the bus can create
-streams of its own, so their number has no bound.
+#### Reading the server metrics
+
+- On a follower `raft_last_contact_seconds` grows between the heartbeats of the
+  leader and is usually well below a second; **a value that keeps rising means the
+  server lost the leader.**
+- **A `raft_commit_lag` or `raft_fsm_pending` that stays
+  above zero means the state machine of the server falls behind.**
+- A
+  `raft_commit_seconds` that rises with one `raft_append_entries_seconds` points
+  at a slow follower or the network to it; one that rises with all of them at
+  the disk or the load of the leader.
+- The bus values are totals over the
+  streams, not per stream: a token with full rights on the bus can create
+  streams of its own, so their number has no bound.
+
+#### Sources of the Raft times and RPC counts
 
 The two Raft times come from the agent's own
 [telemetry](/docs/configuration/telemetry), the same values the
 [metrics API](/docs/api/metrics) shows as `nomad.raft.commitTime` and
-`nomad.raft.replication.appendEntries.rpc` (in milliseconds there): a
+`nomad.raft.replication.appendEntries.rpc` (in milliseconds there): **a
 [`prefix_filter`](/docs/configuration/telemetry) that blocks them leaves these
-series without points. The telemetry keeps the last minute, so with a
+series without points.** The telemetry keeps the last minute, so with a
 `sample_interval` above 50 seconds the mean covers the last 50 seconds of the
 interval. The RPC counts are kept by the server itself, whatever the
 telemetry; unlike `nomad.rpc.request`, which counts the requests over the RPC
@@ -358,8 +378,8 @@ Every sample interval each server samples the
 | `norca.lb.targets` | `ns`, `name` | healthy targets of the load balancer (`norca.io/LoadBalancer`, from the LoadBalancer operator) |
 | `norca.lb.ready` | `ns`, `name` | 1 while its `Ready` condition is `True`, else 0 |
 
-The label `group` is the name of the NodeGroup object. No series is stored per
-allocation; apart from the [node metrics](#node-metrics), the number of series
+The label `group` is the name of the NodeGroup object. **No series is stored per
+allocation;** apart from the [node metrics](#node-metrics), the number of series
 grows with the namespaces, the node groups, the load balancers, the object
 kinds, the backup destinations and the admission webhooks.
 
@@ -388,8 +408,8 @@ the state of the store with
 
 A series (of a task group, a node or another metric) without a point within
 the retention of its store (`host_retention` for the node and server
-metrics, `retention` for the others) leaves the list of the series: it no
-longer counts toward
+metrics, `retention` for the others) leaves the list of the series: **it no
+longer counts toward**
 `max_series` and is no longer in the [series list](/docs/api/metrics-store#list-series),
 so the series of nodes, jobs and objects that are gone make room for new ones.
 The store checks every minute; a series whose newest point is not written

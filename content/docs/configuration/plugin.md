@@ -22,9 +22,9 @@ plugin "example-plugin" {
 }
 ```
 
-The name of the plugin is the plugin's executable name relative to to the
-[plugin_dir](/docs/configuration#plugin_dir). If the plugin has a
-suffix, such as `.exe`, this should be omitted.
+The name of the plugin is the plugin's executable name relative to the
+[plugin_dir](/docs/configuration#plugin_dir). **If the plugin has a
+suffix, such as `.exe`, this should be omitted.**
 
 ## `plugin` Parameters
 

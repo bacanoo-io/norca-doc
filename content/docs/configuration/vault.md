@@ -29,8 +29,8 @@ vault {
 
 - `allow_unauthenticated` `(bool: true)` - Specifies if users submitting jobs to
   the Norca server should be required to provide their own Vault token, proving
-  they have access to the policies listed in the job. This option should be
-  disabled in an untrusted environment.
+  they have access to the policies listed in the job. **This option should be
+  disabled in an untrusted environment.**
 
 - `enabled` `(bool: false)` - Specifies if the Vault integration should be
   activated.
@@ -44,7 +44,7 @@ vault {
   is deriving child tokens from a role.
 
 - `task_token_ttl` `(string: "72h")` - Specifies the TTL of created tokens when
-  using a root token. This is specified using a label suffix like "30s" or "1h".
+  using a root token. This is specified using a label suffix like `"30s"` or `"1h"`.
 
 - `ca_file` `(string: "")` - Specifies an optional path to the CA
   certificate used for Vault communication. If unspecified, this will fallback
@@ -57,13 +57,13 @@ vault {
 
 - `cert_file` `(string: "")` - Specifies the path to the certificate used for
   Vault communication. This must be set if
-  tls_require_and_verify_client_cert
+  `tls_require_and_verify_client_cert`
   is enabled in Vault.
 
 - `key_file` `(string: "")` - Specifies the path to the private key used for
   Vault communication. If this is set then you need to also set
   `cert_file`. This must be set if
-  tls_require_and_verify_client_cert
+  `tls_require_and_verify_client_cert`
   is enabled in Vault.
 
 - `namespace` `(string: "")` - Specifies the Vault namespace
@@ -82,7 +82,7 @@ vault {
   > verification can allow an attacker to easily compromise your cluster.
 
 - `token` `(string: "")` - Specifies the parent Vault token to use to derive
-  child tokens for jobs requesting tokens. Only required on Norca servers.
+  child tokens for jobs requesting tokens. **Only required on Norca servers.**
   Norca client agents use the allocation's token when contacting Vault.
   Visit the [Vault Integration Guide](/docs/integrations/vault-integration/)
   to see how to generate an appropriate token in Vault.
@@ -139,11 +139,11 @@ vault {
 }
 ```
 
-The key difference is that the token is not necessary on the client.
+The key difference is that **the token is not necessary on the client.**
 
 ## `vault` Configuration Reloads
 
-The Vault configuration can be reloaded on servers. This can be useful if a new
+**The Vault configuration can be reloaded on servers.** This can be useful if a new
 token needs to be given to the servers without having to restart them. A reload
 can be accomplished by sending the process a `SIGHUP` signal.
 

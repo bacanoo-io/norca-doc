@@ -29,11 +29,11 @@ agent running on the same host as the Norca agent with the default
 configuration, Norca will automatically connect and configure with Consul.
 
 > [!WARNING]
-> An important requirement is that each Norca agent talks to a unique Consul
-> agent. Norca agents should be configured to talk to Consul agents and not
+> An important requirement is that **each Norca agent talks to a unique Consul
+> agent.** Norca agents should be configured to talk to Consul agents and not
 > Consul servers. If you are observing flapping services, you may have
 > multiple Norca agents talking to the same Consul agent. As such avoid
-> configuring Norca to talk to Consul via DNS such as consul.service.consul
+> configuring Norca to talk to Consul via DNS such as `consul.service.consul`
 
 ## `consul` Parameters
 
@@ -46,8 +46,8 @@ configuration, Norca will automatically connect and configure with Consul.
 - `allow_unauthenticated` `(bool: true)` - Specifies if users submitting jobs to
   the Norca server should be required to provide their own Consul token, proving
   they have access to the service identity policies required by the Consul Connect
-  enabled services listed in the job. This option should be
-  disabled in an untrusted environment.
+  enabled services listed in the job. **This option should be
+  disabled in an untrusted environment.**
 
 - `auth` `(string: "")` - Specifies the HTTP Basic Authentication information to
   use for access to the Consul Agent, given in the format `username:password`.
@@ -90,9 +90,12 @@ configuration, Norca will automatically connect and configure with Consul.
   HTTP health check name in Consul for the Norca clients.
 
 - `grpc_address` `(string: "127.0.0.1:8502")` - Specifies the address to the local
-  Consul agent for `gRPC` requests, given in the format `host:port`. Note that
-  Consul does not enable the `grpc` or `grpc_tls`
-  listeners by default.
+  Consul agent for `gRPC` requests, given in the format `host:port`.
+
+  > [!NOTE]
+  > Note that
+  > Consul does not enable the `grpc` or `grpc_tls`
+  > listeners by default.
 
 - `key_file` `(string: "")` - Specifies the path to the private key used for
   Consul communication. If this is set then you need to also set `cert_file`.
@@ -121,8 +124,8 @@ configuration, Norca will automatically connect and configure with Consul.
 - `share_ssl` `(bool: true)` - Specifies whether the Norca client should share
   its Consul SSL configuration with Connect Native applications. Includes values
   of `ca_file`, `cert_file`, `key_file`, `ssl`, and `verify_ssl`. Does not include
-  the values for the ACL `token` or `auth`. This option should be disabled in
-  environments where Consul ACLs are not enabled.
+  the values for the ACL `token` or `auth`. **This option should be disabled in
+  environments where Consul ACLs are not enabled.**
 
 - `ssl` `(bool: false)` - Specifies if the transport scheme should use HTTPS to
   communicate with the Consul agent. Will default to the `CONSUL_HTTP_SSL`
@@ -132,7 +135,7 @@ configuration, Norca will automatically connect and configure with Consul.
   registered with the Norca server and agent services.
 
 - `timeout` `(string: "5s")` - Specifies a time limit for requests made against
-  Consul. This is specified using a label suffix like "10s".
+  Consul. This is specified using a label suffix like `"10s"`.
 
 - `token` `(string: "")` - Specifies the token used to provide a per-request ACL
   token. This option overrides the Consul Agent's default token. If the token is
@@ -144,8 +147,8 @@ configuration, Norca will automatically connect and configure with Consul.
   when communicating to the Consul API client over HTTPS. Will default to the
   `CONSUL_HTTP_SSL_VERIFY` environment variable if set.
 
-If the local Consul agent is configured and accessible by the Norca agents, the
-Norca cluster will automatically bootstrap provided
+If the local Consul agent is configured and accessible by the Norca agents, **the
+Norca cluster will automatically bootstrap** provided
 `server_auto_join`, `client_auto_join`, and `auto_advertise` are all enabled
 (which is the default).
 
@@ -168,9 +171,14 @@ consul {
 
 ### Custom Address and Port
 
-This example shows pointing the Norca agent at a different Consul address. Note
-that you should **never** point directly at a Consul server; always point to a
-local client. In this example, the Consul server is bound and listening on the
+This example shows pointing the Norca agent at a different Consul address.
+
+> [!WARNING]
+> Note
+> that you should **never** point directly at a Consul server; always point to a
+> local client.
+
+In this example, the Consul server is bound and listening on the
 node's private IP address instead of localhost, so we use that:
 
 ```hcl
@@ -198,8 +206,8 @@ consul {
 
 Consul does not allow ACL policies associated with namespaces to use agent
 permissions. Norca requires `agent:read` permissions. In order to use the
-`consul_namespace` feature, Norca will need a token generated in Consul's
-default namespace. That token should be created with `agent:read` as well
+`consul_namespace` feature, **Norca will need a token generated in Consul's
+default namespace.** That token should be created with `agent:read` as well
 as a `namespace` block with the other relevant permissions for running Norca
 in the intended namespace. The Consul policy below shows an example policy
 configuration for a Norca server:

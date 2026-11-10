@@ -22,12 +22,13 @@ server {
 ```
 
 Without a `keyring` block, the server uses the `aead` seal: the key-encrypting key is stored next to the
-key, as in Nomad v1.6.5. The agent logs a warning; use `aead` for development and migration only.
+key, as in Nomad v1.6.5. The agent logs a warning; **use `aead` for development and migration only.**
 
-Configuring `seal "shares"` does not convert an existing keyring by itself. A new region stays
-uninitialized and a region that already has keys keeps its current seal until
-[`norca operator keyring rewrap -to shares`](/docs/commands/operator/keyring-rewrap) runs. All servers of a
-region should have the same `keyring` block.
+> [!IMPORTANT]
+> **Configuring `seal "shares"` does not convert an existing keyring by itself.** A new region stays
+> uninitialized and a region that already has keys keeps its current seal until
+> [`norca operator keyring rewrap -to shares`](/docs/commands/operator/keyring-rewrap) runs. **All servers of a
+> region should have the same `keyring` block.**
 
 ## `keyring` Parameters
 

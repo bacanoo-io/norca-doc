@@ -38,14 +38,14 @@ autopilot {
   cluster. Only takes effect if all servers are running Raft protocol version 3
   or higher. Must be a duration value such as `30s`.
 
-- `enable_redundancy_zones` `(bool: false)` - Not supported in Norca:
-  redundancy zones are not available, and the agent refuses to start when this
-  is set to `true`.
+- `enable_redundancy_zones` `(bool: false)` - **Not supported in Norca:**
+  redundancy zones are not available, and **the agent refuses to start when this
+  is set to `true`.**
 
-- `disable_upgrade_migration` `(bool: false)` - Not supported in Norca: upgrade
-  migrations are not available, and the agent refuses to start when this is set
-  to `true`.
+- `disable_upgrade_migration` `(bool: false)` - **Not supported in Norca:** upgrade
+  migrations are not available, and **the agent refuses to start when this is set
+  to `true`.**
 
-- `enable_custom_upgrades` `(bool: false)` - Not supported in Norca: custom
-  upgrade versions are not available, and the agent refuses to start when this
-  is set to `true`.
+- `enable_custom_upgrades` `(bool: false)` - **Not supported in Norca:** custom
+  upgrade versions are not available, and **the agent refuses to start when this
+  is set to `true`.**

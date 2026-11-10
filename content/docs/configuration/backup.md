@@ -9,9 +9,9 @@ description: "The \"backup\" block configures the scheduled, encrypted backups o
 The `backup` block configures the scheduled backups that the leader of a
 region takes of the Raft state and the keyring into one or more
 S3-compatible stores (AWS S3, RustFS, MinIO and other stores with the S3
-API) and directories of the servers' filesystem. Every object is encrypted
+API) and directories of the servers' filesystem. **Every object is encrypted
 with [age](https://github.com/FiloSottile/age) public keys before it is
-written. See
+written.** See
 [Backup and restore](/docs/features/backup-restore) for the concepts and
 [Backup and restore operations](/docs/operations/backup-restore) for a
 runbook.
@@ -46,11 +46,13 @@ server {
 }
 ```
 
-The block is read on every server, but only the leader takes scheduled
-backups. Manual backups, browsing and restores need a `destination` and the
-`encryption` block, not `enabled`. The block is applied again on a
-configuration reload (`SIGHUP`), and `norca config validate` checks it as the
-agent does when it starts.
+- The block is read on every server, but **only the leader takes scheduled
+  backups.**
+- Manual backups, browsing and restores need a `destination` and the
+  `encryption` block, not `enabled`.
+- The block is applied again on a
+  configuration reload (`SIGHUP`), and `norca config validate` checks it as the
+  agent does when it starts.
 
 ## `backup` Parameters
 
@@ -85,8 +87,8 @@ agent does when it starts.
 
 - `include_keyring` `(bool: true)` - Adds the keyring (the root keys of
   Variables and workload identities) and the key of the built-in secret store
-  to every backup. Without them the Variables and secrets of a restored
-  backup can't be decrypted in a new cluster.
+  to every backup. **Without them the Variables and secrets of a restored
+  backup can't be decrypted in a new cluster.**
 
 - `verify_checksum` `(bool: false)` - Downloads every uploaded object again
   and compares its SHA-256 checksum. Without it only the size of the uploaded
@@ -97,8 +99,8 @@ agent does when it starts.
   disables the cache.
 
 - `require_approval` `(bool: true)` - Requires a second administrator to
-  approve every full restore. Two-person approval is mandatory, so this value
-  can't be set to `false`.
+  approve every full restore. **Two-person approval is mandatory, so this value
+  can't be set to `false`.**
 
 - `approval_ttl` `(string: "1h")` - How long a full restore request waits for
   its approval, between `1m` and `168h`.
@@ -106,11 +108,11 @@ agent does when it starts.
 - `destination` <code>([Destination](#destination-parameters))</code> - An
   S3-compatible store or a directory, labeled with its name. Can be repeated,
   and both types can be mixed: every backup is written to all destinations in
-  parallel, and one failing destination does not stop the others.
+  parallel, and **one failing destination does not stop the others.**
 
 - `encryption` <code>([Encryption](#encryption-parameters))</code> - The
-  client-side encryption of the backups. Required as soon as a destination is
-  configured.
+  client-side encryption of the backups. **Required as soon as a destination is
+  configured.**
 
 - `retention` <code>([Retention](#retention-parameters))</code> - Which
   backups the leader keeps.
@@ -169,24 +171,26 @@ The parameters of both types:
 > error that names this requirement, and the retention keeps its record
 > instead of dropping it.
 
-Every file is written crash-safely: into a temporary file in the target
-folder, which is synced to disk and then renamed; the folder is synced after
-the rename where the operating system supports it (not on Windows). A server
-that crashes in the middle of a backup leaves only temporary files
-(`.<name>.norca-tmp-*`), which the leader removes before its first
-scheduled backup, as it aborts the incomplete multipart uploads of a store.
-Files are created with mode `0600` and folders with `0700`; on Windows they
-inherit the access control list of `path`, so restrict that directory to the
-account of the agent. A directory destination has no download URLs, and it
-takes none of the S3 parameters below: `norca config validate` and the agent
-reject them.
+- **Every file is written crash-safely:** into a temporary file in the target
+  folder, which is synced to disk and then renamed; the folder is synced after
+  the rename where the operating system supports it (not on Windows).
+- A server
+  that crashes in the middle of a backup leaves only temporary files
+  (`.<name>.norca-tmp-*`), which the leader removes before its first
+  scheduled backup, as it aborts the incomplete multipart uploads of a store.
+- Files are created with mode `0600` and folders with `0700`; on Windows they
+  inherit the access control list of `path`, so **restrict that directory to the
+  account of the agent.**
+- A directory destination has no download URLs, and **it
+  takes none of the S3 parameters below:** `norca config validate` and the agent
+  reject them.
 
 #### `type = "s3"`
 
 - `endpoint` `(string: "")` - The address of the store, as `host[:port]` or a
   URL. An `http://` URL disables TLS. Empty means AWS S3.
 
-- `bucket` `(string: <required>)` - The bucket. Norca never creates it.
+- `bucket` `(string: <required>)` - The bucket. **Norca never creates it.**
 
 - `region` `(string: "")` - The region of the bucket. S3-compatible stores
   usually expect the region they are configured with, for example
@@ -232,8 +236,8 @@ reject them.
   that can be used; `"kms"` is reserved and rejected.
 
 - `recipients` `(array<string>: <required>)` - The age public keys
-  (`age1...`) the backups are encrypted for. The private keys (identities)
-  are kept by the administrators outside the cluster and are only needed to
+  (`age1...`) the backups are encrypted for. **The private keys (identities)
+  are kept by the administrators outside the cluster** and are only needed to
   browse and restore backups.
 
 - `kms_key` `(string: "")` - Reserved for the `kms` mode.
@@ -242,8 +246,8 @@ reject them.
 
 The retention follows a grandfather-father-son scheme, in UTC: the newest
 backup of each of the last `keep_hourly` hours, `keep_daily` days,
-`keep_weekly` ISO weeks and `keep_monthly` months is kept. Pinned backups are
-never deleted. The leader applies the retention after every backup, and only
+`keep_weekly` ISO weeks and `keep_monthly` months is kept. **Pinned backups are
+never deleted.** The leader applies the retention after every backup, and only
 within the prefix of its own region.
 
 - `keep_hourly` `(int: 24)` - Hourly backups to keep.

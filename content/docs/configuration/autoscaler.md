@@ -8,7 +8,7 @@ description: "The \"autoscaler\" block of the server configuration enables and t
 
 The `autoscaler` block configures the [built-in autoscaler](/docs/features/autoscaler),
 which runs on the leader server and evaluates the scaling policies of the
-`builtin` engine. Set the same block on every server: the autoscaler runs on
+`builtin` engine. **Set the same block on every server:** the autoscaler runs on
 whichever server is the leader.
 
 ```hcl
@@ -32,16 +32,17 @@ server {
 }
 ```
 
-The whole block can be changed with a configuration reload; the autoscaler then
-restarts its evaluations with the new settings. Clients need no configuration:
-the servers tell them through the heartbeat response whether, and how often, to
-send the usage of their task groups.
+- **The whole block can be changed with a configuration reload;** the autoscaler then
+  restarts its evaluations with the new settings.
+- **Clients need no configuration:**
+  the servers tell them through the heartbeat response whether, and how often, to
+  send the usage of their task groups.
 
 ## `autoscaler` Parameters
 
-- `enabled` `(bool: false)` - Runs the built-in autoscaler on the leader. While
+- `enabled` `(bool: false)` - Runs the built-in autoscaler on the leader. **While
   it is disabled, a job whose enabled scaling policy uses the `builtin` engine is
-  rejected at submission.
+  rejected at submission.**
 
 - `default_engine` `(string: "external")` - The engine of scaling policies that
   do not set [`engine`](/docs/job-specification/scaling#scaling-parameters): `builtin` (the
@@ -65,21 +66,24 @@ send the usage of their task groups.
   parallel on the leader.
 
 - `rate_limit` `(float: 10)` - The number of scaling actions per second allowed
-  in the region (a token bucket). Actions over the limit are dropped; the policy
+  in the region (a token bucket). **Actions over the limit are dropped;** the policy
   is evaluated again at its next interval with fresh metrics.
 
 - `rate_limit_burst` `(int: 50)` - The burst size of the token bucket.
 
 - `metrics_window` `(string: "5m")` - How long the leader keeps the task group
-  usage reported by clients, the data of the built-in metrics. After a leader
-  change, the new leader fills the window from its
-  [metrics store](/docs/configuration/metrics_store); without the store, or
-  for the part of the window the store has no data of, the built-in metrics
-  report insufficient data until one full window has been collected. A check
-  whose `query_window` reaches back beyond this window reads the built-in
-  metrics from the metrics store (the mean of the interval averages, the
-  largest maximum); without points there, from this window only. Must not be
-  shorter than `client_metrics_interval`.
+  usage reported by clients, the data of the built-in metrics.
+  - After a leader
+    change, the new leader fills the window from its
+    [metrics store](/docs/configuration/metrics_store); without the store, or
+    for the part of the window the store has no data of, **the built-in metrics
+    report insufficient data until one full window has been collected.**
+  - A check
+    whose `query_window` reaches back beyond this window reads the built-in
+    metrics from the metrics store (the mean of the interval averages, the
+    largest maximum); without points there, from this window only.
+  - Must not be
+    shorter than `client_metrics_interval`.
 
 - `client_metrics_interval` `(string: "10s")` - The aggregation window of the
   task group usage on the clients, which is also how often they send it. Must be
@@ -95,8 +99,8 @@ send the usage of their task groups.
 - `strategy` <code>([Strategy](#strategy-block): nil)</code> - Configures a named
   strategy instance. May be repeated.
 
-The oscillation protection (three direction changes within 10 minutes suspend a
-group for 15 minutes) is not configurable.
+**The oscillation protection (three direction changes within 10 minutes suspend a
+group for 15 minutes) is not configurable.**
 
 ## `apm` Block
 
@@ -151,9 +155,13 @@ autoscaler {
 ```
 
 - `expander` `(string: "spread")` - Which group of a pool grows for work that
-  can go to several: `spread` (the group with the fewest nodes), `fill` (the
-  fullest group below its `max`), `priority` (the lowest `priority` of the
-  group) or `weighted` (by the `weight` of the group).
+  can go to several:
+  - `spread` (the group with the fewest nodes),
+  - `fill` (the
+    fullest group below its `max`),
+  - `priority` (the lowest `priority` of the
+    group)
+  - or `weighted` (by the `weight` of the group).
 - `interval` `(string: "30s")` - How often the blocked work is looked at.
 - `pool` - Overrides `expander` for a pool and limits it with `max_nodes` and
   `max_step` (0: no limit).
@@ -167,10 +175,10 @@ group:
 1. The unplaced allocations are packed into virtual nodes of the size of a
    node of the group (`status.allocatable` of the object, or `spec.node.capacity`
    less `spec.node.reserved`), the largest first. Four allocations of 6 GB on
-   nodes of 8 GB need four nodes. An allocation under `distinct_hosts`, or one
-   that asks for a port by number, needs a node of its own.
+   nodes of 8 GB need four nodes. **An allocation under `distinct_hosts`, or one
+   that asks for a port by number, needs a node of its own.**
 2. Work that can go to several groups (the datacenters of the job) is split
-   between them by the expander; it is counted once, not once per datacenter.
+   between them by the expander; **it is counted once, not once per datacenter.**
 3. A `distinct_property` on `${node.datacenter}` or `${node.pool}` is checked
    against the group: the live allocations of the job (of the task group, when
    the constraint is on the group) are counted by the value of their node, a
@@ -178,15 +186,15 @@ group:
    capped at the room that is left. A constraint on `${node.class}` is checked
    against the `node_class` of the group. A constraint on anything else (a
    `meta` key, an attribute) cannot be checked against a node that does not
-   exist yet: no node is added for it, and the allocations are counted by
+   exist yet: **no node is added for it**, and the allocations are counted by
    `norca.cluster.blocked_unverifiable`.
 4. A job of a node pool grows the groups of that pool; a job of any pool
    (`node_pool = "all"`) grows only the groups with `spill = true`.
 5. The nodes that were asked for and have not joined yet (`status.joining`)
    count as capacity, so the same work is not asked for twice.
 6. `spec.replicas` is raised by what is left, within `max` of the group and
-   `max_nodes` and `max_step` of the pool. Without `spec.enforce` the decision is
-   a dry run: it is recorded once in the event log of the object and
+   `max_nodes` and `max_step` of the pool. **Without `spec.enforce` the decision is
+   a dry run:** it is recorded once in the event log of the object and
    `spec.replicas` is not changed.
 
 ### Headroom
@@ -198,15 +206,21 @@ the autoscaler to keep free capacity worth that many nodes ahead of the work.
 
 The free capacity is read from the cluster gauges of the group's datacenter,
 pool and class: the ready, eligible nodes and the share of CPU and memory
-allocated (the scarcer of the two). Nodes that were asked for and have not
-joined yet count as free capacity, so the same headroom is not asked for twice.
-The nodes that blocked work needs are not free capacity: the headroom comes
-on top of them. When the gauges can't be read, nothing is added. Unlike blocked
-work, the headroom is an ahead-of-time trigger and waits for the cooldown of the
-group.
+allocated (the scarcer of the two).
 
-Work blocked by the quota of its namespace is not counted: more nodes would
+- Nodes that were asked for and have not
+  joined yet count as free capacity, so the same headroom is not asked for twice.
+- The nodes that blocked work needs are not free capacity: **the headroom comes
+  on top of them.**
+- When the gauges can't be read, nothing is added.
+- Unlike blocked
+  work, **the headroom is an ahead-of-time trigger and waits for the cooldown of the
+  group.**
+
+**Work blocked by the quota of its namespace is not counted:** more nodes would
 not help it.
+
+### Events
 
 When work is not helped by more nodes, a `ScalingNodeBlocked` event says why
 (every group is at its maximum, a limit of the pool, the size of a node is not
@@ -261,8 +275,8 @@ server {
 }
 ```
 
-An external plugin runs in its own process. A plugin that crashes, hangs or
-fails to start only fails the checks that use it; it is started again on its
+An external plugin runs in its own process. **A plugin that crashes, hangs or
+fails to start only fails the checks that use it;** it is started again on its
 next use, with an exponential backoff between attempts (1 second up to 2
 minutes).
 
@@ -280,4 +294,4 @@ and an external autoscaler can run side by side:
    external autoscaler.
 
 Setting `engine = "external"` on a job hands it back to the external autoscaler
-without a server restart.
+**without a server restart.**

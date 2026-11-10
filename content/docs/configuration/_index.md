@@ -17,7 +17,7 @@ files or directories to configure the Norca agent.
 The Norca agent supports multiple configuration files, which can be provided
 using the `-config` CLI flag. The flag can accept either a file or folder. In
 the case of a folder, any `.hcl` and `.json` files in the folder will be loaded
-and merged in lexicographical order. Directories are not loaded recursively.
+and merged in lexicographical order. **Directories are not loaded recursively.**
 
 For example:
 
@@ -32,11 +32,12 @@ As each file is processed, its contents are merged into the existing
 configuration. When merging, any non-empty values from the latest config file
 will append or replace parameters in the current configuration. An empty value
 means `""` for strings, `0` for integer or float values, and `false` for
-booleans. Since empty values are ignored you cannot disable a parameter like
-`server` mode once you've enabled it.
+booleans. **Since empty values are ignored you cannot disable a parameter like
+`server` mode once you've enabled it.**
 
-Please note that `plugin` blocks for a given plugin always replace and
-override each other, rather than being merged.
+> [!NOTE]
+> Please note that `plugin` blocks for a given plugin always replace and
+> override each other, rather than being merged.
 
 Here is an example Norca agent configuration that runs in both client and server
 mode.
@@ -120,13 +121,13 @@ consul {
 
   - `rpc` - The address used to advertise to Norca clients for connecting to Norca
     servers for RPC. This allows Norca clients to connect to Norca servers from
-    behind a NAT gateway. This address much be reachable by all Norca client nodes.
+    behind a NAT gateway. **This address must be reachable by all Norca client nodes.**
     When set, the Norca servers will use the `advertise.serf` address for RPC
     connections amongst themselves. Setting this value on a Norca client has no
     effect.
 
-  - `serf` - The address advertised for the gossip layer. This address must be
-    reachable from all server nodes. It is not required that clients can reach
+  - `serf` - The address advertised for the gossip layer. **This address must be
+    reachable from all server nodes.** It is not required that clients can reach
     this address. Norca servers will communicate to each other over RPC using
     the advertised Serf IP and advertised RPC Port.
 
@@ -151,7 +152,7 @@ consul {
   agent state. Client nodes use this directory by default to store temporary
   allocation data as well as cluster information. Server nodes use this
   directory to store cluster state, including the replicated log and snapshot
-  data. This must be specified as an absolute path.
+  data. **This must be specified as an absolute path.**
 
 - `disable_anonymous_signature` `(bool: false)` - Accepted and has no
   effect: Norca does not contact
@@ -166,7 +167,7 @@ consul {
   diagnostic information about Norca's internals.
 
 - `enable_syslog` `(bool: false)` - Specifies if the agent should log to syslog.
-  This option only works on Unix based systems. The log level inherits from
+  **This option only works on Unix based systems.** The log level inherits from
   the Norca agent log set in `log_level`
 
 - `http_api_response_headers` `(map<string|string>: nil)` - Specifies
@@ -175,24 +176,28 @@ consul {
 - `leave_on_interrupt` `(bool: false)` - Specifies if the agent should leave
   when receiving the interrupt signal. By default, any stop signal to an agent
   (interrupt or terminate) will cause the agent to exit after ensuring its
-  internal state is committed to disk as needed. If this value is set to true on
-  a server agent, the server will notify other servers of their intention to
-  leave the peer set. You should only set this value to true on server agents if
-  the terminated server will never join the cluster again. If this value is set
-  to true on a client agent and the client is configured with
-  [`drain_on_shutdown`][], the client will drain its workloads before shutting
-  down.
+  internal state is committed to disk as needed.
+  - If this value is set to `true` on
+    a server agent, the server will notify other servers of their intention to
+    leave the peer set. **You should only set this value to `true` on server agents if
+    the terminated server will never join the cluster again.**
+  - If this value is set
+    to `true` on a client agent and the client is configured with
+    [`drain_on_shutdown`][], the client will drain its workloads before shutting
+    down.
 
 - `leave_on_terminate` `(bool: false)` - Specifies if the agent should leave
   when receiving the terminate signal. By default, any stop signal to an agent
   (interrupt or terminate) will cause the agent to exit after ensuring its
-  internal state is committed to disk as needed. If this value is set to true on
-  a server agent, the server will notify other servers of their intention to
-  leave the peer set. You should only set this value to true on server agents if
-  the terminated server will never join the cluster again. If this value is set
-  to true on a client agent and the client is configured with
-  [`drain_on_shutdown`][], the client will drain its workloads before shutting
-  down.
+  internal state is committed to disk as needed.
+  - If this value is set to `true` on
+    a server agent, the server will notify other servers of their intention to
+    leave the peer set. **You should only set this value to `true` on server agents if
+    the terminated server will never join the cluster again.**
+  - If this value is set
+    to `true` on a client agent and the client is configured with
+    [`drain_on_shutdown`][], the client will drain its workloads before shutting
+    down.
 
 - `limits` - Available in Nomad 0.10.3 and later, this is a nested object that
   configures limits that are enforced by the agent. The following parameters
@@ -217,7 +222,7 @@ consul {
     negotiation. All Norca clients should perform this immediately on
     establishing a new connection. This should be kept conservative as it
     limits how many connections an unauthenticated attacker can open if
-    TLS is being using to authenticate clients (strongly recommended in
+    TLS is being used to authenticate clients (strongly recommended in
     production). When `tls.rpc` is true on servers, this limits how long the
     connection and associated goroutines will be held open before the client
     successfully authenticates. Default value is `5s`. `0` disables RPC handshake
@@ -227,19 +232,23 @@ consul {
     many concurrent TCP connections a single source IP address is allowed
     to open to a single server. Client agents do not accept RPC TCP connections
     directly and therefore are not affected. It affects both clients connections
-    and other server connections. Norca clients multiplex many RPC calls over a
-    single TCP connection, except for streaming endpoints such as [log
-    streaming][log-api] which require their own connection when routed through
-    servers. A server needs at least 2 TCP connections (1 Raft, 1 RPC) per peer
-    server locally and in any federated region. Servers also need a TCP connection
-    per routed streaming endpoint concurrently in use. Only operators use streaming
-    endpoints; as of Nomad 0.10.3 the client code does not. A reasonably low limit
-    significantly reduces the ability of an unauthenticated attacker to consume
-    unbounded resources by holding open many connections. You may need to
-    increase this if WAN federated servers connect via proxies or NAT gateways
-    or similar causing many legitimate connections from a single source IP.
+    and other server connections.
+    - Norca clients multiplex many RPC calls over a
+      single TCP connection, except for streaming endpoints such as [log
+      streaming][log-api] which require their own connection when routed through
+      servers.
+    - A server needs at least 2 TCP connections (1 Raft, 1 RPC) per peer
+      server locally and in any federated region. Servers also need a TCP connection
+      per routed streaming endpoint concurrently in use. Only operators use streaming
+      endpoints; as of Nomad 0.10.3 the client code does not.
+    - A reasonably low limit
+      significantly reduces the ability of an unauthenticated attacker to consume
+      unbounded resources by holding open many connections. You may need to
+      increase this if WAN federated servers connect via proxies or NAT gateways
+      or similar causing many legitimate connections from a single source IP.
+
     Default value is `100` which is designed to support the majority of users.
-    `0` disables RPC connection limits. `26` is the minimum as `20` connections
+    `0` disables RPC connection limits. **`26` is the minimum** as `20` connections
     are always reserved for non-streaming connections (Raft and RPC) to ensure
     streaming RPCs do not prevent normal server operation. This minimum may be
     lowered in the future when streaming RPCs no longer require their own TCP
@@ -255,7 +264,7 @@ consul {
 - `log_json` `(bool: false)` - Output logs in a JSON format.
 
 - `log_file` `(string: "")` - Specifies the path for logging. If the path
-  does not includes a filename, the filename defaults to `nomad.log`. This
+  does not include a filename, the filename defaults to `nomad.log`. This
   setting can be combined with `log_rotate_bytes` and `log_rotate_duration` for
   a fine-grained log rotation control.
 
@@ -265,17 +274,20 @@ consul {
 
 - `log_rotate_duration` `(duration: "24h")` - Specifies the maximum duration a
   log should be written to before it needs to be rotated. Must be a duration
-  value such as 30s.
+  value such as `30s`.
 
 - `log_rotate_max_files` `(int: 0)` - Specifies the maximum number of older
   log file archives to keep, not including the log file currently being
-  written. If set to 0 no files are ever deleted. Note that the total number
-  of log files, for each of `stderr` and `stdout`, will be 1 greater than the
-  `log_rotate_max_files` value.
+  written. If set to `0` no files are ever deleted.
+
+  > [!NOTE]
+  > Note that the total number
+  > of log files, for each of `stderr` and `stdout`, will be 1 greater than the
+  > `log_rotate_max_files` value.
 
 - `name` `(string: [hostname])` - Specifies the name of the local node. This
-  value is used to identify individual agents. When specified on a server, the
-  name must be unique within the region.
+  value is used to identify individual agents. **When specified on a server, the
+  name must be unique within the region.**
 
 - `plugin_dir` `(string: "[data_dir]/plugins")` - Specifies the directory to
   use for looking up plugins. By default, this is the top-level
@@ -355,12 +367,13 @@ its configuration. The fields that currently support reloading are:
 - [`vault`][vault-reload]: note this only reloads the TLS configuration
   between Norca and Vault, but not other configuration values.
 
-In order to reload any other configuration values, you must restart the Norca
-agent.
+**In order to reload any other configuration values, you must restart the Norca
+agent.**
 
-If the Norca agent receives a `SIGHUP` during initialization, it may crash
-(see GH-3885). Ensure that the Norca agent is able to receive RPC traffic
-before attempting to reload its configuration.
+> [!WARNING]
+> If the Norca agent receives a `SIGHUP` during initialization, it may crash
+> (see GH-3885). Ensure that the Norca agent is able to receive RPC traffic
+> before attempting to reload its configuration.
 
 ## Examples
 

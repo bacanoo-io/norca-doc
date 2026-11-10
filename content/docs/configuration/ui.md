@@ -41,9 +41,14 @@ ui {
 ```
 
 A default `ui` block is automatically merged with all Norca agent
-configurations. Note that the UI can be served from any Norca agent,
-and the configuration is individual to each agent.
+configurations.
+
+> [!NOTE]
+> Note that the UI can be served from any Norca agent,
+> and **the configuration is individual to each agent.**
+
 ## `ui` Parameters
+
 - `enabled` `(bool: true)` - Specifies whether the web UI is
   enabled. If disabled, the `/ui/` path will return an empty web page.
 
@@ -82,22 +87,30 @@ header sent with the web UI response.
 - `ui_url` `(string: "")` - Specifies the full base URL to a Consul
   web UI (for example: `https://consul.example.com:8501/ui`. This URL
   is used to build links from the Norca web UI to a Consul web
-  UI. Note that this URL will not typically be the same one used for
-  the agent's [`consul.address`]; the `consul.address` is the URL used
-  by the Norca to communicate with Consul, whereas the
-  `ui.consul.ui_url` is the URL you'll visit in your browser. If
-  this field is omitted, this integration will be disabled.
+  UI.
+
+  > [!NOTE]
+  > Note that this URL will not typically be the same one used for
+  > the agent's [`consul.address`]; the `consul.address` is the URL used
+  > by the Norca to communicate with Consul, whereas the
+  > `ui.consul.ui_url` is the URL you'll visit in your browser.
+
+  **If this field is omitted, this integration will be disabled.**
 
 ## `vault` Parameters
 
 - `ui_url` `(string: "")` - Specifies the full base URL to a Vault
   web UI (for example: `https://vault.example.com:8200/ui`. This URL
   is used to build links from the Norca web UI to a Vault web
-  UI. Note that this URL will not typically be the same one used for
-  the agent's [`vault.address`]; the `vault.address` is the URL used
-  by the Norca to communicate with Vault, whereas the
-  `ui.vault.ui_url` is the URL you'll visit in your browser. If
-  this field is omitted, this integration will be disabled.
+  UI.
+
+  > [!NOTE]
+  > Note that this URL will not typically be the same one used for
+  > the agent's [`vault.address`]; the `vault.address` is the URL used
+  > by the Norca to communicate with Vault, whereas the
+  > `ui.vault.ui_url` is the URL you'll visit in your browser.
+
+  **If this field is omitted, this integration will be disabled.**
 
 ## `label` Parameters
 
