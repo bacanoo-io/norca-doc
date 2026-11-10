@@ -20,7 +20,7 @@ One region over three datacenters: a server per datacenter, the event stream on 
 #   - a NATS cluster with one server per datacenter (the "separate" rule on
 #     ${node.datacenter}), JetStream, users with generated passwords
 #   - the event stream on the system bus of the servers: the Norca events of
-#     the region go to nomad.eu.<namespace>.<topic> in the stream NORCA_EVENTS_eu with 3
+#     the region go to norca.eu.<namespace>.<topic> in the stream NORCA_EVENTS_eu with 3
 #     replicas, one per server, so the event history survives a datacenter
 #     loss as well
 #
@@ -225,7 +225,7 @@ inventory:
 # JetStream consumer of the stream NORCA_EVENTS_eu-central. Give its token to
 # the service; it connects to the bus port (4649) of any server.
 bus {
-  subscribe = ["nomad.eu-central.>"]
+  subscribe = ["norca.eu-central.>"]
   publish = [
     "$JS.API.INFO",
     "$JS.API.STREAM.INFO.NORCA_EVENTS_eu-central",

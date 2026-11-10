@@ -25,7 +25,7 @@ server {
 
     events {
       enabled        = true
-      subject_prefix = "nomad"
+      subject_prefix = "norca"
       max_age        = "72h"
       max_bytes      = "1GiB"
       topics         = ["*"]
@@ -62,7 +62,7 @@ ports {
 
   - `enabled` `(bool: true)` - The leader publishes the events into the
     stream `NORCA_EVENTS_<region>` and handles the push notices.
-  - `subject_prefix` `(string: "nomad")` - The first part of the subjects
+  - `subject_prefix` `(string: "norca")` - The first part of the subjects
     `<prefix>.<region>.<namespace>.<topic>` and `<prefix>.packs.pushed`. One or more
     tokens separated by dots.
   - `max_age` `(string: "72h")` - How long events are kept.

@@ -520,8 +520,8 @@ tokens may use every subject.
 
 ```hcl
 bus {
-  subscribe = ["nomad.*.>"]
-  publish   = ["nomad.packs.pushed", "nomad.packs.pushed.>"]
+  subscribe = ["norca.*.>"]
+  publish   = ["norca.packs.pushed", "norca.packs.pushed.>"]
 }
 ```
 

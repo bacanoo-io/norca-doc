@@ -36,7 +36,7 @@ job "docs" {
 - `env` `(bool: false)` - If true the workload identity will be available in the
   task's `NORCA_TOKEN` environment variable.
 - `file` `(bool: false)` - If true the workload identity will be available in
-  the task's filesystem via the path `secrets/nomad_token`. If the
+  the task's filesystem via the path `secrets/norca_token`. If the
   [`task.user`][taskuser] parameter is set, the token file will only be
   readable by that user. Otherwise the file is readable by everyone but is
   protected by parent directory permissions.

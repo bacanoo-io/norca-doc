@@ -68,7 +68,7 @@ $ curl -H "X-Nomad-Token: $NORCA_TOKEN" \
     "StreamDetails": [
       {
         "Name": "NORCA_EVENTS_global",
-        "Subjects": ["nomad.global.>"],
+        "Subjects": ["norca.global.>"],
         "Leader": "nomad-2.global",
         "Replicas": 3,
         "Storage": "File",

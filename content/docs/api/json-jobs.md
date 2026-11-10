@@ -481,7 +481,7 @@ The `Task` object supports the following keys:
 
   - `Env` - If `true` the `NORCA_TOKEN` environment variable will be set.
 
-  - `File` - If `true` the `secrets/nomad_token` file will be created.
+  - `File` - If `true` the `secrets/norca_token` file will be created.
 
 - `KillSignal` - Specifies a configurable kill signal for a task, where the
   default is `SIGINT`.

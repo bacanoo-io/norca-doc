@@ -126,7 +126,7 @@ operator returns.
 
 - `destination` `(string: <required>)` - The file, relative to the task directory and below `secrets/`,
   for example `secrets/db.env`. It must be a clean relative path, can't be the destination of another
-  secret or of a template, and can't be `secrets/nomad_token` or `secrets/vault_token`. The file is written
+  secret or of a template, and can't be `secrets/norca_token` or `secrets/vault_token`. The file is written
   atomically with mode `0400`. **Symlinks are not followed:** if `secrets/` or a directory below it on the way to
   the file is a symlink or junction, the delivery fails; a symlink at the destination is replaced.
 

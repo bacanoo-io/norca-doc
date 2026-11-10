@@ -61,7 +61,7 @@ on the bus only: without it the clients are not asked for usage.**
 | Item | Value |
 | --- | --- |
 | Stream | `NORCA_EVENTS_<region>` (file storage, S2 compression) |
-| Subjects | `<prefix>.<region>.<namespace>.<topic>`, e.g. `nomad.eu.default.Job`, `nomad.eu.shop.Allocation` (prefix `nomad` by default); events without a namespace (nodes, operator events) use `_`, e.g. `nomad.eu._.Node` |
+| Subjects | `<prefix>.<region>.<namespace>.<topic>`, e.g. `norca.eu.default.Job`, `norca.eu.shop.Allocation` (prefix `norca` by default); events without a namespace (nodes, operator events) use `_`, e.g. `norca.eu._.Node` |
 | Payload | the event JSON exactly as `/v1/event/stream` returns it, with a `Region` field in front |
 | Retention | `max_age` (72h) and `max_bytes` (1GiB, at most a quarter of `max_storage` by default), the oldest events dropped first |
 | Replicas | one per server, up to three |
@@ -105,7 +105,7 @@ whose policy has a [`bus` rule](/docs/other-specifications/acl-policy#bus-rules)
 ```hcl
 # events-reader policy: the events of region eu, live and from the stream
 bus {
-  subscribe = ["nomad.eu.>"]
+  subscribe = ["norca.eu.>"]
   publish = [
     "$JS.API.INFO",
     "$JS.API.STREAM.INFO.NORCA_EVENTS_eu",
@@ -120,20 +120,20 @@ bus {
 A JetStream consumer of the stream needs the `$JS.API` subjects of the
 stream and its consumers, and `$JS.ACK` to acknowledge messages; the replies
 come to the connection's own `_INBOX`, which is always allowed. A plain
-subscriber of the live events needs only `subscribe = ["nomad.eu.>"]`.
+subscriber of the live events needs only `subscribe = ["norca.eu.>"]`.
 **Wildcards are whole tokens, so the stream is named in full.**
 
 The namespace in the subject limits a live subscriber to the events of some
-namespaces: `subscribe = ["nomad.eu.shop.>"]` receives the events of the
-namespace `shop` only, `["nomad.*.*.Job"]` the job events of every region and
+namespaces: `subscribe = ["norca.eu.shop.>"]` receives the events of the
+namespace `shop` only, `["norca.*.*.Job"]` the job events of every region and
 namespace. A JetStream consumer reads whatever its filter subject selects, so
 **for a namespace-limited reader of the stream allow only consumers filtered
-to the namespace** (`$JS.API.CONSUMER.CREATE.NORCA_EVENTS_eu.*.nomad.eu.shop.>`)
+to the namespace** (`$JS.API.CONSUMER.CREATE.NORCA_EVENTS_eu.*.norca.eu.shop.>`)
 instead of `$JS.API.CONSUMER.*.NORCA_EVENTS_eu`.
 
 ```shell-session
 $ nats --server tls://server1:4649 --tlsca ca.pem --user "$TOKEN" \
-    sub 'nomad.eu.*.Job'
+    sub 'norca.eu.*.Job'
 ```
 
 ## Pack push notices
@@ -157,7 +157,7 @@ most once a minute on push notices.** Without the bus the server syncs the
 matching registries of its region directly.
 
 A pipeline with NATS tooling can also publish the notice itself with a token
-that has `bus { publish = ["nomad.packs.pushed"] }`.
+that has `bus { publish = ["norca.packs.pushed"] }`.
 
 Registry syncs on the events of other regions need the buses of the regions
 connected to each other; that comes with the gateways between regions.

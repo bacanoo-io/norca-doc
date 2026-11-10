@@ -35,7 +35,7 @@ task "example" {
     # Expose Workload Identity in NORCA_TOKEN env var
     env = true
 
-    # Expose Workload Identity in ${NORCA_SECRETS_DIR}/nomad_token file
+    # Expose Workload Identity in ${NORCA_SECRETS_DIR}/norca_token file
     file = true
   }
 
