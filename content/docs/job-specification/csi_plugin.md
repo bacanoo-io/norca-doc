@@ -67,6 +67,13 @@ csi_plugin {
   `VOLUME_CONDITION` also report whether a volume is abnormal. `0`
   turns it off. See [volume usage and condition](#volume-usage-and-condition).
 
+- `capacity_interval` `(duration: "5m")` - How often the leader asks a
+  `controller` or `monolith` plugin for the capacity of its storage (CSI
+  `GetCapacity`): for the whole storage and, for a plugin with topologies,
+  for every topology segment of its nodes. Only for plugins with the
+  `GET_CAPACITY` controller capability. `0` turns it off. See
+  [capacity](#capacity).
+
 ## Volume usage and condition
 
 When a node plugin can report it, **Norca knows how full each published
@@ -89,6 +96,25 @@ bus, so they need a client with
 reports (the metrics store or the built-in autoscaler enabled). The
 servers keep only the latest answer per volume and node, in memory, and
 only for volumes the node has a claim on.
+
+## Capacity
+
+For a controller plugin with `GET_CAPACITY`, **Norca knows how much room its
+storage has**:
+
+- `norca plugin status <id>` shows a **Capacity** table: bytes available and
+  the largest and smallest volume size, as the controller reported them at the
+  last `capacity_interval` (the leader asks, and keeps the answers in memory).
+- [`norca plugin capacity`](/docs/commands/plugin/capacity) asks once with the
+  parameters, capability and topology you give, e.g. for another storage
+  class.
+- The [metrics store](/docs/configuration/metrics_store#csi-capacity-metrics)
+  keeps the `norca.csi.*` gauges.
+- `norca volume create` asks first, with the parameters, capabilities and (for
+  a plugin with topologies) the one required topology of the volume, and
+  **refuses the volume** when the plugin reports less available than
+  `capacity_min`, or a largest volume size below it. If the plugin can not be
+  asked, the volume is created as before.
 
 > [!WARNING]
 > Plugins running as `node` or `monolith` require root

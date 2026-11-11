@@ -106,6 +106,9 @@ parameters {
   exact size, you should set `capacity_min` and `capacity_max` to the same
   value. Accepts human-friendly suffixes such as `"100GiB"`. This field may not
   be supported by all storage providers. Only allowed on **volume creation**.
+  A plugin with the `GET_CAPACITY` capability is asked first: the create is
+  refused when it reports less available, or a largest volume size below
+  `capacity_min` (see [capacity](/docs/job-specification/csi_plugin#capacity)).
 
 - <a id="capacity_max"></a>`capacity_max` `(string: <optional>)` - Option for requesting a maximum
   capacity, in bytes. The capacity of a volume may be the physical size of a

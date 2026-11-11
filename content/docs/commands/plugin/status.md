@@ -79,6 +79,14 @@ capability.
 - `-short`: Display short output. Used only when a single plugin is being queried.
   Drops verbose plugin allocation data from the output.
 
+A plugin whose controllers have the `GET_CAPACITY` capability shows a
+**Capacity** table: the bytes available and the largest and smallest volume
+size its controllers reported to the leader at the last
+[`capacity_interval`](/docs/job-specification/csi_plugin#capacity_interval),
+for the whole storage and, for a plugin with topologies, for every topology
+segment of its nodes. Ask with other parameters with
+[`plugin capacity`](/docs/commands/plugin/capacity).
+
 - `-verbose`: Show full information. Allocation create and modify times are
   shown in `yyyy/mm/dd hh:mm:ss` format.
 

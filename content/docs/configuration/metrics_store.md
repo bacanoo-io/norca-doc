@@ -274,6 +274,24 @@ the `GET_VOLUME_STATS` capability report usage, only plugins with
   no series.
 - A published volume has up to 12 series (6 metrics) per node.
 
+### CSI capacity metrics
+
+The leader asks the controllers of the CSI plugins with `GET_CAPACITY` for the
+capacity of their storage every
+[`capacity_interval`](/docs/job-specification/csi_plugin#capacity_interval) of
+the plugin (five minutes by default). Only the metrics store of the leader
+has these series.
+
+| Metric | Value |
+| --- | --- |
+| `norca.csi.capacity_available_bytes` | bytes available for new volumes |
+| `norca.csi.maximum_volume_size_bytes` | the largest size of a volume, when the plugin reports it |
+| `norca.csi.minimum_volume_size_bytes` | the smallest size of a volume, when the plugin reports it |
+
+- The labels are `plugin` and `topology`: empty for the whole storage, else the
+  topology segment of the nodes as sorted `key=value` pairs joined by commas.
+- An answer with an error has no point.
+
 ### Scheduler and control plane metrics
 
 Every sample interval each server also samples the scheduler and the control
@@ -428,6 +446,7 @@ The history and the series list of a metric need, when ACLs are enabled:
 | `norca.nodegroup.*` | `read` on the objects of `norca.io/NodeGroup` (a rule in `namespace "*"`) |
 | `norca.lb.*` | `read` on the objects of `norca.io/LoadBalancer` in the namespace of the label `ns` |
 | `norca.volume.*` | `csi-read-volume` in the namespace of the label `ns` |
+| `norca.csi.*` | `plugin:read` |
 
 Read the history, the list of series and the usage summary of a task group
 (the right-sizing view: average, 95th percentile and maximum against the

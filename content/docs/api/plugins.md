@@ -135,3 +135,48 @@ $ curl \
   }
 ]
 ```
+
+## Read Plugin Capacity
+
+Ask a controller of the plugin for the capacity of its storage (CSI
+`GetCapacity`, Norca). The plugin needs the `GET_CAPACITY` controller
+capability. Every field of the body is optional; without them the answer is
+for the whole storage. `Topology` is only allowed for a plugin with
+topologies. The capacity the leader asked last is in `Capacity` of
+[Read Plugin](#read-plugin).
+
+| Method | Path                                 | Produces           |
+| ------ | ------------------------------------ | ------------------ |
+| `PUT`  | `/v1/plugin/csi/:plugin_id/capacity` | `application/json` |
+
+| Blocking Queries | ACL Required  |
+| ---------------- | ------------- |
+| `NO`             | `plugin:read` |
+
+### Sample Payload
+
+```json
+{
+  "Parameters": { "tier": "fast" },
+  "Capabilities": [
+    { "AccessMode": "single-node-writer", "AttachmentMode": "file-system" }
+  ]
+}
+```
+
+### Sample Request
+
+```shell
+$ curl -X PUT --data @payload.json \
+    https://localhost:4646/v1/plugin/csi/example_plugin_id/capacity
+```
+
+### Sample Response
+
+```json
+{
+  "AvailableCapacity": 10737418240,
+  "MaximumVolumeSize": 5368709120,
+  "At": "2026-11-11T21:05:12.123Z"
+}
+```

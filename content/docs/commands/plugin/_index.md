@@ -17,7 +17,9 @@ Usage: `norca plugin <subcommand> [options]`
 Run `norca plugin <subcommand> -h` for help on that subcommand. The following
 subcommands are available:
 
+- [`plugin capacity`][capacity] - Ask a CSI plugin for the capacity of its storage
 - [`plugin status`][status] - Display status information about a plugin
 
 [csi]: https://github.com/container-storage-interface/spec
+[capacity]: /docs/commands/plugin/capacity/ 'Ask a CSI plugin for the capacity of its storage'
 [status]: /docs/commands/plugin/status/ 'Display status information about a plugin'

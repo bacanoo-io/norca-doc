@@ -19,7 +19,7 @@ in phases, each on its own, designed from the specification and Norca's own requ
 | [Volume usage and condition](#phase-2-volume-usage-and-condition) | `NodeGetVolumeStats`: usage and condition of every published volume, `norca.volume.*` metrics, `CSIVolume` events | Built, lab tested, in review |
 | [Plugins without isolation](#plugins-without-file-system-isolation) | A raw_exec plugin gets the host paths to stage and publish; raw_exec `allowed_devices` (e.g. `/dev/fuse`) | Built, lab tested, in review |
 | [SeaweedFS](#seaweedfs-driver-and-packs) | The SeaweedFS CSI driver with volume conditions, the `seaweedfs` and `seaweedfs-csi` packs | Built, lab tested, in review |
-| [Capacity](#later-phases) | `GetCapacity`: a periodic capacity metric, `plugin capacity`, a check before `volume create` | Planned |
+| [Capacity](#phase-3-capacity) | `GetCapacity`: a periodic capacity metric, `plugin capacity`, a check before `volume create` | Built, in review |
 | [Live volume state](#later-phases) | `ControllerGetVolume`: `volume status -live`, drift events, controller-side conditions | Planned |
 | [Access modes](#later-phases) | `single-node-single-writer`, `single-node-multi-writer`, `VOLUME_MOUNT_GROUP` | Planned |
 | [Newer specification](#later-phases) | CSI 1.9 and later | A separate decision |
@@ -46,6 +46,20 @@ in phases, each on its own, designed from the specification and Norca's own requ
   [metrics store](/docs/configuration/metrics_store#volume-metrics), and the `VolumeAbnormal` and
   `VolumeRecovered` events of the `CSIVolume` [topic](/docs/api/events#additional-topics).
 - **No reaction:** an abnormal volume is reported, the allocations keep running.
+
+## Phase 3: capacity
+
+- Every [`capacity_interval`](/docs/job-specification/csi_plugin#capacity_interval)
+  (5 minutes by default, `0` off) the leader asks a controller with `GET_CAPACITY` for the capacity
+  of the whole storage and, for a plugin with topologies, of every topology segment of its nodes.
+  The answers stay in the memory of the leader: `plugin status` shows them and the `norca.csi.*`
+  gauges keep their history.
+- [`norca plugin capacity`](/docs/commands/plugin/capacity) asks once with the parameters,
+  capability and topology you give.
+- `volume create` asks first with the volume's parameters, capabilities and required topology, and
+  refuses a volume the storage can not hold: less available than `capacity_min`, or a largest volume
+  size below it. A topology is only sent to a plugin with `VOLUME_ACCESSIBILITY_CONSTRAINTS`, as
+  the specification requires.
 
 ## Plugins without file system isolation
 
@@ -92,9 +106,6 @@ the run of 2026-11-11 passed all 42 checks:
 
 ## Later phases
 
-- **Capacity:** `GetCapacity` in the plugin client, a capacity metric every `csi_plugin {
-  capacity_interval }` (5 minutes proposed), `norca plugin capacity`, and a check before
-  `volume create`.
 - **Live volume state:** `ControllerGetVolume` for `norca volume status -live`, a drift event when the
   storage disagrees with Norca, and the conditions controllers report.
 - **Access modes:** the single-node modes of CSI 1.5 and `VOLUME_MOUNT_GROUP`.
