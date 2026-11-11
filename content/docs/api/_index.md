@@ -625,7 +625,7 @@ no policy will suit all clients' needs, these consistency modes allow the user
 to have the ultimate say in how to balance the trade-offs inherent in a
 distributed system.
 
-The two read modes are:
+The three read modes are:
 
 - `default` - If not specified, the default is **strongly consistent in almost all
   cases**. However, there is a small window in which a new leader may be elected
@@ -641,7 +641,19 @@ The two read modes are:
   values. Since this mode allows reads without a leader, a cluster that is
   unavailable will still be able to respond to queries.
 
-To switch these modes, use the `stale` query parameter on requests.
+- `consistent` (Norca) - This mode is **linearizable**: the result includes
+  every write acknowledged before the request started. Followers forward the
+  read to the leader, and the leader confirms with a quorum of servers that it
+  is still the leader before it answers. The trade-off is one extra round trip
+  from the leader to the other servers per read; a leader that lost its quorum
+  answers with an error instead of possibly stale values. Use it for reads
+  that must not miss a recent write, for example before acting on a lock,
+  a token or a secret.
+
+To switch these modes, use the `stale` or the `consistent` query parameter on
+requests (`?consistent` or `?consistent=true`). The two cannot be combined: a
+request with both is answered with `400 Bad Request`. In the Go API client,
+set `QueryOptions.AllowStale` or `QueryOptions.Consistent`.
 
 To support bounding the acceptable staleness of data, responses provide the
 `X-Nomad-LastContact` header containing the time in milliseconds that a server
