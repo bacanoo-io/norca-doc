@@ -12,6 +12,7 @@ and compared with the same measurements after it.
 | Document | Covers | Status |
 | --- | --- | --- |
 | [Storage update](/docs/technology-updates/storage-update) | Baseline performance test; MessagePack kept; the `bacanoo-io/raft` fork updated; Badger as the default store of the raft log and the client state, with profiles; BoltDB as an option | Done |
+| [Raft protocol](/docs/technology-updates/raft) | The raft fork and its store, protocol 3 only, consistent reads, the Raft metrics of every server; the "v4" extension evaluated and not taken | Done |
 
 > [!NOTE]
 > A plan here describes intended work. Until its status says otherwise, Norca runs on the libraries
