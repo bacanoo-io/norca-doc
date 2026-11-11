@@ -14,6 +14,11 @@ the CSI volume watcher; the third round the controller SDK. This section describ
 verdict, the fix, the test and the commit of every finding, so that each fix
 can be traced to the code.
 
+Features whose Nomad counterpart was Enterprise only (multiregion deployments,
+server roles, standby failover and the work of observers) were not fixes but
+new development from Norca's own design; their rules, environment and commits
+are on [Clean room development](/docs/clean-room/development).
+
 ## Process
 
 ### Finding the defects

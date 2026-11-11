@@ -50,6 +50,8 @@ Nomad v1.6.5 goes into the repository together with the upstream git history up 
 
 **Enterprise-only features: multiregion deployments.** Nomad v1.6.5 contains the public side of multiregion jobs: the `multiregion` block of the jobspec, the `Multiregion`, `MultiregionStrategy` and `MultiregionRegion` structures with their plan diff, the HTTP API, the CLI commands and the region forwarding of the RPC layer. The behaviour itself was Enterprise only and was never published. In its place the MPL tree has stubs, built with the `!ent` tag, that do nothing or return an error (`job_endpoint_oss.go`, `structs/structs_oss.go`, `deploymentwatcher/multiregion_oss.go`). Norca replaced these stubs with its own implementation: registration in every region, the rollout across regions with `max_parallel` and `on_failure`, multiregion pack releases and the region timeline of the UI. The files, their headers and what the similarity audit covers are listed in the [Multiregion deployments](https://github.com/bacanoo-io/norca/blob/main/CLEAN_ROOM.md#multiregion-deployments) section of `CLEAN_ROOM.md` in the Norca repository.
 
+**Enterprise-only features: server roles, standby servers and observers.** Nomad v1.6.5 contains only the public side of non-voting servers: the `non_voting_server` agent option, the `nonvoter` Serf tag, the bootstrap that counts voters only, and the `!ent` stubs of `nomad/autopilot_oss.go`, which return autopilot's default promoter. Non-voting servers, redundancy zones and the enterprise autopilot were Enterprise only and were never published. Norca designed server roles (`voter`, `standby`, `observer`), the standby failover of autopilot, backups taken by observers and the job checks on the receiving server from its own requirements, on the MPL code of Raft and `raft-autopilot` (2026-11-11, four phases). The sources, the commits, the files and what the similarity audit covers are on [Clean room development](/docs/clean-room/development) and in the [Server roles and standby servers](https://github.com/bacanoo-io/norca/blob/main/CLEAN_ROOM.md#server-roles-and-standby-servers) section of `CLEAN_ROOM.md`.
+
 ## File-level license marking
 
 The repository follows the REUSE specification (reuse.software). The license texts are in the `LICENSES/` directory, every file gets an SPDX header, or `REUSE.toml` describes its license. `reuse lint` runs in CI and fails the build on incorrect marking.
@@ -181,7 +183,7 @@ The script needs git, bash and (for the last check) Go. It fetches the upstream 
 
 <!-- REUSE-IgnoreEnd -->
 
-Result on 2026-11-10 (`main` at `6519a59f8`): every check passes; 45 BUSL-1.1 files left out of the import, 3943 modified upstream files, each with a Norca copyright line.
+Result on 2026-11-11 (`main` at `f194f1920`): every check passes; 45 BUSL-1.1 files left out of the import, 3966 modified upstream files, each with a Norca copyright line.
 
 The other license checks run in CI (`.github/workflows/compliance.yml`) and can be run locally as well: `reuse lint` at the repository root (REUSE marking), `make check-notices` in `norca/` (third-party notices and allowed licenses), and `go-licenses check ./...` in each Go module. The `snippet-scan` job checks the files added or modified by each push and pull request with [SCANOSS](https://www.scanoss.com) against its open source knowledge base (only file fingerprints are sent) and fails on a file or snippet match under a GPL, AGPL, LGPL, SSPL, EUPL, OSL or CC-BY-SA license; locally: `pip install scanoss`, `scanoss-py scan -o results.json <directory>`.
 
