@@ -162,11 +162,20 @@ Attachment Mode      = file-system
 Mount Options        = fs_type: ext4 flags: ro
 Namespace            = default
 
+Node Usage
+Node ID   Used     Available  Capacity  Inodes Used  Inodes Free  Condition  Reported
+28be17d5  1.2 GiB  8.6 GiB    9.8 GiB   1024         654336       normal     2026-11-11T16:40:12Z
+
 Allocations
 ID        Node ID   Access Mode   Task Group  Version  Desired  [...]
 b00fa322  28be17d5  write         csi         0        run
 ```
 
+The **Node Usage** table is shown when a node plugin reports the usage of the
+volume (see [volume usage and condition][usage]); `-` is a value the plugin
+does not report.
+
 [csi]: https://github.com/container-storage-interface/spec
 [csi_plugin]: /docs/job-specification/csi_plugin/
 [`volume create`]: /docs/commands/volume/create/
+[usage]: /docs/job-specification/csi_plugin/#volume-usage-and-condition

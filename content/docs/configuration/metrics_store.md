@@ -249,6 +249,31 @@ one second by default), its maximum the largest one.
 - **The statistics of devices (GPUs) are not
   stored.**
 
+### Volume metrics
+
+The clients report the usage of the CSI volumes their node plugins have
+published, as the plugins answer `NodeGetVolumeStats` (every
+[`stats_interval`](/docs/job-specification/csi_plugin#stats_interval) of the
+plugin, one minute by default), with their usage report. Only plugins with
+the `GET_VOLUME_STATS` capability report usage, only plugins with
+`VOLUME_CONDITION` a condition.
+
+| Metric | Value |
+| --- | --- |
+| `norca.volume.used_bytes` | bytes used on the volume |
+| `norca.volume.available_bytes` | bytes available |
+| `norca.volume.capacity_bytes` | bytes in total |
+| `norca.volume.inodes_used` | inodes used |
+| `norca.volume.inodes_free` | inodes free |
+| `norca.volume.abnormal` | 1 while the plugin reports the volume abnormal, else 0 |
+
+- The labels are `ns`, `volume` (the volume ID), `plugin` and `node` (the node
+  ID). A server stores a value only for a volume the node has a claim on, with
+  the plugin of the volume.
+- A value the plugin does not report (for example inodes of a block volume) has
+  no series.
+- A published volume has up to 12 series (6 metrics) per node.
+
 ### Scheduler and control plane metrics
 
 Every sample interval each server also samples the scheduler and the control
@@ -385,7 +410,8 @@ Every sample interval each server samples the
 The label `group` is the name of the NodeGroup object. **No series is stored per
 allocation;** apart from the [node metrics](#node-metrics), the number of series
 grows with the namespaces, the node groups, the load balancers, the object
-kinds, the backup destinations and the admission webhooks.
+kinds, the backup destinations, the admission webhooks and the published CSI
+volumes.
 
 ### Access
 
@@ -401,6 +427,7 @@ The history and the series list of a metric need, when ACLs are enabled:
 | `norca.backup.*` | `backup:read` |
 | `norca.nodegroup.*` | `read` on the objects of `norca.io/NodeGroup` (a rule in `namespace "*"`) |
 | `norca.lb.*` | `read` on the objects of `norca.io/LoadBalancer` in the namespace of the label `ns` |
+| `norca.volume.*` | `csi-read-volume` in the namespace of the label `ns` |
 
 Read the history, the list of series and the usage summary of a task group
 (the right-sizing view: average, 95th percentile and maximum against the

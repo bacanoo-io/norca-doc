@@ -57,6 +57,36 @@ csi_plugin {
   CSI plugin. Must be a duration value such as `30s` or `2m`.
   Defaults to `30s` if not set.
 
+- `stats_interval` `(duration: "1m")` - How often the client asks a
+  `node` or `monolith` plugin for the usage of the volumes it has
+  published on the node (CSI `NodeGetVolumeStats`). Only for plugins
+  with the `GET_VOLUME_STATS` node capability; plugins with
+  `VOLUME_CONDITION` also report whether a volume is abnormal. `0`
+  turns it off. See [volume usage and condition](#volume-usage-and-condition).
+
+## Volume usage and condition
+
+When a node plugin can report it, **Norca knows how full each published
+volume is and whether the plugin considers it healthy**:
+
+- `norca volume status <id>` shows a **Node Usage** table: bytes used,
+  available and in total, inodes used and free, the condition
+  (`normal`, `abnormal: <message>`, or the error of the last request)
+  and when the node last asked the plugin.
+- The [metrics store](/docs/configuration/metrics_store#volume-metrics)
+  keeps the `norca.volume.*` gauges.
+- The `CSIVolume` [event topic](/docs/api/events#additional-topics) has a
+  `VolumeAbnormal` event when a plugin reports a volume abnormal, and a
+  `VolumeRecovered` event when it is normal again or no longer published
+  on that node.
+
+The client sends the latest answers with its usage report on the system
+bus, so they need a client with
+[`usage`](/docs/configuration/client) on and servers that ask for the
+reports (the metrics store or the built-in autoscaler enabled). The
+servers keep only the latest answer per volume and node, in memory, and
+only for volumes the node has a claim on.
+
 > [!WARNING]
 > Plugins running as `node` or `monolith` require root
 > privileges (or `CAP_SYS_ADMIN` on Linux) to mount volumes on the

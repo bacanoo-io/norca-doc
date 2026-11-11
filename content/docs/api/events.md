@@ -432,6 +432,7 @@ path-like topics, and resumable subscriptions. See
 | `ServiceIntention` | Service intention                                        | `namespace:read-job`                                        |
 | `Backup`           | Backup or restore                                        | backup read                                                 |
 | `Server`           | A standby server promoted or stepped back                | `operator:read`                                             |
+| `CSIVolume`        | A change of the condition of a CSI volume on a node      | `namespace:csi-read-volume`                                 |
 
 The keys of `Variables` and `Secret` events are paths, and the keys of
 `CustomObject` events are `group/Kind` and `group/Kind/name` references. For
@@ -453,9 +454,16 @@ these topics a `filter_key` containing `*` is a glob pattern, for example
 | `ServiceIntention` | `ServiceIntentionUpserted`, `ServiceIntentionDeleted`                                                  |
 | `Backup`           | `BackupCompleted`, `BackupFailed`, `BackupUpdated`, `BackupDeleted`, `BackupRestoreRequested`, `BackupRestoreApproved`, `BackupRestoreStarted`, `BackupRestoreFinished`, `BackupRestoreRejected` |
 | `Server`           | `StandbyPromoted`, `StandbyDemoted`                                                                    |
+| `CSIVolume`        | `VolumeAbnormal`, `VolumeRecovered`                                                                    |
 
-`Scaling`, `Server`, `JobAdmissionDenied` and `VariableAdmissionDenied` events
-are **published only by the leader**.
+`Scaling`, `Server`, `CSIVolume`, `JobAdmissionDenied` and
+`VariableAdmissionDenied` events are **published only by the leader**.
+
+The key of a `CSIVolume` event is the volume ID, its filter keys the node ID and
+the plugin ID. The payload has `Namespace`, `VolumeID`, `PluginID`, `NodeID`,
+`Abnormal`, `Message` (from the plugin) and `At`. `VolumeRecovered` also comes
+when a volume reported abnormal is no longer published on the node. See
+[volume usage and condition](/docs/job-specification/csi_plugin#volume-usage-and-condition).
 
 The key of a `Server` event is the Raft ID of the server, its filter key the
 node name. The payload has `ID`, `Name`, `Address`, `Datacenter`, `Role`,
