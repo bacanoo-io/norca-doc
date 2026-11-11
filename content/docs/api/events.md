@@ -454,7 +454,7 @@ these topics a `filter_key` containing `*` is a glob pattern, for example
 | `ServiceIntention` | `ServiceIntentionUpserted`, `ServiceIntentionDeleted`                                                  |
 | `Backup`           | `BackupCompleted`, `BackupFailed`, `BackupUpdated`, `BackupDeleted`, `BackupRestoreRequested`, `BackupRestoreApproved`, `BackupRestoreStarted`, `BackupRestoreFinished`, `BackupRestoreRejected` |
 | `Server`           | `StandbyPromoted`, `StandbyDemoted`                                                                    |
-| `CSIVolume`        | `VolumeAbnormal`, `VolumeRecovered`                                                                    |
+| `CSIVolume`        | `VolumeAbnormal`, `VolumeRecovered`, `VolumeDrift`                                                     |
 
 `Scaling`, `Server`, `CSIVolume`, `JobAdmissionDenied` and
 `VariableAdmissionDenied` events are **published only by the leader**.
@@ -462,8 +462,15 @@ these topics a `filter_key` containing `*` is a glob pattern, for example
 The key of a `CSIVolume` event is the volume ID, its filter keys the node ID and
 the plugin ID. The payload has `Namespace`, `VolumeID`, `PluginID`, `NodeID`,
 `Abnormal`, `Message` (from the plugin) and `At`. `VolumeRecovered` also comes
-when a volume reported abnormal is no longer published on the node. See
+when a volume reported abnormal is no longer published on the node. A condition
+the controller reports (not a node) has an empty `NodeID`. See
 [volume usage and condition](/docs/job-specification/csi_plugin#volume-usage-and-condition).
+
+A `VolumeDrift` event (filter key: the plugin ID) has `Namespace`, `VolumeID`,
+`PluginID`, `MissingExternalNodeIDs` (claimed nodes the controller does not
+list as published, by their external ID), `ExtraExternalNodeIDs` (nodes it
+lists without a claim, for information) and `At`. See
+[live volume state](/docs/job-specification/csi_plugin#live-volume-state).
 
 The key of a `Server` event is the Raft ID of the server, its filter key the
 node name. The payload has `ID`, `Name`, `Address`, `Datacenter`, `Role`,

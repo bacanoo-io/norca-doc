@@ -20,7 +20,7 @@ in phases, each on its own, designed from the specification and Norca's own requ
 | [Plugins without isolation](#plugins-without-file-system-isolation) | A raw_exec plugin gets the host paths to stage and publish; raw_exec `allowed_devices` (e.g. `/dev/fuse`) | Built, lab tested, in review |
 | [SeaweedFS](#seaweedfs-driver-and-packs) | The SeaweedFS CSI driver with volume conditions, the `seaweedfs` and `seaweedfs-csi` packs | Built, lab tested, in review |
 | [Capacity](#phase-3-capacity) | `GetCapacity`: a periodic capacity metric, `plugin capacity`, a check before `volume create` | Built, in review |
-| [Live volume state](#later-phases) | `ControllerGetVolume`: `volume status -live`, drift events, controller-side conditions | Planned |
+| [Live volume state](#phase-4-live-volume-state) | `ControllerGetVolume`: `volume status -live`, drift events, controller-side conditions | Built, in review |
 | [Access modes](#later-phases) | `single-node-single-writer`, `single-node-multi-writer`, `VOLUME_MOUNT_GROUP` | Planned |
 | [Newer specification](#later-phases) | CSI 1.9 and later | A separate decision |
 
@@ -60,6 +60,17 @@ in phases, each on its own, designed from the specification and Norca's own requ
   refuses a volume the storage can not hold: less available than `capacity_min`, or a largest volume
   size below it. A topology is only sent to a plugin with `VOLUME_ACCESSIBILITY_CONSTRAINTS`, as
   the specification requires.
+
+## Phase 4: live volume state
+
+- `volume status -live` asks the controller (`GET_VOLUME`) at once and shows its view next to the
+  claims: the published nodes, claimed nodes it does not list, nodes it lists without a claim, its
+  condition.
+- The leader asks every 5 minutes per volume. A claimed node the controller does not list
+  (`LIST_VOLUMES_PUBLISHED_NODES`), seen twice in a row, publishes `VolumeDrift`; nodes listed without
+  a claim are only shown, because the specification allows them. A change of the controller's
+  condition (`VOLUME_CONDITION`) publishes `VolumeAbnormal` or `VolumeRecovered` without a node.
+- Nothing is changed by Norca; the answers stay in the leader's memory.
 
 ## Plugins without file system isolation
 
@@ -106,7 +117,5 @@ the run of 2026-11-11 passed all 42 checks:
 
 ## Later phases
 
-- **Live volume state:** `ControllerGetVolume` for `norca volume status -live`, a drift event when the
-  storage disagrees with Norca, and the conditions controllers report.
 - **Access modes:** the single-node modes of CSI 1.5 and `VOLUME_MOUNT_GROUP`.
 - **CSI 1.9 and later** (group snapshots, modify volume) is a separate decision.

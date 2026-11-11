@@ -97,6 +97,12 @@ namespace.
 
 - `-t`: Format and display volumes using a Go template.
 
+- `-live`: Ask the controller of the volume for its state at once (CSI
+  `ControllerGetVolume`; plugins with the `GET_VOLUME` controller capability)
+  and show it in the **Controller State** section. Without it the section
+  shows the state the leader asked last (every 5 minutes). See
+  [live volume state][live].
+
 ## Examples
 
 List of all volumes:
@@ -179,3 +185,4 @@ does not report.
 [csi_plugin]: /docs/job-specification/csi_plugin/
 [`volume create`]: /docs/commands/volume/create/
 [usage]: /docs/job-specification/csi_plugin/#volume-usage-and-condition
+[live]: /docs/job-specification/csi_plugin/#live-volume-state

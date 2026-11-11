@@ -116,6 +116,27 @@ storage has**:
   `capacity_min`, or a largest volume size below it. If the plugin can not be
   asked, the volume is created as before.
 
+## Live volume state
+
+For a controller plugin with `GET_VOLUME`, **Norca compares the state of the
+storage with its claims**:
+
+- `norca volume status -live <id>` asks the controller at once and shows a
+  **Controller State** section: the nodes the volume is published on, the
+  claimed nodes the controller does not list (**Claimed, Not Published**), the
+  nodes it lists without a claim (**Published, Not Claimed**), and the
+  controller's condition. Without `-live` the section shows the leader's last
+  check.
+- The leader asks every 5 minutes per volume. With
+  `LIST_VOLUMES_PUBLISHED_NODES`, a claimed node the controller does not list,
+  seen in two checks in a row (the second 30 seconds later), publishes a
+  `VolumeDrift` event naming the node. Nodes the controller lists without a
+  claim are only shown: the CSI specification allows a controller to list nodes
+  a volume is not published to.
+- With `VOLUME_CONDITION` of the controller a change of its condition publishes
+  `VolumeAbnormal` or `VolumeRecovered` without a node.
+- **Nothing is changed:** no claim is released and no allocation is stopped.
+
 > [!WARNING]
 > Plugins running as `node` or `monolith` require root
 > privileges (or `CAP_SYS_ADMIN` on Linux) to mount volumes on the
