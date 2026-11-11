@@ -21,7 +21,7 @@ in phases, each on its own, designed from the specification and Norca's own requ
 | [SeaweedFS](#seaweedfs-driver-and-packs) | The SeaweedFS CSI driver with volume conditions, the `seaweedfs` and `seaweedfs-csi` packs | Built, lab tested, in review |
 | [Capacity](#phase-3-capacity) | `GetCapacity`: a periodic capacity metric, `plugin capacity`, a check before `volume create` | Built, in review |
 | [Live volume state](#phase-4-live-volume-state) | `ControllerGetVolume`: `volume status -live`, drift events, controller-side conditions | Built, in review |
-| [Access modes](#later-phases) | `single-node-single-writer`, `single-node-multi-writer`, `VOLUME_MOUNT_GROUP` | Planned |
+| [Access modes](#phase-5-access-modes-and-mount-group) | `single-node-single-writer`, `single-node-multi-writer`, `VOLUME_MOUNT_GROUP` | Built, in review |
 | [Newer specification](#later-phases) | CSI 1.9 and later | A separate decision |
 
 ## Phase 1: specification rules
@@ -72,6 +72,16 @@ in phases, each on its own, designed from the specification and Norca's own requ
   condition (`VOLUME_CONDITION`) publishes `VolumeAbnormal` or `VolumeRecovered` without a node.
 - Nothing is changed by Norca; the answers stay in the leader's memory.
 
+## Phase 5: access modes and mount group
+
+- The single-node modes of CSI 1.5: `single-node-single-writer` (one allocation) and
+  `single-node-multi-writer` (any number of allocations, all on one node: the claims and the
+  scheduler keep them on the node of the first claim). Only for plugins with
+  `SINGLE_NODE_MULTI_WRITER`: the scheduler places them only on such nodes, and volume
+  registration and creation refuse them for other plugins.
+- `mount_options { mount_group }` in the `volume` block of a job, passed as `volume_mount_group` to
+  `NodeStage` and `NodePublish`; only on nodes whose plugin has `VOLUME_MOUNT_GROUP`.
+
 ## Plugins without file system isolation
 
 A plugin task with its own file system gets the plugin directory of the host mounted at
@@ -117,5 +127,4 @@ the run of 2026-11-11 passed all 42 checks:
 
 ## Later phases
 
-- **Access modes:** the single-node modes of CSI 1.5 and `VOLUME_MOUNT_GROUP`.
 - **CSI 1.9 and later** (group snapshots, modify volume) is a separate decision.

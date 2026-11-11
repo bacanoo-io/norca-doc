@@ -34,9 +34,14 @@ for each capability you intend to use in a job's [`volume`] block.**
 - `access_mode` `(string: <required>)` - Defines whether a volume should be
 available concurrently. Can be one of `"single-node-reader-only"`,
 `"single-node-writer"`, `"multi-node-reader-only"`,
-`"multi-node-single-writer"`, or `"multi-node-multi-writer"`. Most CSI plugins
+`"multi-node-single-writer"`, `"multi-node-multi-writer"`,
+`"single-node-single-writer"` or `"single-node-multi-writer"`. Most CSI plugins
 support only single-node modes. Consult the documentation of the storage
-provider and CSI plugin.
+provider and CSI plugin. The last two (CSI 1.5) need a plugin with the
+`SINGLE_NODE_MULTI_WRITER` capability; registering or creating a volume with
+them for another plugin is refused. See the
+[`access_mode`](/docs/job-specification/volume) of the `volume`
+block.
 
 - `attachment_mode` `(string: <required>)` - The storage API that will be used
 by the volume. Most storage providers will support `"file-system"`, to mount

@@ -88,8 +88,19 @@ The following fields are only valid for volumes with `type = "csi"`:
   must exactly match one of the volume's `capability` blocks.** Can be one of
   `"single-node-reader-only"`, `"single-node-writer"`,
   `"multi-node-reader-only"`, `"multi-node-single-writer"`, or
-  `"multi-node-multi-writer"`. **Most CSI plugins support only single-node
+  `"multi-node-multi-writer"`, `"single-node-single-writer"` or
+  `"single-node-multi-writer"`. **Most CSI plugins support only single-node
   modes.** Consult the documentation of the storage provider and CSI plugin.
+
+  The single-node modes of CSI 1.5 need a plugin with the
+  `SINGLE_NODE_MULTI_WRITER` capability (Norca places such a volume only on
+  nodes whose plugin has it, and refuses to register or create it for a plugin
+  without it):
+
+  - `"single-node-single-writer"`: one allocation reads or writes the volume.
+  - `"single-node-multi-writer"`: any number of allocations read and write it,
+    all on one node; once it is claimed, more allocations are placed only on
+    the node of the claims.
 
 - `attachment_mode` `(string: <required>)` - The storage API that will be used
   by the volume. The `access_mode` and `attachment_mode` together must exactly
@@ -106,6 +117,11 @@ The following fields are only valid for volumes with `type = "csi"`:
 
   - `fs_type`: file system type (ex. `"ext4"`)
   - `mount_flags`: the flags passed to `mount` (ex. `["ro", "noatime"]`)
+  - `mount_group`: the group (a GID, ex. `"1000"`) the node plugin makes the
+    volume accessible to (CSI `volume_mount_group`), so that a task that runs
+    as that group can write to it. Only for node plugins with the
+    `VOLUME_MOUNT_GROUP` capability: Norca places the allocation only on nodes
+    whose plugin has it. Only here, not in the volume specification.
 
 ## Volume Interpolation
 
