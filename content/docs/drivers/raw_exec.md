@@ -122,6 +122,24 @@ client {
   Norca process. **Using a cgroup significantly reduces Norca's CPU
   usage when collecting process metrics.**
 
+- `allowed_devices` `(list(string): [])` - Devices the tasks may use
+  besides the default ones (`null`, `zero`, `full`, `random`, `urandom`,
+  `tty`, `console`, `ptmx`, `pts`). With cgroups v2 every task is in a
+  cgroup that only lets it open these devices, even when it runs as root;
+  list more by path, e.g. `["/dev/fuse"]` for FUSE mounts (the SeaweedFS
+  CSI driver), or `["*"]` for every device. Paths must be under `/dev`. With
+  cgroups v1 or `no_cgroups = true` there is no device filter and the
+  setting changes nothing.
+
+  ```hcl
+  plugin "raw_exec" {
+    config {
+      enabled         = true
+      allowed_devices = ["/dev/fuse"]
+    }
+  }
+  ```
+
 ## Client Options
 
 > [!WARNING]

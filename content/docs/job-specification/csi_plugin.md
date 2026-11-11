@@ -50,7 +50,10 @@ csi_plugin {
   path inside the container where the plugin will be instructed to
   stage and publish volumes. This field is typically not required.
   Refer to your CSI plugin's documentation for details. **This can not
-  be a subdirectory of `mount_dir`.**
+  be a subdirectory of `mount_dir`.** A plugin task without its own
+  file system (`raw_exec`) gets no mounts: it is told to stage and
+  publish under the plugin directory of the host instead, so a plugin
+  can run as a raw_exec task without a privileged container.
 
 - `health_timeout` `(duration: <optional>)` - The duration that
   the plugin supervisor will wait before restarting an unhealthy
