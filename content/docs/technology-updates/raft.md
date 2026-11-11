@@ -117,6 +117,12 @@ without a vote. Norca's own autopilot promoter decides the votes from the roles:
 - a voter restarted with another role is demoted, one per round and only while a `voter`-role server
   keeps the vote; a leader in that state hands over the leadership first.
 
+Every server that is not the leader, observers included, takes work off the leader at the edge: it
+rejects a job registration that fails the static validation before forwarding it, runs the dry run of
+the placements on its own state (`dry_run_capacity` of
+[job registration and plan](/docs/api/jobs#create-job)), and limits the HTTP requests per ACL token
+([`limits`](/docs/configuration) `token_*`).
+
 `norca operator raft list-peers` and the autopilot health API show the role of every server. Every
 standby promotion and step back is an event of the `Server` topic of the
 [event stream](/docs/api/events), and the leader's metrics store keeps

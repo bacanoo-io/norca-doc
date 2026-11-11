@@ -96,6 +96,13 @@ flowchart TB
   [event stream](/docs/features/event-stream): namespace, job, operation, the
   submitter, the controller (`policy` or `webhook`), its name and the message.
   **`-policy-override` of `norca job run` does not bypass admission policies.**
+- **Where the checks run.** The admission policies and the webhooks run on the
+  leader of the region, which publishes their denials. A follower or an
+  [observer](/docs/configuration/server#role) that receives a job registration
+  first runs only the static checks of the job (the built-in mutators without
+  the webhooks, then the job validation) and rejects an invalid job without
+  asking the leader; it skips this when a mutating webhook applies to the
+  namespace, because the webhook may complete the job.
 
 ## Example
 

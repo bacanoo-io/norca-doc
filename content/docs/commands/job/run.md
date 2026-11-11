@@ -115,6 +115,11 @@ that volume.
   will be output, which can be used to examine the evaluation using the
   [eval status] command.
 
+- `-dry-run-capacity`: The server that receives the job runs a dry run of its
+  placements on its own copy of the state before the job goes to the leader,
+  and the command prints the task groups that would not be placed now. It does
+  not stop the submission: the leader schedules the job as usual.
+
 - `-eval-priority`: Override the priority of the evaluations produced as a result
   of this job submission. By default, this is set to the priority of the job.
 

@@ -131,6 +131,13 @@ The table below shows this endpoint's support for
   the register only occurs if the job is new. This paradigm allows check-and-set
   style job updating.
 
+- `DryRunCapacity` `(bool: false)` - The server that receives the request runs
+  a dry run of the placements on its own copy of the state before the job goes
+  to the leader, and returns the task groups that would not be placed now in
+  `CapacityCheck` (`Server`, `Index`, `FailedTGAllocs`, `Error`). It does not
+  bind: the leader schedules the job as usual. Also the query parameter
+  `?dry_run_capacity=true` (Norca).
+
 - `EvalPriority` `(int: 0)` - Override the priority of the evaluations produced
   as a result of this job registration. By default, this is set to the priority
   of the job.
@@ -1702,6 +1709,13 @@ The table below shows this endpoint's support for
   the register only occurs if the job is new. This paradigm allows check-and-set
   style job updating.
 
+- `DryRunCapacity` `(bool: false)` - The server that receives the request runs
+  a dry run of the placements on its own copy of the state before the job goes
+  to the leader, and returns the task groups that would not be placed now in
+  `CapacityCheck` (`Server`, `Index`, `FailedTGAllocs`, `Error`). It does not
+  bind: the leader schedules the job as usual. Also the query parameter
+  `?dry_run_capacity=true` (Norca).
+
 - `EvalPriority` `(int: 0)` - Override the priority of the evaluations produced
   as a result of this job update. By default, this is set to the priority of
   the job.
@@ -2032,6 +2046,11 @@ The table below shows this endpoint's support for
 - `Diff` `(bool: false)` - Specifies whether the diff structure between the
   submitted and server side version of the job should be included in the
   response.
+
+- `DryRunCapacity` `(bool: false)` - Runs the plan on the server that receives
+  it, on its own copy of the state, instead of the leader. The placements may
+  be a little behind the leader's state. Also the query parameter
+  `?dry_run_capacity=true` (Norca).
 
 - `PolicyOverride` `(bool: false)` - Accepted for compatibility and ignored:
   [admission policies](/docs/features/admission-control) cannot be overridden.

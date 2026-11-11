@@ -254,6 +254,21 @@ consul {
     lowered in the future when streaming RPCs no longer require their own TCP
     connection.
 
+  - `token_read_requests_per_second` and `token_write_requests_per_second`
+    `(int: 0)` - Limit the read (`GET`, `HEAD`) and the write requests of one
+    ACL token on the HTTP API of a **server** (Norca). Each token has its own
+    limit, by its accessor ID; **requests without a known ACL token (anonymous
+    requests, unknown or expired tokens, workload identities) share one
+    limit**, so random tokens do not get one each. A request over the limit
+    gets `429 Too Many Requests` with a `Retry-After` header in seconds, and
+    the counter `nomad.http.rate_limited` (label `kind`: `read` or `write`)
+    grows. `0` disables the limit. Client agents are not limited. The limits
+    apply from the start of the agent.
+
+  - `token_read_burst` and `token_write_burst` `(int: 0)` - The requests a
+    token may send at once above its rate. `0` is the rate itself (at least
+    1).
+
 - `log_level` `(string: "INFO")` - Specifies the verbosity of logs the Norca
   agent will output. Valid log levels include `WARN`, `INFO`, or `DEBUG` in
   increasing order of verbosity.

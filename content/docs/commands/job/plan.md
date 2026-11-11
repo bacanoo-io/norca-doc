@@ -108,6 +108,10 @@ capability for the job's namespace.
 - `-diff`: Determines whether the diff between the remote job and planned job is
   shown. Defaults to `true`.
 
+- `-dry-run-capacity`: Run the plan on the server that receives it, on its own
+  copy of the state, instead of the leader. The placements may be a little
+  behind the leader's state.
+
 - `-policy-override`: Has no effect: overriding admission policies is not
   supported. The flag is still accepted for compatibility and prints a warning.
 
