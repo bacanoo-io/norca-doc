@@ -44,6 +44,9 @@ $ curl \
   "EnableRedundancyZones": false,
   "DisableUpgradeMigration": false,
   "EnableCustomUpgrades": false,
+  "TargetVoters": 3,
+  "StandbyFailoverAfter": "1m0s",
+  "StandbyCooldown": "5m0s",
   "CreateIndex": 4,
   "ModifyIndex": 4
 }
@@ -85,6 +88,9 @@ The table below shows this endpoint's support for
   "EnableRedundancyZones": false,
   "DisableUpgradeMigration": false,
   "EnableCustomUpgrades": false,
+  "TargetVoters": 3,
+  "StandbyFailoverAfter": "1m0s",
+  "StandbyCooldown": "5m0s",
   "CreateIndex": 4,
   "ModifyIndex": 4
 }
@@ -113,6 +119,18 @@ The table below shows this endpoint's support for
 
 - `EnableCustomUpgrades` `(bool: false)` - **Not supported in Norca**: the request
   is rejected when this is `true`.
+
+- `TargetVoters` `(int: 0)` - The number of voters autopilot keeps with
+  [standby servers](/docs/configuration/server#role): `0`, `1`, `3`, `5` or
+  `7`; other values are rejected. With `0` every `voter`-role server votes and
+  a standby is never promoted. See the
+  [agent configuration](/docs/configuration/autopilot#target_voters).
+
+- `StandbyFailoverAfter` `(string: "1m")` - How long a voter must be unhealthy
+  before a standby replaces it. `0` is the default.
+
+- `StandbyCooldown` `(string: "5m")` - The minimum time between two changes of
+  the voter set made for standbys. `0` is the default.
 
 ## Read Health
 

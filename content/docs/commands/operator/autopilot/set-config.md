@@ -93,6 +93,18 @@ capability.
 - `-upgrade-version-tag` - Not supported in Norca: custom upgrade migrations are
   not available, the value has no effect.
 
+- `-target-voters` - The number of voters autopilot keeps with
+  [standby servers](/docs/configuration/server#role): `0`, `1`, `3`, `5` or
+  `7`. `0` (the default): every server with the role `voter` votes and standby
+  servers are never promoted. See
+  [`target_voters`](/docs/configuration/autopilot#target_voters).
+
+- `-standby-failover-after` - How long a voter must be unhealthy before a
+  standby server replaces it. `0` is the default, `1m`.
+
+- `-standby-cooldown` - The minimum time between two changes of the voter set
+  made for standby servers. `0` is the default, `5m`.
+
 The output looks like this:
 
 ```plaintext

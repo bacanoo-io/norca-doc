@@ -118,4 +118,52 @@ $ curl \
     https://localhost:4646/v1/operator/raft/peer?address=1.2.3.4:4646
 ```
 
+## Promote a Standby Server
+
+This endpoint is the manual failover to a [standby server](/docs/configuration/server#role)
+(Norca). The leader checks the standby and the voter it replaces, removes that
+voter from the Raft configuration, and waits until autopilot promotes the
+standby: autopilot stays the only one that changes the votes. The standby
+cooldown does not apply. The endpoint answers with the Raft configuration after
+the promotion, in the format of [Read Raft Configuration](#read-raft-configuration).
+
+| Method | Path                                | Produces           |
+| ------ | ----------------------------------- | ------------------ |
+| `PUT`  | `/v1/operator/raft/promote-standby` | `application/json` |
+
+The table below shows this endpoint's support for
+[blocking queries](/docs/api#blocking-queries) and
+[required ACLs](/docs/api#acls).
+
+| Blocking Queries | ACL Required     |
+| ---------------- | ---------------- |
+| `NO`             | `operator:write` |
+
+### Parameters
+
+- `id` `(string: <required>)` - The Raft ID of the standby server. It must have
+  the role `standby`, be healthy for autopilot (in contact with the leader and
+  within `MaxTrailingLogs` of it) and stable for `ServerStabilizationTime`.
+
+- `replace` `(string: <optional>)` - The Raft ID of the failed voter the
+  standby replaces; it is removed from the Raft configuration before the
+  promotion. It must be a voter that autopilot reports unhealthy, and never the
+  leader. Without `replace` the healthy voters must already be fewer than
+  `TargetVoters`.
+
+- `force` `(bool: false)` - Replace the voter even when autopilot reports it
+  healthy. The checks of the standby always apply.
+
+The request is refused when autopilot `TargetVoters` is `0`, since nothing
+would promote the standby. When the standby is not promoted within 30 seconds
+the request fails; the removal of the voter is not undone.
+
+### Sample Request
+
+```shell
+$ curl \
+    --request PUT \
+    "https://localhost:4646/v1/operator/raft/promote-standby?id=59a1bc0e-0a1c-7b36-3e6a-6d4b4f0e8a1d&replace=1d7a2bd8-6c9e-4e5c-2b0f-3f1a0c2b9e44"
+```
+
 [consensus protocol guide]: /docs/concepts/consensus/

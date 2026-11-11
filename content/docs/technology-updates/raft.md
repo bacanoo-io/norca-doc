@@ -14,7 +14,7 @@ lists what Norca changed, fixed and added around Raft since then, and what was e
 | [Log and stable store](#log-and-stable-store) | Badger by default, BoltDB as an option; values above 4 KB in the value log | Done |
 | [Protocol version](#protocol-version-3-only) | Raft protocol 3 only; the `raft_protocol` option removed | Done |
 | [Consistent reads](#consistent-reads) | Linearizable reads with `?consistent`, confirmed by a quorum | Done |
-| [Server roles](#server-roles) | Voters, observers and standbys; autopilot decides the votes from the role | Observers done; standby failover planned |
+| [Server roles](#server-roles) | Voters, observers and standbys; autopilot decides the votes from the role | Done: observers, standby failover |
 | [Observability](#observability) | Raft internals of every server in the metrics store and on the server page | Done |
 | [Evaluated, not taken](#evaluated-not-taken-raft-v4) | The "v4" extension of the fork (asynchronous disk writes, read index, typed futures) | Not taken |
 
@@ -105,12 +105,22 @@ without a vote. Norca's own autopilot promoter decides the votes from the roles:
 - **voters** are promoted once they are stable, as before;
 - **observers** replicate the Raft log and the state, serve stale reads and run scheduler workers,
   but never vote: more read and scheduling capacity without a larger quorum;
-- **standbys** never vote today; their automatic promotion when a voter fails is the next step;
+- **standbys** replicate like observers until a voter fails. With autopilot
+  [`target_voters`](/docs/configuration/autopilot#target_voters) autopilot promotes the most
+  suitable standby when the healthy voters fall below the target (after `standby_failover_after`, or
+  at once when the failed voter is gone from the configuration) and lets it step back when the voter
+  returns, with a cooldown between the changes;
+  [`norca operator raft promote-standby`](/docs/commands/operator/raft/promote-standby) is the
+  manual failover;
 - a voter restarted with another role is demoted, one per round and only while a `voter`-role server
   keeps the vote; a leader in that state hands over the leadership first.
 
-`norca operator raft list-peers` and the autopilot health API show the role of every server. This is a
-clean room development: Norca's own design on the public parts of Raft and autopilot.
+`norca operator raft list-peers` and the autopilot health API show the role of every server. Every
+standby promotion and step back is an event of the `Server` topic of the
+[event stream](/docs/api/events), and the leader's metrics store keeps
+`norca.cluster.autopilot_voters`, `norca.cluster.autopilot_standbys_ready`,
+`norca.cluster.autopilot_standby_promotions` and `norca.cluster.autopilot_standby_demotions`. This is
+a clean room development: Norca's own design on the public parts of Raft and autopilot.
 
 ## Observability
 

@@ -72,6 +72,9 @@ The following subcommands are available:
 - [`operator raft list-peers`][list] - Display the current Raft peer
   configuration
 
+- [`operator raft promote-standby`][promote-standby] - Promote a standby server
+  to a voter by hand (manual failover)
+
 - [`operator raft remove-peer`][remove] - Remove a Norca server from the Raft
   configuration
 
@@ -117,6 +120,7 @@ The following subcommands are available:
 [gossip_keyring_use]: /docs/commands/operator/gossip/keyring-use/ 'Sets a gossip encryption key as the active key'
 [list]: /docs/commands/operator/raft/list-peers/ 'Raft List Peers command'
 [operator]: /docs/api/operator/ 'Operator API documentation'
+[promote-standby]: /docs/commands/operator/raft/promote-standby/ 'Raft Promote Standby command'
 [remove]: /docs/commands/operator/raft/remove-peer/ 'Raft Remove Peer command'
 [root_keyring_list]: /docs/commands/operator/root/keyring-list/ 'List available root encryption keys'
 [root_keyring_remove]: /docs/commands/operator/root/keyring-remove/ 'Deletes a root encryption key'

@@ -69,10 +69,14 @@ $ norca operator autopilot get-config
 CleanupDeadServers = true
 LastContactThreshold = 200ms
 MaxTrailingLogs = 250
+MinQuorum = 0
 ServerStabilizationTime = 10s
-RedundancyZoneTag = ""
+EnableRedundancyZones = false
 DisableUpgradeMigration = false
-UpgradeMigrationTag = ""
+EnableCustomUpgrades = false
+TargetVoters = 3
+StandbyFailoverAfter = 1m0s
+StandbyCooldown = 5m0s
 ```
 
 - `CleanupDeadServers` - Specifies automatic removal of dead
@@ -90,11 +94,24 @@ UpgradeMigrationTag = ""
   cluster. Only takes effect if all servers are running Raft protocol version 3
   or higher. Must be a duration value such as `30s`.
 
-- `RedundancyZoneTag` - Not used by Norca: redundancy zones are not available.
+- `MinQuorum` - The minimum number of servers required in a cluster before
+  autopilot can prune dead servers.
+
+- `EnableRedundancyZones` - Not supported in Norca: redundancy zones are not
+  available, so this is always `false`.
 
 - `DisableUpgradeMigration` - Not supported in Norca: upgrade migrations are not
   available, so this is always `false`.
 
-- `UpgradeVersionTag` - Not used by Norca: custom upgrade versions are not
-  available.
+- `EnableCustomUpgrades` - Not supported in Norca: custom upgrade versions are
+  not available, so this is always `false`.
 
+- `TargetVoters` - The number of voters autopilot keeps with
+  [standby servers](/docs/configuration/server#role); `0`: standbys are never
+  promoted.
+
+- `StandbyFailoverAfter` - How long a voter must be unhealthy before a standby
+  replaces it.
+
+- `StandbyCooldown` - The minimum time between two changes of the voter set
+  made for standbys.

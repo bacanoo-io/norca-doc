@@ -431,6 +431,7 @@ path-like topics, and resumable subscriptions. See
 | `SecretAccess`     | Audit record of a secret access                          | `operator:read`                                             |
 | `ServiceIntention` | Service intention                                        | `namespace:read-job`                                        |
 | `Backup`           | Backup or restore                                        | backup read                                                 |
+| `Server`           | A standby server promoted or stepped back                | `operator:read`                                             |
 
 The keys of `Variables` and `Secret` events are paths, and the keys of
 `CustomObject` events are `group/Kind` and `group/Kind/name` references. For
@@ -451,9 +452,17 @@ these topics a `filter_key` containing `*` is a glob pattern, for example
 | `SecretAccess`     | `SecretAccessed`                                                                                       |
 | `ServiceIntention` | `ServiceIntentionUpserted`, `ServiceIntentionDeleted`                                                  |
 | `Backup`           | `BackupCompleted`, `BackupFailed`, `BackupUpdated`, `BackupDeleted`, `BackupRestoreRequested`, `BackupRestoreApproved`, `BackupRestoreStarted`, `BackupRestoreFinished`, `BackupRestoreRejected` |
+| `Server`           | `StandbyPromoted`, `StandbyDemoted`                                                                    |
 
-`Scaling`, `JobAdmissionDenied` and `VariableAdmissionDenied` events are
-**published only by the leader**.
+`Scaling`, `Server`, `JobAdmissionDenied` and `VariableAdmissionDenied` events
+are **published only by the leader**.
+
+The key of a `Server` event is the Raft ID of the server, its filter key the
+node name. The payload has `ID`, `Name`, `Address`, `Datacenter`, `Role`,
+`Voter` (after the change), `Reason` (why autopilot made the change, empty when
+the leader that saw it did not make it) and `Replaced` (the failed voter a
+promoted standby replaces). See
+[`target_voters`](/docs/configuration/autopilot#target_voters).
 
 ### Resumable Subscriptions
 

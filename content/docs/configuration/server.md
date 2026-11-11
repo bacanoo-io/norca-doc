@@ -185,8 +185,12 @@ server {
     [stale reads](/docs/api#consistency-modes) and runs scheduler workers, but
     **never votes and never becomes leader**. Observers add read and scheduling
     capacity without a larger quorum; the leader replicates to each of them.
-  - `standby` - Like an observer today. Automatic promotion of a standby when
-    a voter fails is planned.
+  - `standby` - Like an observer until a voter fails: with autopilot
+    [`target_voters`](/docs/configuration/autopilot#target_voters) set,
+    autopilot promotes a standby when the healthy voters fall below the target
+    and lets it step back when the voter returns. Without a target a standby
+    never votes. See also
+    [`operator raft promote-standby`](/docs/commands/operator/raft/promote-standby).
 
   Every server advertises its role to the others; `bootstrap_expect` counts
   only servers with the `voter` role. A server whose role changes takes the
