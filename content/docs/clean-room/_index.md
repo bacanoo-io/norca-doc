@@ -104,7 +104,7 @@ with it, made in the same code.
 
 ## Similarity audit
 
-On 2026-11-08 the clean room code was compared with the HashiCorp code it must
+On 2026-11-11 the clean room code was compared with the HashiCorp code it must
 not be derived from, using [Dolos](https://github.com/dodona-edu/dolos) 2.10.0
 (syntax-tree based plagiarism detection, Ghent University). The comparison ran
 in a throwaway container that received the Norca checkout read-only, fetched
@@ -114,17 +114,20 @@ looked at code of a flagged pair.
 
 | Property | Value |
 | --- | --- |
-| Norca | `main` at `a72e87685` (the history rebuilt on 2026-11-08) |
+| Norca | `main` at `f194f1920` (with the four phases of [clean room development](/docs/clean-room/development)) |
 | BUSL files | the 45 files of Nomad v1.6.5 with a BUSL-1.1 header |
 | BSL release | Nomad v1.11.3 (`173ab08a0`) |
 | Threshold | 0.4 (share of the two files covered by common fragments) |
 
-**Clean room fixes** (the lines each commit of the table above added to a file,
-against the lines HashiCorp added to the same file between v1.6.5 and v1.11.3):
-2346 pairs; above the threshold only the generated msgpack codec
-(`structs.generated.go`, 0.507 and 0.427), which is generated from the
-structure definitions. **Every hand-written file scored 0.261 or lower.** The run
-of 2026-11-02 (`main` at `e98a2f58b`, 1221 pairs) gave the same picture.
+**Clean room fixes and development** (the lines each commit of the table above
+and each commit of [clean room development](/docs/clean-room/development) added
+to a file, against the lines HashiCorp added to the same file between v1.6.5 and
+v1.11.3): 7676 pairs; at or above the threshold only the generated msgpack codec
+(`structs.generated.go`, 0.507, 0.427, 0.410 and 0.406), which is generated from
+the structure definitions. **Every hand-written file scored 0.261 or lower**; the
+highest of the server role phases are 0.242 (`command/commands.go`) and 0.224
+(`command/agent/operator_endpoint.go`). The runs of 2026-11-08 (`a72e87685`, 2346
+pairs) and 2026-11-02 (`e98a2f58b`, 1221 pairs) gave the same picture.
 
 **Replacements of the BUSL files** (each BUSL file against the Norca files of
 its directory): Dolos compares syntax, so files of the same shape score high
