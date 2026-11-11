@@ -46,10 +46,11 @@ $ curl \
   "Servers": [
     {
       "Address": "127.0.0.1:4647",
-      "ID": "127.0.0.1:4647",
+      "ID": "2ad8d8d4-5f2b-4c2e-a3e8-9a4f7a6c1d01",
       "Leader": true,
       "Node": "bacon-mac.global",
-      "RaftProtocol": 2,
+      "RaftProtocol": "3",
+      "Role": "voter",
       "Voter": true
     }
   ]
@@ -65,8 +66,7 @@ $ curl \
 - `Servers` `(array: Server)` - The returned `Servers` array has information
   about the servers in the Raft peer configuration.
 
-  - `ID` `(string)` - The ID of the server. This is the same as the `Address`
-    but may be upgraded to a GUID in a future version of Norca.
+  - `ID` `(string)` - The Raft ID of the server, its node ID.
 
   - `Node` `(string)` - The node name of the server, as known to Norca, or
     `"(unknown)"` if the node is stale and not known.
@@ -77,8 +77,13 @@ $ curl \
     role in the Raft configuration.
 
   - `Voter` `(bool)` - is `"true"` or `"false"`, indicating if the server has a vote
-    in the Raft configuration. Future versions of Norca may add support for
-    non-voting servers.
+    in the Raft configuration.
+
+  - `RaftProtocol` `(string)` - The Raft protocol version of the server (`"3"`).
+
+  - `Role` `(string)` - The configured [role](/docs/configuration/server#role) of
+    the server: `voter`, `standby` or `observer`, or `"unknown"` if the server is
+    not in the gossip pool.
 
 ## Remove Raft Peer
 

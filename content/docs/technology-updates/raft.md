@@ -14,6 +14,7 @@ lists what Norca changed, fixed and added around Raft since then, and what was e
 | [Log and stable store](#log-and-stable-store) | Badger by default, BoltDB as an option; values above 4 KB in the value log | Done |
 | [Protocol version](#protocol-version-3-only) | Raft protocol 3 only; the `raft_protocol` option removed | Done |
 | [Consistent reads](#consistent-reads) | Linearizable reads with `?consistent`, confirmed by a quorum | Done |
+| [Server roles](#server-roles) | Voters, observers and standbys; autopilot decides the votes from the role | Observers done; standby failover planned |
 | [Observability](#observability) | Raft internals of every server in the metrics store and on the server page | Done |
 | [Evaluated, not taken](#evaluated-not-taken-raft-v4) | The "v4" extension of the fork (asynchronous disk writes, read index, typed futures) | Not taken |
 
@@ -94,6 +95,22 @@ cut off from its quorum may answer with stale values until it steps down. Norca 
 
 The modes are described in [the HTTP API overview](/docs/api#consistency-modes). No change of the
 Raft library was needed.
+
+## Server roles
+
+Every server has a [`role`](/docs/configuration/server#role): `voter` (default), `observer` or
+`standby`. Before, autopilot promoted every stable non-voter, so a cluster could not keep servers
+without a vote. Norca's own autopilot promoter decides the votes from the roles:
+
+- **voters** are promoted once they are stable, as before;
+- **observers** replicate the Raft log and the state, serve stale reads and run scheduler workers,
+  but never vote: more read and scheduling capacity without a larger quorum;
+- **standbys** never vote today; their automatic promotion when a voter fails is the next step;
+- a voter restarted with another role is demoted, one per round and only while a `voter`-role server
+  keeps the vote; a leader in that state hands over the leadership first.
+
+`norca operator raft list-peers` and the autopilot health API show the role of every server. This is a
+clean room development: Norca's own design on the public parts of Raft and autopilot.
 
 ## Observability
 

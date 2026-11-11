@@ -77,17 +77,17 @@ An example output with three servers is as follows:
 
 ```shell
 $ norca operator raft list-peers
-Node                   ID               Address          State     Voter
-nomad-server01.global  10.10.11.5:4647  10.10.11.5:4647  follower  true
-nomad-server02.global  10.10.11.6:4647  10.10.11.6:4647  leader    true
-nomad-server03.global  10.10.11.7:4647  10.10.11.7:4647  follower  true
+Node                   ID                                    Address          State     Voter  Role      RaftProtocol
+norca-server01.global  2ad8d8d4-5f2b-4c2e-a3e8-9a4f7a6c1d01  10.10.11.5:4647  follower  true   voter     3
+norca-server02.global  7b1e0c55-2d6f-4f7e-b3a1-0c9d2e4f5a02  10.10.11.6:4647  leader    true   voter     3
+norca-server03.global  c4f3a9e2-8b7d-4a61-9e2c-5d1b3f6a7e03  10.10.11.7:4647  follower  true   voter     3
+norca-server04.global  e9d2b7c1-6a5f-4e38-8d4c-2f7a1b9c0e04  10.10.11.8:4647  follower  false  observer  3
 ```
 
 - `Node` is the node name of the server, as known to Norca, or "(unknown)" if
   the node is stale and not known.
 
-- `ID` is the ID of the server. This is the same as the `Address` but may be
-  upgraded to a GUID in a future version of Norca.
+- `ID` is the Raft ID of the server, its node ID.
 
 - `Address` is the IP:port for the server.
 
@@ -95,6 +95,13 @@ nomad-server03.global  10.10.11.7:4647  10.10.11.7:4647  follower  true
   Raft configuration.
 
 - `Voter` is "true" or "false", indicating if the server has a vote in the Raft
-  configuration. Future versions of Norca may add support for non-voting servers.
+  configuration.
+
+- `Role` is the configured [role](/docs/configuration/server#role) of the
+  server: `voter`, `standby` or `observer`, or "unknown" if the server is not
+  in the gossip pool. A `voter` that is not a voter yet is still being
+  stabilized by autopilot.
+
+- `RaftProtocol` is the Raft protocol version of the server (always `3`).
 
 [operator]: /docs/api/operator/

@@ -53,7 +53,7 @@ server {
   wait for before bootstrapping. It is most common to use the odd-numbered
   integers `3` or `5` for this value, depending on the cluster size. **A value of
   `1` does not provide any fault tolerance and is not recommended for production
-  use cases.**
+  use cases.** Only servers with the `voter` [`role`](#role) count.
 
 - `data_dir` `(string: "[data_dir]/server")` - Specifies the directory to use
   for server-specific data, including the replicated log. By default, this is
@@ -177,9 +177,23 @@ server {
   increased to meet the target rate. See [Client Heartbeats](#client-heartbeats)
   below for details.
 
-- `non_voting_server` `(bool: false)` - Accepted for compatibility. **Norca has
-  no read replicas:** Autopilot promotes every stable server to a voter, so this
-  has no lasting effect.
+- `role` `(string: "voter")` - The role of this server in the Raft cluster of
+  its region (Norca):
+
+  - `voter` - Autopilot makes the server a voter once it is stable.
+  - `observer` - The server replicates the Raft log and the state, serves
+    [stale reads](/docs/api#consistency-modes) and runs scheduler workers, but
+    **never votes and never becomes leader**. Observers add read and scheduling
+    capacity without a larger quorum; the leader replicates to each of them.
+  - `standby` - Like an observer today. Automatic promotion of a standby when
+    a voter fails is planned.
+
+  Every server advertises its role to the others; `bootstrap_expect` counts
+  only servers with the `voter` role. A server whose role changes takes the
+  new role after a restart: a former voter is demoted by autopilot, after a
+  leadership transfer if it was the leader, as long as a `voter`-role server
+  keeps the vote. A server with another role than `voter` cannot set
+  `bootstrap_expect = 1`.
 
 - `num_schedulers` `(int: [num-cores])` - Specifies the number of parallel
   scheduler threads to run. This can be as many as one per core, or `0` to

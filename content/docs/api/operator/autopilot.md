@@ -156,7 +156,8 @@ $ curl \
       "LastIndex": 46,
       "Healthy": true,
       "Voter": true,
-      "StableSince": "2017-03-06T22:07:51Z"
+      "StableSince": "2017-03-06T22:07:51Z",
+      "Role": "voter"
     },
     {
       "ID": "e36ee410-cc3c-0a0c-c724-63817ab30303",
@@ -170,7 +171,8 @@ $ curl \
       "LastIndex": 46,
       "Healthy": true,
       "Voter": false,
-      "StableSince": "2017-03-06T22:18:26Z"
+      "StableSince": "2017-03-06T22:18:26Z",
+      "Role": "observer"
     }
   ]
 }
@@ -207,6 +209,9 @@ $ curl \
   - `Voter` is whether the server is a voting member of the Raft cluster.
 
   - `StableSince` is the time this server has been in its current `Healthy` state.
+
+  - `Role` is the configured [role](/docs/configuration/server#role) of the server:
+    `voter`, `standby` or `observer`.
 
   **The HTTP status code will indicate the health of the cluster.** If `Healthy` is `true`, then a
   status of `200` will be returned. If `Healthy` is `false`, then a status of `429` will be returned.
