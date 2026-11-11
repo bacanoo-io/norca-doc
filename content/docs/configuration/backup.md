@@ -90,6 +90,21 @@ server {
   to every backup. **Without them the Variables and secrets of a restored
   backup can't be decrypted in a new cluster.**
 
+- `prefer_observer` `(bool: false)` - The leader asks an
+  [observer server](/docs/configuration/server#role) to take the scheduled and
+  manual backups (Norca). The leader picks a healthy observer, the most caught
+  up first; the observer takes the snapshot from its own copy of the state,
+  uploads the backup and returns its record, which the leader writes to Raft
+  and applies the retention to. An observer takes a backup only when its
+  `backup` block names the same destinations and encryption as the leader's
+  (compared by a fingerprint, credentials excluded) and its keyring is ready;
+  **an observer without a matching `backup` block never takes one.** The leader
+  takes the backup itself when no observer can, when the observer's backup
+  fails, and always for the automatic backup before a full restore. The
+  record says which server took a backup (`TakenBy`). With a `directory`
+  destination the observer writes to its own mount, so the directory must be
+  shared storage, as for leader changes.
+
 - `verify_checksum` `(bool: false)` - Downloads every uploaded object again
   and compares its SHA-256 checksum. Without it only the size of the uploaded
   object is verified.

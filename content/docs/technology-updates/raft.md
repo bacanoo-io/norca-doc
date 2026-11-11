@@ -14,7 +14,7 @@ lists what Norca changed, fixed and added around Raft since then, and what was e
 | [Log and stable store](#log-and-stable-store) | Badger by default, BoltDB as an option; values above 4 KB in the value log | Done |
 | [Protocol version](#protocol-version-3-only) | Raft protocol 3 only; the `raft_protocol` option removed | Done |
 | [Consistent reads](#consistent-reads) | Linearizable reads with `?consistent`, confirmed by a quorum | Done |
-| [Server roles](#server-roles) | Voters, observers and standbys; autopilot decides the votes from the role | Done: observers, standby failover |
+| [Server roles](#server-roles) | Voters, observers and standbys; autopilot decides the votes from the role | Done: observers, standby failover, backups from observers |
 | [Observability](#observability) | Raft internals of every server in the metrics store and on the server page | Done |
 | [Evaluated, not taken](#evaluated-not-taken-raft-v4) | The "v4" extension of the fork (asynchronous disk writes, read index, typed futures) | Not taken |
 
@@ -104,7 +104,9 @@ without a vote. Norca's own autopilot promoter decides the votes from the roles:
 
 - **voters** are promoted once they are stable, as before;
 - **observers** replicate the Raft log and the state, serve stale reads and run scheduler workers,
-  but never vote: more read and scheduling capacity without a larger quorum;
+  but never vote: more read and scheduling capacity without a larger quorum. With backup
+  [`prefer_observer`](/docs/configuration/backup#prefer_observer) they also take the scheduled and
+  manual backups from their own copy of the state, and the leader only records them;
 - **standbys** replicate like observers until a voter fails. With autopilot
   [`target_voters`](/docs/configuration/autopilot#target_voters) autopilot promotes the most
   suitable standby when the healthy voters fall below the target (after `standby_failover_after`, or

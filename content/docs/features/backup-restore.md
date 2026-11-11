@@ -78,6 +78,23 @@ flowchart LR
 5. The record of the backup (ID, Raft index, destinations, object counts) is
    written to Raft, and the retention deletes expired backups.
 
+With [`prefer_observer`](/docs/configuration/backup#prefer_observer) the
+leader hands steps 1 to 4 to a healthy
+[observer server](/docs/configuration/server#role), which takes the snapshot
+from its own copy of the state, so the leader does not spend CPU, disk and
+network on it. The leader gives the backup its ID, asks the observer over the
+server RPC (only servers of the region, only from the current leader), and
+writes the record the observer returns (step 5). The observer must have the
+same `backup` block (destinations and encryption); otherwise, or when no
+observer is healthy or its backup fails, the leader takes the backup itself.
+The automatic backup before a full restore is always taken by the leader. The
+`TakenBy` field of the record and `taken_by` in the manifest name the server.
+
+Raft takes a snapshot at the last index applied to the state. Right after a
+change of the servers (one added, promoted or removed) and before the next
+write, it refuses; the leader then writes an empty backup update and takes the
+snapshot again.
+
 A backup is:
 
 - `complete` when it was verified on every destination,
@@ -368,6 +385,7 @@ The [`backup` block](/docs/configuration/backup) of the server configuration:
 | `retry_interval` | duration | `"10m"` | Wait after a failed scheduled backup |
 | `part_size`, `upload_concurrency` | size, int | `"16MiB"`, `4` | Multipart upload |
 | `include_keyring` | bool | `true` | Back up the keyring and the secret store key |
+| `prefer_observer` | bool | `false` | An observer server takes the scheduled and manual backups |
 | `verify_checksum` | bool | `false` | Download and compare SHA-256 after upload |
 | `browse_cache_ttl` | duration | `"5m"` | How long a decrypted backup stays loaded |
 | `require_approval` | bool | `true` | Two-person approval of full restores; can't be disabled |

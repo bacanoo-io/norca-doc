@@ -82,7 +82,8 @@ $ curl \
 }
 ```
 
-The sample is shortened: a backup record also carries `LeaderID`, `KeyIDs`
+The sample is shortened: a backup record also carries `TakenBy` (the server that took it: the leader,
+or an observer with [`prefer_observer`](/docs/configuration/backup#prefer_observer)), `KeyIDs`
 (the root keys in its keyring) and `Seals`, and every destination
 `RecipientsFingerprint`, `Duration`, `Error` and `Objects` (`state`,
 `keyring`, `secret_store_key`, `consul_kv`, each with `Key`, `Size` and `SHA256`). The
