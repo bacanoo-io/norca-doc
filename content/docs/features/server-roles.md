@@ -275,9 +275,34 @@ manual failover, stale reads, and backups taken by the observer.
 - A server changes its role only with a restart.
 - An observer takes backups only when its `backup` block names the same
   destinations and encryption as the leader's.
-- The number of observers and standbys a leader carries well is not measured
-  yet; each one costs the leader replication work.
+- **Every server without a vote costs the writes of the region something.**
+  See [what observers cost](#what-observers-cost) for a measurement.
 - The web UI does not show the roles yet.
+
+## What observers cost
+
+The leader replicates every write to every observer and standby. One
+measurement on the lab shows the direction: three voters (2 vCPU and 2 GB
+each), 50 writes per second for five minutes, and a burst of 300 job
+registrations, with no, two and five observers.
+
+| | No observer | 2 observers | 5 observers |
+| --- | --- | --- | --- |
+| Write, median | 5.0 ms | 6.5 ms | 8.9 ms |
+| Write, 95th percentile | 9.0 ms | 21.7 ms | 34.5 ms |
+| Write, 99th percentile | 16.2 ms | 29.9 ms | 42.2 ms |
+| Writes done of 15000 asked | 15001 | 14997 | 13641 |
+| Job registration in the burst, median | 57 ms | 68 ms | 130 ms |
+| Jobs placed per second in the burst | 21.7 | 21.2 | 16.3 |
+
+**One standby and one observer cost little; five are felt:** the region no
+longer kept up with 50 writes per second.
+
+> [!NOTE]
+> Each column is a single run, and the observers ran on the same host as the
+> voters, so part of the difference is the host and not the replication. Take
+> the numbers as a direction, not as a limit, and measure on your own
+> machines before adding many servers without a vote.
 
 ## Design
 
