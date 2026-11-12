@@ -150,6 +150,33 @@ with a BUSL rewrite that grew out of the same file, hence the similarity. The
 audit recognises such files (same path in the last MPL commit before the
 license change, at most 10% of the lines changed) and lists them apart.
 
+**Comparison with the newest release.** A second run on 2026-11-11 compared
+everything Norca wrote with the whole of Nomad v2.1.1 (`d0f210429`), the newest
+BSL release, whatever the path (Norca `7b6609684`, the same Dolos version and
+threshold): 1546 new files against every file of the same language, and the
+lines Norca added to 1188 changed files against the lines HashiCorp added to
+the same files. A new file is a candidate only if it resembles a BSL file more
+than HashiCorp's own v1.6.5 code does.
+
+- The **3 candidates among the changed files** are mechanical edits of
+  HashiCorp's MPL lines: a `go vet` fix, struct literals realigned by gofmt
+  after a removed field, and the forms of the Ember deprecation codemods.
+- Of the **109 candidates among the new files**, 34 are in code imported from
+  HashiCorp's MPL projects (Nomad Pack, Nomad Autoscaler, nomad-driver-exec2)
+  and 5 in the Apache-2.0 copy of tstorage. For 64, a second Dolos run on MPL
+  code only found a v1.6.5 file the Norca file resembles at least as closely,
+  with a common fragment at least as long: the common part is HashiCorp's MPL
+  pattern (CLI commands, the state store, tests).
+- **The auditor judged the remaining 6.** Three are bound to MPL interfaces:
+  the `raft.LogStore` methods in the tests of the Badger log store, the
+  filesystem isolation constants that the MPL exec2 driver imports, and a
+  one-line build-tag fallback. Three are independent: no BSL counterpart, or a
+  different structure.
+
+The review with every verdict is
+[`clean-room-result-full/review.md`](https://github.com/bacanoo-io/norca/blob/main/clean-room-result-full/review.md)
+in the Norca repository.
+
 **Rewrites of 2026-11-02.** Earlier runs (2026-11-01 and the morning of
 2026-11-02) listed eight Norca files as candidates. The auditor had judged them
 independent, their common parts being the shape of Ember modules and Go tests
