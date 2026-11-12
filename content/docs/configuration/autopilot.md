@@ -61,18 +61,25 @@ stores it when it bootstraps, and later changes are made with
     other voters keep the target healthy;
   - a promoted standby that leads hands the leadership to a voter first.
 
-  At most one standby changes per autopilot round. The failed voter itself is
-  removed by `cleanup_dead_servers`, which can happen before
-  `standby_failover_after`: then the standby is promoted at once. A
+  At most one standby changes per autopilot round, and a change that Raft did
+  not apply is asked for again in the next round.
+
+  **With a target, a failed voter stays in the Raft configuration for
+  `standby_failover_after`.** `cleanup_dead_servers` would otherwise remove it
+  as soon as it is seen failed, the voters would fall below the target, and a
+  standby would be promoted at once. After that time the standby is promoted,
+  and the cleanup removes the failed voter. A
   [manual failover](/docs/commands/operator/raft/promote-standby) does not
   wait.
 
 - `standby_failover_after` `(string: "1m")` - How long a voter must be
-  unhealthy before a standby replaces it. A network flap shorter than this
-  changes nothing.
+  unhealthy before a standby replaces it, and, with `target_voters` set, before
+  `cleanup_dead_servers` removes it. An outage shorter than this changes
+  nothing.
 
 - `standby_cooldown` `(string: "5m")` - The minimum time between two changes of
-  the voter set made for standbys (a promotion and the step back after it).
+  the voter set made for standbys (a promotion and the step back after it),
+  counted from the change itself.
 
 - `enable_redundancy_zones` `(bool: false)` - **Not supported in Norca:**
   redundancy zones are not available, and **the agent refuses to start when this

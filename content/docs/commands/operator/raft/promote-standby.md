@@ -11,9 +11,16 @@ The leader checks that the server has the role `standby`, is healthy and caught
 up, and that autopilot [`target_voters`](/docs/configuration/autopilot#target_voters)
 is set. With `-replace` it then removes the failed voter from the Raft
 configuration, and autopilot promotes the standby without waiting for the
-standby cooldown. Without `-replace` the healthy voters must already be fewer
-than `target_voters`. The command waits up to 30 seconds for the promotion and
-prints the new Raft configuration.
+standby cooldown or for `standby_failover_after`. Without `-replace` the
+healthy voters must already be fewer than `target_voters`. The command waits up
+to 30 seconds for the promotion and prints the new Raft configuration.
+
+**Nothing is removed unless the promotion can follow.** The command refuses
+when the healthy voters without the replaced one still meet `target_voters`
+(take such a server out with
+[`operator raft remove-peer`](/docs/commands/operator/raft/remove-peer)), and
+while a server with the role `voter` waits for its vote: autopilot gives that
+server its vote first.
 
 Autopilot also promotes standbys on its own when a voter has been unhealthy for
 [`standby_failover_after`](/docs/configuration/autopilot#standby_failover_after);

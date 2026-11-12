@@ -100,7 +100,9 @@ capability.
   [`target_voters`](/docs/configuration/autopilot#target_voters).
 
 - `-standby-failover-after` - How long a voter must be unhealthy before a
-  standby server replaces it. `0` is the default, `1m`.
+  standby server replaces it. With `-target-voters` set, the dead server
+  cleanup leaves a failed voter in the Raft configuration for the same time.
+  `0` is the default, `1m`.
 
 - `-standby-cooldown` - The minimum time between two changes of the voter set
   made for standby servers. `0` is the default, `5m`.

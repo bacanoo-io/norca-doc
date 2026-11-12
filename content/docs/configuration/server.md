@@ -196,7 +196,8 @@ server {
   only servers with the `voter` role. A server whose role changes takes the
   new role after a restart: a former voter is demoted by autopilot, after a
   leadership transfer if it was the leader, as long as a `voter`-role server
-  keeps the vote. A server with another role than `voter` cannot set
+  keeps the vote **and the voters that are left have a healthy majority among
+  themselves** (with another voter down the demotion waits). A server with another role than `voter` cannot set
   `bootstrap_expect = 1`.
 
 - `num_schedulers` `(int: [num-cores])` - Specifies the number of parallel
