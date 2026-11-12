@@ -45,7 +45,8 @@ flowchart LR
   set them from `task_defaults`, then reject tasks whose resources exceed
   `task_max`. With `enforce = "submit"` they also reject a job whose total
   demand (count times resources of every group) exceeds the limit of the region
-  by itself. See [admission control](/docs/features/admission-control) for the
+  by itself; a scale to a higher count (`norca job scale`, the autoscaler) is
+  checked the same way. See [admission control](/docs/features/admission-control) for the
   order of the admission chain.
 - **Scheduling.** The scheduler places allocations only while they fit into the
   remaining quota. The remaining placements become a blocked evaluation marked

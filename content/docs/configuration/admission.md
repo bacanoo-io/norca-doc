@@ -110,7 +110,8 @@ The server posts a JSON document with `Content-Type: application/json`:
 - `kind` - `AdmissionReview`.
 - `request.uid` - The ID of the review; the response must return it.
 - `request.resource` - `job` or `variable`.
-- `request.operation` - `register` or `plan` for jobs, `set` or `delete` for
+- `request.operation` - `register`, `plan`, `scale` or `dispatch` for jobs
+  (`scale` and `dispatch` only for validating webhooks), `set` or `delete` for
   Variables.
 - `request.dry_run` - `true` for `plan`.
 - `request.namespace` - The namespace of the job or Variable.

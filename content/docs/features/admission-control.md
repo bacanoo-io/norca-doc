@@ -68,7 +68,8 @@ flowchart TB
   finish within 2 seconds.
 - **CEL variables.** `job` is the job in its API JSON form (`job.ID`,
   `job.TaskGroups`, `t.Driver`, `t.Config`, ...). `request` holds `resource`
-  (`job`), `operation` (`register` or `plan`), `namespace`, `user` (the
+  (`job`), `operation` (`register`, `plan`, `scale` or `dispatch`),
+  `namespace`, `user` (the
   submitter: `accessor_id`, `name`, `type`, `roles`, `policies`) and `secrets`
   (every secret the job references, see
   [secret delivery](/docs/features/secrets/delivery)). The CEL standard library
@@ -80,21 +81,42 @@ flowchart TB
   region. If a webhook cannot be called, times out or answers incorrectly, its
   `failure_policy` decides: `fail` rejects the submission, `ignore` admits it
   with a warning. Mutating webhooks are not called for a submitter that may not
-  submit jobs to the namespace.
+  submit jobs to the namespace. A patch must not put a `null` into a list of
+  the job (a task group, a task, a service); a `null` value for a member is
+  allowed.
+- **Scaling and dispatch.** A new count of a group (`norca job scale`, the
+  scaling API, the autoscaler) and the child of a parameterized job
+  (`norca job dispatch`) are written without a registration. The policies and
+  the validating webhooks decide on them too: they see the stored job with the
+  new count and `request.operation == "scale"`, or the child job with
+  `request.operation == "dispatch"`. Mutating webhooks do not run for them.
+  **A policy that a stored job does not meet also refuses its scaling, down as
+  well as up, and that of the autoscaler**; write the rule for the operations it
+  is about (`request.operation in ["register", "plan"] && ...`) when that is
+  not wanted. The launches of a periodic job are not checked again.
 - **Variables.** Policies and validating webhooks that select the `variable`
   resource also run for Variables writes and deletes, after the writer is
   authorized and before the Raft write. With `schema_from = "crd-schema"` a
   policy also validates `crd/<group>/<kind>/<name>` Variables against a JSON
   Schema stored in `crd-schema/<group>/<kind>` (see the
-  [operator framework](/docs/features/operator-framework)).
+  [operator framework](/docs/features/operator-framework)). The server's own
+  re-encryption of the Variables after a full rotation of the root key
+  changes no content and is not sent through the policies and webhooks.
 - **Releases.** Policies that select the `release` resource run when a pack
   release is installed, upgraded or rolled back, with the variable `release`;
   their `trusted_keys` require a signed pack (see
   [signatures in protected namespaces](/docs/features/packages/releases#signatures-in-protected-namespaces)).
+  **A signature covers what is applied only when the server rendered the pack**
+  from its own catalog (a deploy from a pack registry). For a release that a
+  client rendered, the digest and the signatures are what the client sends.
+  The rule `release.pack.serverRendered` admits only the first; it also holds
+  for a rollback to such a revision. In a multi-region install it holds in the
+  region of the server that rendered the pack, not in the other regions.
 - **Denials.** A rejection publishes a `JobAdmissionDenied` (or
   `VariableAdmissionDenied`) event on the `AdmissionPolicy` topic of the
   [event stream](/docs/features/event-stream): namespace, job, operation, the
   submitter, the controller (`policy` or `webhook`), its name and the message.
+  The API answers a denial with the status `403`.
   **`-policy-override` of `norca job run` does not bypass admission policies.**
 - **Where the checks run.** The admission policies and the webhooks run on the
   leader of the region, which publishes their denials. A follower or an
@@ -272,7 +294,8 @@ Telemetry: `nomad.nomad.admission.denied`, `nomad.nomad.admission.webhook.calls`
   federation. Webhooks are read when a server starts; configure them on every
   server and restart the servers to change them.
 - A slow webhook slows down job submission (the chain runs on the leader for
-  every `job run` and `job plan`), not the other operations of the cluster.
+  every `job run` and `job plan`; the validating webhooks also for every scale
+  and dispatch), not the other operations of the cluster.
 - If a webhook service runs as a Norca job, **exclude its own namespace with
   `exclude_namespaces`**, or its redeployment can be blocked by itself.
 - Policy writes need every server of the region on a Norca version that
