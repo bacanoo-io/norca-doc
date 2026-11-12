@@ -64,7 +64,7 @@ flowchart TD
     ONWAY -->|"no"| SPREAD["Where the job wants it first: datacenters<br/>below its spread share, its affinity"]
     SPREAD --> EXP["Expander of the pool:<br/>spread, fill, priority, weighted"]
     EXP --> LIMITS
-    AHEAD["Ahead of the work:<br/>headroom, window minimum"] --> LIMITS
+    AHEAD["Ahead of the work: headroom, window minimum,<br/>reserve for a datacenter loss"] --> LIMITS
     LIMITS{"Within the group maximum,<br/>pool max_nodes and max_step?"}
     LIMITS -->|"yes"| RAISE(["spec.replicas raised, status.decision written<br/>the operator creates the machines"])
     LIMITS -->|"no"| NOHELP["Cannot be helped"]
@@ -128,6 +128,12 @@ on their way count as free; the nodes that blocked work needs do not. **The head
 ahead-of-time trigger, so it waits for the cooldown of the group.** When the gauges cannot be read,
 nothing is added.
 
+**The headroom of a group looks at its own datacenter.** A pool can also keep a reserve for the loss
+of a whole datacenter ([`reserve_datacenter_loss`](/docs/configuration/autoscaler#reserve-for-the-loss-of-a-datacenter),
+off by default): every group keeps free the share it would get of the work of another datacenter of
+the pool, so the work of a datacenter that is lost is placed at once, without waiting for machines.
+For three datacenters that is half more capacity than the work needs.
+
 ### Scale down
 
 A group with a `policy.scale_down` block loses one node at a time; **a group without it is never
@@ -138,7 +144,8 @@ default) without a break:
 - the group has all its nodes (none joining, none being removed) and is above its `min`;
 - its allocated share **without one node of the group** is below `utilization_below` (40% by
   default): three nodes at 20% are 30% on two nodes, so one may go; three nodes at 30% are 45%;
-- the free capacity without that node still covers the headroom;
+- the free capacity without that node still covers the headroom, and the reserve for the loss of a
+  datacenter where the pool keeps one;
 - `delay_after_add` (10 minutes by default) has passed since the scale was last raised, and the
   group is not in its cooldown;
 - the operator does not hold it (the condition `ScaleDownBlocked`, until its `retryAfter`).

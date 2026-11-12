@@ -169,6 +169,8 @@ autoscaler {
 
       max_nodes_counts = "ready"   # the default; "spec" is a strict cap
       balance          = true      # the default
+
+      reserve_datacenter_loss = false   # the default
     }
   }
 }
@@ -195,6 +197,9 @@ autoscaler {
     cap on what is paid for.
   - `balance` `(bool: true)` - Which group gives the node when the pool has one
     too many, see [Scale down](#scale-down).
+  - `reserve_datacenter_loss` `(bool: false)` - Keeps free capacity in the pool
+    for the work of a datacenter that is lost, see
+    [Reserve for the loss of a datacenter](#reserve-for-the-loss-of-a-datacenter).
 
 ### Blocked work
 
@@ -269,6 +274,34 @@ cluster gauges of its datacenter, pool and class instead.
 
 **Work blocked by the quota of its namespace is not counted:** more nodes would
 not help it.
+
+### Reserve for the loss of a datacenter
+
+The headroom of a group is measured against its own datacenter. When a
+datacenter is lost, its work is placed again in the others, and the nodes for it
+are asked for then: the work waits for machines.
+
+**A pool with `reserve_datacenter_loss = true` keeps that capacity ahead of
+time.** Every group of the pool keeps free the share it would get of the work of
+the other datacenter of the pool that carries the most, so the pool without any
+one of its datacenters still holds the work that is allocated. The work of a
+lost datacenter is split between the groups of the others by their `weight`; for
+n datacenters of the same size the pool is 1/(n-1) larger than its work needs
+(half more with three datacenters, twice with two).
+
+- The reserve is free capacity like the headroom, and **the larger of the two
+  applies** to a group. It is read from the same gauges, waits for the cooldown
+  of the group, and stays within the maximum of the group and of the pool.
+- **The scale down does not take it:** a group is not unneeded while its free
+  capacity without one node is less than its reserve.
+- With the sizes of the nodes known the work is counted in CPU and memory, so
+  groups of different nodes stand in for each other.
+- **No reserve is kept while a group of the pool is not healthy.** A datacenter
+  is lost then, and the reserve is what its work is placed on; a second reserve
+  is not bought for the datacenters that are left. It is kept again when the
+  group is healthy.
+- Nothing is kept for a pool in one datacenter, or when the gauges of a group
+  can't be read.
 
 ### Scale down
 
