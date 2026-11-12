@@ -90,6 +90,11 @@ between availability in the case of failure and performance, as consensus gets
 progressively slower as more servers are added. However, **there is no limit to the number
 of clients per region.**
 
+The three or five servers are the voters. A region can hold more servers that
+do not vote: [observers](/docs/features/server-roles) for reads, scheduling and
+backups, and standbys that take the place of a failed voter. They do not
+enlarge the quorum.
+
 ### Clients
 
 Clients are configured to communicate with their regional servers and communicate

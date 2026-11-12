@@ -28,6 +28,7 @@ supports them ([version gate](/docs/introduction/compatibility#version-gate-of-t
 | Operator framework: custom object kinds and objects, controller SDK, lifecycle (finalizers, deletion modes, garbage collection), ecosystem (operator packs, webhooks, schema migrations, limits, `norca operator init`, `norca object-kind lint`) | Available (phases 1–4, with the web UI pages) | [Operator framework](/docs/features/operator-framework) |
 | System bus: NATS with JetStream embedded in the servers; the event stream of each region and pack push notices on it | Available | [System bus](/docs/features/system-bus) |
 | Multiregion deployments (staged rollout, `on_failure`, global tokens, `norca deployment run`) | Available | [Multiregion deployments](/docs/features/multiregion) |
+| Server roles: observers (reads, scheduling and backups without a vote), hot standby servers (automatic and manual failover of a voter), job checks on the receiving server, request limits per ACL token | Available | [Observers and hot standby](/docs/features/server-roles) |
 | Backup and restore: scheduled, age-encrypted backups to S3-compatible stores and shared directories, browsing and selective restore | Available | [Backup and restore](/docs/features/backup-restore) |
 | Backup and restore: full region restore with preview and two-person approval, keyring restore, `restore-bootstrap` | Available | [Backup and restore](/docs/features/backup-restore) |
 | Backup and restore: web UI | Available | [Web UI](/docs/features/web-ui) |

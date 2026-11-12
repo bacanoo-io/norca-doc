@@ -65,6 +65,12 @@ phase, the record of the work shows no web search and no web page fetched.
 | Standby failover: `target_voters`, promotion and step back, `operator raft promote-standby` | `8dd43588b` (phase 2) | as above |
 | Backups taken by observers (`backup { prefer_observer }`) | `2914fa12f` (phase 3) | as above |
 | Job checks on the receiving server, request limits per ACL token | `231359232` (phase 4) | as above |
+| Standby failover rules put right after a review: a manual failover does not wait, a voter is demoted only while a healthy majority stays, the cooldown counts from the change, nothing is removed unless a promotion follows, a failed voter is not removed before the failover time | `a99a443c4` (2026-11-12) | as above |
+| The autopilot configuration is part of the Raft snapshot | `9469d0d5f` (2026-11-12) | as above |
+
+The server role features are described on
+[observers and hot standby servers](/docs/features/server-roles), their design
+on [the plan](/docs/design/server-roles-plan).
 
 The `CLEAN_ROOM.md` records in the Norca repository list the files of each
 feature and their headers.

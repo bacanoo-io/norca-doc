@@ -129,6 +129,25 @@ the RPC is a _transaction_ type, meaning it modifies state, the leader
 generates a new log entry and applies it using Raft. Once the log entry is committed
 and applied to the FSM, the transaction is complete.
 
+### Voters, observers and standbys
+
+In Norca not every server of the peer set has to vote. Every server has a
+[role](/docs/configuration/server#role):
+
+- **Voters** take part in elections and count for the quorum. Everything above
+  about quorum and fault tolerance is about the voters.
+- **Observers** receive the replicated log and keep the same state, but **never
+  vote and never become the leader**. They answer stale reads, run scheduler
+  workers and can take the backups, so a region gets more servers without a
+  larger quorum.
+- **Standbys** are observers until a voter fails. Autopilot then promotes a
+  caught-up standby to a voter, and demotes it again when the failed voter
+  returns.
+
+A server without a vote does not make writes slower in the way a voter does:
+the leader replicates to it, but does not wait for it to commit an entry. See
+[observers and hot standby servers](/docs/features/server-roles).
+
 Because of the nature of Raft's replication, performance is sensitive to network
 latency. For this reason, each region elects an independent leader and maintains
 a disjoint peer set. **Data is partitioned by region, so each leader is responsible
@@ -168,6 +187,10 @@ Below is a table that shows quorum size and failure tolerance for various
 cluster sizes. **The recommended deployment is either 3 or 5 servers.** A single
 server deployment is _**highly**_ discouraged as data loss is inevitable in a
 failure scenario.
+
+The table counts the voters. [Observers and standbys](#voters-observers-and-standbys)
+do not change the quorum size; a standby restores the failure tolerance after a
+voter is lost, by taking its vote.
 
 <table>
   <thead>

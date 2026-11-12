@@ -18,6 +18,7 @@ marker: *Plan*, *In progress* or *Implemented*. The status of the features thems
 | [Package management](/docs/design/package-management-plan) | `norca pack`, releases, registries and supply chain | In progress (phases 1–4 implemented) |
 | [Secret storage](/docs/design/secrets-plan) | Sealed keyring, built-in secret store, delivery, Vault compatibility, external providers | In progress (phases 0–4 implemented) |
 | [Cluster scaling](/docs/design/cluster-scaling-plan) | Scaling the number of client nodes with platform providers: scope (pool and datacenter), decisions, internal metrics, provider contract, drain | In progress (phases 0–4 implemented; cloud providers and phase 5 not yet) |
+| [Observers and hot standby servers](/docs/design/server-roles-plan) | Server roles, the promoter of autopilot, standby failover, backups from observers, job checks before the leader | In progress (phases 1–4 implemented; the history stream and the heartbeat relay postponed) |
 | [Web UI](/docs/design/ui-plan) | The new web UI, Tabler migration, [visual mockup](/design/mockups/ui-mockup.html) (fictional data) | In progress |
 
 > [!NOTE]

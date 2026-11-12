@@ -123,6 +123,8 @@ the placements on its own state (`dry_run_capacity` of
 [job registration and plan](/docs/api/jobs#create-job)), and limits the HTTP requests per ACL token
 ([`limits`](/docs/configuration) `token_*`).
 
+The feature page is [observers and hot standby servers](/docs/features/server-roles).
+
 `norca operator raft list-peers` and the autopilot health API show the role of every server. Every
 standby promotion and step back is an event of the `Server` topic of the
 [event stream](/docs/api/events), and the leader's metrics store keeps
