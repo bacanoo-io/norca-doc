@@ -20,8 +20,8 @@ flowchart TB
   A["Policy due"] --> B{"Job running,<br/>inside schedule?"}
   B -- "no" --> Z["Skip"]
   B -- "yes" --> C{"Deployment active?"}
-  C -- "yes, not up_only" --> Z
-  C -- "no, or up_only" --> D{"Cooldown or<br/>suspension?"}
+  C -- "yes, and never" --> Z
+  C -- "no, or up_only<br/>(scale-ups only)" --> D{"Cooldown or<br/>suspension?"}
   D -- "yes" --> Z
   D -- "no" --> E["Run checks:<br/>query APM, run strategy"]
   E --> F["Pick the winning action"]

@@ -204,12 +204,12 @@ $ curl \
 | --- | --- |
 | `schedule` | Outside the schedule of the policy. |
 | `not ready` | The job is stopped. |
-| `deployment`, `canary`, `multiregion` | A deployment of the job runs; canaries wait for promotion; the region waits for its turn in a multiregion rollout. |
+| `deployment`, `canary`, `multiregion` | A deployment of the job runs, and the policy says `scale_during_deployment = "never"` or the checks ask for fewer; canaries wait for promotion; the region waits for its turn in a multiregion rollout. |
 | `cooldown`, `suspended` | The cooldown after a change of the count; suspended for oscillating. |
 | `settling` | A scale down is held: the group does not run what was asked for (see [`settle_timeout`](/docs/configuration/autoscaler#autoscaler-parameters)). |
 | `no data` | No check has a value to decide on. |
 | `quota` | The quota of the namespace has no room for one more. |
-| `capacity` | A scale up is held: allocations of the group have waited for capacity for `settle_timeout`, and node scaling says none is coming. |
+| `capacity` | A scale up is held: allocations of the group have waited for capacity for `settle_timeout` (during a deployment: without that wait), and node scaling says none is coming. |
 | `rate limit` | Dropped by the limit of scaling actions; tried again at the next interval. |
 
 A hold for the same reason that lasts
@@ -228,7 +228,8 @@ returned by the read endpoint:
 - `EvaluationInterval`, `Cooldown`, `CooldownOnScaleUp` `(int)` - Durations in
   nanoseconds; zero means the server default.
 - `OnCheckError` `(string)` - `fail`, `ignore`, or empty.
-- `ScaleDuringDeployment` `(string)` - `never`, `up_only`, or empty.
+- `ScaleDuringDeployment` `(string)` - `never`, `up_only`, or empty (`up_only`
+  for the built-in engine, `never` for the external one).
 - `Checks` `(array)` - One object per check with `Name`, `Source`, `Metric`,
   `Query`, `QueryWindow`, `QueryWindowOffset` (nanoseconds), `QueryInstant`,
   `Group`, `Strategy`, `StrategyConfig` (a map of strings) and `OnError`.

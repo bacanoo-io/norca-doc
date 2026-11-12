@@ -56,10 +56,11 @@ and **reject invalid policies, so errors show up in `norca job plan` and
   `check` will be ignored when computing the scaling action. This value may be
   overridden individually by setting `on_error`. Defaults to `"ignore"`.
 
-- `scale_during_deployment` - (Norca) `"never"` (default) skips the evaluation
-  while a deployment of the job is active. `"up_only"` allows scaling up during
-  an active deployment, but not scaling down and not while canaries wait for
-  promotion.
+- `scale_during_deployment` - (Norca) `"up_only"` allows scaling up during
+  an active deployment of the job, but not scaling down and not while canaries
+  wait for promotion. `"never"` holds the count while a deployment is active.
+  A policy of the built-in engine that does not set it is `"up_only"`; a
+  policy of the external engine is `"never"`.
 
 - `schedule` - Restricts the evaluation of the policy to a recurring time window,
   see [`schedule` options](#schedule-options).

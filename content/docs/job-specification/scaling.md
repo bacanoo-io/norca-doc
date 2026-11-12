@@ -122,9 +122,13 @@ next to the original document. The attributes of the `policy` block are:
 - `on_check_error` `(string: "ignore")` - `fail` stops the evaluation when a
   check returns an error; `ignore` leaves the failed check out.
 
-- `scale_during_deployment` `(string: "never")` - `never` skips the evaluation
-  while a deployment of the job is active; `up_only` allows scaling up during a
-  deployment, but not scaling down and not while canaries wait for promotion.
+- `scale_during_deployment` `(string: "up_only")` - `up_only` allows scaling up
+  during a deployment of the job, but not scaling down and not while canaries
+  wait for promotion; `never` holds the count while a deployment is active.
+  **The default applies to the built-in autoscaler's own scaling:** a scale by
+  hand (`norca job scale`, the API) is held during a deployment unless the
+  policy sets `up_only`. See
+  [scaling and the versions of a job](/docs/features/autoscaler#scaling-and-the-versions-of-a-job).
 
 - `schedule` <code>(block: nil)</code> - Restricts the evaluation to a time
   window: `start` (a 5-field cron expression, UTC) and exactly one of `end` (a

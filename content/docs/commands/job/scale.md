@@ -27,6 +27,14 @@ Scale will issue a request to update the matched job and then invoke an interact
 monitor that exits automatically once the scheduler has processed the request.
 It is safe to exit the monitor early using `ctrl+c`.
 
+**Scaling is not a new version of the job.** The count is changed on the
+version that runs: `norca job history` shows no new version, no deployment is
+started, and the allocations that run are left as they are. The changes of the
+count are listed by [`norca job scaling-events`](/docs/commands/job/scaling-events).
+While a deployment of the job is active the command is refused, unless the
+scaling policy of the group sets `scale_during_deployment = "up_only"` and the
+count is raised.
+
 When ACLs are enabled, this command requires a token with the
 `read-job-scaling` and either the `scale-job` or `submit-job` capabilities
 for the job's namespace. The `list-jobs` capability is required to run the

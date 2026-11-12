@@ -76,9 +76,9 @@ flowchart LR
    APM plugin configured in the server's `autoscaler` block.
 3. **Evaluation.** Every policy is evaluated at its `evaluation_interval` by a
    bounded pool of workers. An evaluation is skipped when the job is stopped or
-   missing, the policy is outside its `schedule`, a deployment of the job is
-   active (unless `scale_during_deployment = "up_only"` allows scaling up), or
-   the group is in its cooldown or suspended. Otherwise every check queries its
+   missing, the policy is outside its `schedule`, or the group is in its
+   cooldown or suspended. While a deployment of the job is active the group is
+   scaled up and not down (`scale_during_deployment`, `up_only` by default). Otherwise every check queries its
    metric and runs its strategy; when checks disagree, the action that keeps the
    most capacity wins (see [checks](/docs/features/autoscaler/reference/concepts/policy-eval/checks)).
 4. **Coordination.** A scale up is capped at what still fits into the
@@ -141,7 +141,7 @@ flowchart TD
   SCH -->|"no"| H_SCH["Hold: schedule"]
   SCH -->|"yes"| DEP{"Deployment of the job?"}
   DEP -->|"never, canary not promoted,<br/>or region waits for its turn"| H_DEP["Hold: deployment,<br/>canary, multiregion"]
-  DEP -->|"running, up_only"| UPONLY["Scale-ups only"]
+  DEP -->|"running: up_only<br/>(the default)"| UPONLY["Scale-ups only"]
   DEP -->|"none"| CD{"Cooldown or<br/>oscillation suspension?"}
   UPONLY --> CD
   CD -->|"yes"| H_CD["Hold: cooldown, suspended"]
@@ -169,7 +169,7 @@ flowchart TD
   QUOTA -->|"none"| H_Q["Hold: quota"]
   QUOTA -->|"some: cut to what fits"| CAPACITY{"Missing allocations blocked<br/>and node scaling cannot help?"}
   QUOTA -->|"enough"| CAPACITY
-  CAPACITY -->|"yes, after settle_timeout"| H_CAP["Hold: capacity"]
+  CAPACITY -->|"yes, after settle_timeout<br/>(at once during a deployment)"| H_CAP["Hold: capacity"]
   CAPACITY -->|"no"| GUARD{"Oscillation guard<br/>and rate limit"}
   GUARD -->|"too many direction changes"| H_OSC["Suspend the target"]
   GUARD -->|"over the rate limit"| H_RL["Hold: rate limit"]
@@ -182,6 +182,38 @@ which `norca scaling policy info` prints: the count asked for and what runs,
 what each check read and voted for, the result, and why nothing was done. A hold
 that lasts [`hold_warn`](/docs/configuration/autoscaler#autoscaler-parameters)
 raises a `ScalingHeld` event.
+
+### Scaling and the versions of a job
+
+**Scaling a group is not a new version of the job.** A change of the count, by
+a policy, by `norca job scale` or through the API, is made on the version
+that runs:
+
+- The allocations that run are left as they are, and the ones that are added
+  are placed without a deployment. The version stays the stable one it was,
+  with its job file, and scaling does not use up the versions Norca keeps of a
+  job. The changes of the count are in the scaling events of the group
+  ([`norca job scaling-events`](/docs/commands/job/scaling-events)).
+- **A deployment that runs goes on.** The allocations a scale up adds become
+  part of it, and it waits for them too.
+
+So a load that grows during a rollout is answered: by default **a policy of
+the built-in engine scales its group up during a deployment, and not down**
+(`scale_during_deployment = "up_only"`). Nothing is scaled while canaries
+wait for promotion, or while the region waits for its turn in a multiregion
+rollout. Set `scale_during_deployment = "never"` to hold the count for the
+length of every deployment.
+
+> [!NOTE]
+> The allocations added during a deployment are part of it: if they can not be
+> placed until its `progress_deadline`, the deployment fails, and is reverted
+> with `auto_revert`. During a deployment a group whose waiting allocations
+> [node scaling can not help](/docs/configuration/autoscaler#events) is
+> therefore not scaled up further at once (the reason `capacity`), without
+> waiting for `settle_timeout`.
+
+A scale by hand and a policy of the external engine are held during a
+deployment unless the policy says `up_only`.
 
 ### A new version of the job
 
@@ -290,7 +322,7 @@ Job specification, `group -> scaling` (full reference:
 | `min`, `max`, `enabled` | int, int, bool | count, required, `true` | Bounds of the group count and the switch of the policy. |
 | `policy.evaluation_interval`, `policy.cooldown`, `policy.cooldown_on_scale_up` | duration | server defaults | Timing of the evaluation. |
 | `policy.on_check_error` | string | `"ignore"` | `fail` or `ignore` errors of checks. |
-| `policy.scale_during_deployment` | string | `"never"` | `never` or `up_only`. |
+| `policy.scale_during_deployment` | string | `"up_only"` for the built-in engine | `never` or `up_only`. |
 | `policy.check "<name>"` | block | required | Metric (`metric`, or `source` and `query`) and strategy of a check. |
 
 ## CLI and API

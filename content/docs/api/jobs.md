@@ -2457,7 +2457,14 @@ $ curl \
 
 This endpoint performs a scaling action against a job.
 Currently, this endpoint supports scaling the count for a task group.
-**This will return a 400 error if the job has an active deployment.**
+**This will return a 400 error if the job has an active deployment**, unless
+the scaling policy of the group allows the scale up
+([`scale_during_deployment`](/docs/job-specification/scaling#norca-typed-policy)).
+
+**Scaling is not a new version of the job:** the count is changed on the
+version that is stored, its `Version` and `JobModifyIndex` stay, no deployment
+is started, and a deployment that runs goes on (see
+[scaling and the versions of a job](/docs/features/autoscaler#scaling-and-the-versions-of-a-job)).
 
 | Method | Path                    | Produces           |
 | ------ | ----------------------- | ------------------ |
