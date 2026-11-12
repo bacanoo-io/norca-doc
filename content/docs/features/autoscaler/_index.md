@@ -358,12 +358,25 @@ Telemetry of the autoscaler is described in
   plugins are not loaded.
 - The Datadog, InfluxDB and Instana APMs are not built in; they can only be
   used as external plugins.
-- **The usage data is not replicated**: after a leader change the built-in metrics
-  need one full `metrics_window` before policies that use them scale again.
+- The usage window of the leader is not replicated. A new leader fills it from
+  its [metrics store](/docs/configuration/metrics_store#autoscaler), so the
+  built-in metrics do not wait one `metrics_window` after a leader change.
+- **One count and one average cover all datacenters of a group.** Where the
+  datacenters must scale apart, use one group per datacenter, each with its own
+  policy.
+- Application metrics without a metrics system (values read from the tasks by
+  the clients, values reported by an operator, a strategy for shared backlogs)
+  are planned, see the
+  [application autoscaling plan](/docs/design/application-autoscaling-plan).
 - The `external` engine keeps the Nomad v1.6.5 behavior: an external autoscaler
   agent can list only its own policies with `GET /v1/scaling/policies?engine=external`.
 
 ## Design
+
+[Horizontal autoscaling on application metrics](/docs/design/application-autoscaling-plan):
+the decision model (what was asked for, what runs, what was measured), the
+holds, how the task group scaler and the node scaler depend on each other, and
+the planned application metrics.
 
 [Development plan: built-in autoscaler](/docs/design/development-plan#target-architecture),
 with the [jobspec and data model](/docs/design/development-plan#jobspec-and-data-model),

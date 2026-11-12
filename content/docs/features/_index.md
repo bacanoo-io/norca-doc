@@ -18,6 +18,7 @@ supports them ([version gate](/docs/introduction/compatibility#version-gate-of-t
 | Built-in autoscaler: leader subsystem, built-in strategies, `nomad` metrics pushed by clients and Prometheus, external APM and strategy plugins, typed and validated `scaling` policies, quota and deployment aware, `Scaling` events, off by default | Available | [Autoscaler](/docs/features/autoscaler) |
 | Node scaling: `NodeGroup` and `NodeProvider` objects, the decision of the scale (blocked work, headroom, expanders, checks, dry run), the operator `norca-nodescaler` (scale down, rolling replacement, deletion of a group), node identity with `norca-join`, and the provider application `norca-provider` with the mock and a docker provider; no cloud provider yet | In progress | [Node scaling](/docs/features/node-scaling) |
 | Built-in autoscaler: node pool scaling with cloud providers (Hetzner Cloud, Scaleway, AWS, GCP) | Postponed | [Development plan](/docs/design/development-plan) |
+| Built-in autoscaler: scaling on application metrics (task metrics read by the client, metrics reported by an operator, the `backlog` strategy) | Planned | [Application autoscaling plan](/docs/design/application-autoscaling-plan) |
 | Namespace quotas | Available | [Quotas](/docs/features/quotas) |
 | Dynamic admission control (CEL policies, webhooks) | Available | [Admission control](/docs/features/admission-control) |
 | Event stream: Variables topic, resumable subscriptions | Available | [Event stream](/docs/features/event-stream) |
