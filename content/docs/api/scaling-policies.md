@@ -209,7 +209,7 @@ $ curl \
 | `settling` | A scale down is held: the group does not run what was asked for (see [`settle_timeout`](/docs/configuration/autoscaler#autoscaler-parameters)). |
 | `no data` | No check has a value to decide on. |
 | `quota` | The quota of the namespace has no room for one more. |
-| `capacity` | A scale up is held: allocations of the group have waited for capacity for `settle_timeout` (during a deployment: without that wait), and node scaling says none is coming. |
+| `capacity` | A scale up is held: allocations of the group have waited for capacity for `settle_timeout`, and node scaling says none is coming. |
 | `rate limit` | Dropped by the limit of scaling actions; tried again at the next interval. |
 
 A hold for the same reason that lasts

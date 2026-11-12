@@ -2463,7 +2463,8 @@ the scaling policy of the group allows the scale up
 
 **Scaling is not a new version of the job:** the count is changed on the
 version that is stored, its `Version` and `JobModifyIndex` stay, no deployment
-is started, and a deployment that runs goes on (see
+is started, and a deployment of the version goes on without the allocations
+that are added (see
 [scaling and the versions of a job](/docs/features/autoscaler#scaling-and-the-versions-of-a-job)).
 
 | Method | Path                    | Produces           |

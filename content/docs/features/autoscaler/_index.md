@@ -169,7 +169,7 @@ flowchart TD
   QUOTA -->|"none"| H_Q["Hold: quota"]
   QUOTA -->|"some: cut to what fits"| CAPACITY{"Missing allocations blocked<br/>and node scaling cannot help?"}
   QUOTA -->|"enough"| CAPACITY
-  CAPACITY -->|"yes, after settle_timeout<br/>(at once during a deployment)"| H_CAP["Hold: capacity"]
+  CAPACITY -->|"yes, after settle_timeout"| H_CAP["Hold: capacity"]
   CAPACITY -->|"no"| GUARD{"Oscillation guard<br/>and rate limit"}
   GUARD -->|"too many direction changes"| H_OSC["Suspend the target"]
   GUARD -->|"over the rate limit"| H_RL["Hold: rate limit"]
@@ -194,8 +194,15 @@ that runs:
   with its job file, and scaling does not use up the versions Norca keeps of a
   job. The changes of the count are in the scaling events of the group
   ([`norca job scaling-events`](/docs/commands/job/scaling-events)).
-- **A deployment that runs goes on.** The allocations a scale up adds become
-  part of it, and it waits for them too.
+- **A deployment of that version stays what it was.** It is the rollout of the
+  version over the allocations the group had when it started. The allocations
+  a scale up adds later are not part of it (the deployment records how many,
+  as `ScaleAdded` of the task group): it does not wait for them, it is
+  complete when its own allocations are, and it can not fail because one of
+  them finds no capacity.
+- **A deployment that failed does not hold them.** No other new allocation is
+  placed for a group whose deployment failed, but what scaling asks for is. A
+  paused deployment holds them like every placement, until it is resumed.
 
 So a load that grows during a rollout is answered: by default **a policy of
 the built-in engine scales its group up during a deployment, and not down**
@@ -203,14 +210,6 @@ the built-in engine scales its group up during a deployment, and not down**
 wait for promotion, or while the region waits for its turn in a multiregion
 rollout. Set `scale_during_deployment = "never"` to hold the count for the
 length of every deployment.
-
-> [!NOTE]
-> The allocations added during a deployment are part of it: if they can not be
-> placed until its `progress_deadline`, the deployment fails, and is reverted
-> with `auto_revert`. During a deployment a group whose waiting allocations
-> [node scaling can not help](/docs/configuration/autoscaler#events) is
-> therefore not scaled up further at once (the reason `capacity`), without
-> waiting for `settle_timeout`.
 
 A scale by hand and a policy of the external engine are held during a
 deployment unless the policy says `up_only`.

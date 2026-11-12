@@ -340,9 +340,7 @@ changes, not at every look.
 
 **The policy of the task group knows of it too.** A group whose allocations have
 waited for capacity for `settle_timeout`, and for which no node is coming, is
-not scaled up further: its policy is held with the reason `capacity`. During a
-deployment of the job there is no wait: the allocations a scale up adds are
-part of the deployment, which fails if they are never placed.
+not scaled up further: its policy is held with the reason `capacity`.
 
 ## `strategy` Block
 
