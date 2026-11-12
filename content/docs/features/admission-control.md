@@ -83,7 +83,12 @@ flowchart TB
   with a warning. Mutating webhooks are not called for a submitter that may not
   submit jobs to the namespace. A patch must not put a `null` into a list of
   the job (a task group, a task, a service); a `null` value for a member is
-  allowed.
+  allowed. After a patch the built-in mutators run again, so what a webhook
+  adds (a task with a `vault` block, a mesh service, a `secret`, a `scaling`
+  block) gets its sidecars, implied constraints and defaults like the rest of
+  the job. The policies and the validating webhooks decide before the job
+  writes anything outside the cluster (a gateway configuration entry in
+  Consul).
 - **Scaling and dispatch.** A new count of a group (`norca job scale`, the
   scaling API, the autoscaler) and the child of a parameterized job
   (`norca job dispatch`) are written without a registration. The policies and
@@ -99,7 +104,9 @@ flowchart TB
   authorized and before the Raft write. With `schema_from = "crd-schema"` a
   policy also validates `crd/<group>/<kind>/<name>` Variables against a JSON
   Schema stored in `crd-schema/<group>/<kind>` (see the
-  [operator framework](/docs/features/operator-framework)). The server's own
+  [operator framework](/docs/features/operator-framework)). **A Variable whose
+  schema Variable does not exist is not validated**; protect the
+  `crd-schema/*` paths with a rule of their own. The server's own
   re-encryption of the Variables after a full rotation of the root key
   changes no content and is not sent through the policies and webhooks.
 - **Releases.** Policies that select the `release` resource run when a pack

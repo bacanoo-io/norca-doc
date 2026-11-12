@@ -261,6 +261,18 @@ $ curl \
 
 The response is the updated kind.
 
+The approval covers the configuration the webhook has when the servers get the
+request. With the query parameter `index` (the `ModifyIndex` of the kind as it
+was read) the approval is refused with status `409` when the kind was written
+since, so that what is approved is what was looked at:
+
+```shell
+$ curl \
+    --request PUT \
+    --header "X-Nomad-Token: $NORCA_TOKEN" \
+    "http://localhost:4646/v1/object-kind/norca.io/LoadBalancer/webhook/validate/approve?index=412"
+```
+
 ## Delete Object Kind
 
 This endpoint deletes an object kind. **A kind that still has objects can't be

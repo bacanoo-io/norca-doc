@@ -89,7 +89,8 @@ metrics.
 - `include_variable_items` `(bool: false)` - Sends the decrypted items of the
   written and of the previous Variable to the webhook. By default the webhook
   only receives their namespace, path and indexes. Requires the `variable`
-  resource.
+  resource and an `https` URL (or a loopback address): the items are the
+  secrets of the Variables.
 
 - `ca_file` `(string: "")` - A PEM CA bundle used to verify the certificate of
   the webhook. The system roots are used when it is empty.

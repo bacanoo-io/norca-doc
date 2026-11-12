@@ -21,6 +21,11 @@ The approval covers the current configuration of the webhook (URL, CA, mode,
 operations, timeout, failure policy); **any change of the configuration needs a
 new approval.** See [Type-bound webhooks](/docs/features/operator-framework/ecosystem#type-bound-webhooks).
 
+The command reads the kind, prints the URL, the mode, the operations and the
+failure policy of the webhook, and approves the kind as it was read: **if the
+kind was changed in between, the approval is refused** and the webhook has to be
+looked at again.
+
 [`norca object-kind inspect`](/docs/commands/object-kind/inspect) shows the
 webhooks and their approvals.
 
@@ -36,5 +41,9 @@ This command accepts the general options of the Norca CLI (`-address`,
 
 ```shell
 $ norca object-kind webhook approve norca.io/LoadBalancer validate
+URL            = https://lb-webhook.internal:8443/validate
+Mode           = validate
+Operations     = create, update, delete
+Failure Policy = fail
 Approved webhook "validate" of norca.io/LoadBalancer
 ```

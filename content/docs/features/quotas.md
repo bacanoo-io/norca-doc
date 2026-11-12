@@ -67,6 +67,12 @@ flowchart LR
 - **Regions.** Quota specifications are written in the authoritative region and
   replicated to the other regions; each region enforces its own `limit` block
   and tracks its own usage. **A region without a `limit` block is not limited.**
+  The replication runs with the replication of the namespaces, which needs
+  ACLs to be enabled; a federation without ACLs has the quotas of the
+  authoritative region only.
+- **Preemption.** A placement that needs room in a full quota is not made by
+  preempting allocations of the same quota: the quota is checked before the
+  scheduler looks for allocations to preempt.
 - **Events.** The `Quota` topic of the [event stream](/docs/features/event-stream)
   publishes changes of quota specifications and `QuotaExhausted` and
   `QuotaFreed` events when a dimension becomes exhausted or available again.
@@ -186,7 +192,9 @@ the specification with the usage of every region.
   replication from the authoritative region, the `Quota` event topic.
 - The `memory` limit is compared with the reserved memory of the allocations,
   not with their `memory_max`; set `memory_max` in `region_limit` to limit
-  memory oversubscription.
+  memory oversubscription. Where memory oversubscription is disabled (the
+  scheduler configuration, or the node pool of the job) an allocation has no
+  `memory_max` and counts with its `memory` in that dimension too.
 - Device (GPU), disk, IOPS and network resources cannot be limited.
 - `task_defaults` cannot set `cores`. A task that sets the built-in default
   values (`cpu = 100`, `memory = 300`) is treated as not setting them.

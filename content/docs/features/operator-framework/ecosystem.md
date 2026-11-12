@@ -93,7 +93,14 @@ On a create or update the server runs, in order:
    the write. They can also review deletions when `delete` is listed in
    `operations`.
 
-Status, finalizer, event log and scale writes are not reviewed.
+**A scale changes the spec too** (the replicas of the scale subresource): the
+validating webhooks that review updates review it, with the operation `scale`.
+The defaulting webhooks do not run for a scale. Status, finalizer and event log
+writes are not reviewed.
+
+The CEL rules of a kind are evaluated for create, update, status and scale
+writes, not for deletions: a rule that a stored object no longer meets would
+keep it from being deleted. A deletion can be refused by a validating webhook.
 
 The webhooks receive an `AdmissionReview` document (`api_version =
 "admission.norca.io/v1"`) with `resource = "object"`, the `operation`, the
