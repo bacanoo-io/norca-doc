@@ -118,7 +118,11 @@ flowchart TB
   client rendered, the digest and the signatures are what the client sends.
   The rule `release.pack.serverRendered` admits only the first; it also holds
   for a rollback to such a revision. In a multi-region install it holds in the
-  region of the server that rendered the pack, not in the other regions.
+  region of the server that rendered the pack, and in the other regions when
+  the servers verify each other's names (`verify_server_hostname` with TLS for
+  RPC): a region takes the word of a server of its federation for the
+  rendering, and of nobody else. Without verified server names the pack counts
+  as rendered by the client in the other regions.
 - **Denials.** A rejection publishes a `JobAdmissionDenied` (or
   `VariableAdmissionDenied`) event on the `AdmissionPolicy` topic of the
   [event stream](/docs/features/event-stream): namespace, job, operation, the
