@@ -288,15 +288,16 @@ registrations, with no, two and five observers.
 
 | | No observer | 2 observers | 5 observers |
 | --- | --- | --- | --- |
-| Write, median | 5.0 ms | 6.5 ms | 8.9 ms |
-| Write, 95th percentile | 9.0 ms | 21.7 ms | 34.5 ms |
-| Write, 99th percentile | 16.2 ms | 29.9 ms | 42.2 ms |
-| Writes done of 15000 asked | 15001 | 14997 | 13641 |
-| Job registration in the burst, median | 57 ms | 68 ms | 130 ms |
-| Jobs placed per second in the burst | 21.7 | 21.2 | 16.3 |
+| Write, median | 4.7 ms | 5.9 ms | 8.4 ms |
+| Write, 95th percentile | 7.1 ms | 22.7 ms | 34.2 ms |
+| Write, 99th percentile | 9.8 ms | 31.4 ms | 41.2 ms |
+| Writes done of 15000 asked | 15001 | 14995 | 14236 |
+| Job registration in the burst, median | 36 ms | 44 ms | 54 ms |
+| Jobs placed per second in the burst | 25.5 | 23.5 | 21.4 |
 
-**One standby and one observer cost little; five are felt:** the region no
-longer kept up with 50 writes per second.
+**One standby and one observer cost little in the median, but the slow writes
+get slower at once:** the 95th percentile triples with two observers. With
+five the region no longer kept up with 50 writes per second.
 
 > [!NOTE]
 > Each column is a single run, and the observers ran on the same host as the
