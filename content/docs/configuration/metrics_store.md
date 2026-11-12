@@ -327,6 +327,7 @@ sample interval on that server (the sum over a step of the history).
 | `norca.backup.last_success_age_seconds` | | seconds since the newest usable (complete or partial) backup; no series before the first one | every server |
 | `norca.backup.size_bytes` | `destination` | bytes of the state of the newest usable backup on the destination | every server |
 | `norca.backup.duration_seconds` | `destination` | seconds the newest usable backup took on the destination | every server |
+| `norca.backup.taken_by_observer` | | backups an observer took for the leader ([`prefer_observer`](/docs/configuration/backup)), per interval | each server |
 | `norca.security.certificates_issued` | | workload certificates issued by the [mTLS](/docs/configuration/mtls) certificate authority, per interval | each server |
 | `norca.security.admission_denied` | | jobs and variables denied by [admission control](/docs/configuration/admission), per interval | each server |
 | `norca.security.webhook_calls` | `webhook` | calls to the admission webhook, per interval | each server |
