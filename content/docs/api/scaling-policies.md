@@ -134,6 +134,88 @@ $ curl \
 }
 ```
 
+## Read the status of a scaling policy
+
+This endpoint reads the last evaluation of a scaling policy by the built-in
+autoscaler: what its checks read and asked for, and why nothing was done when
+nothing was.
+
+| Method | Path                                   | Produces           |
+| ------ | -------------------------------------- | ------------------ |
+| `GET`  | `/v1/scaling/policy/:policy_id/status` | `application/json` |
+
+| Blocking Queries | Consistency Modes | ACL Required                    |
+| ---------------- | ----------------- | ------------------------------- |
+| `NO`             | `none`            | `namespace:read-scaling-policy` |
+
+**The status is kept in the memory of the leader, which always answers the
+request.** The response is `null` for a policy that has not been evaluated since
+the leader was elected, and for a policy of the external engine.
+
+### Sample Request
+
+```shell
+$ curl \
+    https://localhost:4646/v1/scaling/policy/5e9f9ef2-5223-6d35-bac1-be0f3cb974ad/status
+```
+
+### Sample Response
+
+```json
+{
+  "Time": 1794477600000000000,
+  "Desired": 6,
+  "Running": 4,
+  "Checks": [
+    {
+      "Name": "cpu",
+      "Value": 25,
+      "HasValue": true,
+      "Direction": "down",
+      "Count": 2
+    }
+  ],
+  "Count": 2,
+  "Direction": "down",
+  "Outcome": "held",
+  "HoldReason": "settling",
+  "HoldSince": 1794477540000000000,
+  "Message": "4 of 6 run, not settled for 1m0s"
+}
+```
+
+- `Time` `(int)` - When the policy was evaluated, in Unix nanoseconds.
+- `Desired`, `Running` `(int)` - The count that was asked for (the count of the
+  task group) and what ran of it. **The checks are measured against `Desired`:**
+  the two differ while allocations start, wait for capacity, migrate or are
+  being replaced.
+- `Checks` `(array)` - The checks that were run: `Name`, the latest `Value`
+  read (`HasValue` is false for a check without a measured value), the vote
+  `Direction` (`up`, `down`, `none`, or `no data` for a check that was left out
+  because its source gave no value) and the `Count` it asks for.
+- `Count`, `Direction` `(int, string)` - The result of the checks and where it
+  lies from `Desired`.
+- `Outcome` `(string)` - `scaled`, `none` (the checks ask for the count the
+  group has), `held` or `error`.
+- `HoldReason`, `HoldSince`, `Message` - Why an evaluation was held, since when
+  without a break, and the detail of a hold or an error.
+
+| `HoldReason` | Meaning |
+| --- | --- |
+| `schedule` | Outside the schedule of the policy. |
+| `not ready` | The job is stopped. |
+| `deployment`, `canary`, `multiregion` | A deployment of the job runs; canaries wait for promotion; the region waits for its turn in a multiregion rollout. |
+| `cooldown`, `suspended` | The cooldown after a change of the count; suspended for oscillating. |
+| `settling` | A scale down is held: the group does not run what was asked for (see [`settle_timeout`](/docs/configuration/autoscaler#autoscaler-parameters)). |
+| `no data` | No check has a value to decide on. |
+| `quota` | The quota of the namespace has no room for one more. |
+| `capacity` | A scale up is held: allocations of the group have waited for capacity for `settle_timeout`, and node scaling says none is coming. |
+| `rate limit` | Dropped by the limit of scaling actions; tried again at the next interval. |
+
+A hold for the same reason that lasts
+[`hold_warn`](/docs/configuration/autoscaler#autoscaler-parameters) raises a
+`ScalingHeld` [event](/docs/api/events).
+
 ## Norca extensions
 
 In Norca a scaling policy carries, next to the original `Policy` document, the

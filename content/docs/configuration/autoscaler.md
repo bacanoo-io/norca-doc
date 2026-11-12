@@ -71,6 +71,23 @@ server {
 
 - `rate_limit_burst` `(int: 50)` - The burst size of the token bucket.
 
+- `settle_timeout` `(string: "10m")` - The longest time a task group that does
+  not run what was asked for is kept from being scaled down. A group is not
+  settled while allocations of it start, wait for capacity, migrate from a
+  draining node or are being replaced after a node was lost. **Until it
+  settles, its policy may scale it up but not down:** what such a group shows is
+  its load on fewer instances than it will have. After the timeout a count that
+  never came to run no longer holds the group, and a scale up is no longer made
+  for a group whose waiting allocations [node scaling cannot help](#events).
+  Must be greater than zero.
+
+- `hold_warn` `(string: "10m")` - How long a policy is held for the same reason
+  (a deployment, canaries waiting for promotion, a group that does not settle,
+  no data, ...) before a [`ScalingHeld`](/docs/api/events) event tells about it;
+  another one follows when that hold ends. The reason of a hold is always in
+  the [status of the policy](/docs/api/scaling-policies#read-the-status-of-a-scaling-policy).
+  Must be greater than zero.
+
 - `metrics_window` `(string: "5m")` - How long the leader keeps the task group
   usage reported by clients, the data of the built-in metrics.
   - After a leader
@@ -147,8 +164,11 @@ autoscaler {
 
     pool "edge" {
       expander  = "priority"   # overrides the region
-      max_nodes = 12           # the sum of spec.replicas over the groups of the pool
+      max_nodes = 12           # the most nodes of the groups of the pool
       max_step  = 3            # nodes added to the pool by one decision
+
+      max_nodes_counts = "ready"   # the default; "spec" is a strict cap
+      balance          = true      # the default
     }
   }
 }
@@ -165,6 +185,16 @@ autoscaler {
 - `interval` `(string: "30s")` - How often the blocked work is looked at.
 - `pool` - Overrides `expander` for a pool and limits it with `max_nodes` and
   `max_step` (0: no limit).
+  - `max_nodes_counts` `(string: "ready")` - What counts against `max_nodes`.
+    With `ready`, `spec.replicas` of every group, but **of a group that is not
+    healthy only the nodes it has** (ready or joining): the nodes of a
+    datacenter that was lost do not keep the other datacenters of the pool from
+    growing into their place. When they come back the pool can be above
+    `max_nodes` for a while; it does not grow then, and the scale down brings it
+    back. With `spec`, `spec.replicas` of every group always counts: a strict
+    cap on what is paid for.
+  - `balance` `(bool: true)` - Which group gives the node when the pool has one
+    too many, see [Scale down](#scale-down).
 
 ### Blocked work
 
@@ -178,7 +208,23 @@ group:
    nodes of 8 GB need four nodes. **An allocation under `distinct_hosts`, or one
    that asks for a port by number, needs a node of its own.**
 2. Work that can go to several groups (the datacenters of the job) is split
-   between them by the expander; **it is counted once, not once per datacenter.**
+   between them; **it is counted once, not once per datacenter.**
+   - The datacenters of the job are taken as the job names them, patterns
+     included (`datacenters = ["*"]` is the default of a job): **the group of a
+     datacenter that has no node yet can grow** for a job whose datacenters
+     match it.
+   - **Where the job wants its allocations comes first.** A job with a `spread`
+     on `${node.datacenter}` gets its nodes in the datacenters that are
+     furthest below their share, counting the allocations it already has
+     there; a job with an `affinity` for a datacenter gets them there. Among the
+     groups that are left, or when the job says nothing, the expander chooses.
+   - **A group that is not healthy is left out.** No work goes to a group for
+     which no machine can be made: its operator reports `JoinFailing`,
+     `ProviderAvailable` false, or `Provisioned` false with the reason
+     `NoBootstrap`. A group of whose nodes fewer than half have been ready for
+     two minutes (a datacenter that is cut off looks like this) gets work only
+     when no healthy group can take it, so a node that died in the only group
+     there is is still replaced.
 3. A `distinct_property` on `${node.datacenter}` or `${node.pool}` is checked
    against the group: the live allocations of the job (of the task group, when
    the constraint is on the group) are counted by the value of their node, a
@@ -204,9 +250,13 @@ waits that long. `headroom_nodes` (or `headroom_percent`, a share of the nodes
 the group has; the larger of the two applies) in the spec of a node group asks
 the autoscaler to keep free capacity worth that many nodes ahead of the work.
 
-The free capacity is read from the cluster gauges of the group's datacenter,
-pool and class: the ready, eligible nodes and the share of CPU and memory
-allocated (the scarcer of the two).
+The free capacity is read from the gauges of the group's own nodes
+(`norca.nodegroup.nodes_ready`, `cpu_allocated`, `memory_allocated`: the
+ready, eligible nodes that name the group in their meta, and the share of
+their CPU and memory that is allocated, the scarcer of the two). **Other groups
+of the same datacenter and pool, and nodes no group made, do not count.** A
+group none of whose nodes names it (nodes made by hand) is measured by the
+cluster gauges of its datacenter, pool and class instead.
 
 - Nodes that were asked for and have not
   joined yet count as free capacity, so the same headroom is not asked for twice.
@@ -220,14 +270,44 @@ allocated (the scarcer of the two).
 **Work blocked by the quota of its namespace is not counted:** more nodes would
 not help it.
 
+### Scale down
+
+A node group with a `scale_down` block is unneeded when its own nodes have been
+little used for `unneeded_for` (see
+[NodeGroup](/docs/features/node-scaling/nodegroup)). The pool then has a node
+too many, and one group of the pool is lowered by one node.
+
+**With `balance` (the default) the node that goes is one of the group that is
+furthest above its share of the pool's ready nodes** (the shares are the
+`weight` of the groups), if that group may be lowered and is at least a node
+above its share; otherwise the unneeded group itself is lowered.
+
+This matters after a datacenter was lost and has come back. Its work was placed
+again on nodes that were added to the other datacenters, and its own nodes are
+back, empty. The unneeded group is the returned one; lowering it would leave all
+the work where the loss put it. Lowering a group that grew drains one of its
+nodes, the allocations are placed where there is room (the returned
+datacenter), and the pool comes back into balance a node at a time.
+
+- If blocked work raises the lowered group again within 30 minutes, its work
+  could not move (the jobs are bound to that datacenter). **The balance of the
+  pool is then switched off for 6 hours**, a `ScalingNodeBlocked` event says so,
+  and the unneeded group itself is lowered meanwhile.
+- `balance = false` always lowers the unneeded group.
+
 ### Events
 
 When work is not helped by more nodes, a `ScalingNodeBlocked` event says why
 (every group is at its maximum, a limit of the pool, the size of a node is not
-known, no group fits it); a constraint that cannot be checked against a node that
-does not exist yet gives `ScalingNodeUnverifiable`, and an allocation that does
-not fit an empty node `ScalingNodeAllocationTooLarge`. Each is raised when
-the reason appears or changes, not at every look.
+known, no group fits it, a group is left out because it is not healthy); a
+constraint that cannot be checked against a node that does not exist yet gives
+`ScalingNodeUnverifiable`, and an allocation that does not fit an empty node
+`ScalingNodeAllocationTooLarge`. Each is raised when the reason appears or
+changes, not at every look.
+
+**The policy of the task group knows of it too.** A group whose allocations have
+waited for capacity for `settle_timeout`, and for which no node is coming, is
+not scaled up further: its policy is held with the reason `capacity`.
 
 ## `strategy` Block
 

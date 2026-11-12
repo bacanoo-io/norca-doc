@@ -50,6 +50,44 @@ a scale down of nodes needs.
 Besides the checks, three triggers act on the groups. They run every `interval` of the
 [`node_scaling`](/docs/configuration/autoscaler#node_scaling-block) block (30 seconds by default).
 
+```mermaid
+flowchart TD
+  LOOK(["Every node_scaling interval (30s), per region"]) --> WORK["Blocked work: blocked evaluations<br/>waiting for capacity, largest first"]
+  LOOK --> DOWN
+
+  subgraph UP["Raising a node group"]
+    WORK --> CAND["Candidate groups: datacenter matches the job's<br/>datacenters (names and patterns), pool or spill,<br/>class, node size, distinct constraints"]
+    CAND --> HEALTH{"Group healthy?<br/>operator conditions,<br/>ready nodes"}
+    HEALTH -->|"no machine can be made,<br/>or few ready and another group can take it"| LEFT["Left out"]
+    HEALTH -->|"yes"| ONWAY{"Fits a node that is<br/>already on its way?"}
+    ONWAY -->|"yes"| PLACED["Counted on that node,<br/>no new node"]
+    ONWAY -->|"no"| SPREAD["Where the job wants it first: datacenters<br/>below its spread share, its affinity"]
+    SPREAD --> EXP["Expander of the pool:<br/>spread, fill, priority, weighted"]
+    EXP --> LIMITS
+    AHEAD["Ahead of the work:<br/>headroom, window minimum"] --> LIMITS
+    LIMITS{"Within the group maximum,<br/>pool max_nodes and max_step?"}
+    LIMITS -->|"yes"| RAISE(["spec.replicas raised, status.decision written<br/>the operator creates the machines"])
+    LIMITS -->|"no"| NOHELP["Cannot be helped"]
+    LEFT --> NOHELP
+    NOHELP --> TOLD["ScalingNodeBlocked event<br/>the policy of the task group is held: capacity"]
+  end
+
+  subgraph DOWNSG["Lowering a node group"]
+    DOWN{"A group unneeded? Its nodes below utilization_below<br/>without one node, headroom covered, no blocked<br/>work could use it, for unneeded_for"}
+    DOWN -->|"no"| KEEP(["Nothing"])
+    DOWN -->|"yes"| PICK["The group furthest above its share of the pool<br/>(balance), else the unneeded group itself"]
+    PICK --> VETO{"Operator vetoes?<br/>ScaleDownBlocked"}
+    VETO -->|"yes"| BACK["Scale set back,<br/>retry after the veto time"]
+    VETO -->|"no"| LOWER(["spec.replicas lowered by one<br/>the operator picks and drains a node"])
+    LOWER --> SETTLE["Allocations migrate: the scale downs of their<br/>task groups are held (settling)"]
+  end
+```
+
+The two ends of the picture are where node scaling meets the policies of the task groups: work
+that cannot be helped holds the scale ups of its group (the reason `capacity`), and a node that is
+drained leaves the groups on it unsettled, which holds their scale downs until the allocations run
+again (see [how a policy decides](/docs/features/autoscaler#how-a-policy-decides)).
+
 ### Blocked work
 
 Work that cannot be placed for want of capacity raises the scale of the groups that could take
@@ -105,8 +143,12 @@ default) without a break:
   group is not in its cooldown;
 - the operator does not hold it (the condition `ScaleDownBlocked`, until its `retryAfter`).
 
-One group of a node pool is lowered at a time, the one with the most nodes first (which keeps the
-spread over the datacenters), and the pool waits while a node of it is being removed. **The decision
+One group of a node pool is lowered at a time, and the pool waits while a node of it is being
+removed. **The group that gives the node is the one furthest above its share of the pool**, when it
+is at least a node above it and may be lowered; otherwise the unneeded group itself (among several,
+the one with the most nodes). After a datacenter was lost and came back, the unneeded group is the
+returned, empty one: lowering a group that grew instead moves the work back, a node at a time (see
+[`balance`](/docs/configuration/autoscaler#scale-down)). **The decision
 is only the number: the operator chooses the node, drains it and deletes its instance.** When no node
 of the group may go, the operator sets `ScaleDownBlocked` with a `retryAfter` time, and the
 autoscaler sets the scale back to the nodes the group has, so the two do not pull the number up and
@@ -214,7 +256,9 @@ framework, run as a job (the `nodescaler-operator` pack), and it follows the
 - **One operator per region.** Node groups belong to a region, and so does the operator that
   serves them (`-region`). Another region has an operator of its own.
 - **Two instances, one at work.** The pack runs 2 instances on different nodes
-  (`count`, with `distinct_hosts`). With leader election (`-leader-election`, on by default) only
+  (`count`, with `distinct_hosts`) and, where there are several, in different datacenters (a
+  `spread`): when a datacenter is lost, nodes are needed in the others, and an operator that went
+  with it would add none until it is placed again. With leader election (`-leader-election`, on by default) only
   the leader reconciles the groups and sweeps the orphans; the other keeps its cache current and
   takes over when the leader is gone. A third instance is one more standby, not more throughput.
 - **What is shared out:** the [join endpoint](/docs/features/node-scaling/nodegroup#nodes-that-make-their-own-keys)
@@ -224,6 +268,13 @@ framework, run as a job (the `nodescaler-operator` pack), and it follows the
 - **More work on the leader:** `-workers` (2 by default) is how many groups the leader reconciles at
   the same time. One group is never reconciled by two workers at once, so raise it when there are
   many groups. The pack does not set it: add the flag to the arguments of the job to change it.
+
+- **The provider is one instance.** A second one would not be a standby: a registration has one
+  endpoint, and the heartbeat of the other instance would hide that the endpoint is dead. What makes
+  a provider survive the loss of its node or its datacenter is being placed again, so its job must
+  be allowed in at least two datacenters (the `norca-provider` pack refuses a single named
+  datacenter unless `allow_single_datacenter = true`). Until it runs again, the groups of the
+  provider get no blocked work: no machine could be made for them.
 
 **Limits that follow from it:**
 

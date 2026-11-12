@@ -97,6 +97,108 @@ flowchart LR
 **The built-in autoscaler only runs when every server of the region runs a Norca
 version that supports it** ([version gate](/docs/introduction/compatibility#version-gate-of-the-norca-features)).
 
+## How a policy decides
+
+A task group has a count that was asked for and a number of allocations that
+run. **The two differ while allocations start, wait for capacity, migrate from
+a draining node or are being replaced after a node was lost**, and a decision
+taken against what happens to run at that moment asks again for what is
+already on its way, or takes it back. So a policy decides against the count
+that was asked for:
+
+- **The value is laid on the count that was asked for.** A value per instance,
+  measured on the instances that ran, is restated as what the asked-for count
+  would show for the same load (value x measured / asked for), and the
+  strategy runs with the asked-for count. For the usage the clients report
+  (`nomad.cpu` and the others), "measured" is the average number of running
+  allocations over the query window, so a drain inside the window does not
+  bend the result; for other sources it is what runs now. Totals (a `sum`
+  query, the usage of another group, a `pass-through` value) are used as they
+  are.
+- **A change is made when the result differs from the count that was asked
+  for**, never to ask for the same count again.
+- **A group that is not settled is not scaled down.** What it shows is its load
+  on fewer instances than it will have, and the capacity is coming (back). The
+  hold lasts at most [`settle_timeout`](/docs/configuration/autoscaler#autoscaler-parameters)
+  (10 minutes by default). Scale ups are not held: the result already counts
+  on the allocations that are on their way.
+- **A scale up is not made into a wall.** When allocations of the group have
+  waited for capacity for `settle_timeout` and [node scaling](/docs/features/node-scaling)
+  says no node is coming for them, the policy is held with the reason
+  `capacity`.
+
+Example: six instances carry 50 in-flight requests each, the target is 50. A
+node is drained and two allocations stop; the four that stay carry 75 each.
+Thirty seconds later the one-minute average of the value is 60, measured on 5
+instances on average: 5 x 60 / 50 = 6, the count the group has. Nothing is
+done, and the two replacements start in peace.
+
+The gates before anything is measured, and how the checks give one result:
+
+```mermaid
+flowchart TD
+  START(["Policy is due (evaluation_interval)"]) --> SCH{"Inside the schedule<br/>of the policy?"}
+  SCH -->|"no"| H_SCH["Hold: schedule"]
+  SCH -->|"yes"| DEP{"Deployment of the job?"}
+  DEP -->|"never, canary not promoted,<br/>or region waits for its turn"| H_DEP["Hold: deployment,<br/>canary, multiregion"]
+  DEP -->|"running, up_only"| UPONLY["Scale-ups only"]
+  DEP -->|"none"| CD{"Cooldown or<br/>oscillation suspension?"}
+  UPONLY --> CD
+  CD -->|"yes"| H_CD["Hold: cooldown, suspended"]
+  CD -->|"no"| TARGET["Read the target: the count asked for,<br/>what runs of it, whether it is settled"]
+  TARGET --> CHECKS["Every check: value over its query window,<br/>laid on the count asked for; the strategy votes"]
+  CHECKS -->|"no check has a value"| H_ND["Hold: no data"]
+  CHECKS --> WIN["Winner: up beats none beats down,<br/>larger count wins; clamp to min and max"]
+  WIN --> RESULT(["Result: one count<br/>(second diagram)"])
+```
+
+What is done with the result. The two directions are treated differently on
+purpose: a lower result waits until the group is settled, a higher one is only
+limited by what can be had.
+
+```mermaid
+flowchart TD
+  RESULT(["Result of the checks: one count<br/>(first diagram)"]) --> CMP{"Result compared with<br/>the count asked for"}
+  CMP -->|"equal"| NOOP(["Nothing to do, nothing is called"])
+  CMP -->|"lower"| UO{"Scale-ups only?<br/>(deployment, up_only)"}
+  UO -->|"yes"| H_DEP["Hold: deployment"]
+  UO -->|"no"| SETTLED{"Group settled?<br/>all that was asked for runs, nothing<br/>migrating or being replaced"}
+  SETTLED -->|"no, within settle_timeout"| H_SET["Hold: settling"]
+  SETTLED -->|"yes, or settle_timeout is over"| GUARD
+  CMP -->|"higher"| QUOTA{"Room in the<br/>namespace quota?"}
+  QUOTA -->|"none"| H_Q["Hold: quota"]
+  QUOTA -->|"some: cut to what fits"| CAPACITY{"Missing allocations blocked<br/>and node scaling cannot help?"}
+  QUOTA -->|"enough"| CAPACITY
+  CAPACITY -->|"yes, after settle_timeout"| H_CAP["Hold: capacity"]
+  CAPACITY -->|"no"| GUARD{"Oscillation guard<br/>and rate limit"}
+  GUARD -->|"too many direction changes"| H_OSC["Suspend the target"]
+  GUARD -->|"over the rate limit"| H_RL["Hold: rate limit"]
+  GUARD -->|"pass"| ACT(["The count is changed<br/>ScalingDecision event, cooldown starts"])
+```
+
+Every way out of an evaluation is in the
+[status of the policy](/docs/api/scaling-policies#read-the-status-of-a-scaling-policy),
+which `norca scaling policy info` prints: the count asked for and what runs,
+what each check read and voted for, the result, and why nothing was done. A hold
+that lasts [`hold_warn`](/docs/configuration/autoscaler#autoscaler-parameters)
+raises a `ScalingHeld` event.
+
+### A new version of the job
+
+**Registering a job again does not undo its scaling.** The count of a task group
+that an enabled scaling policy scales, of any engine, is kept when a new
+version of the job is registered (brought within the bounds of the new
+policy); `norca job plan` shows it so. `norca job run -reset-counts` takes the
+count of the job file. A group without an enabled policy in both versions takes
+the count of the job file, as it always did.
+
+### A count changed by hand
+
+`norca job scale` on a group that an enabled policy of the built-in engine
+scales is carried out, with a warning: the change starts the cooldown of the
+policy, and after it the policy decides the count again. Disable the policy or
+change its bounds to keep a count.
+
 ## Example
 
 Enable the built-in autoscaler on the servers and make it the default engine:
@@ -197,6 +299,7 @@ Job specification, `group -> scaling` (full reference:
 | --- | --- | --- |
 | List policies | [`norca scaling policy list`](/docs/commands/scaling/policy-list) | [`GET /v1/scaling/policies`](/docs/api/scaling-policies#list-scaling-policies) (Norca adds `engine=builtin\|external`) |
 | Read a policy | [`norca scaling policy info`](/docs/commands/scaling/policy-info) | [`GET /v1/scaling/policy/:id`](/docs/api/scaling-policies#read-scaling-policy) |
+| Why a policy did or did not scale | `norca scaling policy info` (Last Evaluation) | [`GET /v1/scaling/policy/:id/status`](/docs/api/scaling-policies#read-the-status-of-a-scaling-policy) |
 | Scaling history of a job | [`norca job scaling-events`](/docs/commands/job/scaling-events) | `GET /v1/job/:job_id/scale` |
 | Scale manually | [`norca job scale`](/docs/commands/job/scale) | `POST /v1/job/:job_id/scale` |
 | Follow decisions | | [`GET /v1/event/stream?topic=Scaling`](/docs/api/events#norca-extensions) |

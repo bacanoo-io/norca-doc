@@ -134,7 +134,7 @@ it once) and the others still hold. The reason of a `Scaled` event names the win
 | `status.scaleDown` | operator | The vetoes of the scale down in a row: `vetoes`, `retryAfter`, `reason` (`NoCandidate` or `DrainStuck`), `message`. Gone after a scale down that worked. |
 | `status.deletion` | operator | While a deleted group is kept by the finalizer of the operator: the `policy` being applied, `deleted` (when each instance was deleted, by its name) and `waiting` (what the deletion waits for). |
 | `status.rollout` | operator | The rolling replacement: `replacing` (per node being replaced: `instance`, `name`, `node`, `nodeName`, `reason` (`marked`, `revision`, `generation`, `age`, `expiry`), `surge`, `drain`, `phase` (`surging`, `leaving`, `emptying`, `draining`, `deleted`), `since`, `started`, `expires`, its hard limit, and `held` as in `status.removal`), `outdated` (the names of the outdated nodes not replaced yet), `backoff` (`vetoes`, `retryAfter`, `reason`, `message`), `warned` (the nodes that raised the warning of their hard limit) and `took` (how long the last replacement took). |
-| `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`), `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, or `JoinFailing`), `JoinFailing` (`True` with `TooManyFailures`), `ForeignNode` (`True` while a ready node of the group runs without an instance), `ScaleDownBlocked` (`True` when no node of the group may go; `retryAfter` is the time, RFC 3339, before which the autoscaler does not lower the scale again), `DeletionBlocked` (`True` with `DrainTimeout` when the deletion of the group has waited longer than `deletion.drain_timeout`), `Rolling` (`True` with `Replacing` while nodes are replaced; `False` with `UpToDate`, or with `Waiting`, `BackedOff`, `Paused` or `DryRun` when outdated nodes are not replaced), `RollBlocked` (`True` while a backed off replacement has a node close to its hard age limit, with the reason of the backoff and `retryAfter`), `RollBehind` (`True` with `Behind` when the replacements, `max_unavailable` at a time, would not reach every node before its hard age limit; `False` with `OnTime`, or `NotRolling` with `enforce = false` or `rolling.mode = "paused"`), and `NetworkCovered` (`True` when `network` is inside the cluster ranges the deployer publishes, `False` when the firewall of the servers would not let the nodes in, `Unknown` with `NetworkUnchecked` when the ranges are not published or `NoNetwork` when the group names none). |
+| `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`), `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, or `JoinFailing`), `JoinFailing` (`True` with `TooManyFailures`), `ForeignNode` (`True` while a ready node of the group runs without an instance), `ScaleDownBlocked` (`True` when no node of the group may go; `retryAfter` is the time, RFC 3339, before which the autoscaler does not lower the scale again), `DeletionBlocked` (`True` with `DrainTimeout` when the deletion of the group has waited longer than `deletion.drain_timeout`), `Rolling` (`True` with `Replacing` while nodes are replaced; `False` with `UpToDate`, or with `Waiting`, `BackedOff`, `Paused` or `DryRun` when outdated nodes are not replaced), `RollBlocked` (`True` while a backed off replacement has a node close to its hard age limit, with the reason of the backoff and `retryAfter`), `RollBehind` (`True` with `Behind` when the replacements, `max_unavailable` at a time, would not reach every node before its hard age limit; `False` with `OnTime`, or `NotRolling` with `enforce = false` or `rolling.mode = "paused"`), `RepairHeld` (`True` with `TooManyDown` while nodes that are due for [repair](#the-repair-of-nodes) are left alone because half or more of the group are down), and `NetworkCovered` (`True` when `network` is inside the cluster ranges the deployer publishes, `False` when the firewall of the servers would not let the nodes in, `Unknown` with `NetworkUnchecked` when the ranges are not published or `NoNetwork` when the group names none). |
 
 ## The join of the nodes
 
@@ -330,6 +330,33 @@ whose `shutdown_delay` is below `edge.min_shutdown_delay` raises `ShortShutdownD
 may stop before the platform stops sending to it. The operator needs read on `norca.io/LoadBalancer`
 in every namespace (the `nodescaler-operator` pack has it since version 0.4.0); without the kind, or
 without the right to read it, nodes are drained without waiting.
+
+## The repair of nodes
+
+A node can be down while its machine runs: the machine hangs, its agent died,
+its network is gone. Such a node is neither ready nor joining, so nothing would
+replace it, it would hold a place under `max` for good, and the autoscaler does
+not lower a group whose scale differs from its ready nodes.
+
+**The operator deletes the instance of a node that has been down for
+`repair.after`** (15 minutes by default). The group is then one short of its
+scale and asks for a new instance; the node of the deleted one is purged. The
+event `NodeRepaired` tells it.
+
+```hcl
+repair {
+  enabled = true    # the default
+  after   = "15m"   # the default
+}
+```
+
+- **Not while half or more of the nodes of the group are down, at least two.**
+  Then it is not the nodes that failed but what they share (the datacenter, the
+  network to the servers), and new machines would fare no better. The condition
+  `RepairHeld` (`True` with `TooManyDown`) says so, and one `RepairHeld` event.
+  One node down is never too many: the only node of a group is repaired.
+- A node with the meta `norca.scale.protect = "true"` is never replaced.
+- `enabled = false` leaves nodes that are down alone.
 
 ## The rolling replacement of nodes
 

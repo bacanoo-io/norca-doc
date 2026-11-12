@@ -416,6 +416,8 @@ Every sample interval each server samples the
 | `norca.objects.degraded` | `kind` | objects of the kind whose `Degraded` condition is `True` |
 | `norca.nodegroup.replicas` | `group` | nodes the [node group](/docs/features/node-scaling) wants (`spec.replicas`); no series while it is not set |
 | `norca.nodegroup.ready` | `group` | ready nodes (`status.replicas`) |
+| `norca.nodegroup.nodes_ready` | `group` | ready, eligible nodes that name the group in their meta (`norca.node_group`); zero while its nodes are down, no series for a group no node names |
+| `norca.nodegroup.cpu_allocated`, `norca.nodegroup.memory_allocated` | `group` | the allocated share of the CPU and of the memory of those nodes, in percent. **Node scaling measures a group on these**, not on the cluster gauges of its datacenter and pool, which other groups and nodes no group made share |
 | `norca.nodegroup.joining` | `group` | nodes joining (`status.joining`) |
 | `norca.nodegroup.failed` | `group` | nodes that failed to join (`status.failed`) |
 | `norca.nodegroup.rollout_replacing` | `group` | nodes being replaced in a rollout |

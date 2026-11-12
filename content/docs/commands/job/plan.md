@@ -115,6 +115,12 @@ capability for the job's namespace.
 - `-policy-override`: Has no effect: overriding admission policies is not
   supported. The flag is still accepted for compatibility and prints a warning.
 
+- `-reset-counts`: Plan the job as [`job run -reset-counts`](/docs/commands/job/run)
+  would store it. **The plan shows what the registration will do:** the count
+  of a task group that an enabled scaling policy scales is kept, so it is not
+  a change in the plan; with this flag the count of the job file is planned
+  for those groups too.
+
 - `-json`: Parses the job file as JSON. If the outer object has a `Job` field,
   such as from `"norca job inspect"` or `"norca run -output"`, the value of the
   field is used as the job.

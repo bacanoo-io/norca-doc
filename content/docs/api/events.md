@@ -446,7 +446,7 @@ these topics a `filter_key` containing `*` is a glob pattern, for example
 | `Variables`        | `VariableUpserted`, `VariableDeleted`                                                                  |
 | `Quota`            | `QuotaSpecUpserted`, `QuotaSpecDeleted`, `QuotaExhausted`, `QuotaFreed`                                |
 | `AdmissionPolicy`  | `AdmissionPolicyUpserted`, `AdmissionPolicyDeleted`, `JobAdmissionDenied`, `VariableAdmissionDenied`   |
-| `Scaling`          | `ScalingDecision`, `ScalingQuotaCapped`                                                                |
+| `Scaling`          | `ScalingDecision`, `ScalingQuotaCapped`, `ScalingHeld`, `ScalingNodeBlocked`, `ScalingNodeUnverifiable`, `ScalingNodeAllocationTooLarge` |
 | `NetworkPolicy`    | `NetworkPolicyUpserted`, `NetworkPolicyDeleted`, `AdminNetworkPolicyUpserted`, `AdminNetworkPolicyDeleted` |
 | `CustomObject`     | `ObjectKindUpserted`, `ObjectKindDeleted`, `CustomObjectUpserted`, `CustomObjectStatusUpdated`, `CustomObjectDeleted` |
 | `Secret`           | `SecretUpserted`, `SecretDeleted`, `SecretExpiring`, `SecretExpired`, `SecretRotationDue`, `SecretRotationDispatched`, `SecretRotationFailed` |

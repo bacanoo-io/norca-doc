@@ -110,3 +110,32 @@ Policy:
     "evaluation_interval": "30s"
 }
 ```
+
+## Last Evaluation
+
+For a policy that the built-in autoscaler evaluates, the command also prints
+its last evaluation (the
+[status of the policy](/docs/api/scaling-policies#read-the-status-of-a-scaling-policy)):
+**what the checks read and asked for, and why nothing was done when nothing
+was.**
+
+```plaintext
+Last Evaluation:
+Time              = 2026-11-12T10:00:00Z
+Desired / Running = 6 / 4
+Result            = held (settling) since 2026-11-12T09:59:00Z
+Checks ask for    = 2 (down)
+Detail            = 4 of 6 run, not settled for 1m0s
+
+Check  Value  Vote  Count
+cpu    25     down  2
+```
+
+- `Desired / Running` is the count that was asked for and what runs of it;
+  the checks are measured against the first.
+- `Result` is `scaled`, `none` (the checks ask for the count the group has),
+  `held` with the reason, or `error`.
+- A check whose source gave no value votes `no data`.
+
+Nothing is printed for a policy that has not been evaluated since the leader
+was elected, and for a policy of the external engine.

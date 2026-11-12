@@ -143,6 +143,14 @@ that volume.
 - `-preserve-counts`: If set, the existing task group counts will be preserved
   when updating a job.
 
+- `-reset-counts`: When a job is updated, **the count of a task group that an
+  enabled scaling policy scales is kept**: it is what the policy made of it,
+  not what the job file says, and a deploy must not undo the scaling. If set,
+  the counts of the job file are taken for those groups too. A kept count is
+  brought within the bounds of the new policy. Groups without an enabled
+  scaling policy in both versions of the job always take the count of the job
+  file. Cannot be used together with `-preserve-counts`.
+
 - `-consul-token`: If set, the passed Consul token is stored in the job before
   sending to the Norca servers. This allows passing the Consul token without
   storing it in the job file. This overrides the token found in the
