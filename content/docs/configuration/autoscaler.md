@@ -299,7 +299,9 @@ n datacenters of the same size the pool is 1/(n-1) larger than its work needs
 - **No reserve is kept while a group of the pool is not healthy.** A datacenter
   is lost then, and the reserve is what its work is placed on; a second reserve
   is not bought for the datacenters that are left. It is kept again when the
-  group is healthy.
+  group is healthy. This holds **from the first look that finds fewer than half
+  of the nodes of a group ready**, before the group counts as unhealthy: the
+  group of the lost datacenter is not asked for machines either.
 - Nothing is kept for a pool in one datacenter, or when the gauges of a group
   can't be read.
 
