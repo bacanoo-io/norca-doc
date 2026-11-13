@@ -68,6 +68,7 @@ phase, the record of the work shows no web search and no web page fetched.
 | Standby failover rules put right after a review: a manual failover does not wait, a voter is demoted only while a healthy majority stays, the cooldown counts from the change, nothing is removed unless a promotion follows, a failed voter is not removed before the failover time | `a99a443c4` (2026-11-12) | as above |
 | The autopilot configuration is part of the Raft snapshot | `9469d0d5f` (2026-11-12) | as above |
 | CPU usage of `raw_exec` tasks read from the cgroup of the task, so processes shorter than the five second scan are counted | 2026-11-13 | [CPU usage of raw_exec tasks](https://github.com/bacanoo-io/norca/blob/main/CLEAN_ROOM.md#cpu-usage-of-raw_exec-tasks) |
+| The cgroup of a task that another agent on the same cgroup parent removed is made again, so the task does not wait for it for ever | 2026-11-13 | [Task cgroups removed by another agent](https://github.com/bacanoo-io/norca/blob/main/CLEAN_ROOM.md#task-cgroups-removed-by-another-agent) |
 
 The server role features are described on
 [observers and hot standby servers](/docs/features/server-roles), their design
