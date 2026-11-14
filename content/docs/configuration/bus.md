@@ -152,7 +152,9 @@ The defaults differ from the NATS defaults
     is encrypted by its next write.** To encrypt all of them, write each key
     again.
   - **A root key that encrypts a value of the KV is kept** by the garbage
-    collection of the keyring, as one that encrypts a Variable is.
+    collection of the keyring, as one that encrypts a Variable is, and
+    [`norca operator root keyring remove`](/docs/commands/operator/root/keyring-remove)
+    refuses to remove it.
   - `norca operator root keyring rotate -full` encrypts the values again
     with the new key. **The revision (`ModifyIndex`) of such a key changes**
     and a blocking query of it returns, with the same value.

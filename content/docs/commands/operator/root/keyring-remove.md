@@ -10,6 +10,15 @@ The `operator root keyring remove` command removes an encryption key from the
 cluster. **This operation may only be performed on keys that are not the active
 key.**
 
+**A key that encrypts values of the Consul KV kept on the
+[system bus](/docs/configuration/bus#security) is not removed**: the command
+fails and says how many values the key encrypts. Rotate the keyring with
+[`-full`](/docs/commands/operator/root/keyring-rotate) first, which encrypts
+them with the new key, or write or delete those keys. The command also fails
+when the servers run a bus whose KV can't be read at the moment. Variables
+are not checked: **removing a key that still encrypts Variables makes them
+unreadable.**
+
 If ACLs are enabled, this command requires a management token.
 
 ## Usage
