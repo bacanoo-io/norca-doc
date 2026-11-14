@@ -153,6 +153,17 @@ $ curl \
 }
 ```
 
+### Refused requests
+
+**A key that is still in use is not deleted.** The response is `409 Conflict`
+with a message that says what the key is needed for: it is the active key, it
+encrypts Variables or values of the Consul KV on the system bus, it signed the
+workload identity of an allocation that has not ended, or it encrypts the key
+of a certificate authority of the native mTLS. See
+[`operator root keyring remove`](/docs/commands/operator/root/keyring-remove)
+for what to do. When the servers run a system bus whose KV can't be read at
+the moment the response is `503 Service Unavailable`: try again.
+
 ## Norca extensions
 
 `POST /v1/operator/keyring/rewrap` moves the root keys and the key of the secret store to another keyring
