@@ -105,6 +105,8 @@ decoding the payload:
 | `Nomad-Type` | event type, e.g. `JobRegistered` |
 | `Nomad-Namespace` | namespace (if any) |
 | `Nomad-Key` | key of the event, e.g. the job ID (if any) |
+| `Norca-Job` | the job of a `Job`, `Evaluation`, `Allocation`, `Deployment` or `Service` event, so that a consumer keeps the events of its jobs without decoding the payload |
+| `Norca-Redacted` | `true` on a Job event without its secrets (see below) |
 
 **Delivery is at least once and in order.**
 
