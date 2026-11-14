@@ -64,7 +64,8 @@ tuning:
   file_descriptor_limit: 65536      # LimitNOFILE of the systemd unit.
   firewall:
     api_cidrs: [192.168.1.0/24]     # Only the local network may use the API and UI (4646).
-    ephemeral_cidrs: [192.168.1.0/24]   # ...and the allocation ports 20000-32000.
+    ephemeral_cidrs: [192.168.1.0/24]   # ...and the allocation ports 20000-32000 (host mode;
+                                        # allocations in bridge mode are not limited).
     # default_deny: true            # Enable ufw and deny everything else (SSH stays open);
                                     # needs the ufw package (add it to host_packages).
 
@@ -186,7 +187,8 @@ tuning {
 
   firewall {
     api_cidrs       = ["192.168.1.0/24"] # Only the local network may use the API and UI.
-    ephemeral_cidrs = ["192.168.1.0/24"] # ...and the allocation ports.
+    ephemeral_cidrs = ["192.168.1.0/24"] # ...and the allocation ports (host mode; ports
+                                         # of allocations in bridge mode are not limited).
   }
 }
 

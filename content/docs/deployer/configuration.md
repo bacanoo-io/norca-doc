@@ -38,6 +38,7 @@ An unknown key or a block repeated where only one is allowed is an error.
 | `security` | | TLS, gossip, PKI, ACLs |
 | `backup` | | Built-in server backups |
 | `metrics_store` | | Retentions and disk caps of the metrics history of the servers |
+| `bus` | | Settings of the system bus of the servers |
 | `federation` | | Multi-region settings |
 | `consul` | | A Consul agent on every node; without it the agents do not use Consul |
 | `host_packages` | | Debian packages |
@@ -183,6 +184,21 @@ metrics_store:
   max_disk_size: 4GiB
   host_retention: 7d
   host_max_disk_size: 1GiB
+```
+
+## bus
+
+Settings of the system bus of the servers (the embedded NATS). The deployer writes the same `bus` block into the server block of `norca.hcl` on every server. Without this section, or with no key set, no block is written and the defaults of Norca apply.
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `consul_kv_max_bytes` | `256MiB` | Size limit of the bucket of the Consul KV of the Consul-compatible API on the bus (`512MiB`, `1GiB`). A write beyond it fails; no key is dropped |
+
+The plan checks that the value is a size. Whether it fits into the storage of the bus (4 GiB by default) together with the events, the pack push notices and the usage reports is checked by Norca at start, which names what each takes. **Do not set a `bus` block in `server_settings.extra_hcl` as well**: the server block would have two. A changed value is a changed configuration: `apply` restarts the servers one by one ([How apply works](/docs/deployer/how-apply-works)). See the [`bus` block](/docs/configuration/bus) of Norca.
+
+```yaml
+bus:
+  consul_kv_max_bytes: 512MiB
 ```
 
 ## federation
@@ -385,6 +401,7 @@ Nodes to take out of the cluster and uninstall; see [Adding and removing nodes](
 | --- | --- | --- |
 | `drivers` | `[docker, exec]` | `driver.allowlist` |
 | `enable_raw_exec` | `false` | Enable the `raw_exec` plugin |
+| `raw_exec_allowed_devices` | | Devices `raw_exec` tasks may use beyond the default ones (cgroups v2 filters them): paths under `/dev`, e.g. `[/dev/fuse]` for FUSE mounts, or `["*"]`; written as `allowed_devices` of the `raw_exec` plugin |
 | `network_interface` | | Interface for allocation addresses |
 | `gc_disk_usage_threshold` | | Allocation GC threshold in percent |
 | `native_app_volumes.enable_defaults` | `false` | Native application host volumes under `apps_dir` |

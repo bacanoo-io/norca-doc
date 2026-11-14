@@ -84,6 +84,8 @@ tuning:
       - 10.8.0.0/24
       - 192.0.2.0/24                # e.g. the office network of the operators.
     # ephemeral_cidrs: [0.0.0.0/0]  # Allocation ports 20000-32000; default cluster_cidrs.
+                                    # Host mode only: it does not limit allocations in bridge
+                                    # mode (the CNI port mapping forwards ahead of the rules).
                                     # Open them wider only for services meant to be public.
     extra_ports:                    # Static ports of workloads (outside 20000-32000).
       - port: "4222"                # NATS clients (nats pack); 6222 routes and 8222 monitoring
@@ -147,6 +149,8 @@ backup:
     bucket: norca-backups
     prefix: clusters/eu-central
     force_path_style: true          # Path-style bucket URLs (MinIO, RustFS).
+  # prefer_observer: true           # An observer server takes the backups (server_settings.role:
+                                    # observer); the leader when none can.
   encryption:
     recipients:                     # Every backup is encrypted with age; at least one recipient.
       - age1examplerecipientreplacewithyourownpublickeyxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -161,6 +165,10 @@ metrics_store:                      # The same metrics_store block on every serv
   max_disk_size: 4GiB               # Disk cap of the history on each server.
   host_retention: 7d                # Host statistics, Raft and bus history.
   host_max_disk_size: 1GiB          # Disk cap of that history on each server.
+
+bus:                                # The same bus block on every server (the system bus).
+  consul_kv_max_bytes: 256MiB       # Size limit of the Consul KV of the Consul-compatible API;
+                                    # a write beyond it fails. Its values are encrypted with the keyring.
 
 host_packages:
   update_cache: true                # apt-get update before installing (skipped on offline nodes).
@@ -307,6 +315,7 @@ client_defaults:
     reserved_ports: "22"
   drain_on_shutdown:                # Stopping the agent (e.g. a reboot) drains the node first.
     deadline: 30m
+  # raw_exec_allowed_devices: [/dev/fuse]   # Devices raw_exec tasks may use beyond the default ones.
 
 node_pools:                         # Descriptions of the pools (created after the cluster is up;
   - name: apps                      # a pool named by a node also appears when the node registers).
@@ -331,6 +340,8 @@ inventory:
         bootstrap_expect: 3
         raft_multiplier: 1          # Raft timing; higher values tolerate slower networks.
         log_level: INFO
+        # role: voter               # voter (default), standby (votes only when a voter fails)
+                                    # or observer (never votes; may take the backups).
     - host: 203.0.113.11
       hostname: norca-server-02
       cluster_address: 10.8.0.11
@@ -501,6 +512,8 @@ tuning {
   firewall {                           # Who may reach the Norca ports (Linux nodes only).
     cluster_cidrs = ["10.8.0.0/24"]                  # RPC and Serf (and allocation ports by default).
     api_cidrs     = ["10.8.0.0/24", "192.0.2.0/24"]  # HTTP API and UI on the servers.
+    # ephemeral_cidrs = ["0.0.0.0/0"]  # Allocation ports; default cluster_cidrs. Host mode
+                                       # only: allocations in bridge mode are not limited.
     extra_ports {                      # Static workload ports (NATS clients).
       port  = "4222"
       cidrs = ["10.8.0.0/24"]
@@ -559,6 +572,7 @@ security {
 backup {
   enabled  = false                     # Enable after filling in a real destination and age recipient.
   schedule = "0 */2 * * *"
+  # prefer_observer = true             # An observer server takes the backups; the leader when none can.
 
   destination {
     name             = "s3-primary"
@@ -587,6 +601,10 @@ metrics_store {                        # The same metrics_store block on every s
   host_retention     = "7d"            # Host statistics, Raft and bus history.
   host_max_disk_size = "1GiB"
 }
+
+bus {                                  # The same bus block on every server (the system bus).
+  consul_kv_max_bytes = "256MiB"       # Size limit of the Consul KV; its values are encrypted
+}                                      # with the keyring.
 
 host_packages {
   update_cache = true
@@ -738,6 +756,7 @@ client_defaults {
   drain_on_shutdown {
     deadline = "30m"
   }
+  # raw_exec_allowed_devices = ["/dev/fuse"]   # Devices raw_exec tasks may use beyond the default ones.
 }
 
 node_pools {
@@ -767,6 +786,7 @@ inventory {
       bootstrap_expect = 3
       raft_multiplier  = 1
       log_level        = "INFO"
+      # role           = "voter"         # voter (default), standby or observer.
     }
   }
 
@@ -919,7 +939,10 @@ inventory {
 # ACL policy of a service that reads the event stream of region eu-central
 # from the system bus of the servers (NATS embedded in Norca): a durable
 # JetStream consumer of the stream NORCA_EVENTS_eu-central. Give its token to
-# the service; it connects to the bus port (4649) of any server.
+# the service; it connects to the bus port (4649) of any server. The replies
+# of its requests come only under its own inbox prefix: the service sets it
+# to _INBOX.<accessor ID of the token> (nats.go CustomInboxPrefix,
+# nats --inbox-prefix), or its JetStream requests time out.
 bus {
   subscribe = ["norca.eu-central.>"]
   publish = [
