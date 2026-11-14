@@ -4,7 +4,7 @@ linkTitle: "pack"
 description: "The pack command renders, plans, runs and manages packs and pack releases, registries and the pack supply chain."
 ---
 
-The `pack` command is Norca's package manager: Nomad Pack v0.4.2 built into the `norca` binary, with
+The `pack` command is Norca Pack, Norca's package manager: built on Nomad Pack v0.4.2, part of the `norca` binary, with
 Norca's server-side releases, extended package format and supply chain features. A pack is a directory
 of parameterized templates and variables; packs are shared through registries. Packs are rendered on
 the client; the servers apply the rendered resources as a release. See

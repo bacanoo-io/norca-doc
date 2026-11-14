@@ -13,7 +13,7 @@ belong to an application are applied with separate commands, and nobody can say 
 version of what was installed, or roll it back. Norca solves this with a package manager that is
 part of the `norca` binary.
 
-The package manager is **Nomad Pack v0.4.2** (MPL 2.0), built in as the `norca pack` command tree.
+The package manager is **Norca Pack**, the `norca pack` command tree. It is built on HashiCorp Nomad Pack v0.4.2 (MPL 2.0).
 There is no separate `nomad-pack` binary. **The pack format stays the same** (a directory with
 `metadata.hcl`, `variables.hcl`, `templates/` and `outputs.tpl`, rendered with `[[ ]]` Go templates),
 **so existing packs keep working.** Norca adds five things on top of it:
@@ -128,7 +128,7 @@ The complete command list is in the [`norca pack` reference](/docs/commands/pack
 
 ## Limits and status
 
-- Available: the built-in Nomad Pack, the extended package format, server-side releases with hooks,
+- Available: Norca Pack, the extended package format, server-side releases with hooks,
   tests, drift detection and multi-region installs, OCI registries, signing, offline bundles,
   `pack.lock`, variable constraints, rules and schemas, signature enforcement in admission policies,
   cluster pack registries with the catalog and install form of the web UI.

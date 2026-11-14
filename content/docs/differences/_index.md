@@ -13,4 +13,4 @@ or does not use. The full description of each subsystem is on the pages each tab
 | --- | --- |
 | [Metrics](/docs/differences/metrics) | Agent telemetry, the metrics store and its history, usage reports, the API, CLI and web UI, and autoscaling |
 | [Nodes](/docs/differences/nodes) | Installing and joining servers and clients with the deployer, certificates, scaled nodes and their identity, the node CA and `norca-join` |
-| [Packs](/docs/differences/packs) | The built-in Nomad Pack, the extended package format, server-side releases, registries and signing, cluster registries, the catalog and the install form of the web UI |
+| [Packs](/docs/differences/packs) | Norca Pack (the built-in package manager), the extended package format, server-side releases, registries and signing, cluster registries, the catalog and the install form of the web UI |

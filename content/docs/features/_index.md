@@ -38,7 +38,7 @@ supports them ([version gate](/docs/introduction/compatibility#version-gate-of-t
 | Full Consul as an option (`consul` pack; Consul itself is BSL 1.1 and installed from its official release) | Available | [Consul pack](/docs/features/service-discovery/consul-pack) |
 | Native mTLS: per-region CA, SPIFFE workload certificates, `ServiceIntention` objects, Go library `api/mtls` | Available | [Native mTLS](/docs/features/native-mtls) |
 | Native mTLS: Envoy sidecar, upstreams, cross-region gateway | Available (tested against Envoy 1.39 and 1.40) | [Sidecar and gateway](/docs/features/native-mtls/sidecar-and-gateway) |
-| Package management: Nomad Pack built in (`norca pack`) | Available | [Packages](/docs/features/packages) |
+| Package management: Norca Pack (`norca pack`), built on Nomad Pack v0.4.2 | Available | [Packages](/docs/features/packages) |
 | Norca pack registry (`nats`, `mtls-gateway`, `rustfs`, `consul`, `loadbalancer-operator`, `openobserve`, `otel-collector`, `postgres`, `forgejo`) | Available | [Pack registry](/docs/features/packages/registry) |
 | Package management: OCI registries, signing and trust policies, offline bundles, `pack.lock` | Available | [Supply chain](/docs/features/packages/supply-chain) |
 | Package management: server-side releases, signature enforcement in admission, variable constraints, rules and schemas, multi-region installs | Available | [Releases](/docs/features/packages/releases) |

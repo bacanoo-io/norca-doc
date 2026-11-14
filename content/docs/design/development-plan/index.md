@@ -327,7 +327,7 @@ The four phases of the work (scheduled backup; API, CLI and selective restore; w
 
 ## Package management
 
-The official package manager of Norca is Nomad Pack (MPL 2.0; the executable uses only MPL-licensed Nomad modules, the BSL main module appears only in the test helper, which must be switched to Norca's own build). Rendering stays on the client; the server keeps track of the revisions in a `Release` object (building on the framework of Kubernetes item 8), and a `Release.Apply` RPC applies the rendered resources in a fixed order: namespace, quota, ACL, Variables, type definitions, policies, objects, jobs. This provides rollback, atomic installation, hooks and tests, and diffing, and the same format serves as an operator package.
+The package manager of Norca is Norca Pack, built on Nomad Pack (MPL 2.0; the executable uses only MPL-licensed Nomad modules, the BSL main module appears only in the test helper, which must be switched to Norca's own build). Rendering stays on the client; the server keeps track of the revisions in a `Release` object (building on the framework of Kubernetes item 8), and a `Release.Apply` RPC applies the rendered resources in a fixed order: namespace, quota, ACL, Variables, type definitions, policies, objects, jobs. This provides rollback, atomic installation, hooks and tests, and diffing, and the same format serves as an operator package.
 
 Four phases: adoption (can start immediately), release registry, server-side apply, supply chain and multi-region. Details: [package-management-plan.md](/docs/design/package-management-plan).
 
