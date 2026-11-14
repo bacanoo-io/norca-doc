@@ -40,6 +40,14 @@ carry, how to connect, the guarantees. This page is the technical layer.
 NATS, for example the `nats` pack. The bus is configured in the server's
 [`bus` block](/docs/configuration/bus) and **is enabled by default.**
 
+**One NATS account.** Every connection of the bus (the servers, the nodes, the
+ACL tokens and the workload identities of tasks) is in the NATS account
+`NORCA`, and the streams live in it; a NATS client sees `NORCA` as its account.
+What a connection may do comes from its token: the
+[`bus` and `cdc` rules](/docs/other-specifications/acl-policy#bus-rules) of its
+policies, not the account. A server keeps the streams under
+`server/bus/jetstream/NORCA` of its `data_dir`.
+
 ## Task group usage
 
 While the [built-in autoscaler](/docs/features/autoscaler) or the
