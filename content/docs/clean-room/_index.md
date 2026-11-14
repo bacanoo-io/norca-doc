@@ -187,11 +187,13 @@ The review with every verdict is
 in the Norca repository.
 
 **Rewrites of 2026-11-02.** Earlier runs (2026-11-01 and the morning of
-2026-11-02) listed eight Norca files as candidates. The auditor had judged them
-independent, their common parts being the shape of Ember modules and Go tests
+2026-11-02) listed eight Norca files as candidates. They were judged from the
+scores and from the Norca files alone, without opening the HashiCorp files:
+their common parts were taken to be the shape of Ember modules and Go tests
 and names fixed by the MPL code that uses them. To leave no doubt they were
 rewritten with a different structure, and the Norca history after 2026-10-24
-was rebuilt so that their earlier versions are not part of the repository:
+was rebuilt so that their earlier versions are not part of the repository
+(which was not public at that time; it has been since 2026-11-08):
 
 | Norca file | Rewrite | Now (syntax / character level) |
 | --- | --- | --- |
