@@ -132,6 +132,22 @@ subscriber of the live events needs only `subscribe = ["norca.eu.>"]`.
 > with the default inbox of NATS a request times out. See the
 > [`bus` rule](/docs/other-specifications/acl-policy#bus-rules).
 
+**A task connects with its workload identity instead of a token.** The `bus`
+rules of the policies bound to its job, group or task apply
+([workload associated policies](/docs/concepts/workload-identity#workload-associated-acl-policies)),
+and its inbox prefix is `_INBOX.<allocation id>.<task name>`. The task gets
+its identity with `identity { env = true }` (or the file
+`secrets/norca_token`):
+
+```shell-session
+$ nats --server tls://server1:4649 --tlsca ca.pem --user "$NORCA_TOKEN" \
+    --inbox-prefix "_INBOX.$NORCA_ALLOC_ID.$NORCA_TASK_NAME" stream info NORCA_EVENTS_eu
+```
+
+The characters `.`, `*`, `>` and blanks of a task name become `_` in the
+prefix. **The connection is closed when the allocation has ended**, and the
+identity no longer connects.
+
 The namespace in the subject limits a live subscriber to the events of some
 namespaces: `subscribe = ["norca.eu.shop.>"]` receives the events of the
 namespace `shop` only, `["norca.*.*.Job"]` the job events of every region and

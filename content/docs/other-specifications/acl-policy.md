@@ -533,7 +533,9 @@ bus {
 Subjects may use the NATS wildcards `*` (one token) and `>` (the remaining
 tokens, last only). The lists of all policies of a token are combined. **When
 the token or its policies change, its connections are closed and reconnect
-with the new rights.**
+with the new rights.** A task connects with its workload identity, with the
+rules of the policies bound to its job, group or task; its connections are
+closed when its allocation has ended.
 
 Some subjects can't be granted:
 
@@ -553,7 +555,9 @@ $ nats --server tls://server1:4649 --tlsca ca.pem --user "$TOKEN" \
 
 In Go: `nats.CustomInboxPrefix("_INBOX." + accessorID)`. With the default
 inbox of NATS (`_INBOX.<random>`) a request gets no reply and times out. A
-plain subscriber makes no request and needs no prefix.
+plain subscriber makes no request and needs no prefix. **The inbox prefix of
+a task that connects with its workload identity is
+`_INBOX.<allocation id>.<task name>`** (`_INBOX.$NORCA_ALLOC_ID.$NORCA_TASK_NAME`).
 
 ## Host Volume rules
 

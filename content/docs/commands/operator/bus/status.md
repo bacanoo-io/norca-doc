@@ -71,6 +71,7 @@ Connections
 Total           = 4
 Nodes           = 3
 Tokens          = 0
+Workloads       = 0
 Internal        = 1
 Messages In/Out = 1203 / 1188
 Bytes In/Out    = 1.2 MiB / 1.1 MiB

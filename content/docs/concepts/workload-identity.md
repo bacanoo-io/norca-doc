@@ -56,7 +56,9 @@ You can associate additional ACL policies with workload identities by passing
 the `-job`, `-group`, and `-task` flags to `norca acl policy apply`. When Norca
 resolves a workload identity claim, it will automatically include policies that
 match. **If no matching policies exist, the workload identity does not have any
-additional capabilities.**
+additional capabilities.** The `bus` rules of these policies apply when the
+task connects to the [system bus](/docs/features/system-bus#consuming-the-events)
+with its identity.
 
 For example, to allow a workload access to secrets from the namespace "shared",
 you can create the following policy file:

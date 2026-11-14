@@ -88,6 +88,7 @@ $ curl -H "X-Nomad-Token: $NORCA_TOKEN" \
     "Internal": 1,
     "Nodes": 3,
     "Tokens": 0,
+    "Workloads": 0,
     "InMsgs": 1203,
     "OutMsgs": 1188,
     "InBytes": 1258291,
