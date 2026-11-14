@@ -11,8 +11,8 @@ cluster. **This operation may only be performed on keys that are not the active
 key.**
 
 > [!IMPORTANT]
-> **A key that still encrypts data is not removed.** The command fails and
-> says what the key encrypts:
+> **A key that is still in use is not removed.** The command fails and says
+> what the key is needed for:
 >
 > ```plaintext
 > root key <key ID> encrypts 12 Variable(s) -
@@ -20,15 +20,27 @@ key.**
 >
 > root key <key ID> encrypts 3 value(s) of the Consul KV of the system bus -
 > rotate the keyring with -full first, or write or delete those keys
+>
+> root key <key ID> signed the workload identity of 2 allocation(s) that have
+> not ended - their tokens would no longer be accepted; remove the key when
+> they have stopped
+>
+> root key <key ID> encrypts the private key of 1 certificate authority(ies)
+> of the native mTLS - the leader encrypts it with the active root key after
+> a rotation; try again shortly
 > ```
 >
 > **Why:** every Variable, and every value of the Consul KV kept on the
 > [system bus](/docs/configuration/bus#security), is stored encrypted with
 > the root key that was active when it was written, and the ID of the key is
 > stored with it. Without the key it can never be decrypted again, by anyone.
+> The same key signs the workload identity tokens of the tasks, which the
+> servers check with it as long as the allocation lives, and encrypts the
+> private key of the certificate authority of the native mTLS.
 >
-> **How:** before a key is removed, the leader counts the Variables encrypted
-> with it in its state. The bucket of the KV is not part of that state, so
+> **How:** before a key is removed, the leader counts in its state the
+> Variables encrypted with it, the allocations it signed for that have not
+> ended, and the certificate authorities whose key it encrypts. The bucket of the KV is not part of that state, so
 > the leader reads the bucket and counts the values that carry the ID of the
 > key. The garbage collection of old keys looks at both as well and keeps
 > such a key.
@@ -38,11 +50,13 @@ key.**
 > encrypts the Variables and the values with the new key. It works in the
 > background; when it has finished, the old key encrypts nothing and can be
 > removed. Writing a Variable or a key again, or deleting it, has the same
-> effect for that one.
+> effect for that one. An allocation frees the key when it has stopped on
+> the server and the client; the certificate authority moves to the active
+> key by itself shortly after any rotation.
 >
 > The command also fails when the servers run a bus whose KV can't be read at
-> the moment: the key is not removed on a guess. A region without a bus only
-> has its Variables checked.
+> the moment: the key is not removed on a guess. A region without a bus has
+> the rest checked.
 
 If ACLs are enabled, this command requires a management token.
 

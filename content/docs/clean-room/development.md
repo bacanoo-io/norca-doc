@@ -70,6 +70,8 @@ phase, the record of the work shows no web search and no web page fetched.
 | CPU usage of `raw_exec` tasks read from the cgroup of the task, so processes shorter than the five second scan are counted | 2026-11-13 | [CPU usage of raw_exec tasks](https://github.com/bacanoo-io/norca/blob/main/CLEAN_ROOM.md#cpu-usage-of-raw_exec-tasks) |
 | The cgroup of a task that another agent on the same cgroup parent removed is made again, so the task does not wait for it for ever | 2026-11-13 | [Task cgroups removed by another agent](https://github.com/bacanoo-io/norca/blob/main/CLEAN_ROOM.md#task-cgroups-removed-by-another-agent) |
 | The cgroups v1 parent of an agent in a container stays inside the mount of its hierarchy, so the agent keeps its cpuset management there | 2026-11-13 | [The cgroups v1 parent of an agent in a container](https://github.com/bacanoo-io/norca/blob/main/CLEAN_ROOM.md#the-cgroups-v1-parent-of-an-agent-in-a-container) |
+| The warnings of `var put` about invalid keys come in the order of the keys, the same on every run | `0039a0113` (2026-11-14) | [The order of the key warnings of var put](https://github.com/bacanoo-io/norca/blob/main/CLEAN_ROOM.md#the-order-of-the-key-warnings-of-var-put) |
+| `operator root keyring remove` refuses a root key that is still in use: one that encrypts Variables or values of the Consul KV on the system bus, signed the workload identity of an allocation that has not ended, or encrypts the key of a certificate authority | 2026-11-14 | [Removing a root key that is still in use](https://github.com/bacanoo-io/norca/blob/main/CLEAN_ROOM.md#removing-a-root-key-that-is-still-in-use) |
 
 The server role features are described on
 [observers and hot standby servers](/docs/features/server-roles), their design
