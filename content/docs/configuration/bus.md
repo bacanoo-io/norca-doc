@@ -75,9 +75,10 @@ ports {
     tokens separated by dots.
   - `max_age` `(string: "72h")` - How long events are kept.
   - `max_bytes` `(string: "1GiB")` - The size limit of the event streams
-    together, within `max_storage`: three quarters for `NORCA_EVENTS_<region>`,
-    a quarter for the admin events in `NORCA_ADMIN_EVENTS_<region>`. Without it
-    they take at most a quarter of `max_storage`.
+    together, within `max_storage`: five eighths for `NORCA_EVENTS_<region>`,
+    a quarter for the admin events in `NORCA_ADMIN_EVENTS_<region>`, an eighth
+    for the Consul KV notices in `NORCA_KV_CHANGES_<region>`. Without it they
+    take at most a quarter of `max_storage`.
   - `topics` `(array<string>: ["*"])` - The published topics, for example
     `["Job", "Deployment", "Allocation"]`; `"*"` publishes all.
 

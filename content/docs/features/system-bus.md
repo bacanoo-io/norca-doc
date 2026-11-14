@@ -64,7 +64,7 @@ on the bus only: without it the clients are not asked for usage.**
 | Stream | `NORCA_EVENTS_<region>` (file storage, S2 compression) |
 | Subjects | `<prefix>.<region>.<namespace>.<topic>`, e.g. `norca.eu.default.Job`, `norca.eu.shop.Allocation` (prefix `norca` by default); events without a namespace use `_`, e.g. `norca.eu._.CustomObject` |
 | Payload | the event JSON as `/v1/event/stream` returns it, with a `Region` field in front; the Job events without their secrets (see below) |
-| Retention | `max_age` (72h) and three quarters of `max_bytes` (1GiB, at most a quarter of `max_storage` by default), the oldest events dropped first |
+| Retention | `max_age` (72h) and five eighths of `max_bytes` (1GiB, at most a quarter of `max_storage` by default), the oldest events dropped first |
 | Replicas | one per server, up to three |
 
 **The admin events have a stream of their own.** These are the topics the
@@ -84,7 +84,7 @@ the jobs of a namespace:
 | --- | --- |
 | Stream | `NORCA_ADMIN_EVENTS_<region>` |
 | Subjects | `<prefix>.admin.<region>.<namespace>.<topic>`, e.g. `norca.admin.eu._.ACLPolicy` |
-| Retention | `max_age` and a quarter of `max_bytes`; the two streams share the limit |
+| Retention | `max_age` and a quarter of `max_bytes`; the event streams share the limit |
 
 **A connection never receives an admin topic its token lacks the right
 for**, whatever its `bus` rule covers: a subscription to `norca.>` gets the
@@ -223,12 +223,14 @@ that a service learns that a setting changed:
 | Subject | `<prefix>.<region>.<namespace>.ConsulKV.KeySet` or `.KeyDeleted`, e.g. `norca.eu.default.ConsulKV.KeySet` |
 | Payload | `{"Region": "eu", "Topic": "ConsulKV", "Type": "KeySet", "Key": "app/config/level", "Namespace": "default", "Payload": {"ConsulKV": {"Key": ..., "Time": ...}}}` |
 | Headers | `Nomad-Region`, `Nomad-Topic`, `Nomad-Type`, `Nomad-Namespace`, `Nomad-Key` |
+| Stream | `NORCA_KV_CHANGES_<region>` on `<prefix>.<region>.*.ConsulKV.*`; `max_age` and an eighth of `max_bytes` |
 
-**A notice is a live message only**: the event stream keeps
-`<prefix>.<region>.<namespace>.<topic>`, one token less, so it does not store
-the notices. A service that was not connected reads the keys again. A failed
-CAS, a read and the re-encryption of a full keyring rotation send nothing; a
-recursive delete sends one notice per key. A `bus` rule
+**The notices are stored in a stream of their own**, so a service that was
+not connected catches up with a consumer of `NORCA_KV_CHANGES_<region>`. The
+event stream keeps `<prefix>.<region>.<namespace>.<topic>`, one token less,
+so the two streams do not share subjects. A failed CAS, a read and the
+re-encryption of a full keyring rotation send nothing; a recursive delete
+sends one notice per key. A `bus` rule
 `subscribe = ["norca.eu.default.ConsulKV.>"]` receives the notices of the
 namespace `default`.
 
