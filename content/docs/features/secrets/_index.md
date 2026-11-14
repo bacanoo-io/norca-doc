@@ -44,7 +44,7 @@ built-in store answers their KV reads.
 flowchart LR
   subgraph Job["Job specification"]
     SB["task secret block"]
-    TPL["template: nomadSecret / secret"]
+    TPL["template: norcaSecret / secret"]
   end
   subgraph Client["norca agent (client)"]
     Hook["secret hook"]
@@ -87,7 +87,7 @@ flowchart LR
 {{< cards >}}
   {{< card link="/docs/features/secrets/seal" title="Seal" subtitle="The shares seal, unsealing, seal status and online rewrap." >}}
   {{< card link="/docs/features/secrets/secrets" title="Secrets" subtitle="Versioned Secret objects, the norca secret commands, ACL capabilities and audit." >}}
-  {{< card link="/docs/features/secrets/delivery" title="Delivery to tasks" subtitle="The secret block, providers and fallback, nomadSecret, secret_access." >}}
+  {{< card link="/docs/features/secrets/delivery" title="Delivery to tasks" subtitle="The secret block, providers and fallback, norcaSecret, secret_access." >}}
   {{< card link="/docs/features/secrets/vault-compatibility" title="Vault compatibility" subtitle="Vault-style templates and vault blocks served by the built-in store." >}}
   {{< card link="/docs/features/secrets/dynamic" title="Dynamic secrets" subtitle="Credentials created per task with a lease: secret engines, operators, fallback." >}}
 {{< /cards >}}
@@ -176,7 +176,7 @@ Available (phases 0–4, 6 and 7):
 - Versioned `Secret` objects (at most 64 KiB per version, 10 versions kept by default, up to 100), soft
   delete, undelete and destroy; ACL capabilities `list-secrets`, `read-secret`, `write-secret`,
   `destroy-secret`; the `Secret` and `SecretAccess` event topics and an audit file.
-- The `secret` block with the `norca` and `vault` providers and the fallback; `nomadSecret`;
+- The `secret` block with the `norca` and `vault` providers and the fallback; `norcaSecret`;
   `secret_access`; admission policies see the referenced secrets.
 - Vault compatibility without a Vault; `norca secret import -from-vault` and `-from-variable`.
 - Expiry and rotation (phase 6): `SecretExpiring`, `SecretExpired` and `SecretRotationDue` events and

@@ -10,7 +10,7 @@ description: "The \"secrets\" block of a job or group sets the default secret pr
 - `job -> group -> secrets`
 
 The `secrets` block (Norca) sets the default provider of the secret lookups of the tasks: their
-[`secret`](/docs/job-specification/secret) blocks without a `provider`, and `nomadSecret` template calls
+[`secret`](/docs/job-specification/secret) blocks without a `provider`, and `norcaSecret` template calls
 without a `provider:` prefix. It is step 3 of the [resolution order](/docs/features/secrets/delivery#resolution-order):
 an explicit provider and a matching client route win over it; without any of them the lookup falls back to
 the built-in store.

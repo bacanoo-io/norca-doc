@@ -572,19 +572,23 @@ EOH
 
 ### Norca Secrets
 
-(Norca) The `nomadSecret` function returns the items of a secret of the
+(Norca) The `norcaSecret` function returns the items of a secret of the
 [built-in secret store](/docs/features/secrets) (or of the provider the lookup
 resolves to) as a map. An optional `provider:` prefix names the provider. The
 task needs read access to the secret, for example a
 [`secret_access`](/docs/job-specification/secret_access) grant. A new version of
 the secret makes the task's templates render again with their change modes.
 
+> [!NOTE]
+> **The function was called `nomadSecret` before 2026-11-14.** Templates written with that name
+> keep working: both names call the same function.
+
 ```hcl
 template {
   destination = "secrets/app.env"
   env         = true
   data        = <<EOH
-{{ with nomadSecret "app/db" }}DB_PASSWORD={{ .password | toJSON }}{{ end }}
+{{ with norcaSecret "app/db" }}DB_PASSWORD={{ .password | toJSON }}{{ end }}
 EOH
 }
 ```

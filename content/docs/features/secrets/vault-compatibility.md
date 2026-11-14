@@ -62,7 +62,7 @@ Vault path, defaults, fallback); only when the result is the built-in store is t
 ### Template calls
 
 The task's template runner replaces consul-template's `secret` function with Norca's, served like
-`nomadSecret`:
+`norcaSecret`:
 
 - KV v2: `.Data.data` holds the items as strings, `.Data.metadata` holds `version`, `created_time`,
   `custom_metadata` (the secret's labels), `deletion_time` and `destroyed`. `<mount>/metadata/<p>` returns

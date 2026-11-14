@@ -68,12 +68,12 @@ managers, plugins) are not available yet.
 
 ### Resolution order
 
-Every lookup (a `secret` block, a `nomadSecret` call, a Vault-style lookup) is resolved by the client in
+Every lookup (a `secret` block, a `norcaSecret` call, a Vault-style lookup) is resolved by the client in
 this order; the first step that names a provider wins:
 
 | Step | Defined by | Example |
 | --- | --- | --- |
-| 1. Explicit | `provider` in the `secret` block, or a `provider:` prefix in `nomadSecret` | `provider = "vault"` |
+| 1. Explicit | `provider` in the `secret` block, or a `provider:` prefix in `norcaSecret` | `provider = "vault"` |
 | 2. Client route | `client { secrets { route "<prefix>" { provider = "..." } } }`, longest prefix wins | `route "kv/" { provider = "vault" }` |
 | 3. Default | `secrets { default_provider }` of the group, else of the job, else the namespace metadata `secrets.default_provider` | `default_provider = "vault"` |
 | 4. Vault integration | The agent's enabled `vault` block, for Vault-style lookups only (task `vault` block, Vault `secret` template function) | – |
@@ -87,7 +87,7 @@ this order; the first step that names a provider wins:
 - The namespace default is captured on the job when it is registered (like the namespace's default node
   pool): a changed namespace default applies to jobs registered afterwards, never silently to running
   tasks.
-- `secret` blocks and `nomadSecret` calls are not Vault-style: without a defined provider they reach the
+- `secret` blocks and `norcaSecret` calls are not Vault-style: without a defined provider they reach the
   fallback even when the agent has a Vault integration.
 
 ### Access: `secret_access`
@@ -114,16 +114,16 @@ group "web" {
 
 A policy bound to the job (`norca acl policy apply -job ...`) that grants `read-secret` works as well.
 
-### Templates: `nomadSecret`
+### Templates: `norcaSecret`
 
-The template function `nomadSecret` returns the items of a secret as a map and follows the same resolution
+The template function `norcaSecret` returns the items of a secret as a map and follows the same resolution
 order (with an optional `provider:` prefix):
 
 ```hcl
 template {
   destination = "local/app.conf"
   data        = <<EOT
-{{ with nomadSecret "app/db" }}password = "{{ .password }}"{{ end }}
+{{ with norcaSecret "app/db" }}password = "{{ .password }}"{{ end }}
 EOT
 }
 ```
@@ -136,7 +136,7 @@ a new version makes all templates of the task render again, with their own chang
 Admission policies see the secrets a job references in the `request.secrets` list (group, task, source,
 name, provider, default and effective provider, path with placeholders replaced, version, file format,
 environment variables, optional). For example, `request.secrets.all(s, size(s.env) == 0)` forbids
-environment delivery in a namespace. `nomadSecret` calls are found in embedded templates only. See
+environment delivery in a namespace. `norcaSecret` calls are found in embedded templates only. See
 [admission control](/docs/features/admission-control).
 
 ## Example
@@ -220,7 +220,7 @@ each secret; the secrets themselves are managed with [`norca secret`](/docs/comm
 
 ## Limits and status
 
-- Available: the `norca` and `vault` providers, the resolution order with fallback, `nomadSecret`,
+- Available: the `norca` and `vault` providers, the resolution order with fallback, `norcaSecret`,
   `secret_access`, change modes, admission on referenced secrets.
 - Dynamic secrets: a `secret` block with `engine` and `role` (and no `path`) asks the built-in dynamic
   engine for a credential with a lease, renewed while the task runs and revoked when it stops; see
