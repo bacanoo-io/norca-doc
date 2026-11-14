@@ -4,7 +4,7 @@ weight: 8
 status: "In progress"
 ---
 
-**Status:** In progress · 2026-11-12 (phases 1–4 implemented; phases 5 and 6 postponed) · Feature page: [observers and hot standby servers](/docs/features/server-roles) · Starting point: Nomad v1.6.5 · [Clean room development](/docs/clean-room/development#features)
+**Status:** In progress · 2026-11-12 (phases 1–4 implemented; phases 5 and 6 postponed) · Feature page: [observers and hot standby servers](/docs/features/server-roles) · Starting point: Nomad v1.6.5 · [Independent development under source rules](/docs/clean-room/development#features)
 
 A region can hold servers that replicate the Raft log and the state but do not vote. **Observers** never vote: they add capacity for stale reads, scheduling and backups without a larger quorum. **Standbys** do not vote until a voter fails: autopilot then gives a caught-up standby the vote, so the voter set is restored without a person. One component owns the voter set, autopilot; the manual command only asks it.
 
@@ -36,7 +36,7 @@ A region can hold servers that replicate the Raft log and the state but do not v
 - [Testing](#testing)
 - [Phases](#phases)
 - [Decisions](#decisions)
-- [License and clean room](#license-and-clean-room)
+- [License and source rules](#license-and-source-rules)
 
 ## Goals and non-goals
 
@@ -213,8 +213,8 @@ A job registration is forwarded to the leader, which validates it. The server th
 4. **Request limits per token are optional** and off by default; there is no limit per client address.
 5. **No database is added** for history.
 
-## License and clean room
+## License and source rules
 
 Servers that stay without a vote are an Enterprise feature of Nomad, and HashiCorp never published its code. Nomad v1.6.5 (MPL 2.0) contains only the public side: the `non_voting_server` option, the Serf tag, the bootstrap that counts voters only, and the empty extension points of autopilot.
 
-This work is a **clean room development**. Its sources were the Norca tree, the Raft library and the public autopilot library with its promoter interface (both MPL 2.0). No Enterprise code, binary or documentation, and no HashiCorp source or documentation of a BSL release was used; the behaviour is designed from Norca's own requirements. The record of the commits and files is on the [clean room development](/docs/clean-room/development#features) page.
+This work is an **independent development under source rules**. Its sources were the Norca tree, the Raft library and the public autopilot library with its promoter interface (both MPL 2.0). No Enterprise code, binary or documentation, and no HashiCorp source or documentation of a BSL release was used; the behaviour is designed from Norca's own requirements. The record of the commits and files is on the [independent development](/docs/clean-room/development#features) page.

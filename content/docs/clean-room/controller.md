@@ -70,7 +70,7 @@ references differ even without the owner kind),
 `TestObjectOwnerMetaValue_GroupsDoNotCollide` in
 `norca/structs/objects_lifecycle_test.go`, and an extended case in
 `ui/tests/unit/utils/objects-secrets-test.js`. The UI unit test was not run:
-the UI test build does not work on the Windows machine of the clean room.
+the UI test build does not work on the Windows machine of the isolated environment.
 
 **Commit.** `1e23e9e83`.
 

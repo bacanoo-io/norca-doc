@@ -1,6 +1,6 @@
 ---
-title: "Clean room development"
-linkTitle: "Clean room development"
+title: "Independent development under source rules"
+linkTitle: "Independent development"
 description: "Features whose Nomad counterpart was Enterprise only, built by Norca from its own design: the sources that were allowed, the environment, the commits and what the similarity audit covers."
 weight: 10
 ---
@@ -41,7 +41,7 @@ adds to files of v1.6.5 with HashiCorp's changes to the same files.
 
 ## Environment
 
-The [clean room fixes](/docs/clean-room) of October 2026 were made on an empty
+The [isolated-environment fixes](/docs/clean-room) of October 2026 were made on an empty
 drive without internet access. The work on this page was made in the normal
 development environment of Norca:
 
@@ -91,4 +91,4 @@ feature and their headers.
 - **The multiregion import commit** is not in the `bugfix` set; its UI timeline
   is in the `busl` set.
 
-The result of each run is on the [clean room page](/docs/clean-room#similarity-audit).
+The result of each run is on the [fixes page](/docs/clean-room#similarity-audit).

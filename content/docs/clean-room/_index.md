@@ -1,8 +1,8 @@
 ---
 aliases:
   - /docs/white-room
-title: "Clean room fixes"
-linkTitle: "Clean room fixes"
+title: "Isolated-environment fixes"
+linkTitle: "Isolated-environment fixes"
 description: "How the defects found by an external code review were checked and fixed in an isolated environment, what was fixed, and in which commits."
 weight: 20
 ---
@@ -17,7 +17,16 @@ can be traced to the code.
 Features whose Nomad counterpart was Enterprise only (multiregion deployments,
 server roles, standby failover and the work of observers) were not fixes but
 new development from Norca's own design; their rules, environment and commits
-are on [Clean room development](/docs/clean-room/development).
+are on [Independent development under source rules](/docs/clean-room/development).
+
+> [!NOTE]
+> **These pages were called "clean room" before 2026-11-14.** The words usually mean a
+> procedure with two separate teams, which this was not: one person worked with AI coding
+> agents, and the roles were separated by sessions and environments. The four things the
+> name stood for have their own names now; they are listed in
+> [CLEAN_ROOM.md](https://github.com/bacanoo-io/norca/blob/main/CLEAN_ROOM.md#terms). The
+> `// clean room bugfix:` comments and "clean room" in commit messages stay as labels the
+> audit finds the code by.
 
 ## Process
 
@@ -30,8 +39,8 @@ are not published as they were written.
 
 ### Checking and fixing
 
-The validation of each finding and the fixes were done with Claude Code, in a
-"clean room":
+The validation of each finding and the fixes were done with Claude Code, in an
+isolated environment:
 
 - an empty drive, with only the Norca repositories on it;
 - no access to any other directory of the machine;
@@ -81,7 +90,7 @@ on the page of the report whose code they are in.
 ## Commits
 
 The fixes are in the following commits of the Norca repositories. A commit
-named for another change contains the clean room fix of the finding listed
+named for another change contains the fix of the finding listed
 with it, made in the same code.
 
 | Repository | Commit | Subject | Findings |
@@ -104,7 +113,7 @@ with it, made in the same code.
 
 ## Similarity audit
 
-On 2026-11-11 the clean room code was compared with the HashiCorp code it must
+On 2026-11-11 this code was compared with the HashiCorp code it must
 not be derived from, using [Dolos](https://github.com/dodona-edu/dolos) 2.10.0
 (syntax-tree based plagiarism detection, Ghent University). The comparison ran
 in a throwaway container that received the Norca checkout read-only, fetched
@@ -114,13 +123,13 @@ looked at code of a flagged pair.
 
 | Property | Value |
 | --- | --- |
-| Norca | `main` at `f194f1920` (with the four phases of [clean room development](/docs/clean-room/development)) |
+| Norca | `main` at `f194f1920` (with the four phases of [independent development](/docs/clean-room/development)) |
 | BUSL files | the 45 files of Nomad v1.6.5 with a BUSL-1.1 header |
 | BSL release | Nomad v1.11.3 (`173ab08a0`) |
 | Threshold | 0.4 (share of the two files covered by common fragments) |
 
-**Clean room fixes and development** (the lines each commit of the table above
-and each commit of [clean room development](/docs/clean-room/development) added
+**Fixes and independent development** (the lines each commit of the table above
+and each commit of [independent development](/docs/clean-room/development) added
 to a file, against the lines HashiCorp added to the same file between v1.6.5 and
 v1.11.3): 7676 pairs; at or above the threshold only the generated msgpack codec
 (`structs.generated.go`, 0.507, 0.427, 0.410 and 0.406), which is generated from
@@ -143,7 +152,7 @@ than HashiCorp's own MPL files do (Ember acceptance tests and page objects,
 baseline 0.565 and 1.000).
 
 **Restored MPL code.** `e2e/rescheduling/rescheduling.go` (0.497 against
-`e2e/rescheduling/rescheduling_test.go`) is not a clean room file: it is
+`e2e/rescheduling/rescheduling_test.go`) is not a file Norca wrote: it is
 HashiCorp's MPL suite as it stood on 2023-08-09, before the license change,
 with 9 of 503 lines adapted (module path, renamed inputs). v1.6.5 replaced it
 with a BUSL rewrite that grew out of the same file, hence the similarity. The

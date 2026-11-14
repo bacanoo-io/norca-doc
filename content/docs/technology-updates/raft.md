@@ -130,7 +130,7 @@ standby promotion and step back is an event of the `Server` topic of the
 [event stream](/docs/api/events), and the leader's metrics store keeps
 `norca.cluster.autopilot_voters`, `norca.cluster.autopilot_standbys_ready`,
 `norca.cluster.autopilot_standby_promotions` and `norca.cluster.autopilot_standby_demotions`. This is
-a clean room development: Norca's own design on the public parts of Raft and autopilot.
+an independent development under source rules: Norca's own design on the public parts of Raft and autopilot.
 
 ## Observability
 

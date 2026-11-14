@@ -308,5 +308,5 @@ five the region no longer kept up with 50 writes per second.
 ## Design
 
 [Observers and hot standby servers](/docs/design/server-roles-plan). The
-feature is a clean room development: Norca's own design on the public parts of
+feature is an independent development under source rules: Norca's own design on the public parts of
 Raft and autopilot.
