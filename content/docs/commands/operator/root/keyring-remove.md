@@ -10,14 +10,38 @@ The `operator root keyring remove` command removes an encryption key from the
 cluster. **This operation may only be performed on keys that are not the active
 key.**
 
-**A key that encrypts values of the Consul KV kept on the
-[system bus](/docs/configuration/bus#security) is not removed**: the command
-fails and says how many values the key encrypts. Rotate the keyring with
-[`-full`](/docs/commands/operator/root/keyring-rotate) first, which encrypts
-them with the new key, or write or delete those keys. The command also fails
-when the servers run a bus whose KV can't be read at the moment. Variables
-are not checked: **removing a key that still encrypts Variables makes them
-unreadable.**
+> [!IMPORTANT]
+> **A key that encrypts values of the Consul KV kept on the
+> [system bus](/docs/configuration/bus#security) is not removed.** The command
+> fails and says how many values the key encrypts:
+>
+> ```plaintext
+> root key <key ID> encrypts 3 value(s) of the Consul KV of the system bus -
+> rotate the keyring with -full first, or write or delete those keys
+> ```
+>
+> **Why:** every value of that KV is stored encrypted with the root key that
+> was active when it was written, and the ID of the key is stored with it.
+> Without the key the value can never be decrypted again, by anyone.
+>
+> **How:** the bucket of the KV is not part of the Raft state, so before a key
+> is removed the leader reads the bucket and counts the values that carry the
+> ID of the key. The garbage collection of old keys does the same and keeps
+> such a key.
+>
+> **What to do:**
+> [`norca operator root keyring rotate -full`](/docs/commands/operator/root/keyring-rotate)
+> encrypts the values with the new key; after it has finished the old key
+> encrypts nothing and can be removed. Writing a key again, or deleting it,
+> has the same effect for that key.
+>
+> The command also fails when the servers run a bus whose KV can't be read at
+> the moment: the key is not removed on a guess. A region without a bus is
+> not affected.
+
+> [!WARNING]
+> Variables are not checked: **removing a key that still encrypts Variables
+> makes them unreadable.**
 
 If ACLs are enabled, this command requires a management token.
 
