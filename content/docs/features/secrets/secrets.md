@@ -230,7 +230,12 @@ never with the value:
   `conflict`, `unavailable`, `invalid`, `error`), the accessor (token accessor ID, or the workload
   identity: namespace, job, group, task, allocation and node; or a server component such as
   `{"System": "secret-replication"}`), the other region of a replication (`PeerRegion`) and the server
-  that executed it.
+  that executed it. The records are not written to Raft: the leader, which executes the accesses,
+  publishes them. **A subscription that names the topic is served by the leader**, whichever server
+  it reaches; a subscription to `*` on a follower has no audit records. **For a complete, durable
+  audit read the admin event stream of the system bus**
+  ([change data capture](/docs/features/change-data-capture)), where every record is a message of its
+  own.
 - Optionally in an **append-only audit file** on each server
   ([`server { secrets { audit_file } }`](/docs/configuration/secrets#server-secrets-block)), with size and
   time based rotation. Records are written by the server that executed the access, which is the leader.
