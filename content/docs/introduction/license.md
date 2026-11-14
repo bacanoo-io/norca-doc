@@ -26,7 +26,21 @@ This page records under which license each part of the project falls, where the 
 | uBixVault | v1.5.0 (2026-09-30) | `817554750c2ccd2dd9a8ac072615630ade05b025` | BSD-3-Clause | The core of the built-in secret store ([secrets-plan.md](/docs/design/secrets-plan)); copied (in one commit, without its upstream history) into `norca/secretstore/ubix/`, where `norca/tools/ubixsync` removes the parts Norca does not use, rewrites the import paths to the Nomad module and generates the facades of its internal packages. Its files keep the BSD-3-Clause license (`REUSE.toml`, `THIRD_PARTY_NOTICES.md`) |
 | tstorage, with parts of go-tsz | tstorage v0.3.6 | tag `v0.3.6` | Apache-2.0 AND BSD-2-Clause | The time-series store of the metrics store, a source copy (without history) in `norca/internal/tstorage/` (Apache 2.0, `LICENSE`, `NOTICE.txt`); its `bstream.go` and `encoding.go` carry a modified part of [go-tsz](https://github.com/dgryski/go-tsz) by Damian Gryski under the BSD-2-Clause license (`LICENSE-go-tsz`) |
 
-Nomad v1.6.5 goes into the repository together with the upstream git history up to `8495495ba` (2023-08-09), the last release/1.6.x commit before HashiCorp's license change, so anyone can verify that the starting point was an MPL commit. The changes of the later 1.6.x commits up to v1.6.5 are part of the import commit, without the 45 BUSL-marked files (see below); no upstream commit from after the license change is part of the history, and no Norca commit ever contained a BUSL-1.1 file. Nomad Pack likewise, with its history; it was imported into `nomad-pack/` and later moved into `norca/pack/`, where it is part of the Nomad Go module and runs as the `norca pack` subcommand (`git log --follow` keeps the history).
+**Why v1.6.5 is MPL 2.0.** HashiCorp announced its license change on 2023-08-10, but the release/1.6.x branch stayed under MPL 2.0 until 2024-01-02: the commit that changed its `LICENSE` file was merged after v1.6.5 was tagged. v1.6.5 (2023-12-13) is the last Nomad release tagged with an MPL 2.0 `LICENSE`.
+
+| Fact | Value |
+| --- | --- |
+| The [v1.6.5](https://github.com/hashicorp/nomad/tree/v1.6.5) tag | `a7cfff372cd52b02232a02bd3ffb5e5d35f88a0f`, 2023-12-13; the root `LICENSE` is MPL 2.0 |
+| The commit that changed the license of release/1.6.x | [`7a2f26e2f8af9b6220b716752a8814ca30f01878`](https://github.com/hashicorp/nomad/commit/7a2f26e2f8af9b6220b716752a8814ca30f01878), author date 2023-12-13 |
+| The pull request that merged it | [#19287](https://github.com/hashicorp/nomad/pull/19287), "[DO NOT MERGE UNTIL EOY] EOY license fixes 1.6.x", merged 2024-01-02 |
+| Its relation to the tag | Not an ancestor of v1.6.5 |
+| The first tag released with a BSL `LICENSE` | v1.6.6, 2024-01-15 |
+| Files with a `BUSL-1.1` header in the MPL tags | v1.6.2: 3, v1.6.3: 41, v1.6.4 and v1.6.5: 45; no BSL license text or parameters in those trees |
+| Header changes from v1.6.5 to v1.6.6 | 1562 files from MPL 2.0 to BUSL-1.1; 1526 of them identical apart from the SPDX line |
+
+The facts of this table are from the git history of [hashicorp/nomad](https://github.com/hashicorp/nomad), as found by the licence review of this project on 2026-11-13. The Norca tooling does not fetch releases after v1.6.5, so it checks only the first rows and that the license commit is not part of the Norca history ([compliance audit](#compliance-audit)). HashiCorp's own account is its [licensing FAQ](https://www.hashicorp.com/license-faq): question 7 lists the final MPL 2.0 release of each product, question 11 is about fixes backported to MPL 2.0 releases.
+
+As an extra precaution Nomad v1.6.5 goes into the repository together with the upstream git history only up to `8495495ba` (2023-08-09), the last release/1.6.x commit before the announcement. The changes of the later 1.6.x commits up to v1.6.5 are part of the import commit, without the 45 BUSL-marked files (see below); no upstream commit dated after the announcement is part of the history, and no commit of the published history contains a BUSL-1.1 file. Nomad Pack likewise, with its history; it was imported into `nomad-pack/` and later moved into `norca/pack/`, where it is part of the Nomad Go module and runs as the `norca pack` subcommand (`git log --follow` keeps the history).
 
 **Consul is not part of the repository.** The Consul-compatible layer implements the documented behavior of Consul's public API and contains no Consul code. The conformance tests use the `github.com/hashicorp/consul/api` client (MPL 2.0).
 
@@ -175,7 +189,7 @@ The script needs git, bash and (for the last check) Go. It fetches the upstream 
 
 | Check | What it verifies |
 | --- | --- |
-| History boundary | The `nomad` import commit has the upstream parent `8495495badaa` (release/1.6.x, 2023-08-09); no upstream Nomad commit in the history has an author or commit date of 2023-08-10 or later; the v1.6.5 tag commit is not part of the history |
+| History boundary | The `nomad` import commit has the upstream parent `8495495badaa` (release/1.6.x, 2023-08-09); no upstream Nomad commit in the history has an author or commit date of 2023-08-10 or later; the v1.6.5 tag commit is not part of the history, and neither is the commit that changed the license of release/1.6.x (`7a2f26e`) |
 | Import tree | The `nomad/` tree of the import commit is the v1.6.5 tree with deletions only, and every deleted file carries `SPDX-License-Identifier: BUSL-1.1` in the tag |
 | BUSL-1.1 | No upstream commit in the history (Nomad, Nomad Pack, uBixVault) adds a BUSL-1.1 header, and no file at `HEAD` carries one; Norca's own commits mention BUSL only in documentation, notices and the license tooling |
 | Headers | Every file under `norca/` that differs from Nomad v1.6.5 or Nomad Pack v0.4.2 and has a HashiCorp or IBM copyright line also has a Norca copyright line (`Modifications Copyright` or `SPDX-FileCopyrightText`) |
