@@ -90,11 +90,10 @@ bus {
   publish = [
     "$JS.API.INFO",
     "$JS.API.STREAM.INFO.NORCA_EVENTS_eu",
-    "$JS.API.CONSUMER.CREATE.NORCA_EVENTS_eu.*.norca.eu.games.>",
-    "$JS.API.CONSUMER.INFO.NORCA_EVENTS_eu.*",
-    "$JS.API.CONSUMER.DELETE.NORCA_EVENTS_eu.*",
-    "$JS.API.CONSUMER.MSG.NEXT.NORCA_EVENTS_eu.>",
-    "$JS.ACK.NORCA_EVENTS_eu.>",
+    "$JS.API.CONSUMER.CREATE.NORCA_EVENTS_eu.lifecycle-reader.norca.eu.games.>",
+    "$JS.API.CONSUMER.INFO.NORCA_EVENTS_eu.lifecycle-reader",
+    "$JS.API.CONSUMER.MSG.NEXT.NORCA_EVENTS_eu.lifecycle-reader",
+    "$JS.ACK.NORCA_EVENTS_eu.lifecycle-reader.>",
   ]
 }
 ```
@@ -102,7 +101,9 @@ bus {
 **A consumer reads everything its filter selects**, so a reader limited to a
 namespace may create only consumers filtered to it: the `CREATE` subject with
 the filter (`...CREATE.<stream>.<consumer>.<filter>`) is the one to allow, not
-`$JS.API.CONSUMER.*.NORCA_EVENTS_eu`. **Name the namespaces and topics** rather
+`$JS.API.CONSUMER.*.NORCA_EVENTS_eu`. **Name the consumer in the rule**
+(`lifecycle-reader` above): a wildcard in its place lets the reader read,
+change or delete the consumers of every other reader of the stream. **Name the namespaces and topics** rather
 than `norca.eu.>`: a rule over the whole region receives the full Job events
 of every namespace. For the Consul KV changes, allow
 `norca.eu.games.ConsulKV.>` and the same `$JS` subjects for
@@ -167,6 +168,24 @@ are not events; read them from the
 **On every start, reconcile once with the API** (the job's allocations and
 evaluations), then follow the events: a consumer replays what the reader
 missed, within the retention of the stream.
+
+## Consumers
+
+The streams have many independent readers, and their settings keep them
+apart:
+
+- **No reader removes an event for the others**: the streams keep events by
+  age and size (the limits policy), whatever the consumers acknowledge.
+- **A bound on the consumers**: each stream takes at most
+  [`max_consumers`](/docs/configuration/bus) (64); creating one more fails
+  with "maximum consumers limit reached".
+- **Idle consumers go**: a consumer idle longer than `max_age` would have
+  nothing left to catch up; one without its own `inactive_threshold` gets
+  `max_age`, and a larger one is refused.
+- **At most 1000 messages unacknowledged** per consumer.
+
+A reader keeps one durable consumer per stream and resumes it after a
+restart, instead of creating a new one each time.
 
 ## Guarantees
 

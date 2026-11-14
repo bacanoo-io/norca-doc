@@ -30,6 +30,7 @@ server {
       subject_prefix = "norca"
       max_age        = "72h"
       max_bytes      = "1GiB"
+      max_consumers  = 64
       topics         = ["*"]
     }
   }
@@ -79,6 +80,12 @@ ports {
     a quarter for the admin events in `NORCA_ADMIN_EVENTS_<region>`, an eighth
     for the Consul KV notices in `NORCA_KV_CHANGES_<region>`. Without it they
     take at most a quarter of `max_storage`.
+  - `max_consumers` `(int: 64)` - The consumers each change data capture
+    stream (`NORCA_EVENTS_<region>`, `NORCA_ADMIN_EVENTS_<region>`,
+    `NORCA_KV_CHANGES_<region>`) may have; creating one more fails. The
+    streams also bound their consumers: idle at most `max_age` (a consumer
+    without its own `inactive_threshold` gets `max_age` and goes after it),
+    at most 1000 messages unacknowledged.
   - `topics` `(array<string>: ["*"])` - The published topics, for example
     `["Job", "Deployment", "Allocation"]`; `"*"` publishes all.
 
