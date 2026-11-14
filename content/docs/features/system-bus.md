@@ -102,7 +102,7 @@ decoding the payload:
 
 | Header | Value |
 | --- | --- |
-| `Nats-Msg-Id` | `<region>:<index>:<topic>:<type>:<namespace>:<key>` (deduplication) |
+| `Nats-Msg-Id` | `<region>:<index>:<topic>:<type>:<namespace>:<key>` (deduplication); an audit record of the secret store (`SecretAccess`, not written to Raft) adds `:<time>-<operation>-<result>`, so every access is a message of its own |
 | `Nomad-Region` | region |
 | `Nomad-Index` | Raft index of the event |
 | `Nomad-Topic` | topic |
