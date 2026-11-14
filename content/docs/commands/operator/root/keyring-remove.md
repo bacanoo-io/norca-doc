@@ -52,7 +52,8 @@ key.**
 > removed. Writing a Variable or a key again, or deleting it, has the same
 > effect for that one. An allocation frees the key when it has stopped on
 > the server and the client; the certificate authority moves to the active
-> key by itself shortly after any rotation.
+> key by itself right after any rotation (the leader re-encrypts its key as
+> soon as the active key changes), so that refusal lasts a moment.
 >
 > The command also fails when the servers run a bus whose KV can't be read at
 > the moment: the key is not removed on a guess. A region without a bus has
