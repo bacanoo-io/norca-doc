@@ -63,7 +63,7 @@ on the bus only: without it the clients are not asked for usage.**
 | --- | --- |
 | Stream | `NORCA_EVENTS_<region>` (file storage, S2 compression) |
 | Subjects | `<prefix>.<region>.<namespace>.<topic>`, e.g. `norca.eu.default.Job`, `norca.eu.shop.Allocation` (prefix `norca` by default); events without a namespace use `_`, e.g. `norca.eu._.CustomObject` |
-| Payload | the event JSON exactly as `/v1/event/stream` returns it, with a `Region` field in front |
+| Payload | the event JSON as `/v1/event/stream` returns it, with a `Region` field in front; the Job events without their secrets (see below) |
 | Retention | `max_age` (72h) and three quarters of `max_bytes` (1GiB, at most a quarter of `max_storage` by default), the oldest events dropped first |
 | Replicas | one per server, up to three |
 
@@ -193,6 +193,42 @@ instead of `$JS.API.CONSUMER.*.NORCA_EVENTS_eu`.
 $ nats --server tls://server1:4649 --tlsca ca.pem --user "$TOKEN" \
     sub 'norca.eu.*.Job'
 ```
+
+### Job events without secrets
+
+**A Job event on the bus leaves out what may hold a secret written into the
+job**: the values of `env` and `meta` (the keys stay), the embedded templates,
+the task driver configurations (for example the `auth` of a docker image),
+the user information and query of the artifact sources and their options and
+headers, the headers and bodies of the service checks, and the payload of a
+dispatched job. The replaced values read `<redacted>`, and the message has the
+header `Norca-Redacted: true`. IDs, version, status, groups, counts, task names
+and drivers stay. The [event stream API](/docs/api/events) and the job API
+return the whole job, with `read-job`.
+
+Keep secrets out of jobs anyway: a template that reads a
+[secret](/docs/job-specification/secret) or a Variable puts only the reference
+into the job.
+
+## Consul KV notices
+
+When a key of the Consul KV is written or deleted through the
+Consul-compatible API, the leader publishes a notice **without the value**, so
+that a service learns that a setting changed:
+
+| Item | Value |
+| --- | --- |
+| Subject | `<prefix>.<region>.<namespace>.ConsulKV.KeySet` or `.KeyDeleted`, e.g. `norca.eu.default.ConsulKV.KeySet` |
+| Payload | `{"Region": "eu", "Topic": "ConsulKV", "Type": "KeySet", "Key": "app/config/level", "Namespace": "default", "Payload": {"ConsulKV": {"Key": ..., "Time": ...}}}` |
+| Headers | `Nomad-Region`, `Nomad-Topic`, `Nomad-Type`, `Nomad-Namespace`, `Nomad-Key` |
+
+**A notice is a live message only**: the event stream keeps
+`<prefix>.<region>.<namespace>.<topic>`, one token less, so it does not store
+the notices. A service that was not connected reads the keys again. A failed
+CAS, a read and the re-encryption of a full keyring rotation send nothing; a
+recursive delete sends one notice per key. A `bus` rule
+`subscribe = ["norca.eu.default.ConsulKV.>"]` receives the notices of the
+namespace `default`.
 
 ## Pack push notices
 
