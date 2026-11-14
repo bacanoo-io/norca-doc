@@ -154,16 +154,22 @@ whatever the outcome, how its allocations fare:
 | Placed | `Allocation` / `PlanResult` | the new allocation: node, `ClientStatus` `pending`, the ports with their `HostIP` in `AllocatedResources` |
 | Starting | `Allocation` / `AllocationUpdated` | the task events: `Received`, `Task Setup`, `Downloading Artifacts`, `Driver` (e.g. an image download), `Started`, `Driver Failure`, `Restarting` |
 | Running | `Allocation` / `AllocationUpdated` | `ClientStatus` `running` |
-| Ready | `Service` / `ServiceRegistration`, or `Deployment` / `DeploymentAllocHealth` | the address of a native service, or the health of the allocation in a deployment |
+| Ready | `Service` / `ServiceRegistration`, or `Deployment` / `DeploymentAllocHealth` | of a native service: the address, `Ready` (from its startup and readiness checks), `Health` and the status of each check; or the health of the allocation in a deployment |
 | Stopped | `Allocation` / `AllocationUpdateDesiredStatus`, `AllocationUpdated` | `DesiredStatus` `stop` or `evict`, then `ClientStatus` `complete` or `failed` |
 | Lost or replaced | `Allocation` / `AllocationUpdated`, `PlanResult` | `ClientStatus` `lost`; `NextAllocation` and `PreviousAllocation` link the replacement |
 | Job gone | `Job` / `JobDeregistered` | |
 
 **What counts as ready, and how long to wait, is the controller's
 decision**: an allocation may wait for capacity (a blocked evaluation) or
-for a long download (`Driver` events). The results of native service checks
-are not events; read them from the
-[allocation checks](/docs/api/allocations) API when readiness depends on them.
+for a long download (`Driver` events). **The checks of native services are
+in the events**: the clients report the state of every check, and each
+recorded change of an instance (`Ready`, `Health`, the status of a check)
+is a `ServiceRegistration` event of the
+[health-based catalog](/docs/features/service-discovery/catalog). Changes of
+one instance are recorded at most every 5 seconds (flapping protection);
+liveness checks restart the task instead (`Restarting` in the allocation's
+task events). The services of the Consul provider have their health in
+Consul, not in these events.
 
 **On every start, reconcile once with the API** (the job's allocations and
 evaluations), then follow the events: a consumer replays what the reader
@@ -207,7 +213,8 @@ restart, instead of creating a new one each time.
   values of `env` and `meta`, embedded templates, task driver configuration,
   artifact credentials, check headers and bodies, the dispatch payload
   ([details](/docs/features/system-bus#job-events-without-secrets)). A reader
-  that needs the whole job reads it from the API with `read-job`.
+  that needs the whole job reads it from the API with `read-job`. Service
+  events leave out the outputs of the checks.
 - **Values of the Consul KV.** A notice says which key changed; the value is
   read through the Consul-compatible API with the Variables rights of the
   key.

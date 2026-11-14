@@ -110,7 +110,7 @@ decoding the payload:
 | `Nomad-Namespace` | namespace (if any) |
 | `Nomad-Key` | key of the event, e.g. the job ID (if any) |
 | `Norca-Job` | the job of a `Job`, `Evaluation`, `Allocation`, `Deployment` or `Service` event, so that a consumer keeps the events of its jobs without decoding the payload |
-| `Norca-Redacted` | `true` on a Job event without its secrets (see below) |
+| `Norca-Redacted` | `true` on a Job event without its secrets, or a Service event without the outputs of its checks (see below) |
 
 **Delivery is at least once and in order.**
 
@@ -211,6 +211,12 @@ dispatched job. The replaced values read `<redacted>`, and the message has the
 header `Norca-Redacted: true`. IDs, version, status, groups, counts, task names
 and drivers stay. The [event stream API](/docs/api/events) and the job API
 return the whole job, with `read-job`.
+
+**A Service event leaves out the outputs of the checks** of the instance:
+the beginning of what a check returned (for example the body of an HTTP
+check) may hold anything. The name, role and status of each check, `Ready`
+and `Health` stay, and the message has `Norca-Redacted: true`. The service
+registration API returns the outputs.
 
 Keep secrets out of jobs anyway: a template that reads a
 [secret](/docs/job-specification/secret) or a Variable puts only the reference
