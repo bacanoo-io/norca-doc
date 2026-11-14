@@ -62,10 +62,36 @@ on the bus only: without it the clients are not asked for usage.**
 | Item | Value |
 | --- | --- |
 | Stream | `NORCA_EVENTS_<region>` (file storage, S2 compression) |
-| Subjects | `<prefix>.<region>.<namespace>.<topic>`, e.g. `norca.eu.default.Job`, `norca.eu.shop.Allocation` (prefix `norca` by default); events without a namespace (nodes, operator events) use `_`, e.g. `norca.eu._.Node` |
+| Subjects | `<prefix>.<region>.<namespace>.<topic>`, e.g. `norca.eu.default.Job`, `norca.eu.shop.Allocation` (prefix `norca` by default); events without a namespace use `_`, e.g. `norca.eu._.CustomObject` |
 | Payload | the event JSON exactly as `/v1/event/stream` returns it, with a `Region` field in front |
-| Retention | `max_age` (72h) and `max_bytes` (1GiB, at most a quarter of `max_storage` by default), the oldest events dropped first |
+| Retention | `max_age` (72h) and three quarters of `max_bytes` (1GiB, at most a quarter of `max_storage` by default), the oldest events dropped first |
 | Replicas | one per server, up to three |
+
+**The admin events have a stream of their own.** These are the topics the
+[event stream API](/docs/api/events) shows only with a right beyond reading
+the jobs of a namespace:
+
+| Topics | Right |
+| --- | --- |
+| `ACLToken`, `ACLPolicy`, `ACLRole`, `ACLAuthMethod`, `ACLBindingRule`, `NodePool` | management token |
+| `Node` | `node` read |
+| `Quota` | `quota` read |
+| `AdmissionPolicy` | `admission` read |
+| `SecretAccess` (the audit of the secret store), `Server`, `NetworkPolicy` of the admin network policies | `operator` read |
+| `Backup` | `backup` read |
+
+| Item | Value |
+| --- | --- |
+| Stream | `NORCA_ADMIN_EVENTS_<region>` |
+| Subjects | `<prefix>.admin.<region>.<namespace>.<topic>`, e.g. `norca.admin.eu._.ACLPolicy` |
+| Retention | `max_age` and a quarter of `max_bytes`; the two streams share the limit |
+
+**A connection never receives an admin topic its token lacks the right
+for**, whatever its `bus` rule covers: a subscription to `norca.>` gets the
+`Node` events only with `node` read. **The JetStream API of the admin stream
+is open to a management token only**: a consumer reads every topic of a
+stream, so the right of each topic can't hold there. A token without the
+rights subscribes to the admin subjects live instead.
 
 The headers repeat the metadata of the event, so consumers can filter without
 decoding the payload:
@@ -124,6 +150,13 @@ A JetStream consumer of the stream needs the `$JS.API` subjects of the
 stream and its consumers, and `$JS.ACK` to acknowledge messages. A plain
 subscriber of the live events needs only `subscribe = ["norca.eu.>"]`.
 **Wildcards are whole tokens, so the stream is named in full.**
+
+The events of a namespace follow the `bus` rule: a token that may subscribe
+to `norca.eu.shop.>` receives every topic of the namespace `shop`, including
+the full job specifications. **Name the namespaces and topics a reader needs**
+rather than `norca.eu.>`. No token may create or change a stream on the bus
+(`$JS.API.STREAM.CREATE`, `$JS.API.STREAM.UPDATE`): the bus is not a broker for
+applications, and a stream could copy the admin stream.
 
 > [!IMPORTANT]
 > **A JetStream consumer sets its inbox prefix to `_INBOX.<accessor id of its token>`**

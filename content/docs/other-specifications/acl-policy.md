@@ -533,7 +533,12 @@ bus {
 Subjects may use the NATS wildcards `*` (one token) and `>` (the remaining
 tokens, last only). The lists of all policies of a token are combined. **When
 the token or its policies change, its connections are closed and reconnect
-with the new rights.** A task connects with its workload identity, with the
+with the new rights.** **The admin events (ACL objects, nodes, the audit of
+the secret store, ...) reach a connection only with the right the event
+stream API asks for them**, whatever the rule covers, and their stream only
+through a management token; see the
+[system bus](/docs/features/system-bus#the-event-stream). No token may create
+or change a stream on the bus. A task connects with its workload identity, with the
 rules of the policies bound to its job, group or task; its connections are
 closed when its allocation has ended.
 

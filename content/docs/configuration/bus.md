@@ -74,9 +74,10 @@ ports {
     `<prefix>.<region>.<namespace>.<topic>` and `<prefix>.packs.pushed`. One or more
     tokens separated by dots.
   - `max_age` `(string: "72h")` - How long events are kept.
-  - `max_bytes` `(string: "1GiB")` - The size limit of the stream, within
-    `max_storage`. Without it the stream takes at most a quarter of
-    `max_storage`.
+  - `max_bytes` `(string: "1GiB")` - The size limit of the event streams
+    together, within `max_storage`: three quarters for `NORCA_EVENTS_<region>`,
+    a quarter for the admin events in `NORCA_ADMIN_EVENTS_<region>`. Without it
+    they take at most a quarter of `max_storage`.
   - `topics` `(array<string>: ["*"])` - The published topics, for example
     `["Job", "Deployment", "Allocation"]`; `"*"` publishes all.
 
@@ -98,9 +99,11 @@ notices count only when `events.enabled` is set.
 ## Region names and subjects
 
 The streams of a region must not share subjects. The events use
-`<subject_prefix>.<region>.>`, the usage reports `norca.telemetry.<region>.*`
-and the push notices `<subject_prefix>.packs.pushed`. **With the default
-prefix a region can't be named `telemetry` or `packs`**, and a subject prefix
+`<subject_prefix>.<region>.>`, the admin events
+`<subject_prefix>.admin.<region>.>`, the usage reports
+`norca.telemetry.<region>.*` and the push notices
+`<subject_prefix>.packs.pushed`. **With the default prefix a region can't be
+named `telemetry`, `packs` or `admin`**, and a subject prefix
 can't lie under `norca.telemetry`: the agent refuses to start its bus and
 names the subjects that collide.
 
