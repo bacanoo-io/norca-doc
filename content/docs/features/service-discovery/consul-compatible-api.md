@@ -61,7 +61,8 @@ by `consul_compat { kv { backend } }`: `auto` (default) keeps them in the bucket
 [system bus](/docs/features/system-bus) when the servers run one, else in Norca Variables below
 `consul/kv`; `bus` and `variables` choose one of the two, `nats` a JetStream key-value bucket of an
 external NATS, and `disabled` turns the KV off. The `bus` backend behaves like `nats` (the revision is
-the `ModifyIndex`, no `flags`), with the ACL rules checked by the servers:
+the `ModifyIndex`, no `flags`), with the ACL rules checked by the servers, which also
+**encrypt the values with the keyring** before they store them ([Security of the bus](/docs/configuration/bus#security)):
 
 | | `variables` | `nats` |
 | --- | --- | --- |

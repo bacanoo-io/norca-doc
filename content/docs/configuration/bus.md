@@ -140,6 +140,26 @@ The defaults differ from the NATS defaults
   policies or a node change, **the affected connections are closed within
   seconds** and reconnect with their new rights.
 
+- **The Consul KV is encrypted at rest.** The servers encrypt every value
+  of the [Consul KV](/docs/features/service-discovery/consul-compatible-api)
+  with the active root key of the [keyring](/docs/commands/operator/root/keyring-rotate)
+  (AES-256-GCM) before it goes into the bucket, as they do with Variables.
+  The files of the bus on the disks of the servers and the backups hold
+  ciphertext only. A value is bound to its key: copied under another key in
+  the files it does not decrypt, and a value that does not decrypt is an
+  error, never returned.
+  - **A value written by a version that did not encrypt stays readable and
+    is encrypted by its next write.** To encrypt all of them, write each key
+    again.
+  - **A root key that encrypts a value of the KV is kept** by the garbage
+    collection of the keyring, as one that encrypts a Variable is.
+  - `norca operator root keyring rotate -full` encrypts the values again
+    with the new key. **The revision (`ModifyIndex`) of such a key changes**
+    and a blocking query of it returns, with the same value.
+  - **The events, the usage reports and the push notices are not encrypted
+    at rest.** An event holds the object it is about (a job with its
+    environment variables, for example), as the Raft state does: protect the
+    data directory of the servers.
 - **Replies are private.** All connections share one NATS account. A
   connection gets the replies of its own requests under
   `_INBOX.<accessor id>` and can't subscribe to the inbox of another, so the

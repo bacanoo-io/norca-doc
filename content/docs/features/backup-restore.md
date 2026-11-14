@@ -226,7 +226,10 @@ It is guarded:
   server, next to the existing keys, before the Raft state is restored.
 - **Consul KV.** The Consul KV bucket of the [system bus](/docs/features/system-bus)
   is not part of the Raft state: after the state, the bucket gets the keys of
-  the backup, and keys added since are removed.
+  the backup, and keys added since are removed. **The values are in the
+  backup as the bucket has them, encrypted with the root keys of that time**;
+  the restore decrypts them with the keys of the backup and encrypts them
+  with the active key. Without the keys nothing of the KV is restored.
 - **Every object in the preview.** Besides jobs and Variables the preview lists
   the quotas, admission and network policies, intentions, type definitions and
   custom objects (pack releases and cluster registries among them), secret

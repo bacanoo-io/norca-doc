@@ -68,7 +68,8 @@ norca operator root keyring rotate [options]
 
 ## Rotate Options
 
-- `-full`: Decrypt all existing variables and re-encrypt with the new key. This
+- `-full`: Decrypt all existing variables, and the values of the Consul KV
+  kept on the [system bus](/docs/configuration/bus#security), and re-encrypt with the new key. This
     command will immediately return and the re-encryption process will run
     asynchronously on the leader.
 
