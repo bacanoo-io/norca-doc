@@ -515,34 +515,31 @@ The `policy` field for the backup rule can have one of the following values:
 
 (Norca) The `bus` rule allows a token to connect to the
 [system bus](/docs/configuration/bus) of the servers and lists the NATS
-subjects it may use. **Without a bus rule a token can't connect**; management
-tokens may use every subject.
+subjects it may use **outside the change streams and outside JetStream**, for
+example to publish a pack push notice. **The changes of the region are read
+with the [`cdc` rule](#cdc-rules)**, not with this one. Without a `bus` or
+`cdc` rule a token can't connect; management tokens may use every subject.
 
 ```hcl
 bus {
-  subscribe = ["norca.*.>"]
-  publish   = ["norca.packs.pushed", "norca.packs.pushed.>"]
+  publish = ["norca.packs.pushed", "norca.packs.pushed.>"]
 }
 ```
 
 - `subscribe` `(array<string>: [])` - Subjects the token may subscribe to.
 - `publish` `(array<string>: [])` - Subjects the token may publish to.
-- `leafnode` `(bool: false)` - Reserved for leaf node connections of NATS
-  servers to the bus; the bus does not accept leaf nodes yet.
 
 Subjects may use the NATS wildcards `*` (one token) and `>` (the remaining
-tokens, last only). The lists of all policies of a token are combined. **When
-the token or its policies change, its connections are closed and reconnect
-with the new rights.** **The admin events (ACL objects, nodes, the audit of
-the secret store, ...) reach a connection only with the right the event
-stream API asks for them**, whatever the rule covers, and their stream only
-through a management token; see the
-[system bus](/docs/features/system-bus#the-event-stream). No token may create
-or change a stream on the bus. A task connects with its workload identity, with the
-rules of the policies bound to its job, group or task; its connections are
-closed when its allocation has ended.
+tokens, last only). The lists of all policies of a token are combined. A
+subject of a `bus` rule that reaches the change streams or JetStream (`$JS.>`)
+is left out, with a warning in the server log. **Unknown keys are refused**,
+also the former `leafnode`. **When the token or its policies change, its
+connections are closed and reconnect with the new rights.** No token may
+create or change a stream on the bus. A task connects with its workload
+identity, with the rules of the policies bound to its job, group or task; its
+connections are closed when its allocation has ended.
 
-Some subjects can't be granted:
+Some subjects can't be granted, in a `bus` or a `cdc` rule:
 
 - **Subjects starting with `$SYS`**, the NATS system account.
 - **Subjects starting with `_INBOX`, or with a wildcard** (`>`, `*.events.>`):
@@ -551,11 +548,10 @@ Some subjects can't be granted:
 
 **A connection receives the replies to its own requests under its own inbox
 prefix, `_INBOX.<accessor id of the token>`**, and under no other. A client
-that makes requests (every JetStream consumer does) sets this prefix:
+that makes requests (every reader of a consumer does) sets this prefix:
 
 ```shell-session
-$ nats --server tls://server1:4649 --tlsca ca.pem --user "$TOKEN" \
-    --inbox-prefix "_INBOX.$ACCESSOR_ID" stream info NORCA_EVENTS_eu
+$ nats --server tls://server1:4649 --tlsca ca.pem --user "$TOKEN"     --inbox-prefix "_INBOX.$ACCESSOR_ID" consumer next NORCA_EVENTS_eu "$ACCESSOR_ID"
 ```
 
 In Go: `nats.CustomInboxPrefix("_INBOX." + accessorID)`. With the default
@@ -563,6 +559,45 @@ inbox of NATS (`_INBOX.<random>`) a request gets no reply and times out. A
 plain subscriber makes no request and needs no prefix. **The inbox prefix of
 a task that connects with its workload identity is
 `_INBOX.<allocation id>.<task name>`** (`_INBOX.$NORCA_ALLOC_ID.$NORCA_TASK_NAME`).
+
+## CDC rules
+
+(Norca) The `cdc` rule lets a token, or a task by a policy bound to its job,
+**read the changes of the region** ([change data
+capture](/docs/features/change-data-capture)): the events of the namespaces,
+the admin events and the Consul KV notices on the system bus.
+
+```hcl
+cdc {
+  receive = ["norca.eu.games.Job", "norca.eu.games.Allocation"]
+  leaf    = false
+}
+```
+
+- `receive` `(array<string>: <required>)` - The subjects of the change
+  streams the reader may receive, live and through its consumer. A subject
+  outside the change streams is left out; the telemetry of the nodes and the
+  pack push notices are never received, so `norca.>` gives the changes only.
+- `leaf` `(bool: false)` - Whether a NATS server may attach to the bus as a
+  leaf node with the token, the way the changes leave the cluster. **Leaf
+  node connections are not accepted yet.**
+
+The subjects follow the rules of the `bus` rule (wildcards, no `$SYS`, no
+`_INBOX`, no leading wildcard). **The admin events reach a reader only with
+the right the event stream API asks for them** (management, `node`,
+`quota`, `admission`, `operator` or `backup` read), whatever `receive`
+covers. **A subscription can't be wider than a subject of `receive`**: with
+`norca.eu.games.>` a reader subscribes to `norca.eu.games.>` or narrower,
+not to `norca.eu.>`.
+
+**A reader does not make JetStream consumers itself.** The servers keep one
+consumer per reader and stream, named after the reader (the accessor ID of
+the token, or `<allocation id>_<task name>`), with filters inside `receive`
+([`/v1/cdc/consumer`](/docs/api/cdc), [`norca cdc consumer
+apply`](/docs/commands/cdc/consumer-apply)). On the bus a reader may only ask
+for the information of its own consumers, fetch from them and acknowledge.
+When the reader loses its right (a deleted token, a policy without the rule,
+an ended allocation), the leader removes its consumers.
 
 ## Host Volume rules
 

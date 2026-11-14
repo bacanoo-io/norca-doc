@@ -31,9 +31,9 @@ Each region has three streams:
 
 | Stream | Content | Who receives it |
 | --- | --- | --- |
-| `NORCA_EVENTS_<region>` | the events of the namespaces: jobs, evaluations, allocations, deployments, services, Variables and secret metadata, CSI volumes, scaling, custom objects, ... | tokens and workloads by their `bus` rule |
+| `NORCA_EVENTS_<region>` | the events of the namespaces: jobs, evaluations, allocations, deployments, services, Variables and secret metadata, CSI volumes, scaling, custom objects, ... | tokens and workloads by their `cdc` rule |
 | `NORCA_ADMIN_EVENTS_<region>` | ACL objects, node pools, nodes, quotas, admission policies, admin network policies, the audit of the secret store, server roles, backups | live: each topic with the right the event stream API asks for it; through a JetStream consumer: management tokens only |
-| `NORCA_KV_CHANGES_<region>` | the [Consul KV notices](/docs/features/system-bus#consul-kv-notices): the key and the type (`KeySet`, `KeyDeleted`) of each write or delete, **never the value** | by the `bus` rule |
+| `NORCA_KV_CHANGES_<region>` | the [Consul KV notices](/docs/features/system-bus#consul-kv-notices): the key and the type (`KeySet`, `KeyDeleted`) of each write or delete, **never the value** | by the `cdc` rule |
 
 The subjects are `<prefix>.<region>.<namespace>.<topic>` (prefix `norca`,
 for example `norca.eu.games.Allocation`), `<prefix>.admin.<region>.<namespace>.<topic>`
@@ -55,59 +55,69 @@ The full list is on the [system bus](/docs/features/system-bus#the-event-stream)
 
 ## Connecting
 
-A reader connects to the bus port (`4649`) of any server of the region with
-TLS and one of:
+A reader has a token, or is a task, whose policy has a
+[`cdc` rule](/docs/other-specifications/acl-policy#cdc-rules):
 
-- **An ACL token** whose policy has a [`bus` rule](/docs/other-specifications/acl-policy#bus-rules).
-  Its inbox prefix is `_INBOX.<accessor id of the token>`.
-- **The workload identity of a task**, when a policy with a `bus` rule is
-  bound to its job, group or task
+- **An ACL token.** Its consumers are named after its accessor ID, and its
+  inbox prefix is `_INBOX.<accessor id>`.
+- **The workload identity of a task**, when the policy is bound to its job,
+  group or task
   ([workload associated policies](/docs/concepts/workload-identity#workload-associated-acl-policies)).
-  Its inbox prefix is `_INBOX.<allocation id>.<task name>`.
+  Its consumers are named `<allocation id>_<task name>`, and its inbox prefix
+  is `_INBOX.<allocation id>.<task name>`.
 
-**Every JetStream reader sets its inbox prefix** (`nats --inbox-prefix`,
+It connects to the bus port (`4649`) of any server of the region with TLS.
+**Every reader of a consumer sets its inbox prefix** (`nats --inbox-prefix`,
 nats.go `CustomInboxPrefix`): the replies of its requests come only under it,
 and with the default inbox of NATS a request times out. A plain live
 subscriber needs no prefix.
 
-Connections of NATS servers as leaf nodes are not accepted.
+The changes leave the cluster through leaf nodes: a NATS server of the
+outside system attaches to the bus with a token whose `cdc` rule has
+`leaf = true`. **Leaf node connections are not accepted yet**; until then
+readers connect directly.
 
 ### A policy for a reader
 
-The rule names what a reader needs: here the job lifecycle events of the
-namespace `games` in region `eu`, live and through a consumer filtered to
-the namespace.
+The rule names what a reader needs: here the events of the namespace `games`
+in region `eu`.
 
 ```hcl
-bus {
-  subscribe = [
-    "norca.eu.games.Job",
-    "norca.eu.games.Evaluation",
-    "norca.eu.games.Allocation",
-    "norca.eu.games.Deployment",
-    "norca.eu.games.Service",
-  ]
-  publish = [
-    "$JS.API.INFO",
-    "$JS.API.STREAM.INFO.NORCA_EVENTS_eu",
-    "$JS.API.CONSUMER.CREATE.NORCA_EVENTS_eu.lifecycle-reader.norca.eu.games.>",
-    "$JS.API.CONSUMER.INFO.NORCA_EVENTS_eu.lifecycle-reader",
-    "$JS.API.CONSUMER.MSG.NEXT.NORCA_EVENTS_eu.lifecycle-reader",
-    "$JS.ACK.NORCA_EVENTS_eu.lifecycle-reader.>",
-  ]
+cdc {
+  receive = ["norca.eu.games.>"]
 }
 ```
 
-**A consumer reads everything its filter selects**, so a reader limited to a
-namespace may create only consumers filtered to it: the `CREATE` subject with
-the filter (`...CREATE.<stream>.<consumer>.<filter>`) is the one to allow, not
-`$JS.API.CONSUMER.*.NORCA_EVENTS_eu`. **Name the consumer in the rule**
-(`lifecycle-reader` above): a wildcard in its place lets the reader read,
-change or delete the consumers of every other reader of the stream. **Name the namespaces and topics** rather
-than `norca.eu.>`: a rule over the whole region receives the full Job events
-of every namespace. For the Consul KV changes, allow
-`norca.eu.games.ConsulKV.>` and the same `$JS` subjects for
-`NORCA_KV_CHANGES_eu`.
+**Name the namespaces and topics** rather than `norca.eu.>`: a rule over the
+whole region receives the full Job events of every namespace. For the Consul
+KV changes add `norca.eu.games.ConsulKV.>`. The admin events need their right
+in addition (management, `node`, `quota`, `admission`, `operator` or `backup`
+read).
+
+### The reader's consumer
+
+**The servers keep the reader's consumer**, one per reader and stream, named
+after the reader; a reader can't create or change consumers on the bus. It
+asks for its consumer with its own token or identity:
+
+```shell-session
+$ norca cdc consumer apply -stream events \
+    -filter norca.eu.games.Evaluation -filter norca.eu.games.Allocation
+Stream                      = events (NORCA_EVENTS_eu)
+Name                        = 9f3c51ad-6b7e-40f2-a1d4-3c2e8b7f0e15
+Filters                     = norca.eu.games.Evaluation, norca.eu.games.Allocation
+Deliver                     = all
+...
+```
+
+or `PUT /v1/cdc/consumer/events` with `{"Filters": [...]}` ([API](/docs/api/cdc)).
+A task uses the [Task API](/docs/api/task-api) with its workload identity
+(`Authorization: Bearer $NORCA_TOKEN` on `${NORCA_SECRETS_DIR}/api.sock`).
+**All filters are in one consumer, so the events arrive in the stream's
+order across topics** (an evaluation before the allocation it placed). Every
+filter lies within the reader's `cdc` rule and the stream; the filters do not
+overlap; there are at most 16. Applying again changes the filters and keeps
+the position.
 
 ### Reading in Go
 
@@ -118,11 +128,8 @@ nc, err := nats.Connect("tls://server1.eu:4649",
 	nats.CustomInboxPrefix("_INBOX."+accessorID),
 )
 js, err := jetstream.New(nc)
-cons, err := js.CreateOrUpdateConsumer(ctx, "NORCA_EVENTS_eu", jetstream.ConsumerConfig{
-	Durable:       "lifecycle-reader",
-	FilterSubject: "norca.eu.games.>",
-	AckPolicy:     jetstream.AckExplicitPolicy,
-})
+// The consumer the servers keep for this reader (made by norca cdc consumer apply).
+cons, err := js.Consumer(ctx, "NORCA_EVENTS_eu", accessorID)
 cc, err := cons.Consume(func(msg jetstream.Msg) {
 	if msg.Headers().Get("Norca-Job") == myJob {
 		handle(msg.Headers().Get("Nomad-Type"), msg.Data())
@@ -132,14 +139,17 @@ cc, err := cons.Consume(func(msg jetstream.Msg) {
 ```
 
 A task reads with its identity: `nats.Token(os.Getenv("NORCA_TOKEN"))` (with
-`identity { env = true }`) and the inbox prefix
-`"_INBOX." + os.Getenv("NORCA_ALLOC_ID") + "." + os.Getenv("NORCA_TASK_NAME")`.
+`identity { env = true }`), the inbox prefix
+`"_INBOX." + os.Getenv("NORCA_ALLOC_ID") + "." + os.Getenv("NORCA_TASK_NAME")`
+and the consumer `os.Getenv("NORCA_ALLOC_ID") + "_" + os.Getenv("NORCA_TASK_NAME")`.
 
 With the NATS CLI:
 
 ```shell-session
 $ nats --server tls://server1.eu:4649 --tlsca ca.pem --user "$TOKEN" \
-    --inbox-prefix "_INBOX.$ACCESSOR_ID" sub 'norca.eu.games.Allocation'
+    --inbox-prefix "_INBOX.$ACCESSOR_ID" consumer next NORCA_EVENTS_eu "$ACCESSOR_ID"
+$ nats --server tls://server1.eu:4649 --tlsca ca.pem --user "$TOKEN" \
+    sub 'norca.eu.games.Allocation'
 ```
 
 ## Following the allocations of a job
@@ -182,16 +192,19 @@ apart:
 
 - **No reader removes an event for the others**: the streams keep events by
   age and size (the limits policy), whatever the consumers acknowledge.
+- **One consumer per reader and stream**, made by the servers and named
+  after the reader; a reader reads only its own.
 - **A bound on the consumers**: each stream takes at most
-  [`max_consumers`](/docs/configuration/bus) (64); creating one more fails
-  with "maximum consumers limit reached".
+  [`max_consumers`](/docs/configuration/bus) (64); one more is refused with
+  `409`.
 - **Idle consumers go**: a consumer idle longer than `max_age` would have
-  nothing left to catch up; one without its own `inactive_threshold` gets
-  `max_age`, and a larger one is refused.
-- **At most 1000 messages unacknowledged** per consumer.
+  nothing left to catch up and is removed; the leader also removes the
+  consumers of readers that lost their right (a deleted or expired token, a
+  policy without the rule, an ended allocation).
+- **Limits of a consumer**: at most 1000 messages unacknowledged; a pull asks
+  for at most 256 messages or 1MiB, and waits at most a minute.
 
-A reader keeps one durable consumer per stream and resumes it after a
-restart, instead of creating a new one each time.
+A reader keeps its consumer and resumes it after a restart.
 
 ## Guarantees
 

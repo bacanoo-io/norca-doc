@@ -91,7 +91,7 @@ the jobs of a namespace:
 | Retention | `max_age` and a quarter of `max_bytes`; the event streams share the limit |
 
 **A connection never receives an admin topic its token lacks the right
-for**, whatever its `bus` rule covers: a subscription to `norca.>` gets the
+for**, whatever its `cdc` rule covers: a subscription to `norca.>` gets the
 `Node` events only with `node` read. **The JetStream API of the admin stream
 is open to a management token only**: a consumer reads every topic of a
 stream, so the right of each topic can't hold there. A token without the
@@ -134,71 +134,56 @@ stream.
 
 ### Consuming the events
 
-Consumers connect to the `bus` port (`4649`) of any server with an ACL token
-whose policy has a [`bus` rule](/docs/other-specifications/acl-policy#bus-rules):
+The changes of a region are read with a
+[`cdc` rule](/docs/other-specifications/acl-policy#cdc-rules) in the policy of
+a token, or of a task by a policy bound to its job; the user view, with the
+guarantees, is [change data capture](/docs/features/change-data-capture).
 
 ```hcl
-# events-reader policy: the events of region eu, live and from the stream
-bus {
-  subscribe = ["norca.eu.>"]
-  publish = [
-    "$JS.API.INFO",
-    "$JS.API.STREAM.INFO.NORCA_EVENTS_eu",
-    "$JS.API.CONSUMER.*.NORCA_EVENTS_eu",
-    "$JS.API.CONSUMER.*.NORCA_EVENTS_eu.>",
-    "$JS.API.CONSUMER.MSG.NEXT.NORCA_EVENTS_eu.>",
-    "$JS.ACK.NORCA_EVENTS_eu.>",
-  ]
+# events-reader policy: the events of the namespace shop in region eu
+cdc {
+  receive = ["norca.eu.shop.>"]
 }
 ```
 
-A JetStream consumer of the stream needs the `$JS.API` subjects of the
-stream and its consumers, and `$JS.ACK` to acknowledge messages. A plain
-subscriber of the live events needs only `subscribe = ["norca.eu.>"]`.
-**Wildcards are whole tokens, so the stream is named in full.**
+- **Live:** a reader subscribes to the subjects of its rule, or narrower
+  (`nats sub 'norca.eu.shop.Job'`). The namespace in the subject limits it:
+  `norca.eu.shop.>` gives the namespace `shop` only.
+- **Through its consumer:** the servers keep one consumer per reader and
+  stream, named after the reader (`norca cdc consumer apply`,
+  [`/v1/cdc/consumer`](/docs/api/cdc)), its filters within the rule. On the bus
+  a reader may only read its own consumers: their information, the next
+  messages, the acknowledgements. It never creates, changes or deletes a
+  consumer or a stream there.
 
-The events of a namespace follow the `bus` rule: a token that may subscribe
-to `norca.eu.shop.>` receives every topic of the namespace `shop`, including
-the full job specifications. **Name the namespaces and topics a reader needs**
-rather than `norca.eu.>`. No token may create or change a stream on the bus
-(`$JS.API.STREAM.CREATE`, `$JS.API.STREAM.UPDATE`): the bus is not a broker for
-applications, and a stream could copy the admin stream.
+The events of a namespace follow the rule: a reader of `norca.eu.shop.>`
+receives every topic of the namespace `shop`, including the job
+specifications without their secrets. **Name the namespaces and topics a
+reader needs** rather than `norca.eu.>`. **Wildcards are whole tokens.**
 
 > [!IMPORTANT]
-> **A JetStream consumer sets its inbox prefix to `_INBOX.<accessor id of its token>`**
+> **A reader of a consumer sets its inbox prefix to `_INBOX.<accessor id of its token>`**
 > (`nats --inbox-prefix`, nats.go `CustomInboxPrefix`). The replies of a connection
 > come under that prefix only, so that no connection reads the replies of another;
-> with the default inbox of NATS a request times out. See the
-> [`bus` rule](/docs/other-specifications/acl-policy#bus-rules).
+> with the default inbox of NATS a request times out.
 
-**A task connects with its workload identity instead of a token.** The `bus`
-rules of the policies bound to its job, group or task apply
+**A task connects with its workload identity instead of a token.** The rules
+of the policies bound to its job, group or task apply
 ([workload associated policies](/docs/concepts/workload-identity#workload-associated-acl-policies)),
-and its inbox prefix is `_INBOX.<allocation id>.<task name>`. The task gets
-its identity with `identity { env = true }` (or the file
-`secrets/norca_token`):
+its inbox prefix is `_INBOX.<allocation id>.<task name>` and its consumers are
+named `<allocation id>_<task name>`. The task gets its identity with
+`identity { env = true }` (or the file `secrets/norca_token`) and asks for its
+consumer through the [Task API](/docs/api/task-api):
 
 ```shell-session
-$ nats --server tls://server1:4649 --tlsca ca.pem --user "$NORCA_TOKEN" \
-    --inbox-prefix "_INBOX.$NORCA_ALLOC_ID.$NORCA_TASK_NAME" stream info NORCA_EVENTS_eu
+$ curl --unix-socket "$NORCA_SECRETS_DIR/api.sock" -H "Authorization: Bearer $NORCA_TOKEN"     -X PUT -d '{"Filters": ["norca.eu.shop.>"]}' localhost/v1/cdc/consumer/events
+$ nats --server tls://server1:4649 --tlsca ca.pem --user "$NORCA_TOKEN"     --inbox-prefix "_INBOX.$NORCA_ALLOC_ID.$NORCA_TASK_NAME"     consumer next NORCA_EVENTS_eu "${NORCA_ALLOC_ID}_${NORCA_TASK_NAME}"
 ```
 
 The characters `.`, `*`, `>` and blanks of a task name become `_` in the
-prefix. **The connection is closed when the allocation has ended**, and the
-identity no longer connects.
-
-The namespace in the subject limits a live subscriber to the events of some
-namespaces: `subscribe = ["norca.eu.shop.>"]` receives the events of the
-namespace `shop` only, `["norca.*.*.Job"]` the job events of every region and
-namespace. A JetStream consumer reads whatever its filter subject selects, so
-**for a namespace-limited reader of the stream allow only consumers filtered
-to the namespace** (`$JS.API.CONSUMER.CREATE.NORCA_EVENTS_eu.*.norca.eu.shop.>`)
-instead of `$JS.API.CONSUMER.*.NORCA_EVENTS_eu`.
-
-```shell-session
-$ nats --server tls://server1:4649 --tlsca ca.pem --user "$TOKEN" \
-    sub 'norca.eu.*.Job'
-```
+prefix and the name. **The connection is closed when the allocation has
+ended**, the identity no longer connects, and the leader removes the task's
+consumers.
 
 ### Job events without secrets
 
@@ -240,8 +225,8 @@ not connected catches up with a consumer of `NORCA_KV_CHANGES_<region>`. The
 event stream keeps `<prefix>.<region>.<namespace>.<topic>`, one token less,
 so the two streams do not share subjects. A failed CAS, a read and the
 re-encryption of a full keyring rotation send nothing; a recursive delete
-sends one notice per key. A `bus` rule
-`subscribe = ["norca.eu.default.ConsulKV.>"]` receives the notices of the
+sends one notice per key. A `cdc` rule
+`receive = ["norca.eu.default.ConsulKV.>"]` receives the notices of the
 namespace `default`.
 
 ## Pack push notices
