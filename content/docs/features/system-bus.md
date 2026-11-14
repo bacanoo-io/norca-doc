@@ -32,6 +32,10 @@ Norca's own traffic:
   [metrics store](/docs/configuration/metrics_store); see
   [below](#task-group-usage).
 
+**To read the changes of a region from outside**, see
+[change data capture](/docs/features/change-data-capture): what the streams
+carry, how to connect, the guarantees. This page is the technical layer.
+
 **The bus is not a message broker for applications.** Applications keep their own
 NATS, for example the `nats` pack. The bus is configured in the server's
 [`bus` block](/docs/configuration/bus) and **is enabled by default.**
