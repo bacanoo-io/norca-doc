@@ -53,7 +53,8 @@ on the bus only: without it the clients are not asked for usage.**
 | --- | --- |
 | Stream | `NORCA_TELEMETRY_<region>` (file storage, S2 compression, created by the leader) |
 | Subjects | `norca.telemetry.<region>.<node_id>` |
-| Limits | 1 hour, a sixteenth of `max_storage`, 64KiB per message; the oldest reports are dropped first |
+| Limits | 1 hour, a sixteenth of `max_storage`, 64KiB per message, 1024 reports per node; the oldest reports are dropped first, of a node that publishes too fast its own |
+| Checks | The node ID of a report is the node of its subject; of its task groups only those the node has an allocation of are kept (the others are counted in `nomad.bus.telemetry.foreign_groups`) |
 | Consumers | `norca-usage-<server_id>`: every server reads every report into its [metrics store](/docs/configuration/metrics_store); the leader also keeps them for the autoscaler |
 
 ## The event stream
@@ -82,13 +83,15 @@ decoding the payload:
 **Delivery is at least once and in order.**
 
 - After a leader change, the new
-  leader continues after the newest event in the stream.
+  leader continues with the Raft index of the newest event in the stream and
+  publishes the events of that index the stream does not have yet: the events
+  of one index are one batch, and a batch can end half way.
 - Republished events
   are dropped by their `Nats-Msg-Id` within the two-minute deduplication
   window.
 
-If the event buffer of the servers no longer holds the events after
-the newest one in the stream, for example after a long outage, the leader
+If the event buffer of the servers no longer holds the events from
+the newest one in the stream on, for example after a long outage, the leader
 publishes a gap marker and continues with the newest events. The gap marker
 is on `<prefix>.<region>.Bus`, with the type `EventGap` and a payload
 `{"Gap": {"FromIndex": ..., "Reason": "index-gone"}}`.
@@ -118,10 +121,16 @@ bus {
 ```
 
 A JetStream consumer of the stream needs the `$JS.API` subjects of the
-stream and its consumers, and `$JS.ACK` to acknowledge messages; the replies
-come to the connection's own `_INBOX`, which is always allowed. A plain
+stream and its consumers, and `$JS.ACK` to acknowledge messages. A plain
 subscriber of the live events needs only `subscribe = ["norca.eu.>"]`.
 **Wildcards are whole tokens, so the stream is named in full.**
+
+> [!IMPORTANT]
+> **A JetStream consumer sets its inbox prefix to `_INBOX.<accessor id of its token>`**
+> (`nats --inbox-prefix`, nats.go `CustomInboxPrefix`). The replies of a connection
+> come under that prefix only, so that no connection reads the replies of another;
+> with the default inbox of NATS a request times out. See the
+> [`bus` rule](/docs/other-specifications/acl-policy#bus-rules).
 
 The namespace in the subject limits a live subscriber to the events of some
 namespaces: `subscribe = ["norca.eu.shop.>"]` receives the events of the
@@ -153,7 +162,9 @@ publishes the notice on `<prefix>.packs.pushed` in the stream
 `NORCA_PACK_PUSHES`, which keeps notices for 24 hours. The leader reads the
 stream with the durable consumer `norca-sync-<region>`, so a notice sent
 during a leader change is handled by the next leader. **A registry is synced at
-most once a minute on push notices.** Without the bus the server syncs the
+most once a minute on push notices:** a notice that comes within that minute
+waits for its end and is synced then, unless a sync that started after the
+push has it already. Without the bus the server syncs the
 matching registries of its region directly.
 
 A pipeline with NATS tooling can also publish the notice itself with a token

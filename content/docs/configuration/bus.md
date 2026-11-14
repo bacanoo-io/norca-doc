@@ -23,6 +23,8 @@ server {
     max_payload     = "1MiB"
     max_connections = 10000
 
+    consul_kv_max_bytes = "256MiB"
+
     events {
       enabled        = true
       subject_prefix = "norca"
@@ -56,6 +58,12 @@ ports {
 - `max_connections` `(int: 10000)` - The largest number of client connections
   of a server.
 
+- `consul_kv_max_bytes` `(string: "256MiB")` - The size limit of the bucket of
+  the [Consul KV of the Consul-compatible API](/docs/api/consul-compatible) on the bus; an
+  eighth of `max_storage` when that is less. **A write beyond it fails**
+  ("the Consul KV of the system bus is full"); no key is dropped. Raise the
+  limit, or delete keys.
+
 - `events` - The [event stream](/docs/features/system-bus#the-event-stream)
   of the region and the handling of
   [pack push notices](/docs/features/system-bus#pack-push-notices):
@@ -68,11 +76,33 @@ ports {
   - `max_age` `(string: "72h")` - How long events are kept.
   - `max_bytes` `(string: "1GiB")` - The size limit of the stream, within
     `max_storage`. Without it the stream takes at most a quarter of
-    `max_storage`. JetStream reserves this space together with the `64MiB` of
-    the pack push notices; **both must stay below `max_storage`**, so that the
-    Consul KV bucket still fits.
+    `max_storage`.
   - `topics` `(array<string>: ["*"])` - The published topics, for example
     `["Job", "Deployment", "Allocation"]`; `"*"` publishes all.
+
+## Storage budget
+
+Everything the bus keeps on disk must fit into `max_storage`, or the agent
+does not start and says what each part takes:
+
+| Stream | Size |
+| --- | --- |
+| Events | `events.max_bytes` |
+| Pack push notices | `64MiB` |
+| Usage reports of the clients | a sixteenth of `max_storage` |
+| Consul KV | `consul_kv_max_bytes` |
+
+With the defaults that is about 1.6 GiB of the 4 GiB. The events and the push
+notices count only when `events.enabled` is set.
+
+## Region names and subjects
+
+The streams of a region must not share subjects. The events use
+`<subject_prefix>.<region>.>`, the usage reports `norca.telemetry.<region>.*`
+and the push notices `<subject_prefix>.packs.pushed`. **With the default
+prefix a region can't be named `telemetry` or `packs`**, and a subject prefix
+can't lie under `norca.telemetry`: the agent refuses to start its bus and
+names the subjects that collide.
 
 ## Ports and addresses
 
@@ -104,11 +134,22 @@ The defaults differ from the NATS defaults
 
   **Without RPC TLS the bus is not encrypted**, like RPC.
 - **Authentication.** A node logs in with its node ID and node secret. It may
-  publish only its own usage subject. Anyone else needs an ACL token whose
+  publish only its own usage subject and **subscribes to nothing**. Anyone else needs an ACL token whose
   policies have a [`bus` rule](/docs/other-specifications/acl-policy#bus-rules);
   management tokens may use every subject. When a token is deleted, or its
   policies or a node change, **the affected connections are closed within
   seconds** and reconnect with their new rights.
+
+- **Replies are private.** All connections share one NATS account. A
+  connection gets the replies of its own requests under
+  `_INBOX.<accessor id>` and can't subscribe to the inbox of another, so the
+  values a server or another token reads are not visible to it.
+- **Usage reports are checked.** A report must come on the subject of its
+  node, and of its task groups only those are kept that the node has an
+  allocation of; the rest is dropped and counted
+  (`nomad.bus.telemetry.foreign_groups`). The stream keeps at most 1024
+  reports of a node, so a node that publishes too fast replaces its own
+  reports only.
 
 ## Clustering
 
@@ -125,6 +166,11 @@ server joins, the bus of the first server restarts clustered:
    keys of the Consul KV over into the clustered bucket (a key already there is
    kept) and marks the store as carried over; **the other streams, such as the
    event history, are not carried over.**
+
+The streams and the Consul KV bucket have one replica per server, up to
+three. **With two servers they have two replicas and need both servers**, as
+Raft does with two servers: the bus is then no less available than the
+control plane, and the data is on both disks.
 
 [`norca operator bus status`](/docs/commands/operator/bus/status) shows the
 routes, the JetStream meta leader, the usage and the connections of a server.

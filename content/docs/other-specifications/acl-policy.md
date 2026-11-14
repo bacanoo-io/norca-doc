@@ -531,10 +531,29 @@ bus {
   servers to the bus; the bus does not accept leaf nodes yet.
 
 Subjects may use the NATS wildcards `*` (one token) and `>` (the remaining
-tokens, last only). **Subjects starting with `$SYS` can't be granted.** The lists
-of all policies of a token are combined. A connection may always receive the
-replies to its own requests. **When the token or its policies change, its
-connections are closed and reconnect with the new rights.**
+tokens, last only). The lists of all policies of a token are combined. **When
+the token or its policies change, its connections are closed and reconnect
+with the new rights.**
+
+Some subjects can't be granted:
+
+- **Subjects starting with `$SYS`**, the NATS system account.
+- **Subjects starting with `_INBOX`, or with a wildcard** (`>`, `*.events.>`):
+  a subject starts with a name. Such a rule would cover the replies of other
+  connections.
+
+**A connection receives the replies to its own requests under its own inbox
+prefix, `_INBOX.<accessor id of the token>`**, and under no other. A client
+that makes requests (every JetStream consumer does) sets this prefix:
+
+```shell-session
+$ nats --server tls://server1:4649 --tlsca ca.pem --user "$TOKEN" \
+    --inbox-prefix "_INBOX.$ACCESSOR_ID" stream info NORCA_EVENTS_eu
+```
+
+In Go: `nats.CustomInboxPrefix("_INBOX." + accessorID)`. With the default
+inbox of NATS (`_INBOX.<random>`) a request gets no reply and times out. A
+plain subscriber makes no request and needs no prefix.
 
 ## Host Volume rules
 
