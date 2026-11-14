@@ -35,7 +35,7 @@ named.
 and its signature and doc comment are kept, the HashiCorp copyright line stays,
 followed by the Norca line.
 
-**Commits:** the commit message says "clean room", so the `bugfix` set of the
+**Commits:** the commit message ends with a `Source-Rule:` trailer (before 2026-11-14 it said "clean room"), so the `bugfix` set of the
 [similarity audit](/docs/clean-room#similarity-audit) compares the lines it
 adds to files of v1.6.5 with HashiCorp's changes to the same files.
 
