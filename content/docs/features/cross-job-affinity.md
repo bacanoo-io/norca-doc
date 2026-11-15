@@ -14,6 +14,9 @@ them can express a relation to the allocations of **other** jobs: "run the cache
 on the node of the API", or "never put two database replicas in the same datacenter,
 whichever job they belong to".
 
+[Placement rules compared](/docs/features/placement-rules) puts all of these
+rules side by side.
+
 Norca adds two task group blocks for this:
 
 - [`colocate`](/docs/job-specification/colocate) places the group close to the
