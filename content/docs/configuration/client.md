@@ -81,6 +81,14 @@ client {
   addresses when allocating ports for tasks. This value supports [go-sockaddr/template
   format][go-sockaddr/template].
 
+  On Linux the interface of the default route is read from the routing table
+  of the kernel (`/proc/net/route`, and `/proc/net/ipv6_route` on a host
+  without an IPv4 default route): the route with the lowest metric. **The
+  `ip` program is not needed for it**, so a client starts in a minimal image
+  without iproute2. A host without a default route needs
+  `network_interface`. A go-sockaddr template that asks for the default
+  interface itself (`GetDefaultInterfaces`) still runs `ip route`.
+
   If no non-local IP addresses are found, Norca could fingerprint link-local IPv6
   addresses depending on the client's
   [`"fingerprint.network.disallow_link_local"`](#fingerprint-network-disallow_link_local)

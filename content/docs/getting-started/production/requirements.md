@@ -101,6 +101,19 @@ $ cat /proc/sys/net/ipv4/ip_local_port_range
 $ echo "49152 65535" > /proc/sys/net/ipv4/ip_local_port_range
 ```
 
+## Programs of the Host
+
+A client on Linux runs few programs of the host itself:
+
+| Program | Package | Needed for |
+| --- | --- | --- |
+| `df` | coreutils | The storage fingerprint of the client. **Required.** |
+| `ethtool` | ethtool | The link speed of the fingerprinted interface. Optional: without it the speed is read from `/sys`, and if that says nothing it is `network_speed`, or 1000 Mbit/s. |
+| `ip` | iproute2 | Only for a go-sockaddr template of your own that asks for the default interface (`GetDefaultInterfaces`). The interface of the default route itself is read from the kernel. |
+
+Task drivers and network plugins have their own needs (Docker, the CNI
+plugins, `iptables` for bridge networking below).
+
 ## Bridge Networking and `iptables`
 
 Norca's task group networks and Consul Connect integration use bridge networking and iptables to send traffic between containers. The Linux kernel bridge module has three "tunables" that control whether traffic crossing the bridge are processed by iptables. Some operating systems (RedHat, CentOS, and Fedora in particular) configure these tunables to optimize for VM workloads where iptables rules might not be correctly configured for guest traffic.
