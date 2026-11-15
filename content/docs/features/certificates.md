@@ -297,6 +297,33 @@ Deleting a `Certificate` leaves the secret in place, so nothing that reads
 it breaks. With `delete_secret = true` the operator deletes the secret
 first, if it is the certificate's own.
 
+## In the web UI
+
+The **Certificates** page of the menu shows the region at a glance:
+
+- **Certificates:** every `Certificate` of the namespaces the token can
+  read, the soonest expiry first, with its names, its issuer and its state
+  (`ready`, `issuing`, `renewing`, `renewal due`, `failed`,
+  `issuer unavailable`, `revoking`, `expired`).
+- **Issuers:** built in or external, the controller of an external issuer
+  with the age of its heartbeat, and how many certificates use the issuer.
+- **Open orders:** what waits for an external issuer, with the problem of a
+  failed order.
+- **Issuing CAs of the region:** the active CA and the retired ones, where
+  they come from, when they expire and how many certificates they revoked.
+  **Trust bundle** downloads the bundle of
+  [`norca certificate roots`](/docs/commands/certificate/roots), and
+  **Revocation list** shows the list of a CA.
+
+The page of a `Certificate` object adds a panel above the spec and the
+status: the names, links to the issuer, to the secret and to the open order,
+the serial number, and the validity as a bar with the time of the renewal.
+**Revoke** is there for a token with `write` on the kind in the namespace;
+it asks for a confirmation.
+
+The page of a secret that is kept for a certificate links back to the
+certificate.
+
 ## The contract of an external issuer
 
 A controller of an external issuer is an application with a token that may
@@ -366,6 +393,9 @@ In the [metrics store](/docs/configuration/metrics_store):
 - The built-in issuer signs for at most a year.
 - Nothing proves to the built-in issuer that a name belongs to the
   namespace: the suffixes of the namespace are the rule.
+- A wildcard right under a top level name, such as `*.lab`, is issued as
+  asked for, but TLS clients (curl, OpenSSL) do not accept it for
+  `app.lab`. Put the wildcard one level lower: `*.apps.lab`.
 - The revocation list is not pushed anywhere, and OCSP is not served.
 - The trust bundle of the built-in issuer is per region.
 
