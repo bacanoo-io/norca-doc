@@ -78,6 +78,16 @@ outside system attaches to the bus with a token whose `cdc` rule has
 changes from it with their own NATS users. A reader may also connect
 directly, as above.
 
+> [!NOTE]
+> **Observers do not take CDC off the voters.** A reader or a leaf node may
+> connect to an [observer](/docs/features/server-roles), which then serves
+> its connection and the delivery of the live events. The streams and the
+> consumers stay where JetStream puts them: on any servers of the region,
+> voters and observers alike, and this can't be steered to the observers.
+> The leader always publishes the events. An observer is also a full member
+> of the bus cluster: it may hold a replica of a stream and counts in the
+> quorum of the bus, although it has no vote in Raft.
+
 ### A policy for a reader
 
 The rule names what a reader needs: here the events of the namespace `games`
