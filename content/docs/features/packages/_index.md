@@ -81,7 +81,7 @@ the client exactly as Nomad Pack does.
 
 ```shell
 # Add the Norca pack registry, pinned to a release tag.
-norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.2.0
+norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.3.0
 
 # Inspect, render and plan a pack (at the pinned tag), then install it as the release "rustfs".
 norca pack info   rustfs --registry=norca

@@ -48,7 +48,7 @@ Spec and status of a registry use the camelCase keys below; the pack entries use
     "Spec": {
       "type": "git",
       "source": "https://github.com/bacanoo-io/norca-registry",
-      "defaultRef": "v0.2.0",
+      "defaultRef": "v0.3.0",
       "syncInterval": "6h"
     },
     "Status": {
@@ -143,7 +143,7 @@ This endpoint creates or updates a registry and syncs it before it returns.
   "Spec": {
     "type": "git",
     "source": "https://github.com/bacanoo-io/norca-registry",
-    "defaultRef": "v0.2.0",
+    "defaultRef": "v0.3.0",
     "syncInterval": "6h"
   }
 }

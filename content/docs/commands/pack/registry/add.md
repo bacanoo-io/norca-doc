@@ -47,14 +47,14 @@ norca pack registry add <name> <source> [options]
 
 ```shell
 # Add the Norca pack registry at a release tag, and run a pack of it at that tag.
-norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.2.0
+norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.3.0
 norca pack run nats --registry=norca -f nats.hcl
 
 # Add a single pack of the registry.
-norca pack registry add norca https://github.com/bacanoo-io/norca-registry --target=nats --ref=v0.2.0
+norca pack registry add norca https://github.com/bacanoo-io/norca-registry --target=nats --ref=v0.3.0
 
 # Use the registry without --registry.
-norca pack registry add default https://github.com/bacanoo-io/norca-registry --ref=v0.2.0
+norca pack registry add default https://github.com/bacanoo-io/norca-registry --ref=v0.3.0
 
 # Add an internal OCI registry whose packs must be signed by a trusted key.
 norca pack registry add internal oci://registry.example.internal/packs \

@@ -161,7 +161,7 @@ access key and the secret key are the values of
 ```shell
 norca secret put rustfs/root access_key=norca-backup secret_key=-   # type the secret key, then Ctrl-D
 
-norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.2.0
+norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.3.0
 norca pack run rustfs --registry=norca --name=rustfs -f rustfs.hcl
 norca service info -verbose rustfs
 norca alloc logs -task create-buckets <alloc ID>     # "bucket norca-backup created"
