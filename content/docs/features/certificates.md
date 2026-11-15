@@ -98,6 +98,11 @@ The servers do not sign: they hand every issuance to the **controller** of
 the issuer, an application outside the servers, as a `CertificateOrder`
 (see [the contract](#the-contract-of-an-external-issuer)).
 
+> [!TIP]
+> **For public certificates, the controller exists:** the operator
+> `norca-acme` signs through an ACME certificate authority such as Let's
+> Encrypt. See [Certificates from ACME](/docs/features/certificates-acme).
+
 - `controller` names the controller that fulfils the orders of the issuer.
 - `config` is the controller's own; the servers do not read it.
 
@@ -401,6 +406,8 @@ In the [metrics store](/docs/configuration/metrics_store):
 
 ## See also
 
+- [Certificates from ACME](/docs/features/certificates-acme): the operator
+  `norca-acme` as the controller of an external issuer
 - [`norca certificate`](/docs/commands/certificate) commands and the
   [Certificates HTTP API](/docs/api/certificates)
 - [Secrets](/docs/features/secrets) and
