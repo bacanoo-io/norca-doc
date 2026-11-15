@@ -163,7 +163,10 @@ one way ([change data capture](/docs/features/change-data-capture#through-a-leaf
   the server it attached to, which imports its subjects and the API of its
   consumers from the account `NORCA` of the bus and nothing else; the leaf
   may publish only the fetches and acknowledgements of its consumers. One
-  leaf per token on a server, 10000 subscriptions, 4KiB per message.
+  leaf per token on a server, 10000 subscriptions, 4KiB per message, fetches
+  of at most 30 seconds; a leaf with more than 32768 fetches waiting for
+  their answers is closed and refused for 30 seconds
+  ([limits](/docs/features/change-data-capture#through-a-leaf-node)).
 - **Firewall.** Open `bus_leafnode` to the leaf nodes only, as you would the
   HTTP API to its clients.
 

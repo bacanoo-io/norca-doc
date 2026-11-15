@@ -233,8 +233,16 @@ fetches and acknowledgements of its own consumers.
 - One leaf per token on a server; a second one is refused.
 - At most 10000 subscriptions (the interest of the clients behind it).
 - At most 4KiB per message it sends: fetches and acknowledgements only.
+- **A fetch waits at most 30 seconds** (`expires`); a longer one is refused.
+- **Fetches without end are cut off.** The server remembers the way back of
+  every fetch for 35 seconds. A leaf with more than 32768 of them waiting
+  (a client that fetches 900 times a second stays below it) is closed and
+  refused for 30 seconds; the server logs a warning. Fetch in batches
+  rather than one event at a time.
 - A leaf that is slow to take the live events is cut off like any slow
   consumer, reconnects, and catches up from its consumer.
+- In a region with several servers the leaf attaches to one of them; it can
+  attach to another one at any time (name several servers in its URLs).
 
 **Not accepted:** a rule whose subjects overlap without one containing the
 other (`norca.*.games.>` and `norca.eu.*.Job`): the leaf would receive their
