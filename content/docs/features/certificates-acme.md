@@ -186,6 +186,33 @@ keeps the credentials of the DNS service:
 | `rfc2136` | Name servers that accept dynamic updates (RFC 2136) signed with a TSIG key (RFC 8945): BIND, Knot DNS, PowerDNS. `server` is the primary of the zone; `tsig_algorithm` is `hmac-sha256`, `hmac-sha384` or `hmac-sha512`. |
 | `mock` | Trials: records in memory, served to nobody. |
 
+## Serving the certificate with Traefik
+
+The Traefik pack reads the secrets of `tls_certificates` when it starts, and
+the HTTP-01 challenge needs Traefik before the certificate exists. **Start
+with a placeholder and hand it over**:
+
+1. Write the secret with any certificate, for example a self-signed one,
+   and name it in `tls_certificates` of the Traefik pack:
+
+   ```shell-session
+   $ norca secret put certs/web cert=@placeholder.crt key=@placeholder.key
+   ```
+
+2. Hand the secret over to the certificate that will keep it, with its
+   label, and write the `Certificate` with the same `secret_path`:
+
+   ```shell-session
+   $ norca secret put -label norca.io/certificate=web-tls certs/web
+   $ norca object apply web-tls.hcl
+   ```
+
+3. When the certificate is issued, the servers write it into the secret and
+   **Traefik serves it without a restart**, as it does at every renewal.
+
+Until then Traefik answers the name with the placeholder (or with its
+default certificate), which clients do not trust.
+
 ## Failures
 
 - **A request the certificate authority refuses** (a name it does not
