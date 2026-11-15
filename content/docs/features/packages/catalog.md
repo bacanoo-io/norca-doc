@@ -71,7 +71,7 @@ curl -X POST "$NORCA_ADDR/v1/pack-registry" -H "X-Nomad-Token: $NORCA_TOKEN" -d 
   "Spec": {
     "type": "git",
     "source": "https://github.com/bacanoo-io/norca-registry",
-    "defaultRef": "v0.1.0",
+    "defaultRef": "v0.2.0",
     "syncInterval": "6h"
   }
 }'
