@@ -133,7 +133,7 @@ spec {
 | Field | Default | Meaning |
 | --- | --- | --- |
 | `issuer` | required | the name of a `CertificateIssuer` |
-| `dns_names` | | the DNS names, lower case; a wildcard as the whole first label |
+| `dns_names` | | the DNS names, lower case; a wildcard as the whole first label, not right under a top level name (`*.apps.lab`, not `*.lab`) |
 | `ip_addresses` | | IP addresses; the built-in issuer only |
 | `secret_path` | required | the secret, in the namespace of the object; it can't be changed later |
 | `validity` | `2160h` | how long the certificate is valid, at most `8760h`; the built-in issuer only, an external one chooses |
@@ -398,9 +398,9 @@ In the [metrics store](/docs/configuration/metrics_store):
 - The built-in issuer signs for at most a year.
 - Nothing proves to the built-in issuer that a name belongs to the
   namespace: the suffixes of the namespace are the rule.
-- A wildcard right under a top level name, such as `*.lab`, is issued as
-  asked for, but TLS clients (curl, OpenSSL) do not accept it for
-  `app.lab`. Put the wildcard one level lower: `*.apps.lab`.
+- **A wildcard right under a top level name, such as `*.lab`, is refused**
+  when the certificate is written: TLS clients (curl, OpenSSL) do not match
+  `app.lab` against it. Put the wildcard one level lower: `*.apps.lab`.
 - The revocation list is not pushed anywhere, and OCSP is not served.
 - The trust bundle of the built-in issuer is per region.
 
