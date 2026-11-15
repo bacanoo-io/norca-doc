@@ -94,7 +94,9 @@ $ curl --unix-socket "$NORCA_SECRETS_DIR/api.sock" -H "Authorization: Bearer $NO
 ```
 
 `Name` is the consumer the reader reads on the system bus: the accessor ID
-of its token, or `<allocation id>_<task name>` of a workload identity.
+of its token, or `<allocation id>_<task name>` of a workload identity (a
+task name with characters a consumer name can't hold is
+[written differently](/docs/features/change-data-capture#reading-in-go)).
 
 ## Read the Consumer
 

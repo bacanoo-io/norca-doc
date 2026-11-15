@@ -558,7 +558,9 @@ In Go: `nats.CustomInboxPrefix("_INBOX." + accessorID)`. With the default
 inbox of NATS (`_INBOX.<random>`) a request gets no reply and times out. A
 plain subscriber makes no request and needs no prefix. **The inbox prefix of
 a task that connects with its workload identity is
-`_INBOX.<allocation id>.<task name>`** (`_INBOX.$NORCA_ALLOC_ID.$NORCA_TASK_NAME`).
+`_INBOX.<allocation id>.<task name>`** (`_INBOX.$NORCA_ALLOC_ID.$NORCA_TASK_NAME`;
+a task name with a dot or a space is
+[written differently](/docs/features/change-data-capture#reading-in-go)).
 
 ## CDC rules
 

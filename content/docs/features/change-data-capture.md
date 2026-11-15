@@ -144,6 +144,15 @@ A task reads with its identity: `nats.Token(os.Getenv("NORCA_TOKEN"))` (with
 `"_INBOX." + os.Getenv("NORCA_ALLOC_ID") + "." + os.Getenv("NORCA_TASK_NAME")`
 and the consumer `os.Getenv("NORCA_ALLOC_ID") + "_" + os.Getenv("NORCA_TASK_NAME")`.
 
+**Name such tasks with letters, digits, `-` and `_`.** In a task name with
+other characters (a dot, a space), the ones a subject or a consumer name
+can't hold become `_`, and `-` with the first eight hex digits of the
+SHA-256 of the task name is appended, so that two tasks of an allocation
+never share a consumer or an inbox: the task `web.api` reads the consumer
+`<allocation id>_web_api-<digest>` under `_INBOX.<allocation id>.web_api-<digest>`.
+The consumer's name is also the `Name` in the answer of the
+[consumer API](/docs/api/cdc).
+
 With the NATS CLI:
 
 ```shell-session
