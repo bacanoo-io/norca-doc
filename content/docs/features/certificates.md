@@ -152,6 +152,12 @@ The certificate is a version of the secret at `secret_path`:
 - The secret carries the label `norca.io/certificate` with the name of the
   object. **A secret that was not written for the certificate is never
   overwritten**: the certificate then has the reason `SecretConflict`.
+  To hand an existing secret over to a certificate, label it; the next
+  version is the certificate's:
+
+  ```shell-session
+  $ norca secret put -namespace team-a -label norca.io/certificate=web-tls certs/web
+  ```
 - While an order with an external issuer is open, the key that waits for its
   certificate is the item `next_key`; `cert` and `key` keep the current
   certificate until the new one is complete.
