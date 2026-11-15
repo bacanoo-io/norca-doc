@@ -579,8 +579,11 @@ cdc {
   outside the change streams is left out; the telemetry of the nodes and the
   pack push notices are never received, so `norca.>` gives the changes only.
 - `leaf` `(bool: false)` - Whether a NATS server may attach to the bus as a
-  leaf node with the token, the way the changes leave the cluster. **Leaf
-  node connections are not accepted yet.**
+  leaf node with the token, the way the changes leave the cluster
+  ([through a leaf node](/docs/features/change-data-capture#through-a-leaf-node)).
+  The leaf receives the subjects of `receive` and reads the consumers
+  `leaf-<accessor id>` the servers make for it; it sends nothing else into
+  the bus. A management token may attach a leaf too.
 
 The subjects follow the rules of the `bus` rule (wildcards, no `$SYS`, no
 `_INBOX`, no leading wildcard). **The admin events reach a reader only with

@@ -85,7 +85,7 @@ updating and air-gapped use are described in
 | [forgejo](#forgejo) | 0.2.0 | 0.2.0 | Forgejo (GPL-3.0-or-later, referenced, never shipped) as the internal git server and container registry: SQLite and repositories on a host volume, packages and LFS in RustFS, secrets from the built-in secret store, optional HTTPS, SSH, initial admin and periodic dumps; optional `/metrics` |
 | [loadbalancer-operator](#loadbalancer-operator) | 0.3.0 | 0.1.0 | The LoadBalancer operator as an operator pack: object kind (webhooks, limits), the LoadBalancerClass kind, ACL policy bound to the controller job, admission policy, controller job |
 | [mtls-gateway](#mtls-gateway) | 0.2.1 | 0.2.0 | The cross-region native mTLS gateway of a region (`mtls { mode = "gateway" }`): SNI passthrough Envoy on the gateway nodes, injected by the servers or defined by the pack; optional Envoy statistics |
-| [nats](#nats) | 0.6.0 | 0.2.0 | A NATS cluster per region for the applications (JetStream, supercluster gateways, TLS and auth from Variables, or users in accounts with subject permissions and passwords from the built-in secret store), optional Prometheus exporter |
+| [nats](#nats) | 0.7.0 | 0.2.0 | A NATS cluster per region for the applications (JetStream, supercluster gateways, TLS and auth from Variables, or users in accounts with subject permissions and passwords from the built-in secret store), optional Prometheus exporter |
 | [norca-provider](#norca-provider) | 0.1.0 | – | `norca-provider` of norca-platform as a job: the node providers and load balancer classes of its configuration, registered as NodeProvider and LoadBalancerClass objects, with its ACL policy and a `/healthz` check |
 | [openobserve](#openobserve) | 0.2.0 | 0.1.0 | OpenObserve (AGPL-3.0, referenced, never shipped) as the observability backend (logs, metrics, traces): single node on a host volume or a cluster of node roles on PostgreSQL, NATS and RustFS, TLS with Norca's workload certificates, root user and the ingest credentials of the collectors in the built-in secret store |
 | [otel-collector](#otel-collector) | 0.1.1 | 0.1.0 | The OpenTelemetry Collector (contrib, Apache-2.0) on every node: host, Norca agent, NATS, RustFS, Forgejo, mTLS gateway, Consul and PostgreSQL metrics found through the native catalog, an OTLP receiver for the applications, export to OpenObserve trusting Norca's CA |
@@ -268,10 +268,17 @@ lame duck shutdown. NATS is Apache-2.0; the pack references the official `nats` 
 | `tls_enabled`, `auth_mode` | `false`, `none` | `auth_mode`: `none`, `token`, `nkey`, `config`, `userpass` |
 | `users` | `[]` | `auth_mode = "userpass"`: users, accounts, permissions; passwords from the secret store |
 | `metrics_enabled` | `false` | the Prometheus exporter |
+| `norca_bus_leaf`, `norca_bus_servers` | `false`, `[]` | receive the changes of the region as a leaf node of the system bus |
 
 ```shell
 norca pack run nats --registry=norca -f nats.hcl
 ```
+
+With `norca_bus_leaf = true` (pack version 0.7.0) the servers attach to the system bus of the Norca
+servers (`norca_bus_servers`, the leaf node listeners on port 4652) as leaf nodes and receive the
+[changes of the region](/docs/features/change-data-capture#through-a-leaf-node), one way. The token
+(a `cdc` rule with `leaf = true`) and the CA of the Norca servers are the items `token` and `ca` of
+the secret `norca/bus/leaf` (`norca_bus_secret`) in the built-in secret store.
 
 TLS material and tokens come from a Variable (default `nomad/jobs/<job>`), user passwords from the
 built-in secret store (`nats/users/<name>`); **never from pack variables.** With `auth_mode = "token"`

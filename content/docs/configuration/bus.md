@@ -33,12 +33,17 @@ server {
       max_consumers  = 64
       topics         = ["*"]
     }
+
+    leafnodes {
+      enabled = false
+    }
   }
 }
 
 ports {
-  bus         = 4649
-  bus_cluster = 4650
+  bus          = 4649
+  bus_cluster  = 4650
+  bus_leafnode = 4652
 }
 ```
 
@@ -89,6 +94,11 @@ ports {
   - `topics` `(array<string>: ["*"])` - The published topics, for example
     `["Job", "Deployment", "Allocation"]`; `"*"` publishes all.
 
+- `leafnodes` - The listener of the [leaf nodes](#leaf-nodes):
+
+  - `enabled` `(bool: false)` - Accepts NATS servers as leaf nodes on the
+    `bus_leafnode` port.
+
 ## Storage budget
 
 Everything the bus keeps on disk must fit into `max_storage`, or the agent
@@ -117,12 +127,14 @@ names the subjects that collide.
 
 ## Ports and addresses
 
-The bus uses two ports of the agent's [`ports`](/docs/configuration#ports)
+The bus uses the ports of the agent's [`ports`](/docs/configuration#ports)
 block:
 
 - `bus` (`4649`) - The connections of nodes and of tokens with
   [bus rights](/docs/other-specifications/acl-policy#bus-rules).
 - `bus_cluster` (`4650`) - The routes between the servers of a region.
+- `bus_leafnode` (`4652`) - The [leaf nodes](#leaf-nodes), with
+  `leafnodes { enabled = true }` only.
 
 - The listeners bind to the address of the RPC listener.
 - Servers advertise both
@@ -133,6 +145,27 @@ block:
 
 The defaults differ from the NATS defaults
 (4222, 6222), so **a `nats` pack on a server node does not collide with the bus.**
+
+## Leaf nodes
+
+With `leafnodes { enabled = true }` a NATS server outside the cluster
+attaches to the bus as a leaf node and receives the changes of the region,
+one way ([change data capture](/docs/features/change-data-capture#through-a-leaf-node)).
+
+- **Authentication.** The leaf sends the secret ID of an ACL token in its
+  URL (`nats-leaf://<secret ID>@<server>:4652`); the token's
+  [`cdc` rule](/docs/other-specifications/acl-policy#cdc-rules) must have
+  `leaf = true`, or the token is a management token. Without ACLs no leaf is
+  accepted.
+- **TLS.** The listener uses the TLS of the client connections: the leaf
+  verifies the server with the agent CA and needs no client certificate.
+- **An account of its own.** The leaf lands in a NATS account of its own on
+  the server it attached to, which imports its subjects and the API of its
+  consumers from the account `NORCA` of the bus and nothing else; the leaf
+  may publish only the fetches and acknowledgements of its consumers. One
+  leaf per token on a server, 10000 subscriptions, 4KiB per message.
+- **Firewall.** Open `bus_leafnode` to the leaf nodes only, as you would the
+  HTTP API to its clients.
 
 ## Security
 
@@ -173,10 +206,11 @@ The defaults differ from the NATS defaults
     at rest.** An event holds the object it is about (a job with its
     environment variables, for example), as the Raft state does: protect the
     data directory of the servers.
-- **Replies are private.** All connections share one NATS account. A
-  connection gets the replies of its own requests under
-  `_INBOX.<accessor id>` and can't subscribe to the inbox of another, so the
-  values a server or another token reads are not visible to it.
+- **Replies are private.** All connections but the leaf nodes share the
+  NATS account `NORCA`. A connection gets the replies of its own requests
+  under `_INBOX.<accessor id>` and can't subscribe to the inbox of another,
+  so the values a server or another token reads are not visible to it. A
+  leaf node is in an account of its own.
 - **Usage reports are checked.** A report must come on the subject of its
   node, and of its task groups only those are kept that the node has an
   allocation of; the rest is dropped and counted

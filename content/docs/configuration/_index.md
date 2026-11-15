@@ -334,6 +334,10 @@ consul {
   - `bus_cluster` - (Norca) The port of the routes of the system bus between
     the servers of a region. It should be routable between the server nodes.
 
+  - `bus_leafnode` - (Norca) The port of the leaf nodes of the system bus
+    ([change data capture](/docs/features/change-data-capture#through-a-leaf-node)),
+    used when `server { bus { leafnodes { enabled = true } } }`.
+
     The default values are:
 
     ```hcl
@@ -341,8 +345,9 @@ consul {
       http        = 4646
       rpc         = 4647
       serf        = 4648
-      bus         = 4649
-      bus_cluster = 4650
+      bus          = 4649
+      bus_cluster  = 4650
+      bus_leafnode = 4652
     }
     ```
 

@@ -46,7 +46,9 @@ ACL tokens and the workload identities of tasks) is in the NATS account
 What a connection may do comes from its token: the
 [`bus` and `cdc` rules](/docs/other-specifications/acl-policy#bus-rules) of its
 policies, not the account. A server keeps the streams under
-`server/bus/jetstream/NORCA` of its `data_dir`.
+`server/bus/jetstream/NORCA` of its `data_dir`. A
+[leaf node](/docs/features/change-data-capture#through-a-leaf-node) is in an
+account of its own, which imports only its changes from `NORCA`.
 
 ## Task group usage
 

@@ -72,10 +72,11 @@ nats.go `CustomInboxPrefix`): the replies of its requests come only under it,
 and with the default inbox of NATS a request times out. A plain live
 subscriber needs no prefix.
 
-The changes leave the cluster through leaf nodes: a NATS server of the
+**The changes leave the cluster through leaf nodes**: a NATS server of the
 outside system attaches to the bus with a token whose `cdc` rule has
-`leaf = true`. **Leaf node connections are not accepted yet**; until then
-readers connect directly.
+`leaf = true` ([below](#through-a-leaf-node)), and its applications read the
+changes from it with their own NATS users. A reader may also connect
+directly, as above.
 
 ### A policy for a reader
 
@@ -152,6 +153,95 @@ $ nats --server tls://server1.eu:4649 --tlsca ca.pem --user "$TOKEN" \
     sub 'norca.eu.games.Allocation'
 ```
 
+## Through a leaf node
+
+A NATS server outside the cluster (the [`nats` pack](/docs/features/packages/registry#nats),
+an edge site, the NATS of another system) attaches to the bus as a **leaf
+node** and receives the changes of its token's `cdc` rule. **Only the leaf
+holds a Norca token**; its applications connect to it with their own users.
+**The data flows one way**: the bus accepts nothing from a leaf but the
+fetches and acknowledgements of its own consumers.
+
+1. **The servers run the leaf node listener** (off by default):
+
+   ```hcl
+   server {
+     bus {
+       leafnodes {
+         enabled = true
+       }
+     }
+   }
+   ports {
+     bus_leafnode = 4652
+   }
+   ```
+
+   It uses the TLS of the bus; open the port to the leaf nodes only
+   ([`bus` block](/docs/configuration/bus#leaf-nodes)).
+
+2. **A policy whose `cdc` rule allows a leaf**, and a token of it:
+
+   ```hcl
+   cdc {
+     receive = ["norca.eu.games.>"]
+     leaf    = true
+   }
+   ```
+
+3. **The leaf attaches with the secret ID of the token in its URL**, and
+   verifies the servers with their CA:
+
+   ```hcl
+   leafnodes {
+     remotes: [
+       {
+         urls: ["nats-leaf://<secret ID>@10.0.0.11:4652", "nats-leaf://<secret ID>@10.0.0.12:4652"]
+         tls { ca_file: "/etc/nats/norca-ca.pem" }
+       }
+     ]
+   }
+   ```
+
+   The `nats` pack does this with `norca_bus_leaf = true` and the secret
+   `norca/bus/leaf` (items `token` and `ca`).
+
+**What the leaf receives:**
+
+- **Live:** the subjects of `receive`, narrowed to the change streams
+  (`norca.eu.games.>` gives `norca.eu.games.*` of the events and
+  `norca.eu.games.ConsulKV.*` of the Consul KV notices), arriving in the
+  account the leaf binds them to. The admin topics the token may see arrive
+  live too (all of them with a management token).
+- **Its consumers:** the servers make `leaf-<accessor ID>` in the event
+  stream and the Consul KV notices (and the admin events with a management
+  token) when the leaf attaches, with the same subjects as filters; a new
+  consumer starts at the beginning of the stream. **A client reaches them
+  through the JetStream domain `norca-<region>`**, because the leaf's own
+  NATS answers the plain JetStream API itself:
+
+  ```go
+  js, err := jetstream.NewWithDomain(nc, "norca-eu")
+  cons, err := js.Consumer(ctx, "NORCA_EVENTS_eu", "leaf-"+accessorID)
+  ```
+
+  The user of the client needs to subscribe to the subjects and publish to
+  `$JS.norca-eu.API.CONSUMER.>` and `$JS.ACK.>`.
+
+**The limits of a leaf:**
+
+- One leaf per token on a server; a second one is refused.
+- At most 10000 subscriptions (the interest of the clients behind it).
+- At most 4KiB per message it sends: fetches and acknowledgements only.
+- A leaf that is slow to take the live events is cut off like any slow
+  consumer, reconnects, and catches up from its consumer.
+
+**Not accepted:** a rule whose subjects overlap without one containing the
+other (`norca.*.games.>` and `norca.eu.*.Job`): the leaf would receive their
+events twice. When the token is deleted or expires, or its rule changes, the
+leaf is closed within seconds; it reconnects with the new subjects, or not at
+all. The leader removes the consumers of a leaf that lost its right.
+
 ## Following the allocations of a job
 
 A controller that registers a job learns from CDC, in real time and
@@ -200,7 +290,7 @@ apart:
 - **Idle consumers go**: a consumer idle longer than `max_age` would have
   nothing left to catch up and is removed; the leader also removes the
   consumers of readers that lost their right (a deleted or expired token, a
-  policy without the rule, an ended allocation).
+  policy without the rule or without `leaf`, an ended allocation).
 - **Limits of a consumer**: at most 1000 messages unacknowledged; a pull asks
   for at most 256 messages or 1MiB, and waits at most a minute.
 

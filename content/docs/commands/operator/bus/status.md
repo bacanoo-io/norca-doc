@@ -43,10 +43,11 @@ $ norca operator bus status
 Server       = norca-1.global
 Cluster      = global
 Mode         = clustered
-Client URL   = nats://10.0.0.11:4649
-Cluster Port = 4650
-TLS          = true
-Started      = 2026-10-30T19:02:11Z
+Client URL     = nats://10.0.0.11:4649
+Cluster Port   = 4650
+Leaf Node Port = off
+TLS            = true
+Started        = 2026-10-30T19:02:11Z
 
 JetStream
 Meta Leader  = norca-2.global
@@ -72,6 +73,7 @@ Total           = 4
 Nodes           = 3
 Tokens          = 0
 Workloads       = 0
+Leaf nodes      = 0
 Internal        = 1
 Messages In/Out = 1203 / 1188
 Bytes In/Out    = 1.2 MiB / 1.1 MiB
