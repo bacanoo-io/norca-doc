@@ -198,7 +198,16 @@ The status of a tenant is written by the servers only.
 
 - **Tenants are written in the authoritative region.** Namespaces, ACL
   policies and roles are replicated from there; a tenant written in another
-  region is refused. A network policy is created in the region of the tenant.
+  region is refused. With more than one region this means:
+  - the network policy `tenant-isolation` is created in the authoritative
+    region only (network policies are regional): the namespace of a tenant is
+    isolated there, not in the other regions;
+  - the `Tenant` objects live in the authoritative region only: while it is
+    cut off they can't be read or changed elsewhere (the namespaces, quotas,
+    policies and roles they made keep working in every region), and if it is
+    lost, they are lost with it. Write them again in the new authoritative
+    region with `adopt = ["namespace", "quota", "acl-policy", "acl-role",
+    "network-policy"]` to take over what they made.
 - **With ACLs off** the roles are not created (`Ready` with the reason
   `RolesNotCreated`).
 - **A namespace with Variables or secrets** may refuse to be deleted; the
