@@ -68,7 +68,7 @@ norca secret put rustfs/root access_key=norca-backup secret_key=-   # type the s
 ### Deploy RustFS with the backup bucket
 
 ```shell
-norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.3.0
+norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.4.0
 norca pack run rustfs --registry=norca --name=rustfs --var='buckets=["norca-backup"]'
 norca service info -verbose rustfs
 norca alloc logs -task create-buckets <alloc ID>     # "bucket norca-backup created"

@@ -16,7 +16,7 @@ The registry is released as a whole with tags `vMAJOR.MINOR.PATCH` that are neve
 change at any time. **Pin a tag when adding the registry**; the pack commands then use it:
 
 ```shell
-norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.3.0
+norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.4.0
 norca pack registry list
 
 norca pack plan nats --registry=norca -f nats.hcl
@@ -25,10 +25,10 @@ norca pack run  nats --registry=norca -f nats.hcl
 
 - The cache keeps every ref of a registry in its own directory, and the ref the registry was last
   added or updated with is its default ref: a pack command without `--ref` uses the pack at that ref
-  (here `v0.3.0`). See [refs and deployment names](/docs/commands/pack#refs-and-deployment-names).
+  (here `v0.4.0`). See [refs and deployment names](/docs/commands/pack#refs-and-deployment-names).
 - Without `--name` the release is named after the pack (`nats`), so an upgrade to another tag adds a
   revision to the same release. With an explicit `--ref` the default name contains the ref
-  (`nats@v0.3.0` becomes the release `nats-v0.3.0`): give `--name` then, or a later upgrade to
+  (`nats@v0.4.0` becomes the release `nats-v0.4.0`): give `--name` then, or a later upgrade to
   another tag creates a second release.
 - Releases that earlier versions installed without `--name` and `--ref` are named `nats-latest`
   (deployment `nats@latest`); manage them with `--ref=latest` or `--name=nats@latest`.
@@ -78,11 +78,11 @@ If the new version misbehaves later, `norca pack rollback nats` applies the prev
 ### Remove the old tag
 
 ```shell
-norca pack registry delete norca --ref=v0.3.0
+norca pack registry delete norca --ref=v0.4.0
 ```
 
-To go back to the old tag before deleting it, `norca pack registry update norca --ref=v0.3.0` makes
-it the default ref again (or pass `--ref=v0.3.0 --name=nats` to single commands).
+To go back to the old tag before deleting it, `norca pack registry update norca --ref=v0.4.0` makes
+it the default ref again (or pass `--ref=v0.4.0 --name=nats` to single commands).
 
 {{% /steps %}}
 
@@ -114,7 +114,7 @@ Publish the packs of a registry tag to an OCI registry inside the network (Harbo
 pack), signed with your own key:
 
 ```shell
-git clone --branch v0.3.0 https://github.com/bacanoo-io/norca-registry
+git clone --branch v0.4.0 https://github.com/bacanoo-io/norca-registry
 norca pack key generate --output-prefix=norca-packs     # once; keep norca-packs.key secret
 
 norca pack registry add internal oci://registry.internal:5000/norca-packs \
@@ -165,7 +165,7 @@ The registry is a plain git repository, so a mirror on an internal git server (f
 works like the original:
 
 ```shell
-norca pack registry add norca https://forgejo.internal/mirrors/norca-registry --ref=v0.3.0
+norca pack registry add norca https://forgejo.internal/mirrors/norca-registry --ref=v0.4.0
 ```
 
 **Git registries are not signed and not subject to the trust policy**; prefer the OCI registry where

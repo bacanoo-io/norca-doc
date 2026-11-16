@@ -79,7 +79,7 @@ This command takes the [operation options](/docs/commands/pack#operation-options
 # Plan a pack with the default deployment name, the pack name "example".
 norca pack plan example
 
-# Plan a pack of a registry added with --ref=v0.3.0 (the pack at v0.3.0, release "nats").
+# Plan a pack of a registry added with --ref=v0.4.0 (the pack at v0.4.0, release "nats").
 norca pack plan nats --registry=norca
 
 # Plan without showing the diff.
