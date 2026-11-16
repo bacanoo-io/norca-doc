@@ -125,7 +125,9 @@ The values are the frontend addresses of the
 addresses for `AAAA`, its first host name for `CNAME` (a load balancer of a
 cloud that has a name rather than an address). When the load balancer gets a
 new address, the record follows at once. A load balancer without an address
-of the type yet gives the reason `NoValues`.
+of the type yet gives the reason `NoValues`. The
+[tenant example](/docs/features/tenants/example#the-public-name) shows such a
+record with its load balancer.
 
 ## What the operator keeps
 
@@ -198,3 +200,6 @@ namespace "team-a" {
 - [Certificates from ACME](/docs/features/certificates-acme): the DNS zones
   of norca-provider and the challenge records.
 - [Tenants](/docs/features/tenants): `dns_suffixes`.
+- [Example: a team with a load balancer and DNS names](/docs/features/tenants/example):
+  a record that follows a load balancer in the namespace of a tenant, and
+  what the allow list and a conflict look like from the side of the team.

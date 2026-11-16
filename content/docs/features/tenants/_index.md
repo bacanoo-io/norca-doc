@@ -31,6 +31,10 @@ cluster scoped: a tenant is not inside a namespace, it makes one. It is a
 [`norca object apply`](/docs/commands/object/apply), read with
 `norca object get`, listed in the web UI.
 
+How a tenant works together with a load balancer, DNS records and the names
+of services inside the cluster is shown step by step in the
+[example](/docs/features/tenants/example).
+
 ## An example
 
 ```hcl
@@ -215,6 +219,9 @@ The status of a tenant is written by the servers only.
 
 ## See also
 
+- [Example: a team with a load balancer and DNS names](/docs/features/tenants/example):
+  a tenant, a service behind a load balancer, a DNS record and the names
+  inside the cluster, from start to finish
 - [Quotas](/docs/features/quotas)
 - [Network rules](/docs/features/network-rules)
 - [Certificates](/docs/features/certificates): what the namespace of a tenant

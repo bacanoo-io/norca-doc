@@ -23,6 +23,11 @@ support.
 The built-in `nomad` class (a TCP proxy that runs as a Norca job) needs no
 registration.
 
+A load balancer of a registered class in the namespace of a
+[tenant](/docs/features/tenants), with a DNS name that follows its address,
+is shown step by step in the
+[tenant example](/docs/features/tenants/example).
+
 ## How it works
 
 ```
