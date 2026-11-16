@@ -173,7 +173,9 @@ keeps the credentials of the DNS service:
   `token_variable` names (item `token`).
 - **Only challenge records can be written through a zone**: a name is
   `_acme-challenge.<a name of the zone>`. The token of a zone cannot change
-  what the zone serves.
+  what the zone serves. A zone that says `"records": true` lets the
+  operator [norca-dns](/docs/features/dns-records) write its A, AAAA,
+  CNAME and TXT records as well; challenge names stay with norca-acme.
 - A name holds several values at once: a name and its wildcard are proven
   at the same record name.
 - **The operator waits for the name servers.** It tells the certificate

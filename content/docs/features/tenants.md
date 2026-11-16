@@ -64,6 +64,7 @@ spec {
 
   certificate_dns_suffixes = ["team-a.example.com"]
   certificate_issuers      = ["letsencrypt"]
+  dns_suffixes             = ["team-a.example.com"]
 }
 ```
 
@@ -100,6 +101,7 @@ $ norca acl token create -name="alice" -role-name="team-a-developer"
 | `network.isolation` | `none` | `namespace`: only the namespace itself and `allow_from_namespaces` may connect to its allocations |
 | `network.allow_from_namespaces` | | the other namespaces that may connect |
 | `certificate_dns_suffixes`, `certificate_ip_addresses`, `certificate_issuers` | | what the namespace may ask certificates for (written as its `norca.io/certificate-*` metadata) |
+| `dns_suffixes` | | the names [norca-dns](/docs/features/dns-records) may write for the namespace (written as its `norca.io/dns-suffixes` metadata) |
 | `adopt` | | resource types the tenant takes over when one of its name exists: `namespace`, `quota`, `acl-policy`, `acl-role`, `network-policy` |
 
 The names of the tenant and of its roles may hold letters, digits and
