@@ -236,7 +236,10 @@ what the writer of a `Certificate` may cause**, when the object is written
 and again before every issuance.
 
 **A namespace may ask for nothing until it is given names.** The names and
-issuers of a namespace are in its metadata, which a management token sets:
+issuers of a namespace are in its metadata, which a management token sets,
+or a [tenant](/docs/features/tenants) writes from its
+`certificate_dns_suffixes`, `certificate_ip_addresses` and
+`certificate_issuers`:
 
 | Metadata of the namespace | Meaning |
 | --- | --- |

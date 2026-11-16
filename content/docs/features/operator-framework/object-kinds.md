@@ -47,6 +47,22 @@ schema and the rules when the kind is written, and reject the kind if one of
 them is invalid. **A kind with objects cannot change between namespaced and
 cluster-scoped, and cannot be deleted until its objects are gone.**
 
+### Built-in kinds
+
+The servers register a few kinds of the group `norca.io` themselves. Their
+definitions can't be changed or deleted through the object kind API; their
+objects are written like any other, and controllers in the servers act on
+them:
+
+| Kind | Scope | What it is |
+| --- | --- | --- |
+| `NodeGroup`, `NodeProvider` | cluster | [Node scaling](/docs/features/node-scaling) |
+| `CertificateIssuer`, `CertificateOrder` | cluster | [Certificates](/docs/features/certificates): who signs, one issuance of an external issuer |
+| `Certificate` | namespace | [Certificates](/docs/features/certificates): a certificate kept issued |
+| `VolumeSnapshotSchedule` | namespace | [Volume snapshot schedules](/docs/features/volume-snapshot-schedules): CSI snapshots of a volume on a schedule |
+| `CSIVolumeRequest` | namespace | [CSI volume requests](/docs/features/csi-volume-requests): a CSI volume kept as declared |
+| `Tenant` | cluster | [Tenants](/docs/features/tenants): a namespace with its quota, roles and isolation |
+
 ### Namespaced and cluster-scoped kinds
 
 Objects of a namespaced kind (the default) live in a namespace, like jobs.
