@@ -218,7 +218,7 @@ object:
 
 | Value | Who may write |
 | --- | --- |
-| `workload:<namespace>/<job>[/<task>]` | the workload identity of the job (of the task) |
+| `workload:<namespace>/<job>[/<task>]` | the workload identity of the job (of the task); a `%` or `/` in the job ID is written `%25` or `%2F`, and the child jobs of a periodic or parameterized job do not match their parent |
 | `role:<name>` | tokens with the ACL role |
 | `policy:<name>` | tokens with the ACL policy |
 | `token:<accessor ID>` | the token |

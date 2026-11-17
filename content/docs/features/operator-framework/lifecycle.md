@@ -53,7 +53,10 @@ Objects and jobs can belong to a custom object:
 - **Objects** list their owners in `Owners` (in a file: `owner { kind, name,
   namespace }` blocks; the SDK's `SetObjectOwner`). An owner's namespace
   defaults to the object's namespace. `Job` and `Variable` owner kinds are
-  stored but not acted on.
+  stored but not acted on. A new owner that is a custom object outside the
+  namespace of the object (another namespace, or cluster-scoped) needs the
+  `write` or `manage-finalizers` capability on the owner, else the write is
+  refused with `403`.
 
 When an owner is deleted, a garbage collector on the leader deletes what it
 owned, according to the deletion mode chosen on the delete
@@ -106,7 +109,10 @@ reason, count, reporter and message.
   increases its `Count` instead of adding a new entry. The SDK's
   `EventRecorder` also suppresses repetitions on the client side.
 - The log keeps the last 20 events. A write adds at most 10 events and needs the
-  `write-events` capability.
+  `write-events` capability. The reason `Scaled` belongs to the scale
+  subresource, and the meta keys `nomad_autoscaler.engine` and
+  `nomad_autoscaler.suspended_until` to the built-in autoscaler: a write with
+  them is refused with `400`.
 - The server writes events itself, for example `Scaled` when the scale changes
   and `Migrated` or `MigrationFailed` during a
   [schema migration](/docs/features/operator-framework/ecosystem#schema-versions-and-migrations).
@@ -126,6 +132,11 @@ job; other writers get `403`:
 | `role:<name>`, `policy:<name>` | tokens with the ACL role or policy |
 | `token:<accessor ID>` | the token |
 
+- **A job ID is one segment of the value**: a `%` or a `/` in it is written
+  `%25` or `%2F` (`ManagedByFromEnv` does it), so the job `ctrl/x` is not an
+  identity of the job `ctrl`. For the same reason the child jobs of a periodic
+  or parameterized job (`<parent>/periodic-...`, `<parent>/dispatch-...`) do
+  not match a value that names the parent.
 - Management tokens and clusters without ACLs are not restricted, so the garbage
   collector (which uses the leader's token) and administrators can always act.
 - A group with its own `scaling` block can still be scaled by others: its count

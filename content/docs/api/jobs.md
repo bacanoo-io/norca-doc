@@ -2496,6 +2496,8 @@ The table below shows this endpoint's support for
   Indicates an error state preventing scaling; one of `Message` or `Error` must be provided.
 
 - `Meta` `(json: <optional>)` - JSON block that is persisted as part of the scaling event.
+  The keys `nomad_autoscaler.engine` and `nomad_autoscaler.suspended_until` belong to the
+  built-in autoscaler: a request with one of them is refused with `400`.
 
 - `PolicyOverride` `(bool: false)` - Accepted for compatibility and ignored:
   [admission policies](/docs/features/admission-control) cannot be overridden.

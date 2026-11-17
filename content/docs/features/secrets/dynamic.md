@@ -369,7 +369,7 @@ A task gets the items `username`, `password`, `host`, `port`, `database` and `ur
 | Action | Requires |
 | --- | --- |
 | List and read engines and leases | `read-secret-engine` (namespace) |
-| Create, update, delete engines; revoke leases | `write-secret-engine` (namespace) |
+| Create, update, delete engines; revoke leases | `write-secret-engine` (namespace); an engine whose `operator` block names a service of another namespace needs it in that namespace too |
 | Request a credential (a task) | `read-secret` on `engines/<engine>/creds/<role>`, from a [`secret_access`](/docs/job-specification/secret_access) grant of the job or a policy bound to the job; the task needs a `secret` block naming the engine and the role |
 | Renew or revoke a lease (a task) | the workload identity of the task the lease belongs to |
 

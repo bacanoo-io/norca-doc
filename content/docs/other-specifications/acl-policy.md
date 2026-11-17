@@ -105,6 +105,13 @@ namespace "*" {
 }
 ```
 
+**Among equally close globs a deny wins.** With `namespace "*-prod" { policy =
+"deny" }` and `namespace "team-*" { policy = "write" }` the namespace
+`team-prod` matches both rules with the same number of characters, and is
+denied. A closer glob still wins over a deny that is further away. The same
+holds wherever a rule is looked up by glob: node pools, host volumes,
+variable paths, object kinds and secret paths.
+
 ### Policy and capabilities
 
 Each namespace rule can include a coarse-grained `policy` field, a fine-grained
@@ -244,6 +251,19 @@ list of `capabilities`, or both:
 `write`. Objects of cluster-scoped kinds are authorized with the `object` blocks
 of the `namespace "*"` rule. Registering and changing object kinds needs the
 `operator` rule with `write`.
+
+**A `deny` of the namespace denies its objects too.** When the namespace rule
+that applies to a namespace is `policy = "deny"`, no `object` block of any
+policy of the token gives access to the objects of that namespace. Objects of
+cluster-scoped kinds are denied by a deny of `namespace "*"` only.
+
+**An owner outside the namespace of an object takes a right on the owner.**
+Writing an object with a new [owner](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection)
+that is a custom object of another namespace, or cluster-scoped, needs `write`
+or `manage-finalizers` on the kind of the owner in the owner's namespace
+(`namespace "*"` for a cluster-scoped owner): a dependent holds back the
+foreground deletion of its owner. Owners in the namespace of the object need
+nothing more.
 
 ```hcl
 namespace "prod" {
@@ -530,9 +550,12 @@ bus {
 - `publish` `(array<string>: [])` - Subjects the token may publish to.
 
 Subjects may use the NATS wildcards `*` (one token) and `>` (the remaining
-tokens, last only). The lists of all policies of a token are combined. A
-subject of a `bus` rule that reaches the change streams or JetStream (`$JS.>`)
-is left out, with a warning in the server log. **Unknown keys are refused**,
+tokens, last only). The lists of all policies of a token are combined. **A
+`bus` rule never reaches the subjects of the servers**: a subject of the rule,
+to subscribe or to publish, that reaches the change streams, JetStream and
+its buckets (`$JS.>`, `$JSC.>`, `$KV.>`, `$NRG.>`), the deliveries to the
+leaf nodes (`_R_.>`) or the telemetry of the nodes (`norca.telemetry.>`) is
+left out, with a warning in the server log. **Unknown keys are refused**,
 also the former `leafnode`. **When the token or its policies change, its
 connections are closed and reconnect with the new rights.** No token may
 create or change a stream on the bus. A task connects with its workload
@@ -546,12 +569,12 @@ Some subjects can't be granted, in a `bus` or a `cdc` rule:
   a subject starts with a name. Such a rule would cover the replies of other
   connections.
 
-**A connection receives the replies to its own requests under its own inbox
-prefix, `_INBOX.<accessor id of the token>`**, and under no other. A client
-that makes requests (every reader of a consumer does) sets this prefix:
+**A connection with a `bus` rule receives the replies to its own requests
+under its own inbox prefix, `_INBOX.<accessor id of the token>`**, and under
+no other. A client that makes requests sets this prefix:
 
 ```shell-session
-$ nats --server tls://server1:4649 --tlsca ca.pem --user "$TOKEN"     --inbox-prefix "_INBOX.$ACCESSOR_ID" consumer next NORCA_EVENTS_eu "$ACCESSOR_ID"
+$ nats --server tls://server1:4649 --tlsca ca.pem --user "$TOKEN"     --inbox-prefix "_INBOX.$ACCESSOR_ID" request app.status ''
 ```
 
 In Go: `nats.CustomInboxPrefix("_INBOX." + accessorID)`. With the default
@@ -561,6 +584,12 @@ a task that connects with its workload identity is
 `_INBOX.<allocation id>.<task name>`** (`_INBOX.$NORCA_ALLOC_ID.$NORCA_TASK_NAME`;
 a task name with a dot or a space is
 [written differently](/docs/features/change-data-capture#reading-in-go)).
+
+**A connection without a token** (ACLs on, a `bus` or `cdc` rule in the
+anonymous policy) **has no inbox**: it keeps the subjects of the rule, and
+the replies of its own requests do not arrive. A connection that sends
+requests needs a token. A reader of the changes sets no prefix, see
+[CDC rules](#cdc-rules).
 
 ## CDC rules
 
@@ -600,9 +629,23 @@ consumer per reader and stream, named after the reader (the accessor ID of
 the token, or `<allocation id>_<task name>`), with filters inside `receive`
 ([`/v1/cdc/consumer`](/docs/api/cdc), [`norca cdc consumer
 apply`](/docs/commands/cdc/consumer-apply)). On the bus a reader may only ask
-for the information of its own consumers, fetch from them and acknowledge.
-When the reader loses its right (a deleted token, a policy without the rule,
-an ended allocation), the leader removes its consumers.
+for the information of its own consumers, fetch from them (a fetch waits at
+most 30 seconds) and acknowledge. When the reader loses its right (a deleted
+token, a policy without the rule, an ended allocation), the leader removes
+its consumers.
+
+**A reader connects into a NATS account of its own**, which holds the
+subjects of `receive`, the reader's consumers and the replies of its own
+requests; it sets no inbox prefix, and it publishes nothing into the bus.
+
+- A token with a `cdc` rule and no `bus` rule is a reader as it connects.
+- A token with both rules has the subjects of its `bus` rule and the
+  changes live on its plain connection, without JetStream, and reads its
+  consumers over a second connection that logs in as the user `cdc` with
+  the token (or the workload identity) as the password.
+- Subjects of `receive` that overlap without one containing the other
+  (`norca.eu.*.Job` with `norca.eu.games.>`) are refused for a reader, as
+  for a leaf node: it can't connect until the rule is changed.
 
 ## Host Volume rules
 

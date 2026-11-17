@@ -116,7 +116,8 @@ changed.** An invalid configuration fails with 400.
 - `Description` `(string: "")`.
 - `Operator` `(object: <required>)`:
   - `Service` `(string: <required>)` - The service of the operator in the native catalog.
-  - `Namespace` `(string: "")` - The namespace of the service; by default that of the engine.
+  - `Namespace` `(string: "")` - The namespace of the service; by default that of the engine. Another
+    namespace than the engine's needs `write-secret-engine` there too.
 - `Roles` - At least one; each with:
   - `Name` `(string: <required>)`.
   - `TTL` `(duration: 1h)` - The lease duration; a renewal extends the lease by it. At least 1s.
@@ -151,8 +152,10 @@ $ curl -X PUT -H "X-Nomad-Token: $NORCA_TOKEN" -d @postgres.json \
 |------------------|--------------|
 | `NO` | `namespace:write-secret-engine` |
 
-**Fails with 409 while the engine has live leases (revoke them first).** The ended leases are removed with
-the engine. `cas` makes the delete conditional.
+**Fails with 409 while the engine has live leases, or expired leases that are not revoked yet (revoke
+them first).** Revoked leases whose credentials have not expired are sent to the operator before the
+engine goes; if that call fails, the delete fails with 502 and the engine stays. The ended leases are
+removed with the engine. `cas` makes the delete conditional.
 
 ## Revoke the Leases of an Engine
 
