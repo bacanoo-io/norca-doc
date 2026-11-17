@@ -258,15 +258,28 @@ consul {
     `(int: 0)` - Limit the read (`GET`, `HEAD`) and the write requests of one
     ACL token on the HTTP API of a **server** (Norca). Each token has its own
     limit, by its accessor ID; **requests without a known ACL token (anonymous
-    requests, unknown or expired tokens, workload identities) share one
-    limit**, so random tokens do not get one each. A request over the limit
+    requests, unknown or expired tokens, workload identities, and every
+    request while ACLs are off) are limited per client address**, so random
+    tokens do not get a limit each and one client can't use up the requests
+    of the others. A request over the limit
     gets `429 Too Many Requests` with a `Retry-After` header in seconds, and
     the counter `nomad.http.rate_limited` (label `kind`: `read` or `write`)
     grows. `0` disables the limit. Client agents are not limited. The limits
     apply from the start of the agent.
 
+    - **The client address** is the address of the connection: an IPv4
+      address, or the /64 of an IPv6 address. `X-Forwarded-For` and similar
+      headers are not read, so behind a reverse proxy or a NAT all clients
+      share the limit of the proxy's address.
+    - **At most 16384 tokens and 16384 client addresses** have a limit of
+      their own at a time; one beyond that shares a single limit with the
+      others beyond it, until idle ones are dropped. A token or an address
+      that sends nothing for ten minutes is dropped.
+    - **Never limited:** `/v1/agent/health`, `/v1/status/leader` and
+      `/v1/status/peers`, which load balancers and health checks probe.
+
   - `token_read_burst` and `token_write_burst` `(int: 0)` - The requests a
-    token may send at once above its rate. `0` is the rate itself (at least
+    token, or a client address, may send at once above its rate. `0` is the rate itself (at least
     1).
 
 - `log_level` `(string: "INFO")` - Specifies the verbosity of logs the Norca

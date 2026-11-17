@@ -159,7 +159,7 @@ A job registration is forwarded to the leader, which validates it. The server th
 1. **Validation.** The receiving server runs the mutators without the webhook mutator, then the static job validation. It skips the check when a mutating webhook applies to the namespace, because the webhook may complete the job.
 2. **What stays with the leader:** the validators that read the state (quotas, node pools, namespaces, secrets), the admission policies and the validating webhooks. The state of the receiving server may be behind, which would reject a valid job; the denial events are published by the leader only; and the webhooks would be called twice.
 3. **Dry-run capacity check.** `dry_run_capacity` on register and plan runs the scheduler on the state of the receiving server and reports the groups that would not be placed. It does not bind the leader, which schedules as usual.
-4. **Request limits per ACL token**, optional and off by default: `limits { token_read_requests_per_second, token_read_burst, token_write_requests_per_second, token_write_burst }` on the HTTP API of the servers. A request over the limit gets `429` with `Retry-After`. Requests without a known ACL token share one bucket. There is no limit per client address.
+4. **Request limits per ACL token**, optional and off by default: `limits { token_read_requests_per_second, token_read_burst, token_write_requests_per_second, token_write_burst }` on the HTTP API of the servers. A request over the limit gets `429` with `Retry-After`. Requests without a known ACL token are limited per client address (an IPv4 address, the /64 of an IPv6 address), with the address of the connection.
 
 ## Postponed parts
 
