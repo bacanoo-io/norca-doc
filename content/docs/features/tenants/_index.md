@@ -23,8 +23,8 @@ network rule that isolates the namespace, and the names the namespace may ask
   to adopt it; a resource of a [release](/docs/features/packages) is never
   taken.
 - **Deleted in order.** Deleting a tenant waits until its namespace has no
-  jobs, volumes, variables or objects, then removes what the tenant created
-  or adopted.
+  jobs, volumes, variables or objects, then removes what the tenant created.
+  What it adopted stays.
 
 `Tenant` is a kind of the group `norca.io`, registered by the servers. It is
 cluster scoped: a tenant is not inside a namespace, it makes one. It is a
@@ -166,7 +166,9 @@ allocations of the namespace itself and of `allow_from_namespaces`.
 - `status.namespace` and `status.resources`: what the tenant created or
   adopted, with their types and names (the roles also with their IDs). A
   resource is listed before the tenant creates it; until it is known to
-  exist it has `pending: true`;
+  exist it has `pending: true`. A resource the tenant took over has
+  `adopted: true`; the mark stays while the tenant lists the resource, also
+  when `adopt` leaves the spec;
 - `status.conflicts`: the resources it found and did not take;
 - the conditions:
 
@@ -178,8 +180,9 @@ allocations of the namespace itself and of `allow_from_namespaces`.
 | `Degraded` | a write failed; it is tried again |
 
 The events of the tenant (`norca object events norca.io/Tenant team-a`) say
-what was `Created`, `Updated` (set back after a change by hand), `Adopted`
-and `Deleted`.
+what was `Created`, `Updated` (set back after a change by hand), `Adopted`,
+`Deleted` and `Released` (an adopted resource the tenant let go, left as it
+is).
 
 ## Taking over what exists
 
@@ -196,10 +199,11 @@ spec {
 }
 ```
 
-> **An adopted resource is deleted with the tenant.** After the adoption the
-> resource is the tenant's like one it created: it is changed to the spec,
-> and it is deleted when the tenant is deleted or no longer wants it. Don't
-> adopt a namespace that has to outlive the tenant.
+> **An adopted resource outlives the tenant.** While the tenant lives, the
+> resource is kept to the spec like one the tenant created. The tenant never
+> deletes it: when it leaves the spec it is released as it is (event
+> `Released`), and when the tenant is deleted it stays. See
+> [Deleting](#deleting) for what is taken off an adopted namespace.
 
 A resource that a release manages is never taken over, and a release can't
 take over what a tenant created: `norca pack` refuses it, also with
@@ -220,9 +224,42 @@ the namespace, the roles, the policies and, last, the quota the namespace
 named: the roles and the policies stay until the namespace is gone, so the
 people of the tenant can still empty it.
 
-Every resource `status.resources` lists is deleted, an adopted one like a
-created one. Only the resources left in conflict, which the tenant never
-took, stay.
+**Only what the tenant created is deleted.** The resources it adopted
+(`adopted: true` in `status.resources`) and the ones left in conflict, which
+it never took, stay. For an adopted namespace this means:
+
+- the tenant does not wait for it to empty: it is not going to delete it;
+- the network policy, the roles and the policies the tenant created for it
+  are deleted;
+- the certificate and DNS allow lists the tenant wrote into its metadata
+  are removed (`norca.io/certificate-dns-suffixes`,
+  `norca.io/certificate-ip-addresses`, `norca.io/certificate-issuers`,
+  `norca.io/dns-suffixes`); the description and the other metadata stay;
+- it keeps the quota it names, also one the tenant created, which then
+  stays as well: the namespace does not lose its limit.
+
+A namespace the tenant created is deleted also when it names an adopted
+quota; the quota stays. One event `Released` of the tenant, and a line in
+the log of the servers (the events go with the object), list what is left
+in place.
+
+### Cleaning up by hand what a tenant left
+
+If the resources a deleted tenant left are not needed, delete them with a
+management token, in this order:
+
+```shell-session
+$ norca network-policy delete -namespace payments tenant-isolation
+$ norca namespace delete payments
+$ norca acl role list
+$ norca acl role delete <role ID>
+$ norca acl policy delete payments-developer
+$ norca quota delete payments
+```
+
+The namespace has to be empty to be deleted, and a quota can be deleted
+only when no namespace names it. To keep the namespace and delete its
+quota, take the quota off first: `norca namespace apply -quota "" payments`.
 
 ## Who may write a tenant
 
@@ -255,13 +292,22 @@ The status of a tenant is written by the servers only.
     policies and roles they made keep working in every region), and if it is
     lost, they are lost with it. Write them again in the new authoritative
     region with `adopt = ["namespace", "quota", "acl-policy", "acl-role",
-    "network-policy"]` to take over what they made.
+    "network-policy"]` to take over what they made. Tenants written again
+    this way leave these resources in place when they are deleted.
 - **With ACLs off** the roles are not created (`Ready` with the reason
   `RolesNotCreated`).
 - **Jobs of the namespace in another region** are not seen by the wait: the
   deletion of the namespace is refused while they run. The tenant reports
   the error as the event `DeleteFailed` and tries again; its roles and
   policies stay meanwhile.
+- **With more than one region and ACLs, the servers of the authoritative
+  region need a [`replication_token`](/docs/configuration/acl) too.** To
+  delete the namespace of a tenant, the leader asks every other region for
+  the jobs of the namespace, with the replication token: the secret of a
+  global management token. Without it the other region refuses the
+  question, the namespace is never deleted, and the event `DeleteFailed`
+  says to set `replication_token` in the `acl` block of the servers of the
+  region, naming the region that refused.
 - **Isolation matches allocations on the same node only**, see
   [Network isolation](#network-isolation).
 

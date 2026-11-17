@@ -51,6 +51,11 @@ acl {
 - `replication_token` `(string: "")` - Specifies the Secret ID of the ACL token
   to use for replicating policies and tokens. This is used by servers in non-authoritative
   region to mirror the policies and tokens into the local region from [authoritative_region][authoritative-region].
+  (Norca) The servers of the authoritative region use it as well, when the cluster has
+  more than one region: the leader asks the other regions for the jobs of a namespace
+  with it before it deletes the namespace of a deleted
+  [tenant](/docs/features/tenants#limits). Set it there to the secret of a global
+  management token.
 
 - `token_min_expiration_ttl` `(string: "1m")` - Specifies the lowest acceptable
   TTL value for an ACL token when setting expiration. This is used by the Norca
