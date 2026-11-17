@@ -8,7 +8,11 @@ weight: 1
 The `cdc consumer apply` command creates the consumer the servers keep for
 the reader of a change stream, or changes its filters; a change keeps the
 position of the consumer. The reader then reads it on the system bus by its
-name ([API](/docs/api/cdc)).
+name ([API](/docs/api/cdc)), with fetches that wait at most 30 seconds. A
+token that also has a `bus` rule reads it over a connection of its own,
+logged in as the user `cdc` with the token as the password; a token with a
+`cdc` rule only connects with the token
+([connecting](/docs/features/change-data-capture#connecting)).
 
 ## Usage
 

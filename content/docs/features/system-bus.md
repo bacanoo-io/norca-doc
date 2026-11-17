@@ -172,26 +172,30 @@ specifications without their secrets. **Name the namespaces and topics a
 reader needs** rather than `norca.eu.>`. **Wildcards are whole tokens.**
 
 > [!IMPORTANT]
-> **A reader of a consumer sets its inbox prefix to `_INBOX.<accessor id of its token>`**
-> (`nats --inbox-prefix`, nats.go `CustomInboxPrefix`). The replies of a connection
-> come under that prefix only, so that no connection reads the replies of another;
-> with the default inbox of NATS a request times out.
+> **A reader is in a NATS account of its own**, which holds the subjects of its
+> `cdc` rule, its own consumers and the replies of its own requests: it needs no
+> inbox prefix. A token with a `cdc` rule and no `bus` rule is a reader as it
+> connects. **A token that also has a `bus` rule reads its consumers over a second
+> connection**, as the user `cdc` with the token as the password
+> (`nats --user cdc --password "$TOKEN"`, nats.go `nats.UserInfo("cdc", token)`);
+> its plain connection has the `bus` rule and the changes live, without JetStream.
+> A fetch waits at most 30 seconds.
 
 **A task connects with its workload identity instead of a token.** The rules
 of the policies bound to its job, group or task apply
 ([workload associated policies](/docs/concepts/workload-identity#workload-associated-acl-policies)),
-its inbox prefix is `_INBOX.<allocation id>.<task name>` and its consumers are
+and its consumers are
 named `<allocation id>_<task name>`. The task gets its identity with
 `identity { env = true }` (or the file `secrets/norca_token`) and asks for its
 consumer through the [Task API](/docs/api/task-api):
 
 ```shell-session
 $ curl --unix-socket "$NORCA_SECRETS_DIR/api.sock" -H "Authorization: Bearer $NORCA_TOKEN"     -X PUT -d '{"Filters": ["norca.eu.shop.>"]}' localhost/v1/cdc/consumer/events
-$ nats --server tls://server1:4649 --tlsca ca.pem --user "$NORCA_TOKEN"     --inbox-prefix "_INBOX.$NORCA_ALLOC_ID.$NORCA_TASK_NAME"     consumer next NORCA_EVENTS_eu "${NORCA_ALLOC_ID}_${NORCA_TASK_NAME}"
+$ nats --server tls://server1:4649 --tlsca ca.pem --user "$NORCA_TOKEN"     consumer next NORCA_EVENTS_eu "${NORCA_ALLOC_ID}_${NORCA_TASK_NAME}"
 ```
 
 The characters `.`, `*`, `>` and blanks of a task name become `_` in the
-prefix and the name. **The connection is closed when the allocation has
+name. **The connection is closed when the allocation has
 ended**, the identity no longer connects, and the leader removes the task's
 consumers.
 

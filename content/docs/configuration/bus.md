@@ -209,11 +209,14 @@ one way ([change data capture](/docs/features/change-data-capture#through-a-leaf
     at rest.** An event holds the object it is about (a job with its
     environment variables, for example), as the Raft state does: protect the
     data directory of the servers.
-- **Replies are private.** All connections but the leaf nodes share the
-  NATS account `NORCA`. A connection gets the replies of its own requests
-  under `_INBOX.<accessor id>` and can't subscribe to the inbox of another,
-  so the values a server or another token reads are not visible to it. A
-  leaf node is in an account of its own.
+- **Replies are private.** The connections of the servers, the nodes and
+  the tokens with a `bus` rule share the NATS account `NORCA`. A connection
+  gets the replies of its own requests under `_INBOX.<accessor id>` and
+  can't subscribe to the inbox of another, so the values a server or
+  another token reads are not visible to it; a connection without a token
+  has no inbox and gets no replies. A leaf node and a reader of the changes
+  (a `cdc` rule) are each in an account of their own, which holds only
+  their subjects, their consumers and their own replies.
 - **Usage reports are checked.** A report must come on the subject of its
   node, and of its task groups only those are kept that the node has an
   allocation of; the rest is dropped and counted

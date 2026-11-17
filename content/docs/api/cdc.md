@@ -51,7 +51,7 @@ filters: a change keeps the position of the consumer.
   most 1000.
 
 The consumer delivers on request (pull): at most 256 messages or 1MiB per
-request, a request waiting at most a minute.
+request, a request waiting at most 30 seconds.
 
 | Code | When |
 | --- | --- |
@@ -97,6 +97,9 @@ $ curl --unix-socket "$NORCA_SECRETS_DIR/api.sock" -H "Authorization: Bearer $NO
 of its token, or `<allocation id>_<task name>` of a workload identity (a
 task name with characters a consumer name can't hold is
 [written differently](/docs/features/change-data-capture#reading-in-go)).
+A reader whose token also has a `bus` rule reads the consumer over a
+connection of its own, logged in as the user `cdc` with the token as the
+password ([connecting](/docs/features/change-data-capture#connecting)).
 
 ## Read the Consumer
 

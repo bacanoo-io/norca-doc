@@ -941,9 +941,8 @@ inventory {
 # the servers (NATS embedded in Norca). Give its token to the service; it
 # asks the servers for its consumer (norca cdc consumer apply, or
 # PUT /v1/cdc/consumer/events) and reads it on the bus port (4649) of any
-# server. The replies of its requests come only under its own inbox prefix:
-# the service sets it to _INBOX.<accessor ID of the token> (nats.go
-# CustomInboxPrefix, nats --inbox-prefix), or its requests time out.
+# server. It sets no inbox prefix: the servers put a reader into a NATS
+# account of its own.
 cdc {
   receive = ["norca.eu-central.>"]
 }

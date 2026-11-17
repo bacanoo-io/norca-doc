@@ -58,19 +58,33 @@ The full list is on the [system bus](/docs/features/system-bus#the-event-stream)
 A reader has a token, or is a task, whose policy has a
 [`cdc` rule](/docs/other-specifications/acl-policy#cdc-rules):
 
-- **An ACL token.** Its consumers are named after its accessor ID, and its
-  inbox prefix is `_INBOX.<accessor id>`.
+- **An ACL token.** Its consumers are named after its accessor ID.
 - **The workload identity of a task**, when the policy is bound to its job,
   group or task
   ([workload associated policies](/docs/concepts/workload-identity#workload-associated-acl-policies)).
-  Its consumers are named `<allocation id>_<task name>`, and its inbox prefix
-  is `_INBOX.<allocation id>.<task name>`.
+  Its consumers are named `<allocation id>_<task name>`.
 
 It connects to the bus port (`4649`) of any server of the region with TLS.
-**Every reader of a consumer sets its inbox prefix** (`nats --inbox-prefix`,
-nats.go `CustomInboxPrefix`): the replies of its requests come only under it,
-and with the default inbox of NATS a request times out. A plain live
-subscriber needs no prefix.
+
+**The servers put a reader into a NATS account of its own.** The account
+holds the subjects of the reader's `cdc` rule, its own consumers and the
+replies of its own requests, and nothing else: a reader publishes nothing
+into the bus, and no other connection sees its replies. The default inbox
+of NATS works; a reader sets no inbox prefix.
+
+- **A token with a `cdc` rule and no `bus` rule** is a reader as it
+  connects, with the token.
+- **A token that also has a [`bus` rule](/docs/other-specifications/acl-policy#bus-rules)**
+  uses two connections. The plain one, with the token, has the subjects of
+  the `bus` rule and the changes live, and no JetStream. To read its
+  consumers it connects a second time as the reader: the user `cdc`, with
+  the token (or the workload identity) as the password (`nats --user cdc
+  --password "$TOKEN"`, nats.go `nats.UserInfo("cdc", token)`).
+
+**A rule whose subjects overlap without one containing the other is refused
+for a reader**, as for a leaf node (`norca.eu.*.Job` with
+`norca.eu.games.>`): the reader would receive those changes twice, and it
+can't connect.
 
 **The changes leave the cluster through leaf nodes**: a NATS server of the
 outside system attaches to the bus with a token whose `cdc` rule has
@@ -134,9 +148,8 @@ the position.
 
 ```go
 nc, err := nats.Connect("tls://server1.eu:4649",
-	nats.Token(token),
+	nats.Token(token), // with a bus rule too: nats.UserInfo("cdc", token)
 	nats.RootCAs("ca.pem"),
-	nats.CustomInboxPrefix("_INBOX."+accessorID),
 )
 js, err := jetstream.New(nc)
 // The consumer the servers keep for this reader (made by norca cdc consumer apply).
@@ -150,16 +163,15 @@ cc, err := cons.Consume(func(msg jetstream.Msg) {
 ```
 
 A task reads with its identity: `nats.Token(os.Getenv("NORCA_TOKEN"))` (with
-`identity { env = true }`), the inbox prefix
-`"_INBOX." + os.Getenv("NORCA_ALLOC_ID") + "." + os.Getenv("NORCA_TASK_NAME")`
-and the consumer `os.Getenv("NORCA_ALLOC_ID") + "_" + os.Getenv("NORCA_TASK_NAME")`.
+`identity { env = true }`) and the consumer
+`os.Getenv("NORCA_ALLOC_ID") + "_" + os.Getenv("NORCA_TASK_NAME")`.
 
 **Name such tasks with letters, digits, `-` and `_`.** In a task name with
 other characters (a dot, a space), the ones a subject or a consumer name
 can't hold become `_`, and `-` with the first eight hex digits of the
 SHA-256 of the task name is appended, so that two tasks of an allocation
-never share a consumer or an inbox: the task `web.api` reads the consumer
-`<allocation id>_web_api-<digest>` under `_INBOX.<allocation id>.web_api-<digest>`.
+never share a consumer: the task `web.api` reads the consumer
+`<allocation id>_web_api-<digest>`.
 The consumer's name is also the `Name` in the answer of the
 [consumer API](/docs/api/cdc).
 
@@ -167,7 +179,7 @@ With the NATS CLI:
 
 ```shell-session
 $ nats --server tls://server1.eu:4649 --tlsca ca.pem --user "$TOKEN" \
-    --inbox-prefix "_INBOX.$ACCESSOR_ID" consumer next NORCA_EVENTS_eu "$ACCESSOR_ID"
+    consumer next NORCA_EVENTS_eu "$ACCESSOR_ID"
 $ nats --server tls://server1.eu:4649 --tlsca ca.pem --user "$TOKEN" \
     sub 'norca.eu.games.Allocation'
 ```
@@ -319,7 +331,7 @@ apart:
   consumers of readers that lost their right (a deleted or expired token, a
   policy without the rule or without `leaf`, an ended allocation).
 - **Limits of a consumer**: at most 1000 messages unacknowledged; a pull asks
-  for at most 256 messages or 1MiB, and waits at most a minute.
+  for at most 256 messages or 1MiB, and waits at most 30 seconds.
 
 A reader keeps its consumer and resumes it after a restart.
 
