@@ -65,17 +65,24 @@ $ norca object apply db-data.hcl
 | `plugin_id` | required | The CSI plugin of the volume. Can't be changed. |
 | `mode` | `create` | `create`: the plugin creates the volume. `register`: the volume exists in the storage and is registered. Can't be changed. |
 | `external_id` | | With `register`: the ID of the volume in the storage. Can't be changed. |
-| `display_name` | the name | The name of the volume (`Name` of the volume API). Can't be changed. |
+| `display_name` | `<namespace>-<name>` | The name of the volume (`Name` of the volume API), which the plugin gets as the name of the volume it creates. Can't be changed. |
 | `capacity_min`, `capacity_max` | | Sizes such as `"10GiB"`. A raised `capacity_min` expands the volume. |
-| `capability` | required | One or more blocks with `access_mode` and `attachment_mode`, as in the [volume specification](/docs/other-specifications/volume/capability). |
+| `capability` | required | One or more blocks with `access_mode` and `attachment_mode`, as in the [volume specification](/docs/other-specifications/volume/capability). Any other key is refused. |
 | `mount_options` | | `fs_type` and `mount_flags`. |
-| `topology_request` | | With `create`: `required` and `preferred` blocks with `segments`, as in the [volume specification](/docs/other-specifications/volume/topology_request). |
+| `topology_request` | | With `create`: `required` and `preferred` blocks with `segments`, as in the [volume specification](/docs/other-specifications/volume/topology_request). Any other key is refused. Can't be changed. |
 | `parameters` | | Passed to the plugin when the volume is created. Can't be changed. |
 | `context` | | With `register`: the volume context the plugin expects. |
 | `secret_path` | | A secret of the namespace whose items are the CSI secrets of the volume. Read at every pass. |
 | `snapshot_id`, `clone_id` | | With `create`: the volume starts from a snapshot or a volume. Can't be changed. |
 | `deletion_policy` | `retain` | What happens to the volume when the request is deleted (see below). |
 | `adopt` | `false` | Take over a volume of the same ID that the request did not make. |
+
+**The name the plugin gets** has the namespace in it, so requests of one
+name in two namespaces get two volumes of the storage. A `display_name` is
+sent as written: if the plugin answers it with a volume that is already
+registered under another namespace or ID, the request fails (`Failed`: `the
+request needs a display_name of its own`) instead of registering that volume
+a second time.
 
 ## What the servers keep
 
@@ -87,17 +94,24 @@ At every pass, and at once when the request or the volume changes:
 - **A raised `capacity_min` is expanded** through the plugin (and on the
   nodes, if the plugin asks for it). A volume never shrinks.
 - **A volume changed by hand is set back.** If someone changes the
-  capabilities, the mount options, the requested capacity or the secrets
-  with `norca volume register` or `norca volume create`, the next pass
-  writes what the request declares again and records `DriftCorrected`.
-  Mount options can't change while the volume is mounted: that waits.
+  capabilities, the mount options or the requested capacity with `norca
+  volume register` or `norca volume create`, the next pass writes what the
+  request declares again and records `DriftCorrected`. Mount options can't
+  change while the volume is mounted: that waits.
+- **A change of the request or of its secret is an update, not drift.** The
+  volume follows a changed spec, also when the first attempt failed and a
+  retry made it, and the secrets of `secret_path` as they are in the secret
+  store: event `Updated`, and `drifts` does not count it. Secrets changed
+  by hand on the volume are set back the same way.
 - **A created volume that is gone is not created again.** If it is deleted
   or deregistered by hand, the request reports `VolumeLost` instead of
   creating an empty volume in its place: the jobs of the volume would not
   see the difference. Delete the request and write it again to get a new
   volume. A registered volume (`mode = "register"`) is registered again.
 - **Failures are tried again** after 30 seconds, doubling up to 30
-  minutes. The condition `Failed` and the event `Failed` say why.
+  minutes. The condition `Failed` and the event `Failed` say why, and the
+  request is not `Ready` while it waits for its retry. A changed spec is
+  tried at once and starts its own count.
 
 ### Whose volume it is
 
@@ -105,7 +119,12 @@ CSI volumes have no owner field. The request remembers the volume it made
 by the create index of the volume, in its status.
 
 - A volume of the same ID that exists when the request is written is not
-  touched: the request gets the condition `Conflict`.
+  touched: the request gets the condition `Conflict`. So does a volume that
+  appears while the request waits for its plugin, its secret or a retry.
+- From the moment the request calls the plugin to create its volume
+  (`status.creating`), a volume of its ID that appears is its own only if it
+  is the volume the request makes: of its plugin and its name. Anything
+  else is a `Conflict`.
 - With `adopt = true` the request takes it over (event `Adopted`): from then
   on it keeps it as its own. The volume must be of the same plugin.
 - Writing a request does not need the old volume to be free: an adopted
@@ -127,6 +146,14 @@ volume (the condition `Ready` with the reason `VolumeInUse`), and goes when
 they have stopped and released it. A volume the request does not own is never
 touched.
 
+**A create without an answer.** A request with the policy `delete` that is
+deleted after it asked the plugin for its volume and before a volume was
+registered (the create timed out, or failed after the storage made the
+volume) asks the plugin for the volume once more and deletes it. While the
+plugin is missing or unhealthy the deletion waits. If the volume can't be
+asked for at all, the request goes with the warning event `VolumeMayBeLeft`:
+look for a volume of its name in the storage.
+
 ## Status
 
 ```shell-session
@@ -142,7 +169,9 @@ $ norca object get -namespace prod norca.io/CSIVolumeRequest db-data
 | `readAllocs`, `writeAllocs` | Allocations that use the volume. |
 | `controllersHealthy`, `nodesHealthy` | Of the plugin. |
 | `drifts`, `lastDrift` | How often the volume was set back, and when last. |
-| `failures`, `retryAt` | Failed attempts in a row, and when the next one is made. |
+| `failures`, `retryAt`, `lastFailure` | Failed attempts in a row, when the next one is made, and the error of the last one. |
+| `creating` | The plugin was asked to create the volume and the volume is not registered yet. |
+| `appliedGeneration` | The generation of the request the volume was last in line with. |
 
 Conditions:
 
@@ -154,7 +183,7 @@ Conditions:
 | `Degraded` | `Ready` is false, except while the volume is being created. Counted in `norca.objects.degraded`. |
 
 Events of the object: `Created`, `Registered`, `Adopted`, `Updated`,
-`DriftCorrected`, `Failed`, `DeleteFailed`.
+`DriftCorrected`, `Failed`, `DeleteFailed`, `VolumeMayBeLeft`.
 
 ## Rights
 
@@ -166,6 +195,11 @@ request is checked when the object is written:
 - `read-secret` on `secret_path`, if it is set;
 - the object right `write` on `norca.io/CSIVolumeRequest` in the namespace,
   as for every object.
+
+Deleting a request whose `deletion_policy` is `deregister` or `delete` makes
+the servers act on the storage, so it needs `csi-write-volume` in the
+namespace and read on plugins too. A request that retains its volume is
+deleted with the object right alone.
 
 ```hcl
 namespace "prod" {

@@ -75,7 +75,8 @@ from a job that is **not** in that namespace.
 > could change it. This example therefore runs the controller from the files
 > of the [operator](https://github.com/bacanoo-io/norca-platform/tree/main/loadbalancer/operator)
 > in the repository `norca-platform`, in the namespace `default`, for every
-> namespace.
+> namespace. From version 0.4.0 of the pack, which the tag `v0.4.0` of the
+> registry does not hold yet, its variable `watch_namespace` does the same.
 
 The ACL policy of the operator, `loadbalancer-policy.hcl`, has the rules of
 the namespace `default`, where the job runs. Two things are added to it. In
@@ -234,17 +235,10 @@ spec {
   roles {
     developer {
       capabilities = ["list-jobs", "read-job", "submit-job", "read-logs", "alloc-exec"]
-      policy       = <<EOF
-namespace "team-a" {
-  object "norca.io/LoadBalancer" {
-    capabilities = ["read", "write"]
-  }
-
-  object "norca.io/DNSRecord" {
-    capabilities = ["read", "write"]
-  }
-}
-EOF
+      objects = {
+        "norca.io/LoadBalancer" = ["read", "write"]
+        "norca.io/DNSRecord"    = ["read", "write"]
+      }
     }
 
     viewer = ["list-jobs", "read-job"]
@@ -258,8 +252,8 @@ EOF
   in the region `global` (use the name of your region): 4000 MHz and 8192 MB.
 - **`roles`.** A list of capabilities covers jobs. The rights on custom
   objects are not namespace capabilities, so the role that writes
-  `LoadBalancer` and `DNSRecord` objects needs them in its `policy`. The
-  policy is taken as written: keep it inside the namespace of the tenant.
+  `LoadBalancer` and `DNSRecord` objects names them in `objects`, kind by
+  kind. They hold in the namespace of the tenant only.
 - **`dns_suffixes`** is the allow list of DNS names: the namespace may write
   `team-a.example.com` and every name below it, and nothing else.
 - **`network`** is left out: the namespace is not isolated on the network.
@@ -613,8 +607,8 @@ Team B has its own tenant, `team-b`, with `dns_suffixes =
 - **Writing a name of team A.** A `DNSRecord` in `team-b` for
   `shop.team-a.example.com` gets the reason `NotAllowed`: the allow list of
   `team-b` does not hold the name. If two namespaces were allowed the same
-  name, the older record would keep it and the other one would get
-  `Conflict`.
+  name, the record that holds the record set would keep it and the other
+  one would get `Conflict`.
 - **Using the load balancer or the service of team A.** `source {
   load_balancer = "shop" }` and `service = "shop"` name objects of the
   namespace of the object that says so. In `team-b` they mean the `shop` of
@@ -704,20 +698,19 @@ Delete in the order opposite to the one they were made in:
 What happens when the order is another one:
 
 - **The load balancer goes before the record.** The record loses its source
-  and shows `Ready = False` with the reason `NoValues`. The record set stays
-  in the zone with the last address until the record is deleted or a load
-  balancer of the name is back.
+  and shows `Ready = False` with the reason `NoValues`. The record set is
+  removed from the zone (event `RecordDeleted`): the address is no longer
+  the team's. It is written again when a load balancer of the name is back.
 - **The tenant is deleted while jobs are left.** The tenant stays, with the
   condition `NamespaceNotEmpty` (`the namespace "team-a" still has 1 job(s):
   the tenant is deleted when it is empty`), until the jobs are stopped and
-  purged and the namespace has no CSI volumes. Then the servers delete the
-  roles, the policies, the namespace and, last, the quota.
+  purged and the namespace has no CSI volumes, variables and objects. Then
+  the servers delete the namespace, the roles, the policies and, last, the
+  quota.
 - **The tenant is deleted while a `DNSRecord` or a `LoadBalancer` is left.**
-  `NamespaceNotEmpty` looks at jobs and volumes only. A namespace that still
-  holds custom objects refuses to be deleted: the tenant records the event
-  `DeleteFailed` and tries again, but by then it has deleted the roles of the
-  team. The objects that are left have to be deleted with a management
-  token, so delete them first.
+  The tenant waits in the same way (`still has 2 object(s)`), and deletes
+  nothing meanwhile: the roles of the team stay, so the team can delete the
+  objects itself.
 
 ## See also
 

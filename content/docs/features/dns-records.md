@@ -125,7 +125,10 @@ The values are the frontend addresses of the
 addresses for `AAAA`, its first host name for `CNAME` (a load balancer of a
 cloud that has a name rather than an address). When the load balancer gets a
 new address, the record follows at once. A load balancer without an address
-of the type yet gives the reason `NoValues`. The
+of the type yet gives the reason `NoValues`, and a record set written before
+stays as it is. A load balancer that does not exist gives `NoValues` too,
+and the record set is removed: its addresses are no longer the namespace's.
+The set is written again when a load balancer of the name is back. The
 [tenant example](/docs/features/tenants/example#the-public-name) shows such a
 record with its load balancer.
 
@@ -135,12 +138,20 @@ record with its load balancer.
   The zone must allow records (`RecordsNotEnabled` otherwise) and its
   provider must report a heartbeat (`ZoneUnavailable`).
 - **The name must be in the allow list** of the namespace (`NotAllowed`).
+  When the allow list no longer holds the name of a record, the record set
+  the operator wrote for it is removed; it is written again when the name is
+  allowed again.
 - **A record set in the zone that the operator did not write** gives the
   condition `Conflict`, and nothing is written, unless the record says
   `adopt = true` (event `Adopted`). A set that is in the zone exactly as the
   record wants it is taken over without `adopt`.
-- **Two records of one name and type** (in any namespaces): the older one
-  keeps it, the other one gets `Conflict`.
+- **Two records of one name and type** (in any namespaces): the record whose
+  status holds the record set (`owned`) keeps it, whichever is older, and
+  the other one gets `Conflict` and holds nothing. A set that no record
+  holds yet goes to the oldest record of a namespace whose allow list holds
+  the name; a record that is `NotAllowed` keeps nobody from the name. A
+  deleted record holds its set until the operator has removed it, so a new
+  record of the same name waits for it.
 - **Changes made in the zone by hand** are set back when the operator
   compares the record with the zone, every 5 minutes (`requeue` of the
   pack) and at every change of the record: event `DriftCorrected`,
@@ -148,7 +159,10 @@ record with its load balancer.
 - **A changed name or type** removes the old record set first.
 - **Deleting the record** removes its record set (the finalizer
   `norca.io/dns-records` keeps the object until then). A record whose zone
-  is no longer registered goes, and its records stay in the zone.
+  is no longer registered, or no longer allows records (`records` switched
+  off, or the provider refuses the deletion with 403), goes, and its record
+  set stays in the zone: event `RecordLeft`. Any other failure of the
+  removal is the event `DeleteFailed` and is tried again.
 
 ## Status
 
@@ -163,12 +177,16 @@ Conditions:
 
 | Condition | True when |
 | --- | --- |
-| `Ready` | The zone holds the record set. When it is false, its reason says why: `NotAllowed`, `ZoneNotFound`, `RecordsNotEnabled`, `ZoneUnavailable`, `NoValues`, `Conflict`, `InvalidSpec`, `Failed` (the provider's error). |
+| `Ready` | The zone holds the record set. When it is false, its reason says why: `NotAllowed`, `ZoneNotFound`, `RecordsNotEnabled`, `ZoneUnavailable`, `NoValues`, `Conflict`, `InvalidSpec`, `Failed` (the error as the message: the provider or the name server can't be reached or refuses, or the cluster can't be read). |
 | `Conflict` | Another record or the zone itself holds the name and type. |
 | `Degraded` | `Ready` is false. |
 
-Events: `RecordWritten`, `RecordDeleted`, `DriftCorrected`, `Adopted`, and
-the reason of a `Ready` that turns false.
+A failure shows in the status at once, also on a record that was `Ready`
+before; the record keeps the record set it holds (`owned`) meanwhile.
+
+Events: `RecordWritten`, `RecordDeleted`, `RecordLeft` (a record set that
+stays in the zone when its record gives it up), `DeleteFailed`,
+`DriftCorrected`, `Adopted`, and the reason of a `Ready` that turns false.
 
 ## Rights
 
@@ -194,6 +212,15 @@ namespace "team-a" {
   services come with their types of norca-provider.
 - The operator compares the record set with the primary of the zone, not
   with what resolvers on the internet see.
+- **`rfc2136`: a CNAME stands alone.** A name server ignores a CNAME for a
+  name that has other records, and other records for a name that is a
+  CNAME, without an error. The provider reads the record set back after it
+  wrote it; a set the server does not hold is reported as `Failed`, with
+  what the server holds in the message, and the record holds nothing.
+- **`rfc2136`: a wildcard is not a record set.** An answer the name server
+  makes from a wildcard of the zone (`*.apps.example.com`) is not taken for
+  a record set of the name asked: a record below a wildcard is written
+  without `adopt`.
 
 ## See also
 

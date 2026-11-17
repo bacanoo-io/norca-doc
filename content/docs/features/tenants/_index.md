@@ -23,7 +23,8 @@ network rule that isolates the namespace, and the names the namespace may ask
   to adopt it; a resource of a [release](/docs/features/packages) is never
   taken.
 - **Deleted in order.** Deleting a tenant waits until its namespace has no
-  jobs and no volumes, then removes what the tenant created.
+  jobs, volumes, variables or objects, then removes what the tenant created
+  or adopted.
 
 `Tenant` is a kind of the group `norca.io`, registered by the servers. It is
 cluster scoped: a tenant is not inside a namespace, it makes one. It is a
@@ -101,8 +102,8 @@ $ norca acl token create -name="alice" -role-name="team-a-developer"
 | `quota.region "<region>"` | no quota | the limits per region: `cpu` (MHz), `memory`, `memory_max` (MB), `allocations`, `variables_mb` |
 | `quota.description`, `quota.enforce` | `schedule` | as in a [quota](/docs/features/quotas) |
 | `roles.<role>` | | a list of [namespace capabilities](/docs/other-specifications/acl-policy) in the namespace |
-| `roles.<role> { capabilities, policy }` | | the same, plus a full ACL policy for what capabilities can't say |
-| `network.isolation` | `none` | `namespace`: only the namespace itself and `allow_from_namespaces` may connect to its allocations |
+| `roles.<role> { capabilities, objects, policy }` | | the same, plus the rights on [custom objects](/docs/features/operator-framework) in the namespace and a full ACL policy for what these can't say |
+| `network.isolation` | `none` | `namespace`: only the namespace itself and `allow_from_namespaces` may connect to its allocations, on the same node (see [Network isolation](#network-isolation)) |
 | `network.allow_from_namespaces` | | the other namespaces that may connect |
 | `certificate_dns_suffixes`, `certificate_ip_addresses`, `certificate_issuers` | | what the namespace may ask certificates for (written as its `norca.io/certificate-*` metadata) |
 | `dns_suffixes` | | the names [norca-dns](/docs/features/dns-records) may write for the namespace (written as its `norca.io/dns-suffixes` metadata) |
@@ -111,13 +112,17 @@ $ norca acl token create -name="alice" -role-name="team-a-developer"
 The names of the tenant and of its roles may hold letters, digits and
 dashes only, because the names of the resources are made from them.
 
-A role with a policy:
+A role with rights on objects and a policy:
 
 ```hcl
 roles {
   operator {
     capabilities = ["submit-job", "alloc-lifecycle"]
-    policy       = <<EOF
+    objects = {
+      "norca.io/LoadBalancer" = ["read", "write"]
+      "norca.io/DNSRecord"    = ["read"]
+    }
+    policy = <<EOF
 node {
   policy = "read"
 }
@@ -126,24 +131,50 @@ EOF
 }
 ```
 
-The policy is taken as written: a policy can grant more than the namespace of
-the tenant, which is why writing a tenant is an operator's right (see
+**`objects`** maps a kind, written `<group>/<Kind>` (globs as in an
+[ACL policy](/docs/other-specifications/acl-policy), for example
+`example.com/*`), to a list of object capabilities. Each entry becomes an
+`object` block of the rule of the tenant's namespace, so the rights hold in
+that namespace only and never reach cluster scoped kinds. A role with
+`objects` and no `capabilities` has no namespace capability at all: its
+people can work with the objects of the named kinds, and can't read the jobs
+or anything else of the namespace.
+
+**`policy`** is taken as written: a policy can grant more than the namespace
+of the tenant, which is why writing a tenant is an operator's right (see
 [Who may write a tenant](#who-may-write-a-tenant)).
+
+## Network isolation
+
+With `isolation = "namespace"` the tenant writes the network policy
+`tenant-isolation`, which lets into the allocations of the namespace only the
+allocations of the namespace itself and of `allow_from_namespaces`.
+
+> **Allocations are matched on the same node only.** A
+> [network rule](/docs/features/network-rules) knows the allocations of a
+> namespace on the node where it is applied; traffic from another node
+> arrives through a host port with the address of the sending node, not of
+> an allocation. An isolated namespace therefore admits the allocations of
+> the allowed namespaces that run on the same node, and the node itself. A
+> load balancer on another node, and the tenant's own allocations on other
+> nodes, are dropped.
 
 ## Status
 
 `norca object get norca.io/Tenant team-a` shows:
 
-- `status.namespace` and `status.resources`: what the tenant created, with
-  their types and names (the roles also with their IDs);
+- `status.namespace` and `status.resources`: what the tenant created or
+  adopted, with their types and names (the roles also with their IDs). A
+  resource is listed before the tenant creates it; until it is known to
+  exist it has `pending: true`;
 - `status.conflicts`: the resources it found and did not take;
 - the conditions:
 
 | Condition | True when |
 | --- | --- |
 | `Ready` | every resource is as the spec says |
-| `Conflict` | a resource of the tenant's name exists that the tenant did not create, or that belongs to a release or to another tenant; it is left alone, and with the namespace in conflict nothing else is created |
-| `NamespaceNotEmpty` | the tenant is being deleted and its namespace still has jobs or volumes |
+| `Conflict` | a resource of the tenant's name exists that the tenant did not create, or that belongs to a release or to another tenant; it is left alone, and with the namespace or the quota in conflict nothing else is created |
+| `NamespaceNotEmpty` | the tenant is being deleted and its namespace still has jobs, volumes, variables or objects |
 | `Degraded` | a write failed; it is tried again |
 
 The events of the tenant (`norca object events norca.io/Tenant team-a`) say
@@ -165,6 +196,11 @@ spec {
 }
 ```
 
+> **An adopted resource is deleted with the tenant.** After the adoption the
+> resource is the tenant's like one it created: it is changed to the spec,
+> and it is deleted when the tenant is deleted or no longer wants it. Don't
+> adopt a namespace that has to outlive the tenant.
+
 A resource that a release manages is never taken over, and a release can't
 take over what a tenant created: `norca pack` refuses it, also with
 `-take-ownership`.
@@ -175,10 +211,18 @@ take over what a tenant created: `norca pack` refuses it, also with
 $ norca object delete norca.io/Tenant team-a
 ```
 
-The tenant stays (with the condition `NamespaceNotEmpty`) until its namespace
-has no jobs and no CSI volumes; stop and purge them first. Then the servers
-delete the network policy, the roles, the policies, the namespace and, last,
-the quota the namespace named. Resources the tenant did not create stay.
+The tenant stays (with the condition `NamespaceNotEmpty`, which says what is
+left) until its namespace has no jobs, no CSI volumes, no variables and no
+objects of namespaced kinds (certificates, load balancers, DNS records,
+releases); stop and purge the jobs and delete the rest first. Nothing is
+deleted while the tenant waits. Then the servers delete the network policy,
+the namespace, the roles, the policies and, last, the quota the namespace
+named: the roles and the policies stay until the namespace is gone, so the
+people of the tenant can still empty it.
+
+Every resource `status.resources` lists is deleted, an adopted one like a
+created one. Only the resources left in conflict, which the tenant never
+took, stay.
 
 ## Who may write a tenant
 
@@ -214,8 +258,12 @@ The status of a tenant is written by the servers only.
     "network-policy"]` to take over what they made.
 - **With ACLs off** the roles are not created (`Ready` with the reason
   `RolesNotCreated`).
-- **A namespace with Variables or secrets** may refuse to be deleted; the
-  tenant reports the error as an event and tries again.
+- **Jobs of the namespace in another region** are not seen by the wait: the
+  deletion of the namespace is refused while they run. The tenant reports
+  the error as the event `DeleteFailed` and tries again; its roles and
+  policies stay meanwhile.
+- **Isolation matches allocations on the same node only**, see
+  [Network isolation](#network-isolation).
 
 ## See also
 
