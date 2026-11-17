@@ -66,7 +66,9 @@ including `-namespace` (the namespace of the blocks without a `namespace`) and `
 - `-f=<file>`: The file to apply; `-` reads standard input.
 
 - `-json`: Read the JSON form of the API instead of HCL. The file is an object, or an array of objects,
-  with a `Namespace` and the fields of the [API payload](/docs/api/external-services#payload).
+  with a `Namespace` and the fields of the [API payload](/docs/api/external-services#payload). A
+  service with a `NodeID` is refused, as the whole file is: a declared service is not bound to a node,
+  its checks are placed with `checked_by`.
 
 ## The `external_service` block
 
@@ -92,3 +94,5 @@ The label is the name of the service.
 node that runs them among the ready, eligible nodes that match `node_pool` (empty: every pool) and
 `datacenters` (patterns such as `eu-*`; empty: every datacenter), and move them to another node when that
 node goes down or stops reporting. A service with only `ttl` checks, or no check, needs no `checked_by`.
+**A service with `checked_by` needs `node` write** besides `register-external-service`: it makes a
+client node of the cluster run checks against an address of the caller's choice.

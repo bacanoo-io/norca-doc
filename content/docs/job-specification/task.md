@@ -114,7 +114,9 @@ job "docs" {
 - `user` `(string: <varies>)` - Specifies the user that will run the task.
   Defaults to `nobody` for the [`exec`][exec] and [`java`][java] drivers. With
   the [`exec2`][exec2] driver a task without `user` runs as an anonymous
-  [dynamic user](/docs/drivers/exec2/#dynamic-users).
+  [dynamic user](/docs/drivers/exec2/#dynamic-users). The form
+  `norca:<number>`, the name of such a dynamic user, is refused as a `user`
+  for every driver.
   [Docker][] and [rkt][] images specify their own default users. This can only
   be set on Linux platforms, and clients can restrict
   [which drivers][user_drivers] are allowed to run tasks as

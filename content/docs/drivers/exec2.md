@@ -259,7 +259,8 @@ ID from a range reserved for this purpose and uses it as both UID and GID. The
 user is not in `/etc/passwd`; the task sees it as `USER=norca:<id>` and has no
 home directory (`HOME=/nonexistent`). Two tasks never share the ID at the same
 time, so a task cannot read the files of another task, and a user of the host
-cannot reach the task's files.
+cannot reach the task's files. **A job can't ask for such a user by name**:
+`user = "norca:<id>"` is refused when the job is submitted, and by the client.
 
 The client keeps the ID while the task may still run, also across a restart of
 the client, and frees it when the task will not run again. The files the client

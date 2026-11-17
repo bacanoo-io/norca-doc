@@ -160,7 +160,10 @@ eu-2
 ### `fileContents`
 
 Imports the contents of a file on the local file system into the template. The path is relative to
-the directory `norca pack` is invoked in; the file is read when the template is rendered.
+the directory `norca pack` is invoked in; the file is read when the template is rendered. When the
+servers render a pack (an install from the [catalog](/docs/features/packages/catalog)), `fileContents`
+and `fileRelative` read files inside the pack directory only, and the Sprig functions `env` and
+`expandenv` are not available.
 
 #### Parameters
 

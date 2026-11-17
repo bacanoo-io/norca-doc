@@ -66,7 +66,12 @@ server {
 
 - `schedule` `(string: "")` - A cron expression, evaluated in UTC, for the
   scheduled times, for example `"0 */6 * * *"`. Mutually exclusive with
-  `interval`.
+  `interval`. An expression that has no time to come (`"0 0 30 2 *"`, a past
+  year) is refused when the agent starts.
+
+  `interval` and `schedule` are one setting: when several configuration
+  files are merged, a later file that sets one of them replaces the other
+  one of an earlier file. Both in one file is an error.
 
 - `jitter` `(string: "5m")` - The upper bound of a per-region offset of the
   scheduled times. The offset is derived from the region name, so a region

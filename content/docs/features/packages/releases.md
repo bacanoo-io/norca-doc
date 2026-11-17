@@ -93,14 +93,17 @@ their extension. The format of each file is that of the corresponding `norca ...
 | `*.nomad.tpl` | Job | job specification | 9 |
 
 Deletion uses the reverse order. A namespace that references a quota of the same pack is created first
-and attached to the quota once it exists. `*.netpol.hcl.tpl` (network rules) is reserved and rejected
+and attached to the quota once it exists. **`*.kind.hcl.tpl` and `*.object.hcl.tpl` can't call
+`file()`**, which the files of `norca object-kind apply` and `norca object apply` can: a pack renders
+to the same release at the command line and in the servers. Put a schema into the template itself, or
+into a helper template. `*.netpol.hcl.tpl` (network rules) is reserved and rejected
 until the release apply supports network rules.
 
 **External services:** a `*.external.hcl.tpl` file holds one `external_service` block (the format of
 [`norca service apply`](/docs/commands/service/apply)). The release registers the service before its
 jobs start, so the built-in DNS name exists when they do, and deregisters it on uninstall or when an
 upgrade drops the file. The `http` and `tcp` checks of the service need `checked_by`: the servers choose
-the node that runs them. Without a `namespace` the service is registered in the namespace of the release.
+the node that runs them, and the token that applies the release needs `node` write for it. Without a `namespace` the service is registered in the namespace of the release.
 
 **Secrets:** a Variables template lists the names of secret items in `secret_items` and must not give
 them values. Their values come from `--var-secret=<variable path>:<item>=<value>` (repeatable) and are
@@ -401,7 +404,9 @@ job "[[ meta "pack.name" . ]]-smoke-test" {
 ## Drift detection
 
 After every apply the servers record a hash of each resource's content (without indexes, times and
-status fields). `norca pack diff <release> --live` and a check on the leader every 5 minutes compare
+status fields). The hash of a Variable is keyed with a root key of the keyring
+(`hmac-sha256:<root key ID>:<hex>`), so a reader of the release can't test guesses of its items
+against it. `norca pack diff <release> --live` and a check on the leader every 5 minutes compare
 the live resources with these hashes: deleted or changed resources set the `Drifted` condition and
 publish a `ReleaseDrifted` event on the `CustomObject` event topic. **Drift is never corrected
 automatically**; upgrade or roll back to restore the revision.
@@ -472,7 +477,7 @@ writing it would need:
 | --- | --- |
 | Namespace, ACL policy | A management token |
 | Quota | `quota { policy = "write" }` |
-| Variable | `write` and `read` on its path (the release records a hash of the items) |
+| Variable | `write` and `read` on its path (the release records a keyed hash of the items) |
 | Object kind | `operator { policy = "write" }` |
 | Admission policy | `admission { policy = "write" }` |
 | Object | object `write` on its kind in its namespace (`namespace "*"` for cluster-scoped kinds) |

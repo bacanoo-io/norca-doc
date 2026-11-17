@@ -28,7 +28,9 @@ The [general options](/docs/commands/secret#general-options) of the CLI.
 - `-item <key>`: Print only the value of the item.
 
 - `-format ( json | env )`: Print all items, as a JSON object or as `KEY='value'` lines quoted for POSIX
-  shells.
+  shells. **`env` needs every key to be the name of a shell variable** (letters, digits and `_`, not
+  starting with a digit). With another key, such as `db-password`, nothing is printed and the command
+  fails, naming the keys; read such a secret with `-format json` or `-item`.
 
 Only one of `-item` and `-format` can be given.
 

@@ -93,7 +93,8 @@ Enters one unseal share on a server, or discards the shares entered so far.
 ### Parameters
 
 - `server_id` `(string: "")` - The name or ID of the server; query parameter. Defaults to the server of
-  the agent that receives the request; required when that agent is not a server.
+  the agent that receives the request; required when that agent is not a server, and for a request to
+  another region (`region`), which is answered with `400` without it.
 - `Key` `(string)` - One unseal share, as printed by the rewrap (base64).
 - `Reset` `(bool: false)` - Discard the shares entered so far.
 

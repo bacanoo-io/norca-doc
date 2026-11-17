@@ -348,7 +348,9 @@ Custom functions are also provided:
   uses the `spew.Sprintf` function.
 - `fileContents` reads a file on the local host, relative to the directory `norca pack` is invoked
   in, and returns its contents as a string. `fileRelative` reads a file relative to the pack
-  directory (`[[ fileRelative "files/app.conf" . ]]`).
+  directory (`[[ fileRelative "files/app.conf" . ]]`). **In a render by the servers** (an install
+  from the catalog) both read only files inside the pack directory, and `env` and `expandenv` of
+  Sprig do not exist: a pack can't read the environment or the files of a server.
 - `packPath` returns the path of the pack being rendered.
 - `toStringList` renders a list as an HCL list of quoted strings.
 - `tpl` renders a template string with the current template context, useful for dynamic templates

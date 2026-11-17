@@ -34,7 +34,7 @@ The general options of the CLI (`-address`, `-region`, `-token`, the TLS and col
 ## Unseal Options
 
 - `-server-id <name or ID>`: The server to unseal. Defaults to the server of the agent at `-address`. When
-  that agent is not a server, `-server-id` is required.
+  that agent is not a server, or with `-region` for another region, `-server-id` is required.
 
 - `-reset`: Discard the shares entered so far on the server.
 

@@ -76,7 +76,10 @@ inside the organisation.
 **A CA of the organisation** can take its place:
 [`norca certificate ca import`](/docs/commands/certificate/ca-import), with
 the certificate and the key of a root or of an intermediate CA. The leader
-never rotates an imported CA; import its successor before it expires.
+never rotates an imported CA; import its successor before it expires. With
+less than an hour of the CA left nothing is issued: the issuer is not ready
+and the certificates fail with the reason `AuthorityExpired`, keep the
+certificate they have, and are tried again.
 
 ### An external issuer
 
@@ -222,8 +225,8 @@ $ norca object get -namespace team-a norca.io/Certificate web-tls
 
 Reasons of `Failed`: `IssuerNotFound`, `NamesNotAllowed`, `SecretConflict`,
 `InvalidSpec` (nothing is issued until the cause is gone), and
-`AuthorityNotReady`, `SecretWriteFailed`, `OrderFailed`, `ChainRefused` and
-the like (an attempt failed and is repeated).
+`AuthorityNotReady`, `AuthorityExpired`, `SecretWriteFailed`, `OrderFailed`,
+`ChainRefused` and the like (an attempt failed and is repeated).
 
 What the operator did is in the events of the object
 (`norca object events`): `Issued`, `Renewed`, `Ordered`, `Revoked`, and the
