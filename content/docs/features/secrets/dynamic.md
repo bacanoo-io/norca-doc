@@ -370,6 +370,7 @@ A task gets the items `username`, `password`, `host`, `port`, `database` and `ur
 | --- | --- |
 | List and read engines and leases | `read-secret-engine` (namespace) |
 | Create, update, delete engines; revoke leases | `write-secret-engine` (namespace); an engine whose `operator` block names a service of another namespace needs it in that namespace too |
+| Delete an engine with force | a management token |
 | Request a credential (a task) | `read-secret` on `engines/<engine>/creds/<role>`, from a [`secret_access`](/docs/job-specification/secret_access) grant of the job or a policy bound to the job; the task needs a `secret` block naming the engine and the role |
 | Renew or revoke a lease (a task) | the workload identity of the task the lease belongs to |
 
@@ -387,7 +388,7 @@ for a turn. A task waits for that long at most for one attempt when it starts.
 ## Observability
 
 - **Audit** (`SecretAccess` topic, audit file): `engine-write`, `engine-delete` (path
-  `engines/<engine>`), `lease-create`, `lease-renew`, `lease-revoke` (path
+  `engines/<engine>`; with `Force` for a forced delete, which the server also logs at warn level), `lease-create`, `lease-renew`, `lease-revoke` (path
   `engines/<engine>/creds/<role>`, with `Engine`, `Role`, `LeaseID` and, for revocations, the `Reason`:
   `allocation-stopped`, `expired`, `max-ttl`, `operator` or `issue-failed`). Revocations of the lease watcher
   have the accessor `{"System": "secret-engine"}`, with the task of the lease.
@@ -415,7 +416,10 @@ for a turn. A task waits for that long at most for one attempt when it starts.
 - **Full restore of a backup.** A lease issued after the backup is lost, and its credential can't be revoked
   until it expires. The [preview](/docs/features/backup-restore#full-region-restore) warns about them.
 - **Deleting an engine** fails while it has live leases; revoke them first with
-  `norca secret lease revoke -engine`.
+  `norca secret lease revoke -engine`. It also fails while revocations can't be sent to the
+  operator. For an engine whose operator is gone for good, a management token deletes it with
+  `norca secret engine delete -force`: the credentials of its revoked leases may then still be valid
+  in the target system until they expire, and the server logs those leases.
 - **Sealed store.** Credentials can't be created or renewed while the store is sealed; the watcher waits
   for the unseal.
 

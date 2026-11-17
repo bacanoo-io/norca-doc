@@ -123,11 +123,23 @@ of the KV: `read` to read, `list` for `recurse` and `keys` (the keys it cannot r
 | `GET /v1/kv/:prefix?recurse` | `index`, `wait` | Every key with the prefix (a string prefix), sorted; `404` when none |
 | `GET /v1/kv/:prefix?keys` | `separator`, `index`, `wait` | The key names; with a separator the names below the prefix up to the first separator, once |
 | `PUT /v1/kv/:key` | Body: the value (at most 512 KB); `flags`, `cas` | `true`, or `false` when the `cas` index (0: the key must not exist) does not match |
-| `DELETE /v1/kv/:key` | `recurse`, `cas` | `true`, or `false` when `cas` does not match; `recurse` deletes the keys one by one |
+| `DELETE /v1/kv/:key` | `recurse`, `cas` | `true`, or `false` when `cas` does not match (see below); `recurse` deletes the keys one by one |
 
 `X-Consul-Index` is the Raft index (variables backend) or the highest revision of the matched keys
 (nats backend). `?acquire`, `?release` and `/v1/txn` answer `501`. The nats backend rejects `flags`;
 the variables backend rejects keys whose Variables path exceeds 128 characters (`400`).
+
+`DELETE` with `cas` answers the same in every backend:
+
+| The key | `cas` | Answer |
+| --- | --- | --- |
+| exists | `0` | `false`; nothing is deleted |
+| exists | an index that is not its current one | `false`; nothing is deleted |
+| exists | its current index | `true`; the key is deleted |
+| does not exist | any | `true` |
+
+A delete of a key that does not exist, with or without `cas`, announces no
+[`KeyDeleted` notice](/docs/features/system-bus#consul-kv-notices).
 
 ### Sample Request
 

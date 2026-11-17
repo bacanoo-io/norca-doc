@@ -96,3 +96,12 @@ can't be deleted**: revoke them first with
 [`norca secret lease revoke -engine`](/docs/commands/secret/lease#secret-lease-revoke). The
 revocations the operator has not got yet are sent to it before the engine goes; when that fails, the
 engine stays. Requires `write-secret-engine`.
+
+- `-force`: Delete the engine although the revocations of its leases can't be sent to its operator,
+  for an engine whose operator is gone for good. The credentials of those leases may still be valid
+  in the target system: the server logs the leases, remove their credentials there by hand. Live
+  leases must still be revoked first. Requires a management token.
+
+```shell-session
+$ norca secret engine delete -namespace apps -force postgres
+```

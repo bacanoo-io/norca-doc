@@ -229,7 +229,7 @@ that a service learns that a setting changed:
 
 | Item | Value |
 | --- | --- |
-| Subject | `<prefix>.<region>.<namespace>.ConsulKV.KeySet` or `.KeyDeleted`, e.g. `norca.eu.default.ConsulKV.KeySet` |
+| Subject | `<prefix>.<region>.<namespace>.ConsulKV.KeySet` or `.KeyDeleted`, e.g. `norca.eu.default.ConsulKV.KeySet`. `KeyDeleted` is sent only for a key that was deleted: the delete of a key that does not exist announces nothing |
 | Payload | `{"Region": "eu", "Topic": "ConsulKV", "Type": "KeySet", "Key": "app/config/level", "Namespace": "default", "Payload": {"ConsulKV": {"Key": ..., "Time": ...}}}` |
 | Headers | `Nomad-Region`, `Nomad-Topic`, `Nomad-Type`, `Nomad-Namespace`, `Nomad-Key` |
 | Stream | `NORCA_KV_CHANGES_<region>` on `<prefix>.<region>.*.ConsulKV.*`; `max_age` and an eighth of `max_bytes` |

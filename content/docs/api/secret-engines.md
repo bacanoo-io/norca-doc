@@ -157,6 +157,23 @@ them first).** Revoked leases whose credentials have not expired are sent to the
 engine goes; if that call fails, the delete fails with 502 and the engine stays. The ended leases are
 removed with the engine. `cas` makes the delete conditional.
 
+### Parameters
+
+- `force` `(bool: false)` - Query parameter. Delete the engine although the revocations of its leases
+  can't be sent to the operator, or leases expired without being revoked: for an engine whose
+  operator is gone for good. **It needs a management token** (403 otherwise, also with
+  `write-secret-engine`); another value than `true` or `false` is answered with 400. An engine with
+  live leases is still refused with 409. The credentials of the leases given up may still be valid
+  in the target system: the server logs those leases at warn level, remove the credentials there by
+  hand. The audit record of the delete carries `Force`, also for a refused attempt, and every forced
+  delete is logged at warn level (`secret engine deleted with force`, with the namespace, the engine
+  and the accessor ID of the token).
+
+```shell-session
+$ curl -X DELETE -H "X-Nomad-Token: $NORCA_TOKEN" \
+    "https://localhost:4646/v1/secret-engine/postgres?namespace=apps&force=true"
+```
+
 ## Revoke the Leases of an Engine
 
 | Method | Path                             | Produces           |
