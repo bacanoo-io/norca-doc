@@ -177,10 +177,10 @@ Conditions:
 
 | Condition | True when |
 | --- | --- |
-| `Ready` | The volume is as the request declares it and schedulable. When it is false, its reason says why: `Creating`, `Conflict`, `VolumeLost`, `PluginNotFound`, `PluginUnavailable`, `Unsupported`, `SecretUnavailable`, `InvalidSpec`, `NotSchedulable`, `Failed`, `VolumeInUse` or `DeleteFailed` during a deletion. |
+| `Ready` | The volume is as the request declares it and schedulable. When it is false, its reason says why: `Creating`, `Updating` (the volume changed while the request was updating it, for example an allocation claimed it; the update is made again in the next pass), `Conflict`, `VolumeLost`, `PluginNotFound`, `PluginUnavailable`, `Unsupported`, `SecretUnavailable`, `InvalidSpec`, `NotSchedulable`, `Failed`, `VolumeInUse` or `DeleteFailed` during a deletion. |
 | `Conflict` | A volume of the same ID exists that the request does not own. |
 | `Failed` | The last attempt failed; the message is the error. |
-| `Degraded` | `Ready` is false, except while the volume is being created. Counted in `norca.objects.degraded`. |
+| `Degraded` | `Ready` is false, except while the volume is being created or an update is made again (`Creating`, `Updating`). Counted in `norca.objects.degraded`. |
 
 Events of the object: `Created`, `Registered`, `Adopted`, `Updated`,
 `DriftCorrected`, `Failed`, `DeleteFailed`, `VolumeMayBeLeft`.
@@ -218,5 +218,6 @@ The status is written by the servers only.
 - The secrets of `secret_path` are copied into the volume, as `volume
   create` does with the `secret` block, because the clients need them to
   mount it.
-- The plugin calls run in the loop of the built-in operators on the leader: a
-  plugin that answers slowly delays the other operators for that time.
+- The plugin calls of the volume requests run one after the other on the
+  leader: a plugin that answers slowly delays the other volume requests for
+  that time, not the other built-in operators.

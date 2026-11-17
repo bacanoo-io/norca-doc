@@ -167,7 +167,12 @@ allocations of the namespace itself and of `allow_from_namespaces`.
 - `status.namespace` and `status.resources`: what the tenant created or
   adopted, with their types and names (the roles also with their IDs). A
   resource is listed before the tenant creates it; until it is known to
-  exist it has `pending: true`. A resource the tenant took over has
+  exist it has `pending: true` and `creating`, a fingerprint of what the
+  tenant is creating. A pending entry is a claim on the name, not ownership:
+  a resource of that name that turns up and does not hold what the tenant
+  was creating was made by somebody else, and is a `Conflict` unless its
+  type is in `adopt` (then it is adopted, with its `original` saved). A
+  resource the tenant took over has
   `adopted: true` and `original`: what it held when the tenant took it, in
   the fields a tenant writes (the table below). Both stay while the tenant
   lists the resource, also when `adopt` leaves the spec. Both go when the
@@ -215,6 +220,10 @@ spec {
   adopt = ["namespace"]
 }
 ```
+
+The same holds for a resource made by hand while the tenant could not
+create its own (a creation that kept failing): it is a conflict, or with its
+type in `adopt` it is taken over and later given back, not deleted.
 
 > **Taking a resource over is a loan.** The tenant saves what the resource
 > holds before it changes it. While the tenant lives, the resource is kept

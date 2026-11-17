@@ -206,10 +206,10 @@ the status.
 ## Limits
 
 - One volume per schedule.
-- The snapshot calls run in the loop of the built-in operators on the
-  leader: a plugin that answers slowly delays the other operators (such as
-  certificate renewals) for that time. A pass over the schedules stops
-  beginning new ones after 20 seconds and goes on from there in the next
-  pass; one call can still take as long as the plugin timeout.
+- The snapshot calls run one after the other on the leader: a plugin that
+  answers slowly delays the other snapshot schedules for that time, not the
+  other built-in operators (such as certificate renewals). A pass over the
+  schedules stops beginning new ones after 20 seconds and goes on from there
+  in the next pass; one call can still take as long as the plugin timeout.
 - At most 500 snapshots per schedule: `keep.last`, and what `keep.max_age`
   keeps at the rate of the schedule.
