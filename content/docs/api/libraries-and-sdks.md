@@ -16,7 +16,10 @@ are available only through the Go package of Norca.**
 
 - `api` - The Go client for the Norca HTTP API, in the
   [`norca/api`](https://github.com/bacanoo-io/norca/tree/main/norca/api) directory of the Norca repository. Its Go
-  module path is `github.com/bacanoo-io/norca/norca/api`.
+  module path is `github.com/bacanoo-io/norca/norca/api`. It refuses, before
+  sending, a request whose path has a `.` or `..` segment or an empty segment
+  before the end: a server or a proxy would resolve such a path to another
+  endpoint or object.
 
 ## Third-Party Libraries for the Nomad API
 

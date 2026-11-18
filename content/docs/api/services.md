@@ -173,7 +173,10 @@ The table below shows this endpoint's support for
 Client nodes remove the registrations of the allocations they run with their
 secret ID instead of an ACL token. With ACLs enabled, **a node secret ID can
 remove only registrations of its own node**; any other registration is denied
-with `403`.
+with `403`. In the same way **a node registers only the services of its own
+allocations**, with its own node ID and the job and namespace of the
+allocation, **and never an external service**; it can't replace a
+registration of another node or an external service of the same ID.
 
 **Deleting an [external service](/docs/api/external-services) needs
 `namespace:register-external-service`**, as its deregistration does;
