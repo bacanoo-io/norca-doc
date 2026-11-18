@@ -21,7 +21,10 @@ operator, and the operator always knows which classes exist and what they
 support.
 
 The built-in `nomad` class (a TCP proxy that runs as a Norca job) needs no
-registration.
+registration. The proxy job belongs to its `LoadBalancer` object, so deleting
+such an object in the default mode needs `submit-job` in its namespace
+besides the object right (see
+[owners](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection)).
 
 A load balancer of a registered class in the namespace of a
 [tenant](/docs/features/tenants), with a DNS name that follows its address,

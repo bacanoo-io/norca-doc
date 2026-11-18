@@ -71,8 +71,8 @@ owned, according to the deletion mode chosen on the delete
 ```mermaid
 flowchart TB
   D["norca object delete"] --> M{"propagation"}
-  M -->|"background"| B["Remove object (after finalizers)"] --> GB["GC: delete owned objects, stop owned jobs"]
-  M -->|"foreground"| F["Mark object deleting"] --> GF["GC: delete owned objects, stop owned jobs"] --> RF["Remove object when dependents are gone"]
+  M -->|"background"| B["Remove object (after finalizers)"] --> GB["GC: delete owned objects, stop the owned jobs the deleter was checked for"]
+  M -->|"foreground"| F["Mark object deleting"] --> GF["GC: delete owned objects, stop the owned jobs the deleter was checked for"] --> RF["Remove object when dependents are gone"]
   M -->|"orphan"| O["Remove object (after finalizers)"] --> K["Owned objects and jobs stay"]
 ```
 
@@ -87,8 +87,39 @@ flowchart TB
   jobs instead of creating duplicates.
 - A record of each deleted owner (a tombstone) is kept for a retention period
   (5 minutes) after the deletion, and until its dependents are gone, so
-  dependents that a controller created while the owner was being deleted are
-  collected too.
+  objects that a controller created while the owner was being deleted are
+  collected too. Jobs attached in that time are not stopped, see below.
+
+**What the deleter needs.** The collector acts with the rights of the
+servers, so a `background` or `foreground` deletion asks its caller for the
+rights the dependents need, for everything that depends on the object
+directly or through other objects:
+
+- `submit-job` in the namespace of each running job;
+- `csi-write-volume` in the namespace and read on plugins for each
+  [volume request](/docs/features/csi-volume-requests) that does not retain
+  its volume and each
+  [snapshot schedule](/docs/features/volume-snapshot-schedules) with
+  `delete_snapshots`, also when the dependent has another owner that is
+  alive.
+
+Without them the deletion is refused with `403` and nothing is marked. An
+`orphan` deletion takes no dependent and needs only the right to delete the
+object.
+
+- **A job marked `norca.managed-by`** is stopped this way by anyone who may
+  delete its owner and has `submit-job` in its namespace: deleting the
+  owner is the way others are meant to take.
+- **Only the jobs that were dependents when the deletion was asked for are
+  stopped.** A job attached to the owner afterwards, or whose owner the
+  servers deleted themselves, keeps running: the leader logs a warning, and
+  an owner that is still being deleted in the foreground gets the event
+  `DependentKept`.
+- **A volume request or snapshot schedule that would destroy storage** and
+  was written, or made destructive, after the deletion was asked for, or
+  whose owner the servers deleted themselves, is not deleted: it stays, its
+  reference to the deleted owner is removed, and it gets the warning event
+  `DependentKept`.
 
 ## Event log
 

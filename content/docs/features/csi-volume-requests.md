@@ -183,7 +183,9 @@ Conditions:
 | `Degraded` | `Ready` is false, except while the volume is being created or an update is made again (`Creating`, `Updating`). Counted in `norca.objects.degraded`. |
 
 Events of the object: `Created`, `Registered`, `Adopted`, `Updated`,
-`DriftCorrected`, `Failed`, `DeleteFailed`, `VolumeMayBeLeft`.
+`DriftCorrected`, `Failed`, `DeleteFailed`, `VolumeMayBeLeft`, and
+`DependentKept` when the request stays although its owner was deleted (see
+[owners](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection)).
 
 ## Rights
 
@@ -199,7 +201,9 @@ request is checked when the object is written:
 Deleting a request whose `deletion_policy` is `deregister` or `delete` makes
 the servers act on the storage, so it needs `csi-write-volume` in the
 namespace and read on plugins too. A request that retains its volume is
-deleted with the object right alone.
+deleted with the object right alone. The same rights are asked of whoever
+deletes an [owner](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection)
+of such a request in the background or foreground mode.
 
 ```hcl
 namespace "prod" {
@@ -220,4 +224,6 @@ The status is written by the servers only.
   mount it.
 - The plugin calls of the volume requests run one after the other on the
   leader: a plugin that answers slowly delays the other volume requests for
-  that time, not the other built-in operators.
+  that time, not the other built-in operators. A pass over the requests
+  stops beginning new ones after 20 seconds and goes on from there in the
+  next pass; one call can still take as long as the plugin timeout.

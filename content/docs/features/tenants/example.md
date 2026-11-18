@@ -705,8 +705,8 @@ What happens when the order is another one:
   condition `NamespaceNotEmpty` (`the namespace "team-a" still has 1 job(s):
   the tenant is deleted when it is empty`), until the jobs are stopped and
   purged and the namespace has no CSI volumes, variables and objects. Then
-  the servers delete the namespace, the roles, the policies and, last, the
-  quota. A namespace the tenant had adopted would be given back as the tenant
+  the servers delete the namespace, its network policy if it has one, the
+  roles, the policies and, last, the quota. A namespace the tenant had adopted would be given back as the tenant
   found it, see
   [Deleting](/docs/features/tenants#deleting).
 - **The tenant is deleted while a `DNSRecord` or a `LoadBalancer` is left.**

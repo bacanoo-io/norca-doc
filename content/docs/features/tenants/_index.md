@@ -245,10 +245,11 @@ The tenant stays (with the condition `NamespaceNotEmpty`, which says what is
 left) until its namespace has no jobs, no CSI volumes, no variables and no
 objects of namespaced kinds (certificates, load balancers, DNS records,
 releases); stop and purge the jobs and delete the rest first. Nothing is
-deleted while the tenant waits. Then the servers delete the network policy,
-the namespace, the roles, the policies and, last, the quota the namespace
-named: the roles and the policies stay until the namespace is gone, so the
-people of the tenant can still empty it.
+deleted while the tenant waits. Then the servers delete the namespace, its
+network policy, the roles, the policies and, last, the quota the namespace
+named. The namespace goes first: if its deletion is refused, nothing else of
+the tenant is deleted and the tenant waits again, so the namespace keeps its
+isolation and the people of the tenant can still empty it.
 
 **Only what the tenant created is deleted; what it adopted is given back.**
 Each adopted resource (`adopted: true` in `status.resources`) is set back to
@@ -348,8 +349,12 @@ The status of a tenant is written by the servers only.
   `RolesNotCreated`).
 - **Jobs of the namespace in another region** are not seen by the wait: the
   deletion of the namespace is refused while they run. The tenant reports
-  the error as the event `DeleteFailed` and tries again; its roles and
-  policies stay meanwhile.
+  the error as the event `DeleteFailed` and tries again; its network
+  policy, roles and policies stay meanwhile.
+- **Something written into the namespace while the tenant is being
+  deleted** (a job, a variable, an object) makes the deletion of the
+  namespace fail: the event `DeleteFailed` has the reason, nothing else is
+  deleted, and the tenant waits with `NamespaceNotEmpty` again.
 - **With more than one region and ACLs, the servers of the authoritative
   region need a [`replication_token`](/docs/configuration/acl) too.** To
   delete the namespace of a tenant, the leader asks every other region for

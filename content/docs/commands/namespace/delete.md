@@ -22,6 +22,11 @@ If ACLs are enabled, this command requires a management ACL token.
 you cannot delete a namespace that has non-terminal jobs in any of the federated
 regions.
 
+(Norca) A namespace that still holds CSI volumes, variables or custom objects is
+not deleted either. The command fails and says what holds the namespace, for
+example `contains at least one variable`. Deleting a namespace that does not
+exist fails with `namespace "<name>" not found`.
+
 ## General Options
 
 - `-address=<addr>`: The address of the Norca server. Overrides the `NORCA_ADDR`
