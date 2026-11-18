@@ -19,6 +19,8 @@ norca operator backup restores [options] [<restore_id>]
 If ACLs are enabled, this command requires the `read` capability of the [`backup` policy](/docs/other-specifications/acl-policy#backup-rules).
 **A token that is not a management token sees only the items and results of a
 restore that it may read**, and not the objects a full restore would change.
+The description of a failed selective restore (`N of M items failed`) counts
+only the items it sees.
 
 ## General Options
 

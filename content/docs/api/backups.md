@@ -369,9 +369,10 @@ requested, approved or rejected it.
 **A caller without a management token sees only the items and results it may
 read**, by the read rules of each type (for example `read-job` for jobs, list
 on the Variables path, `list-secrets` for secrets, object `read` on the kind of
-a custom object; ACL policies and roles only with a management token). The
-objects a full restore would change are shown to management tokens only. The
-stored record is not changed.
+a custom object; ACL policies and roles only with a management token). **The
+status description of a failed selective restore** (`N of M items failed`)
+**counts only those items too.** The objects a full restore would change are
+shown to management tokens only. The stored record is not changed.
 
 ## Approve a Full Restore
 
