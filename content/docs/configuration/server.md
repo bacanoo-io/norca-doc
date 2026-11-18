@@ -150,6 +150,14 @@ server {
   expired ACL token before it is eligible for garbage collection. This is
   specified using a label suffix like "30s" or "1h".
 
+- `object_tombstone_gc_threshold` `(string: "5m")` - (Norca) Specifies how long
+  the record of a deleted [custom object](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection)
+  (its tombstone) is kept, and with it **the event log of the object**, which
+  stays listable until then. The tombstone is removed within about a minute
+  after this time, once the dependents of the object are gone. `0s` removes
+  it at the first pass that finds its dependents gone; a negative value is
+  refused at start. This is specified using a label suffix like "30s" or "1h".
+
 - `default_scheduler_config` <code>([scheduler_configuration][update-scheduler-config]:
   nil)</code> - Specifies the initial default scheduler config when
   bootstrapping cluster. **The parameter is ignored once the cluster is bootstrapped** or

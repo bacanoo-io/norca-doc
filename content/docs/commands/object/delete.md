@@ -39,6 +39,11 @@ This command accepts the general options of the Norca CLI (`-address`,
   - `foreground` deletes them first and the object afterwards,
   - `orphan` leaves them in place.
 
+  In every mode the event log of the object stays listable with
+  [`object events`](/docs/commands/object/events) for
+  [`object_tombstone_gc_threshold`](/docs/configuration/server#object_tombstone_gc_threshold)
+  (5 minutes by default) after the object is gone.
+
 ## Examples
 
 Delete a load balancer; its controller removes the proxy job through the

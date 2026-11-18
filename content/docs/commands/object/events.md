@@ -16,7 +16,10 @@ norca object events [options] <group>/<Kind> <name>
 
 The table has the columns `Last Seen`, `Type` (`Normal` or `Warning`), `Reason`,
 `Count`, `Reporter` (the identity that wrote the event) and `Message`. The log
-keeps the last 20 events of an object.
+keeps the last 20 events of an object. **The log of a deleted object can be
+listed** for the time the servers keep its tombstone
+([`object_tombstone_gc_threshold`](/docs/configuration/server#object_tombstone_gc_threshold),
+5 minutes by default), unless an object of the name was created again.
 
 If ACLs are enabled, this command requires a token with the `read` capability of
 an object rule matching the kind in the namespace.

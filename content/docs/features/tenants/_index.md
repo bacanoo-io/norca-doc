@@ -267,8 +267,11 @@ never took, stay as they are. For an adopted namespace this means:
 
 A namespace the tenant created is deleted also when it names an adopted
 quota; the quota is given back. One event `Released` of the tenant, and a
-line in the log of the servers (the events go with the object), list what
-is given back.
+line in the log of the servers, list what is given back. **The events of the
+deleted tenant stay listable** (`norca object events norca.io/Tenant team-a`)
+for
+[`object_tombstone_gc_threshold`](/docs/configuration/server#object_tombstone_gc_threshold)
+(5 minutes by default); the line in the log of the servers stays.
 
 **When a resource can't be given back**, for example because the quota an
 adopted namespace named was deleted meanwhile, or a policy an adopted role

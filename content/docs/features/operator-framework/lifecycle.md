@@ -71,7 +71,7 @@ owned, according to the deletion mode chosen on the delete
 | --- | --- |
 | `background` (default) | The object is deleted at once (after its finalizers); its dependents are deleted afterwards. |
 | `foreground` | The dependents are deleted first; the object disappears when they are gone and its finalizers are removed. |
-| `orphan` | The dependents stay. Use it when you replace an operator and the running workloads must survive. |
+| `orphan` | The dependents stay. Use it when you replace an operator and the running workloads must survive. The object leaves a tombstone too, which only keeps its event log. |
 
 ```mermaid
 flowchart TB
@@ -91,9 +91,12 @@ flowchart TB
   not collected: the new owner adopts them. The SDK's `AdoptJobs` finds such
   jobs instead of creating duplicates.
 - A record of each deleted owner (a tombstone) is kept for a retention period
-  (5 minutes) after the deletion, and until its dependents are gone, so
-  objects that a controller created while the owner was being deleted are
-  collected too. Jobs attached in that time are not stopped, see below.
+  after the deletion (the server option
+  [`object_tombstone_gc_threshold`](/docs/configuration/server#object_tombstone_gc_threshold),
+  5 minutes by default), and until its dependents are gone, so objects that a
+  controller created while the owner was being deleted are collected too.
+  Jobs attached in that time are not stopped, see below. The tombstone of an
+  `orphan` deletion keeps only the event log; no dependent is collected for it.
 
 **What the deleter needs.** The collector acts with the rights of the
 servers, so a `background` or `foreground` deletion asks its caller for the
@@ -153,6 +156,12 @@ reason, count, reporter and message.
   and `Migrated` or `MigrationFailed` during a
   [schema migration](/docs/features/operator-framework/ecosystem#schema-versions-and-migrations).
 - New entries are published on the event stream as `CustomObjectEventRecorded`.
+- **The event log of a deleted object stays with its tombstone**, for
+  [`object_tombstone_gc_threshold`](/docs/configuration/server#object_tombstone_gc_threshold)
+  (5 minutes by default), in every deletion mode, and is listed by name with
+  the same right as before. The servers can still add their own events to it
+  meanwhile. When an object of the name exists again, its own log is shown,
+  never the one of the deleted object.
 
 ## Protection of managed jobs and objects
 

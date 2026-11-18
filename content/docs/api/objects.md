@@ -198,7 +198,9 @@ object is returned; **it disappears when its finalizers are removed**.
 - `propagation` `(string: "background")` - What happens to the objects and jobs
   the object owns: `background`, `foreground` or `orphan`. See
   [Lifecycle](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection).
-  This is specified as a query string parameter.
+  This is specified as a query string parameter. In every mode the event log
+  of the object stays readable after it is gone (see
+  [Read the Event Log](#read-the-event-log)).
 - `namespace`, `cas`, `dry_run` - See above.
 
 ### Sample Request
@@ -284,6 +286,12 @@ This endpoint returns the event log of an object, oldest first.
 | Blocking Queries | ACL Required |
 | ---------------- | ------------ |
 | `YES`            | object `read` on the kind |
+
+**The log of a deleted object is returned too**, with the same right, while
+the servers keep its tombstone
+([`object_tombstone_gc_threshold`](/docs/configuration/server#object_tombstone_gc_threshold),
+5 minutes by default). When an object of the name exists again, the endpoint
+returns the log of that object.
 
 ### Sample Response
 
