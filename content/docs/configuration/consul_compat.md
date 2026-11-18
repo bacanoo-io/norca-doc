@@ -13,6 +13,12 @@ Consul KV, kept in Norca Variables or a NATS JetStream bucket, for tools that on
 by default.** The served endpoints are listed on the
 [API reference](/docs/api/consul-compatible).
 
+> [!NOTE]
+> **The block applies when the agent starts; a `SIGHUP` does not reload it.**
+> A change of its settings, the [`kv.nats`](#nats-parameters) settings included, and a new CA,
+> certificate or credentials file of the NATS connection (`ca_file`, `cert_file`, `key_file`,
+> `credentials_file`, `nkey_seed_file`) take effect after the agent is restarted.
+
 ```hcl
 client {
   consul_compat {
