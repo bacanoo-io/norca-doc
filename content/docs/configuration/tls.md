@@ -48,7 +48,8 @@ agent certificates.
   certificates that are no longer trusted, such as a node CA whose key was
   stolen. An incoming connection whose client certificate chains through a
   certificate with the public key of one of them is refused, on RPC, on the
-  event bus and on the HTTPS API with `verify_https_client`.
+  event bus (its clients and the routes between the servers) and on the HTTPS
+  API with `verify_https_client`.
   - The match is on the
     public key, so a CA issued again with the same key is refused too.
   - **Set it on

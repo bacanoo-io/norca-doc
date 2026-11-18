@@ -163,7 +163,9 @@ cdc {
   stream, named after the reader (`norca cdc consumer apply`,
   [`/v1/cdc/consumer`](/docs/api/cdc)), its filters within the rule. On the bus
   a reader may only read its own consumers: their information, the next
-  messages, the acknowledgements. It never creates, changes or deletes a
+  messages, the acknowledgements. The information of a stream it gets is the
+  configuration and the state of the stream, without the subjects, the
+  deleted messages and the servers of the stream. It never creates, changes or deletes a
   consumer or a stream there.
 
 The events of a namespace follow the rule: a reader of `norca.eu.shop.>`
@@ -256,8 +258,9 @@ $ curl -X POST -H "X-Nomad-Token: $TOKEN" \
 ```
 
 The request needs a token that may write the cluster registries. The server
-publishes the notice on `<prefix>.packs.pushed` in the stream
-`NORCA_PACK_PUSHES`, which keeps notices for 24 hours. The leader reads the
+stores the notice on `<prefix>.packs.notices`, a subject only the servers
+publish, in the stream `NORCA_PACK_PUSHES`, which keeps notices for 24
+hours. The leader reads the
 stream with the durable consumer `norca-sync-<region>`, so a notice sent
 during a leader change is handled by the next leader. **A registry is synced at
 most once a minute on push notices:** a notice that comes within that minute
@@ -265,8 +268,12 @@ waits for its end and is synced then, unless a sync that started after the
 push has it already. Without the bus the server syncs the
 matching registries of its region directly.
 
-A pipeline with NATS tooling can also publish the notice itself with a token
-that has `bus { publish = ["norca.packs.pushed"] }`.
+A pipeline with NATS tooling can also publish the notice itself, on
+`<prefix>.packs.pushed`, with a token that has `bus { publish =
+["norca.packs.pushed"] }`. A server takes it over and stores it. **Such a
+notice is not acknowledged**: the publisher gets no answer, and a notice
+published while no server listens, or that can't be stored (empty, or larger
+than 64 KiB), is lost. The HTTP API above is the way that confirms a notice.
 
 Registry syncs on the events of other regions need the buses of the regions
 connected to each other; that comes with the gateways between regions.

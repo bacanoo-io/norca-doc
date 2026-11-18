@@ -70,7 +70,10 @@ It connects to the bus port (`4649`) of any server of the region with TLS.
 holds the subjects of the reader's `cdc` rule, its own consumers and the
 replies of its own requests, and nothing else: a reader publishes nothing
 into the bus, and no other connection sees its replies. The default inbox
-of NATS works; a reader sets no inbox prefix.
+of NATS works; a reader sets no inbox prefix. The stream information a
+reader gets (the JetStream clients ask for it before they read a consumer)
+is the configuration and the state of the stream, without its subjects, the
+deleted messages and the servers of the stream.
 
 - **A token with a `cdc` rule and no `bus` rule** is a reader as it
   connects, with the token.

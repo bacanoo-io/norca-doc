@@ -77,7 +77,8 @@ ports {
   - `enabled` `(bool: true)` - The leader publishes the events into the
     stream `NORCA_EVENTS_<region>` and handles the push notices.
   - `subject_prefix` `(string: "norca")` - The first part of the subjects
-    `<prefix>.<region>.<namespace>.<topic>` and `<prefix>.packs.pushed`. One or more
+    `<prefix>.<region>.<namespace>.<topic>`, `<prefix>.packs.pushed` and
+    `<prefix>.packs.notices`. One or more
     tokens separated by dots.
   - `max_age` `(string: "72h")` - How long events are kept.
   - `max_bytes` `(string: "1GiB")` - The size limit of the event streams
@@ -120,7 +121,8 @@ The streams of a region must not share subjects. The events use
 `<subject_prefix>.<region>.>`, the admin events
 `<subject_prefix>.admin.<region>.>`, the usage reports
 `norca.telemetry.<region>.*` and the push notices
-`<subject_prefix>.packs.pushed`. **With the default prefix a region can't be
+`<subject_prefix>.packs.pushed` (what a pipeline publishes) and
+`<subject_prefix>.packs.notices` (what the servers store). **With the default prefix a region can't be
 named `telemetry`, `packs` or `admin`**, and a subject prefix
 can't lie under `norca.telemetry`: the agent refuses to start its bus and
 names the subjects that collide.
@@ -214,11 +216,17 @@ one way ([change data capture](/docs/features/change-data-capture#through-a-leaf
   gets the replies of its own requests under `_INBOX.<accessor id>` and
   can't subscribe to the inbox of another, so the values a server or
   another token reads are not visible to it; a connection without a token
-  has no inbox and gets no replies. A leaf node and a reader of the changes
+  has no inbox and gets no replies. No connection may publish to a reply
+  subject because it received it: a connection answers a request only by the
+  `publish` subjects of its
+  [`bus` rule](/docs/other-specifications/acl-policy#answering-requests). The
+  servers' own connections use inboxes of their own (`_NORCA_INBOX`), which
+  no rule reaches. A leaf node and a reader of the changes
   (a `cdc` rule) are each in an account of their own, which holds only
   their subjects, their consumers and their own replies.
-- **Usage reports are checked.** A report must come on the subject of its
-  node, and of its task groups only those are kept that the node has an
+- **Usage reports are checked.** The stream stores them without an
+  acknowledgement: a node publishes and does not wait. A report must come on
+  the subject of its node, and of its task groups only those are kept that the node has an
   allocation of; the rest is dropped and counted
   (`nomad.bus.telemetry.foreign_groups`). The stream keeps at most 1024
   reports of a node, so a node that publishes too fast replaces its own

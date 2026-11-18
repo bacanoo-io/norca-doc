@@ -97,6 +97,8 @@ $ curl --unix-socket "$NORCA_SECRETS_DIR/api.sock" -H "Authorization: Bearer $NO
 of its token, or `<allocation id>_<task name>` of a workload identity (a
 task name with characters a consumer name can't hold is
 [written differently](/docs/features/change-data-capture#reading-in-go)).
+On the bus the reader gets the information of its consumer and of the
+stream; the stream information has no subjects, deleted messages or cluster.
 A reader whose token also has a `bus` rule reads the consumer over a
 connection of its own, logged in as the user `cdc` with the token as the
 password ([connecting](/docs/features/change-data-capture#connecting)).

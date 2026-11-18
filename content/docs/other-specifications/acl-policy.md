@@ -547,15 +547,20 @@ bus {
 ```
 
 - `subscribe` `(array<string>: [])` - Subjects the token may subscribe to.
-- `publish` `(array<string>: [])` - Subjects the token may publish to.
+- `publish` `(array<string>: [])` - Subjects the token may publish to. To
+  answer requests, the list names the inboxes the token may answer into
+  (see [Answering requests](#answering-requests)).
 
 Subjects may use the NATS wildcards `*` (one token) and `>` (the remaining
 tokens, last only). The lists of all policies of a token are combined. **A
 `bus` rule never reaches the subjects of the servers**: a subject of the rule,
 to subscribe or to publish, that reaches the change streams, JetStream and
 its buckets (`$JS.>`, `$JSC.>`, `$KV.>`, `$NRG.>`), the deliveries to the
-leaf nodes (`_R_.>`) or the telemetry of the nodes (`norca.telemetry.>`) is
-left out, with a warning in the server log. **Unknown keys are refused**,
+leaf nodes (`_R_.>`), the telemetry of the nodes (`norca.telemetry.>`), the
+NATS system account (`$SYS.>`), the subjects of the servers themselves
+(`$NORCA.>`, their inboxes `_NORCA_INBOX.>`) or the subject the servers store
+the pack push notices on (`<prefix>.packs.notices`) is left out, with a
+warning in the server log. **Unknown keys are refused**,
 also the former `leafnode`. **When the token or its policies change, its
 connections are closed and reconnect with the new rights.** No token may
 create or change a stream on the bus. A task connects with its workload
@@ -565,9 +570,11 @@ connections are closed when its allocation has ended.
 Some subjects can't be granted, in a `bus` or a `cdc` rule:
 
 - **Subjects starting with `$SYS`**, the NATS system account.
-- **Subjects starting with `_INBOX`, or with a wildcard** (`>`, `*.events.>`):
-  a subject starts with a name. Such a rule would cover the replies of other
-  connections.
+- **Subjects starting with a wildcard** (`>`, `*.events.>`): a subject
+  starts with a name.
+- **Subjects starting with `_INBOX` in `subscribe`** (and in a `cdc` rule):
+  such a rule would cover the replies of other connections. A `publish`
+  list may name inboxes, to answer requests.
 
 **A connection with a `bus` rule receives the replies to its own requests
 under its own inbox prefix, `_INBOX.<accessor id of the token>`**, and under
@@ -584,6 +591,24 @@ a task that connects with its workload identity is
 `_INBOX.<allocation id>.<task name>`** (`_INBOX.$NORCA_ALLOC_ID.$NORCA_TASK_NAME`;
 a task name with a dot or a space is
 [written differently](/docs/features/change-data-capture#reading-in-go)).
+
+### Answering requests
+
+**A connection answers a request only by its `publish` subjects.** The reply
+subject of a request is an inbox of the requester, so a responder needs the
+inboxes in its `publish` list: `_INBOX.>` for any requester, or
+`_INBOX.<accessor id>.>` for the token of one requester (for a task that
+asks with its workload identity, `_INBOX.<allocation id>.<task name>.>`).
+Without such a subject the answer is refused. No rule lets a connection
+subscribe to the inboxes of others.
+
+```hcl
+# A service that answers the requests on app.status
+bus {
+  subscribe = ["app.status"]
+  publish   = ["_INBOX.>"]
+}
+```
 
 **A connection without a token** (ACLs on, a `bus` or `cdc` rule in the
 anonymous policy) **has no inbox**: it keeps the subjects of the rule, and
@@ -629,7 +654,9 @@ consumer per reader and stream, named after the reader (the accessor ID of
 the token, or `<allocation id>_<task name>`), with filters inside `receive`
 ([`/v1/cdc/consumer`](/docs/api/cdc), [`norca cdc consumer
 apply`](/docs/commands/cdc/consumer-apply)). On the bus a reader may only ask
-for the information of its own consumers, fetch from them (a fetch waits at
+for the information of its own consumers and of their streams (the
+configuration and the state of a stream, without its subjects), fetch from
+them (a fetch waits at
 most 30 seconds) and acknowledge. When the reader loses its right (a deleted
 token, a policy without the rule, an ended allocation), the leader removes
 its consumers.
