@@ -608,7 +608,9 @@ Team B has its own tenant, `team-b`, with `dns_suffixes =
   `shop.team-a.example.com` gets the reason `NotAllowed`: the allow list of
   `team-b` does not hold the name. If two namespaces were allowed the same
   name, the record that holds the record set would keep it and the other
-  one would get `Conflict`.
+  one would get `Conflict`, with the message `a DNSRecord in another
+  namespace writes A shop.team-a.example.com`: it names neither the
+  namespace nor the record of team A.
 - **Using the load balancer or the service of team A.** `source {
   load_balancer = "shop" }` and `service = "shop"` name objects of the
   namespace of the object that says so. In `team-b` they mean the `shop` of

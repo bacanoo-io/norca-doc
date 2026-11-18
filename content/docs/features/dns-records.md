@@ -152,7 +152,12 @@ record with its load balancer.
   holds yet goes to the oldest record of a namespace whose allow list holds
   the name; a record that is `NotAllowed` keeps nobody from the name. A
   deleted record holds its set until the operator has removed it, so a new
-  record of the same name waits for it.
+  record of the same name waits for it. The message of the `Conflict` (and
+  of a `RecordLeft` because another record holds the set) names the other
+  record when it is in the same namespace; a record of another namespace is
+  only `a DNSRecord in another namespace`, so a team does not learn the
+  namespaces and records of others. The log of the operator names it in
+  full.
 - **Changes made in the zone by hand** are set back when the operator
   compares the record with the zone, every 5 minutes (`requeue` of the
   pack) and at every change of the record: event `DriftCorrected`,
