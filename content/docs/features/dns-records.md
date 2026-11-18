@@ -106,6 +106,7 @@ $ norca object get -namespace team-a norca.io/DNSRecord shop
 | `values` | | The values: IPv4 addresses (A), IPv6 addresses (AAAA), one name (CNAME), texts (TXT), at most 32. |
 | `source.load_balancer` | | Take the values from a `LoadBalancer` object of the namespace instead (see below). |
 | `adopt` | `false` | Take over a record set of the name and type that is in the zone and that norca-dns did not write. |
+| `deletion_policy` | `delete` | What happens to the record set when the record is deleted: `delete` removes it from the zone, `retain` leaves it there. Shown in the column `Deletion` of `norca object list`. |
 
 A record has `values` or `source`, one of them.
 
@@ -158,12 +159,18 @@ record with its load balancer.
   `status.drifts`.
 - **A changed name or type** removes the old record set first.
 - **Deleting the record** removes its record set (the finalizer
-  `norca.io/dns-records` keeps the object until then). A record whose zone
+  `norca.io/dns-records` keeps the object until then). With
+  `deletion_policy = "retain"` the record goes without touching the zone, and
+  its record set stays: event `RecordLeft`. A record whose zone
   is no longer registered, or no longer allows records (`records` switched
   off, or the provider refuses the deletion with the reason
   `records_disabled`), goes, and its record set stays in the zone: event
   `RecordLeft`. **Any other failure of the removal, another 403 too, is the
-  event `DeleteFailed` and is tried again.**
+  event `DeleteFailed` and is tried again**, and `Ready` is false with the
+  reason `DeleteFailed`. **A deletion that can't finish** (the token or the
+  endpoint of the zone is gone, the provider is away) ends when
+  `deletion_policy = "retain"` is set on the record being deleted (`norca
+  object apply`): the record goes and leaves its record set in the zone.
 
 ## Status
 
@@ -178,7 +185,7 @@ Conditions:
 
 | Condition | True when |
 | --- | --- |
-| `Ready` | The zone holds the record set. When it is false, its reason says why: `NotAllowed`, `ZoneNotFound`, `RecordsNotEnabled`, `ZoneUnavailable` (the provider of the zone reports no heartbeat, or the registration of the zone, its endpoint or its token, can't be used), `NoValues`, `Conflict`, `InvalidSpec`, `Failed` (the provider or the name server can't be reached or refuses, or the cluster can't be read). |
+| `Ready` | The zone holds the record set. When it is false, its reason says why: `NotAllowed`, `ZoneNotFound`, `RecordsNotEnabled`, `ZoneUnavailable` (the provider of the zone reports no heartbeat, or the registration of the zone, its endpoint or its token, can't be used), `NoValues`, `Conflict`, `InvalidSpec`, `Failed` (the provider or the name server can't be reached or refuses, or the cluster can't be read), or `DeleteFailed` during a deletion (its message says that `deletion_policy = "retain"` lets the record go). |
 | `Conflict` | Another record or the zone itself holds the name and type. |
 | `Degraded` | `Ready` is false. |
 
