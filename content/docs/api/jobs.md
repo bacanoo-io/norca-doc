@@ -121,6 +121,10 @@ The table below shows this endpoint's support for
 ### Parameters
 
 - `Job` `(Job: <required>)` - Specifies the JSON definition of the job.
+  (Norca) **Only the servers set `ParentID`**, for the children of a dispatch or
+  a periodic launch: this endpoint ignores it. A registration through the RPC
+  with a `ParentID` is refused with `400`, unless the stored job of that ID has
+  the same parent (a new version of a child keeps its parent).
 
 - `Submission` `(JobSubmission: <optional>)` - Specifies the original HCL/HCL2/JSON
   definition of the job. This data is useful for reference only, it is not considered
@@ -1703,6 +1707,10 @@ The table below shows this endpoint's support for
   the job file during submission). This is specified as part of the path.
 
 - `Job` `(Job: <required>)` - Specifies the JSON definition of the job.
+  (Norca) **Only the servers set `ParentID`**, for the children of a dispatch or
+  a periodic launch: this endpoint ignores it. A registration through the RPC
+  with a `ParentID` is refused with `400`, unless the stored job of that ID has
+  the same parent (a new version of a child keeps its parent).
 
 - `EnforceIndex` `(bool: false)` - If set, the job will only be registered if the
   passed `JobModifyIndex` matches the current job's index. If the index is zero,
