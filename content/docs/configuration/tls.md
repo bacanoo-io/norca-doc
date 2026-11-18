@@ -60,9 +60,9 @@ agent certificates.
   - **A missing or empty file at start is an
     error.**
   - **Connections that are open already stay open until a `SIGHUP`:** the file
-    is part of the TLS configuration, so the reload closes them. The open
-    connections of the system bus are the exception: they stay open (see
-    [reloads](#tls-configuration-reloads)).
+    is part of the TLS configuration, so the reload closes them. On the
+    system bus the reload closes the routes whose certificate the list now
+    refuses (see [reloads](#tls-configuration-reloads)).
 
 - `http` `(bool: false)` - Specifies if TLS should be enabled on the HTTP
   endpoints on the Norca agent, including the API. By default this is non-mutual
@@ -168,11 +168,15 @@ established will use the updated configuration, and **any outstanding old
 connections will be closed.** This process works when upgrading to TLS,
 downgrading from it, as well as rolling certificates.
 
-The [system bus](/docs/configuration/bus) of a server reloads differently:
+The [system bus](/docs/configuration/bus) of a server takes the new CA,
+certificate and TLS settings as well:
 
-- **The bus takes the new CA, certificate and TLS settings for the
-  connections made after the reload;** connections that are open stay open
-  with the TLS they were made with.
+- **Its client and leaf node connections are closed** and connect again
+  under the new configuration.
+- **Its routes to the other servers are checked against the new CA and
+  distrusted CA list;** a route the new configuration refuses is closed. A
+  route that passes stays open, so a renewed certificate of the same CA does
+  not drop the routes.
 - **Turning the TLS of the bus on or off takes a restart** of the server:
   the reload leaves the bus as it is and logs a warning.
 - A client closes its bus connection at the reload and connects with the new
