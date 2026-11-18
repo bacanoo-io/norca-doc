@@ -24,7 +24,8 @@ selects the engine's namespace.
 ## secret engine apply
 
 Creates or updates an engine from an HCL specification file, or from standard input with `-`. The
-operator may start after its engine.
+operator may start after its engine; such an engine has to name the job of its operator
+(`operator.job`).
 
 Requires `write-secret-engine`.
 
@@ -43,6 +44,7 @@ description = "Orders database"
 
 operator {
   service = "postgres-operator"          # in the native catalog
+  job     = "postgres-operator"          # the job of the operator; only its instances are called
   # namespace = "platform"               # by default that of the engine
 }
 
@@ -72,7 +74,8 @@ apps       postgres  operator  app    2026-10-31T18:20:11Z
 
 ## secret engine info
 
-Shows an engine: the service of its operator and its roles. Requires `read-secret-engine`.
+Shows an engine: the service and the job of its operator (`Operator Job`) and its roles. Requires
+`read-secret-engine`.
 Options: `-json`, `-t`.
 
 ```shell
@@ -82,6 +85,7 @@ Name         = postgres
 Type         = operator
 Description  = Orders database
 Service      = postgres-operator
+Operator Job = postgres-operator
 Modify Time  = 2026-10-31T19:02:44Z
 Modify Index = 131
 

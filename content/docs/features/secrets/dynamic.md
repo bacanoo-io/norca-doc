@@ -44,8 +44,15 @@ sequenceDiagram
 
 - **Engines.** A `SecretEngine` of a namespace names the service of its operator and its **roles**, with
   their `ttl`, `max_ttl`, a `config` passed to the operator, and the `params` a job may send. Engines
-  are kept in Raft. An engine can be created before its operator runs. Everything in an engine is
-  stored in Raft and shown to readers, so **`config` must hold nothing secret.**
+  are kept in Raft. Everything in an engine is stored in Raft and shown to readers, so **`config` must
+  hold nothing secret.**
+- **The job of the operator is pinned on the engine.** The leader calls only the instances of that
+  job, and checks that they present its workload certificate; another job that registers a service of
+  the same name gets no call. A write of the engine takes the job it names (`operator.job`); without
+  one it keeps the job the engine has (while its service and namespace stay the same), or else takes
+  the one job whose running allocations serve the service. **An engine created before its operator
+  runs, or whose service several jobs serve, has to name the job.** When the service moves to another
+  job, the engine calls nobody until it is written again with the new job.
 - **Requests.** A task asks for a credential with a [`secret`](/docs/job-specification/secret) block that
   names the engine and a role. The client requests a lease with the task's workload identity. The leader
   writes the **lease** to Raft first, so that the next leader can revoke a credential if the leader goes
@@ -128,6 +135,7 @@ type = "operator"
 
 operator {
   service = "postgres-operator"
+  job     = "postgres-operator"
 }
 
 role "app" {
@@ -312,8 +320,8 @@ compromised operator exposes one target system, not the servers. An operator rot
 [expiry and rotation](/docs/features/secrets/secrets#expiry-and-rotation) of secrets, through its `change_mode`.
 
 The leader calls the operator over mTLS with a certificate of the CA of the region, with the SPIFFE ID
-`spiffe://<trust domain>/norca/server`, and checks that the operator presents the workload certificate of its
-service. The SDK accepts no other client. An engine and its operator belong to one region, like the
+`spiffe://<trust domain>/norca/server`, and checks that the operator presents the workload certificate of the
+job pinned on the engine. The SDK accepts no other client. An engine and its operator belong to one region, like the
 leases: a job in another region uses the engine of that region.
 
 The wire format is JSON over HTTPS: `POST /issue`, `/renew`, `/revoke` and `/health`, with the fields of the

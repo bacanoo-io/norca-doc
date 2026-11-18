@@ -349,7 +349,9 @@ run), `Results` (one per item) and `Preview` (the effect of a full restore).
 | `YES`            | `backup:read` |
 
 The response lists the selective and full restores of the region, newest
-first.
+first. **A caller sees only the items and results it may read**, as in
+[browsing a backup](#browse-a-backup), see
+[Read a Restore](#read-a-restore).
 
 ## Read a Restore
 
@@ -363,6 +365,13 @@ first.
 
 The response is the restore record, with the preview of a full restore and who
 requested, approved or rejected it.
+
+**A caller without a management token sees only the items and results it may
+read**, by the read rules of each type (for example `read-job` for jobs, list
+on the Variables path, `list-secrets` for secrets, object `read` on the kind of
+a custom object; ACL policies and roles only with a management token). The
+objects a full restore would change are shown to management tokens only. The
+stored record is not changed.
 
 ## Approve a Full Restore
 

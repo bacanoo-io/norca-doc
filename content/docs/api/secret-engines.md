@@ -73,7 +73,8 @@ Returns 404 if there is no engine of that name.
   "Type": "operator",
   "Description": "Orders database",
   "Operator": {
-    "Service": "postgres-operator"
+    "Service": "postgres-operator",
+    "JobID": "postgres-operator"
   },
   "Roles": [
     {
@@ -102,7 +103,8 @@ Returns 404 if there is no engine of that name.
 | `NO` | `namespace:write-secret-engine` |
 
 The operator may start after its engine: the write doesn't call it. **The type of an existing engine can't be
-changed.** An invalid configuration fails with 400.
+changed.** An invalid configuration fails with 400. A write that can't pin the job of the operator fails
+with 400 too, and asks for `Operator.JobID`: the service has no running instances, or several jobs serve it.
 
 ### Parameters
 
@@ -118,6 +120,9 @@ changed.** An invalid configuration fails with 400.
   - `Service` `(string: <required>)` - The service of the operator in the native catalog.
   - `Namespace` `(string: "")` - The namespace of the service; by default that of the engine. Another
     namespace than the engine's needs `write-secret-engine` there too.
+  - `JobID` `(string: "")` - The job of the operator; **the leader calls only the instances of this
+    job.** Without it the write keeps the job of the engine, while `Service` and `Namespace` stay the
+    same, or else takes the one job whose running allocations serve the service.
 - `Roles` - At least one; each with:
   - `Name` `(string: <required>)`.
   - `TTL` `(duration: 1h)` - The lease duration; a renewal extends the lease by it. At least 1s.
