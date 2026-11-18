@@ -31,6 +31,14 @@ server {
   global ACL tokens. Non-authoritative regions will replicate from the authoritative
   to act as a mirror. By default, the local region is assumed to be authoritative.
 
+- `replication_backoff` `(string: "30s")` - (Norca) Specifies how long the
+  replication from the authoritative region waits before it tries again after
+  a failure: of ACL policies, tokens, roles, auth methods and binding rules, of
+  namespaces, node pools and quotas, and of replicated secrets. It is also the
+  longest wait between two tries of a replicated namespace deletion that this
+  region refused. Must be greater than `0s`; another value is refused at start.
+  This is specified using a label suffix like "30s" or "1m".
+
 - `admission` - (Norca) Configures the webhooks of dynamic admission control.
   See the [`admission` block](/docs/configuration/admission).
 

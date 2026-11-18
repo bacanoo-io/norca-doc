@@ -24,8 +24,9 @@ regions.
 
 (Norca) When a namespace deleted in the authoritative region still holds something
 in another region, that region keeps it and deletes the others deleted with it.
-Its leader tries the deletion again every 30 seconds, until what holds the
-namespace there is gone.
+Its leader tries the deletion again at least once every
+[`replication_backoff`](/docs/configuration/server#replication_backoff) (30 seconds by
+default), until what holds the namespace there is gone.
 
 (Norca) A namespace that still holds CSI volumes, variables or custom objects is
 not deleted either. The command fails and says what holds the namespace, for
