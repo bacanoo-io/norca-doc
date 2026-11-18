@@ -614,12 +614,16 @@ The table below shows this endpoint's support for
 The payload must include a JSON document that describes the snapshot's
 parameters.
 
+**The snapshot is taken by the plugin of the volume**, which gets the secrets
+of the volume. `PluginID` can be left out; when it is set, it must be the
+plugin of the volume, else the request is refused (`the volume "volume-id1"
+is of the plugin "plugin-id1", not "other"`).
+
 ```json
 {
   "Snapshots": [
     {
       "SourceVolumeID": "volume-id1",
-      "PluginID": "plugin-id1",
       "Name": "mysnap",
       "Secrets": {
         "password": "xyzzy"

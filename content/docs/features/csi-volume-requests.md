@@ -65,7 +65,7 @@ $ norca object apply db-data.hcl
 | `plugin_id` | required | The CSI plugin of the volume. Can't be changed. |
 | `mode` | `create` | `create`: the plugin creates the volume. `register`: the volume exists in the storage and is registered. Can't be changed. |
 | `external_id` | | With `register`: the ID of the volume in the storage. Can't be changed. |
-| `display_name` | `<namespace>-<name>` | The name of the volume (`Name` of the volume API), which the plugin gets as the name of the volume it creates. Can't be changed. |
+| `display_name` | `<namespace>-<name>-<8 hex>` | The name of the volume (`Name` of the volume API), which the plugin gets as the name of the volume it creates. Can't be changed. |
 | `capacity_min`, `capacity_max` | | Sizes such as `"10GiB"`. A raised `capacity_min` expands the volume. |
 | `capability` | required | One or more blocks with `access_mode` and `attachment_mode`, as in the [volume specification](/docs/other-specifications/volume/capability). Any other key is refused. |
 | `mount_options` | | `fs_type` and `mount_flags`. |
@@ -77,8 +77,12 @@ $ norca object apply db-data.hcl
 | `deletion_policy` | `retain` | What happens to the volume when the request is deleted (see below). |
 | `adopt` | `false` | Take over a volume of the same ID that the request did not make. |
 
-**The name the plugin gets** has the namespace in it, so requests of one
-name in two namespaces get two volumes of the storage. A `display_name` is
+**The name the plugin gets** has the namespace, the name and the first 8 hex
+digits of the object ID in it; `<namespace>-<name>` is cut to at most 64
+bytes. **The ID part makes the name unique:** requests of one name in two
+namespaces, or whose namespace and name join to the same text, get two volumes
+of the storage. The name stays the same for the life of the request object. A
+`display_name` is
 sent as written: if the plugin answers it with a volume that is already
 registered under another namespace or ID, the request fails (`Failed`: `the
 request needs a display_name of its own`) instead of registering that volume
@@ -178,10 +182,17 @@ Conditions:
 
 | Condition | True when |
 | --- | --- |
-| `Ready` | The volume is as the request declares it and schedulable. When it is false, its reason says why: `Creating`, `Updating` (the volume changed while the request was updating it, for example an allocation claimed it; the update is made again in the next pass), `Conflict`, `VolumeLost`, `PluginNotFound`, `PluginUnavailable`, `Unsupported`, `SecretUnavailable`, `InvalidSpec`, `NotSchedulable`, `Failed`, `VolumeInUse` or `DeleteFailed` during a deletion. |
+| `Ready` | The volume is as the request declares it and schedulable. When it is false, its reason says why: `Creating`, `Updating` (the volume changed while the request was updating it, for example an allocation claimed it; the update is made again in the next pass), `Conflict`, `VolumeLost`, `PluginNotFound`, `PluginUnavailable`, `Unsupported`, `SecretUnavailable`, `InvalidSpec`, `InvalidStatus`, `NotSchedulable`, `Failed`, `VolumeInUse` or `DeleteFailed` during a deletion. |
 | `Conflict` | A volume of the same ID exists that the request does not own. |
 | `Failed` | The last attempt failed; the message is the error. |
 | `Degraded` | `Ready` is false, except while the volume is being created or an update is made again (`Creating`, `Updating`). Counted in `norca.objects.degraded`. |
+
+**A status the servers can't decode is kept, not written over.** The request
+is left as it is: only `Ready` (reason `InvalidStatus`) and `Degraded` are set
+in the status, and nothing is created, changed, deregistered or deleted. A
+deleted request with `deletion_policy = "retain"` still goes, since its volume
+stays anyway; one that would deregister or delete its volume waits until a
+status that can be decoded is written.
 
 Events of the object: `Created`, `Registered`, `Adopted`, `Updated`,
 `DriftCorrected`, `Failed`, `DeleteFailed`, `VolumeMayBeLeft`, and

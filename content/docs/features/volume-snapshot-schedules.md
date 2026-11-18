@@ -117,8 +117,10 @@ of the newest `last`, or it is younger than `max_age`. Besides:
   plugin's error), and the event `SnapshotDeleteFailed` is recorded once per
   snapshot, not at every attempt;
 - a deletion is sent with the secrets of the volume and those of
-  `secret_path` over them, as the creation is. While the secret can't be
-  read nothing is deleted.
+  `secret_path` over them, as the creation is. **The secrets of the volume
+  go only to its own plugin:** when the volume is gone or is of another
+  plugin than the one that took the snapshot, only those of `secret_path`
+  are sent. While the secret can't be read nothing is deleted.
 
 With `last = 7` and `max_age = "720h"`, a nightly schedule keeps a month of
 snapshots, and at least seven when nights were missed.
@@ -142,15 +144,22 @@ Conditions:
 
 | Condition | True when |
 | --- | --- |
-| `Ready` | The schedule can take its snapshots and the last attempt succeeded. When it is false, its reason says why: `VolumeNotFound`, `PluginNotFound`, `Unsupported`, `SecretUnavailable`, `InvalidSpec`, `SnapshotFailed`, `StatusFull`, or `Deleting` while snapshots of a deleted schedule are left. |
+| `Ready` | The schedule can take its snapshots and the last attempt succeeded. When it is false, its reason says why: `VolumeNotFound`, `PluginNotFound`, `Unsupported`, `SecretUnavailable`, `InvalidSpec`, `InvalidStatus`, `SnapshotFailed`, `StatusFull`, or `Deleting` while snapshots of a deleted schedule are left. |
 | `Failed` | The last attempt failed; the message is the plugin's error. |
 | `Unsupported` | The plugin can't create snapshots. |
 | `Suspended` | `suspend` is set. |
 | `Degraded` | `Ready` is false. Counted in `norca.objects.degraded`. |
 
+**A status the servers can't decode is kept, not written over:** it is the
+only list of the snapshots of the schedule. The schedule is left as it is:
+only `Ready` (reason `InvalidStatus`) and `Degraded` are set in the status,
+and no snapshot is taken, retained or deleted until a status that can be
+decoded is written. A deleted schedule without `delete_snapshots` still goes;
+one that is to delete its snapshots waits.
+
 Events of the object: `SnapshotTaken`, `SnapshotFailed`, `SnapshotReplaced`,
-`SnapshotDeleted`, `SnapshotDeleteFailed`, and `DependentKept` when the
-schedule stays although its owner was deleted (see
+`SnapshotDeleted`, `SnapshotDeleteFailed`, `SnapshotMayBeLeft`, and
+`DependentKept` when the schedule stays although its owner was deleted (see
 [owners](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection)).
 
 ## Deleting a schedule
@@ -164,9 +173,13 @@ a management token can remove. When it is deleted:
   list first. A snapshot that can't be deleted holds the object (the
   condition `Ready` with the reason `Deleting` names it) and is tried again,
   with the same waits as the retention. While the secret of `secret_path`
-  can't be read, every snapshot is held. An entry that never got an `id`
-  can't be deleted and is left: if the plugin made that snapshot, it stays
-  with the plugin.
+  can't be read, every snapshot is held. **An entry that never got an `id`
+  is asked for once more by its name** (the plugin answers a known name with
+  that snapshot) and then deleted as the others; a failed call waits as a
+  failed deletion does. When the volume is gone or is of another plugin now,
+  the plugin can't be asked: a warning in the server log and the event
+  `SnapshotMayBeLeft` say that a snapshot of that name may be left in the
+  storage, and the entry does not hold the object.
 
 Snapshots that stay are managed by hand from then on:
 [`norca volume snapshot list`](/docs/commands/volume/snapshot-list) and
