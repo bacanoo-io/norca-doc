@@ -63,8 +63,11 @@ sequenceDiagram
   **The subscription receives every event with an index at or after `index`.** If
   the server cannot guarantee that, because events of the subscribed topics at
   or after `index` were dropped from the buffer or predate the server's state
-  (for example after a restart from a snapshot), it answers `410 Gone`. **To
-  resume after the last processed event, pass its index plus one.**
+  (for example after a restart from a snapshot), it answers `410 Gone`. It
+  answers `410 Gone` as well when its state does not reach the index before
+  `index` within 3 seconds: a server that lost its state or was restored from
+  an older snapshot is behind the client. **To resume after the last
+  processed event, pass its index plus one.**
 - After a restart the server knows, per topic, the last index at which the
   restored state changed objects of that topic, so a subscription to a topic
   that did not change since can still resume from an older index.

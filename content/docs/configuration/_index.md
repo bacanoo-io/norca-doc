@@ -274,7 +274,8 @@ consul {
     - **At most 16384 tokens and 16384 client addresses** have a limit of
       their own at a time; one beyond that shares a single limit with the
       others beyond it, until idle ones are dropped. A token or an address
-      that sends nothing for ten minutes is dropped.
+      that sends nothing for ten minutes is dropped **once its limit is full
+      again**, so waiting gives back no more than the rate refills.
     - **Never limited:** `/v1/agent/health`, `/v1/status/leader` and
       `/v1/status/peers`, which load balancers and health checks probe.
 

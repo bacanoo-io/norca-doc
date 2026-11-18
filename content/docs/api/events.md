@@ -487,7 +487,7 @@ With `exact=true` a subscription starts exactly at `index`:
 | --------------- | ---------------------------------------------------------------------------------------- |
 | `200`           | Every event of the subscribed topics with an index at or after `index` is delivered.     |
 | `400`           | `exact=true` without a positive `index`.                                                 |
-| `410 Gone`      | Events at or after `index` may be missing; list the objects again and resume from the index of the listing. |
+| `410 Gone`      | Events at or after `index` may be missing; list the objects again and resume from the index of the listing. Also when the state of the server does not reach `index` minus one within 3 seconds (a server that lost its state, a restore of an older snapshot). |
 
 **To resume after the last processed event, pass its index plus one.**
 

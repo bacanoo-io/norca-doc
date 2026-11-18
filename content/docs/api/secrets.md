@@ -11,7 +11,9 @@ hash. For the CLI, see [`norca secret`](/docs/commands/secret). The dynamic secr
 leases have their own endpoints: [Secret engines](/docs/api/secret-engines).
 
 All endpoints act on the namespace given with the `namespace` query parameter (default `default`). Paths
-use letters, digits, `-`, `_`, `~` and `/`. **While the store is sealed, requests fail with status 503
+use letters, digits, `-`, `_`, `~` and `/`. The Go API client, which the CLI uses, refuses a path with an
+empty, `.` or `..` segment before it sends the request: an HTTP server or a proxy would resolve such a
+path to another secret. **While the store is sealed, requests fail with status 503
 (`server is sealed`).**
 
 With ACLs enabled, every endpoint needs an ACL token or a workload identity with the capabilities

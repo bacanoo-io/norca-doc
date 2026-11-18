@@ -25,7 +25,7 @@ A secret lives at a **path** in a **namespace**, for example `prod/db/postgres` 
 
 | Part | Description |
 | --- | --- |
-| Path | Letters, digits, `-`, `_`, `~` and `/`, at most 256 characters, no leading, trailing or double `/`. |
+| Path | Letters, digits, `-`, `_`, `~` and `/`, at most 256 characters, no leading, trailing or double `/`. The Go API client and the CLI refuse a path with a `.` or `..` segment before sending it. |
 | Items | The value: key/value pairs of strings. Item keys use letters, digits, `_`, `.` and `-` (at most 128 characters). At most 64 KiB per version in total. |
 | Versions | Numbered from 1. The last `max_versions` (default 10, at most 100) are kept; older ones are destroyed on the next write. |
 | Metadata | `Description` (at most 1024 bytes), `Owner` (at most 256 bytes), `Labels` (at most 64), `ExpiresAt`, `RotateEvery`, `Rotate` (the rotation job), `MaxVersions`, `Replicate` ([replication](#replication-between-regions)). **Metadata is never secret: everyone who may list the secret sees it.** |
