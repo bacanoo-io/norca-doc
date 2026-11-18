@@ -163,7 +163,10 @@ norca acl policy apply \
 Priority of policies and automatic task access to variables is similar to the
 [ACL policy namespace rules][]. **The most specific rule for a path applies**, so a
 rule for an exact path in a workload-attached policy overrides the automatic
-task access to variables, but a wildcard rule does not.
+task access to variables, but a wildcard rule does not. **A `deny` wins over
+the grants of other policies for the same path:** when one policy of a token
+or a workload denies a path and another policy grants capabilities on the same
+path, the path is denied.
 
 As an example, consider the job `example` in the namespace `prod`, with a group
 `web` and a task named `httpd` with the following policy applied:

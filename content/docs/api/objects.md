@@ -268,6 +268,11 @@ The `namespace`, `cas` and `dry_run` parameters apply. The response is the
 object with the new finalizers; when that removed the last finalizer of an
 object marked for deletion, the object is then removed.
 
+**Adding or removing `norca.io/operators` needs a management token.** The
+servers manage this finalizer themselves; a request from any other token that
+would add it to an object without it, or remove it from an object that has it,
+is refused with `403`.
+
 ## Read the Event Log
 
 This endpoint returns the event log of an object, oldest first.

@@ -244,7 +244,7 @@ list of `capabilities`, or both:
 | write | Create, update and delete objects (spec and metadata); set the scale. |
 | write-status | Write the status of objects. |
 | write-events | Write the event log of objects. |
-| manage-finalizers | Add and remove finalizers. |
+| manage-finalizers | Add and remove finalizers. It does not cover removing `norca.io/operators`, which only the servers or a management token can remove. |
 | deny | No permissions on objects of the kind. |
 
 `policy = "read"` grants `read`, and `policy = "write"` grants `read` and
@@ -298,7 +298,7 @@ are as follows:
 | read       | Read the decrypted contents of Variables at this path. Also includes the "list" capability                            |
 | list       | List the metadata but not contents of Variables at this path.                                                         |
 | destroy    | Delete Variables at this path.                                                                                        |
-| deny       | No permissions at this path. Deny takes precedence over other capabilities.                                           |
+| deny       | No permissions at this path. Deny takes precedence over other capabilities, also over those another policy grants at the same path. |
 
 For example, the policy below allows full access to variables at all paths in
 the `"dev"` namespace that are prefixed with `"project/"`, but only read access to

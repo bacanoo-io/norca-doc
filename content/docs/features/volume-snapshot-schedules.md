@@ -155,7 +155,8 @@ schedule stays although its owner was deleted (see
 
 ## Deleting a schedule
 
-The schedule has the finalizer `norca.io/operators`. When it is deleted:
+The schedule has the finalizer `norca.io/operators`, which only the servers or
+a management token can remove. When it is deleted:
 
 - without `delete_snapshots`, the snapshots stay with the plugin, and the
   object goes at once;

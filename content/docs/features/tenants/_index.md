@@ -249,7 +249,9 @@ deleted while the tenant waits. Then the servers delete the namespace, its
 network policy, the roles, the policies and, last, the quota the namespace
 named. The namespace goes first: if its deletion is refused, nothing else of
 the tenant is deleted and the tenant waits again, so the namespace keeps its
-isolation and the people of the tenant can still empty it.
+isolation and the people of the tenant can still empty it. The tenant holds
+the finalizer `norca.io/operators` until then; only the servers or a
+management token can remove it.
 
 **Only what the tenant created is deleted; what it adopted is given back.**
 Each adopted resource (`adopted: true` in `status.resources`) is set back to
@@ -359,10 +361,12 @@ The status of a tenant is written by the servers only.
   region need a [`replication_token`](/docs/configuration/acl) too.** To
   delete the namespace of a tenant, the leader asks every other region for
   the jobs of the namespace, with the replication token: the secret of a
-  global management token. Without it the other region refuses the
-  question, the namespace is never deleted, and the event `DeleteFailed`
-  says to set `replication_token` in the `acl` block of the servers of the
-  region, naming the region that refused.
+  global management token. **Without it the leader does not ask:** its own
+  credentials never leave the region. The deletion fails in the
+  authoritative region, the namespace is never deleted, and the event
+  `DeleteFailed` says to set `replication_token` in the `acl` block of the
+  servers of the region, naming the region that could not be asked. The
+  same message comes when another region refuses the token.
 - **Isolation matches allocations on the same node only**, see
   [Network isolation](#network-isolation).
 

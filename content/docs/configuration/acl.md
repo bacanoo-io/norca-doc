@@ -55,7 +55,8 @@ acl {
   more than one region: the leader asks the other regions for the jobs of a namespace
   with it before it deletes the namespace of a deleted
   [tenant](/docs/features/tenants#limits). Set it there to the secret of a global
-  management token.
+  management token. Without it the leader does not ask the other regions (its own
+  credentials never leave the region), and the deletion fails.
 
 - `token_min_expiration_ttl` `(string: "1m")` - Specifies the lowest acceptable
   TTL value for an ACL token when setting expiration. This is used by the Norca

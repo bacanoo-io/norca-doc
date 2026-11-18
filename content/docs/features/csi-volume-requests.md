@@ -132,7 +132,8 @@ by the create index of the volume, in its status.
 
 ## Deleting a request
 
-The request has the finalizer `norca.io/operators`. When it is deleted, its
+The request has the finalizer `norca.io/operators`, which only the servers or
+a management token can remove. When it is deleted, its
 `deletion_policy` says what happens to its volume:
 
 | Policy | The volume |

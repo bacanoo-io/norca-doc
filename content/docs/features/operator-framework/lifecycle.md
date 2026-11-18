@@ -34,6 +34,11 @@ stateDiagram-v2
 - Finalizers can't be added to an object that is being deleted (`409`).
 - Finalizers are removed only through the finalizers endpoint (the SDK's
   `RemoveFinalizer`); an apply never removes them.
+- **The finalizer `norca.io/operators` belongs to the servers.** The built-in
+  operators of the servers put it on and take it off (tenants, volume
+  requests, snapshot schedules). On the finalizers endpoint only a management
+  token may add or remove it; any other token gets `403`, also with
+  `manage-finalizers`.
 - An object has at most 32 finalizers. Names start and end with a letter or
   digit and may contain `.`, `_`, `/` and `-`.
 
