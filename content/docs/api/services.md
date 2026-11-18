@@ -24,6 +24,10 @@ The table below shows this endpoint's support for
 | ---------------- | -------------------- |
 | `YES`            | `namespace:read-job` |
 
+A workload identity reads the services of its own namespace without a policy;
+**other namespaces need `read-job` from the policies of the workload**, as for
+any other caller.
+
 ### Sample Request
 
 ```shell
@@ -70,6 +74,10 @@ The table below shows this endpoint's support for
 | Blocking Queries | Consistency Modes | ACL Required         |
 | ---------------- | ----------------- | -------------------- |
 | `YES`            | `all`             | `namespace:read-job` |
+
+A workload identity reads the services of its own namespace without a policy;
+**other namespaces need `read-job` from the policies of the workload**, as for
+any other caller.
 
 ### Parameters
 
@@ -167,6 +175,11 @@ secret ID instead of an ACL token. With ACLs enabled, **a node secret ID can
 remove only registrations of its own node**; any other registration is denied
 with `403`.
 
+**Deleting an [external service](/docs/api/external-services) needs
+`namespace:register-external-service`**, as its deregistration does;
+`submit-job` does not cover it, and with ACLs enabled a node secret ID can't
+delete one.
+
 ### Parameters
 
 - `:service_name` `(string: <required>)` - Specifies the service name. This is
@@ -215,7 +228,7 @@ Norca adds health, topology and external services to the native catalog (see
 | `HealthUpdatedAt` | Time of the last recorded health change, in Unix nanoseconds |
 | `Meta` | Meta of the service |
 | `Discovery` | The `discovery` block of the service: `Prefer`, `MinLocal`, `OverflowFraction`, `Failover`, `IncludeNotReady` |
-| `External` | Set for [external services](/docs/api/external-services): `Kind`, `Source`, `LocalID`, `Checks`, `DeregisterCriticalAfter` |
+| `External` | Set for [external services](/docs/api/external-services): `Kind`, `Source`, `LocalID`, `Checks`, `DeregisterCriticalAfter`. Without `register-external-service` in the namespace the credentials of the check definitions are replaced with `<redacted>` (see [List External Services](/docs/api/external-services#list-external-services)) |
 
 ### Sample Request
 

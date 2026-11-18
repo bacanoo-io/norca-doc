@@ -50,7 +50,11 @@ HTTP and TCP checks, and they are removed when the node goes down. As in Consul,
 **ACLs.** Registering, renewing and deregistering need the namespace capability
 `register-external-service`, which no policy shorthand (`read`, `write`, ...) includes. Static
 registrations also need `operator` write, and a registration that has a client node run its checks
-(bound to a node by ID, or with `checked_by`) needs `node` write.
+(bound to a node by ID, or with `checked_by`) needs `node` write. Deleting a registration of an
+external service by its ID (`norca service delete`) needs `register-external-service` as well;
+`submit-job` does not cover it. **Readers without `register-external-service` get the check
+definitions without credentials:** header values, the body, and the user information, query and
+fragment of the URL are replaced with `<redacted>`.
 
 ```mermaid
 flowchart LR

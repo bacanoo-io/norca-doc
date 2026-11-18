@@ -23,7 +23,9 @@ The `service delete` command requires two arguments, the name of the service
 and the ID of the individual registration to delete.
 
 When ACLs are enabled, this command requires a token with the `submit-job`
-capability for the service registration namespace.
+capability for the service registration namespace. Deleting an
+[external service](/docs/features/service-discovery/external-services)
+requires the `register-external-service` capability instead.
 
 ## General Options
 

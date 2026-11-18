@@ -88,7 +88,7 @@ The topics added by Norca and their ACLs are listed under
 | Node       | Node                            |
 | NodeDrain  | Node                            |
 | NodePool   | NodePool                        |
-| Service    | Service Registrations           |
+| Service    | Service Registrations (the check definitions of external services without credentials, see [List External Services](/docs/api/external-services#list-external-services)) |
 
 ### Event Types
 

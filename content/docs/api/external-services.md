@@ -219,6 +219,16 @@ This endpoint lists the external services of a namespace, with their health and 
 | ---------------- | -------------------- |
 | `YES`            | `namespace:read-job` |
 
+**Only callers that may register external services read the whole check
+definitions.** For a caller without `register-external-service` in the
+namespace of a service, the parts of its `http` checks that may hold a
+credential are replaced with `<redacted>`: the values of `Header` (the names
+stay), `Body`, and the user information, query and fragment of the `HTTP`
+URL (a URL that can't be read is replaced completely). The client node that
+runs the checks reads its own registrations whole. [Read
+Service](/docs/api/services#read-service) and the `Service` topic of the
+[event stream](/docs/api/events) show the same redacted definitions.
+
 ### Parameters
 
 - `namespace` `(string: "default")` - The namespace.

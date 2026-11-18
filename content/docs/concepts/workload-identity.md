@@ -47,8 +47,10 @@ task "example" {
 By default, a Workload Identity has access to an implicit ACL policy. This policy
 grants access to Norca Variables associated with the job, group, and task, as
 described in [Task Access to Variables][]. The implicit policy also allows
-access to list or read any Norca service registration as with the [List Services
-API][] or [Read Service API][].
+access to list or read the Norca service registrations of the workload's own
+namespace, as with the [List Services API][] or [Read Service API][]. **The
+services of other namespaces need `read-job` there from the workload's
+associated policies.**
 
 ## Workload Associated ACL Policies
 
