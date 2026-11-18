@@ -171,8 +171,10 @@ downgrading from it, as well as rolling certificates.
 The [system bus](/docs/configuration/bus) of a server takes the new CA,
 certificate and TLS settings as well:
 
-- **Its client and leaf node connections are closed** and connect again
-  under the new configuration.
+- **Its client and leaf node connections are closed**, all of them (nodes,
+  tokens, workload identities, CDC readers, leaf nodes), and connect again
+  under the new configuration. NATS clients reconnect on their own; a CDC
+  reader continues from its durable consumer.
 - **Its routes to the other servers are checked against the new CA and
   distrusted CA list;** a route the new configuration refuses is closed. A
   route that passes stays open, so a renewed certificate of the same CA does

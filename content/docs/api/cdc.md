@@ -102,6 +102,9 @@ stream; the stream information has no subjects, deleted messages or cluster.
 A reader whose token also has a `bus` rule reads the consumer over a
 connection of its own, logged in as the user `cdc` with the token as the
 password ([connecting](/docs/features/change-data-capture#connecting)).
+The connection of a reader is closed once when the servers of the region
+change and at a TLS reload; it reconnects and continues from the consumer
+([guarantees](/docs/features/change-data-capture#guarantees)).
 
 ## Read the Consumer
 

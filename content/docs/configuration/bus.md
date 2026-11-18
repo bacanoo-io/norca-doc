@@ -259,6 +259,14 @@ three. **With two servers they have two replicas and need both servers**, as
 Raft does with two servers: the bus is then no less available than the
 control plane, and the data is on both disks.
 
+**When the servers of the region change** (a server joins, leaves or gets
+another address), **every connection to the bus of a server is closed once**
+and connects again: nodes, tokens, workload identities, CDC readers and leaf
+nodes. A [TLS reload](/docs/configuration/tls#tls-configuration-reloads) does
+the same. NATS clients reconnect on their own; a
+[CDC reader](/docs/features/change-data-capture) gets its account back when it
+reconnects and continues from its durable consumer.
+
 [`norca operator bus status`](/docs/commands/operator/bus/status) shows the
 routes, the JetStream meta leader, the usage and the connections of a server.
 

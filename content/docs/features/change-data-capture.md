@@ -351,6 +351,11 @@ A reader keeps its consumer and resumes it after a restart.
   and continues with the newest events.
 - **Retention:** `max_age` (72h) and `max_bytes` of the
   [`bus` block](/docs/configuration/bus); the streams share `max_bytes`.
+- **Reconnects:** when the servers of the region change (a server joins,
+  leaves or gets another address) and at a TLS reload, the connection of a
+  reader is closed once, as every connection to the bus is. The reader
+  reconnects (NATS clients do it on their own), gets its account back, and
+  continues from its durable consumer where it stopped.
 
 ## What CDC does not give
 
