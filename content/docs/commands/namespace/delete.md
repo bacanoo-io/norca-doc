@@ -22,6 +22,11 @@ If ACLs are enabled, this command requires a management ACL token.
 you cannot delete a namespace that has non-terminal jobs in any of the federated
 regions.
 
+(Norca) When a namespace deleted in the authoritative region still holds something
+in another region, that region keeps it and deletes the others deleted with it.
+Its leader tries the deletion again every 30 seconds, until what holds the
+namespace there is gone.
+
 (Norca) A namespace that still holds CSI volumes, variables or custom objects is
 not deleted either. The command fails and says what holds the namespace, for
 example `contains at least one variable`. Deleting a namespace that does not

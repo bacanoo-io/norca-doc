@@ -271,9 +271,17 @@ matching registries of its region directly.
 A pipeline with NATS tooling can also publish the notice itself, on
 `<prefix>.packs.pushed`, with a token that has `bus { publish =
 ["norca.packs.pushed"] }`. A server takes it over and stores it. **Such a
-notice is not acknowledged**: the publisher gets no answer, and a notice
-published while no server listens, or that can't be stored (empty, or larger
-than 64 KiB), is lost. The HTTP API above is the way that confirms a notice.
+notice is not acknowledged**: the publisher gets no answer. It is lost when:
+
+- no server listens when it is published;
+- it is empty, or larger than 64 KiB;
+- the server that took it stops before it could store it.
+
+A notice the server can't store at once (JetStream is not available, the bus
+restarts, the stream does not take it) is kept in the memory of that server
+and stored when the server tries again. **At most 256 notices are kept;
+beyond that the oldest is dropped**, with a warning in the log of the server.
+**The HTTP API above is the way that confirms a notice.**
 
 Registry syncs on the events of other regions need the buses of the regions
 connected to each other; that comes with the gateways between regions.

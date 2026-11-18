@@ -181,7 +181,11 @@ one way ([change data capture](/docs/features/change-data-capture#through-a-leaf
     (`server.<region>.norca`, signed by the agent CA) in both directions.
   - Client connections need no client certificate.
 
-  **Without RPC TLS the bus is not encrypted**, like RPC.
+  **Without RPC TLS the bus is not encrypted**, like RPC. A TLS reload
+  (`SIGHUP`) reaches the bus: the connections made after it use the new CA,
+  certificate and settings, the open ones keep theirs. **Turning the TLS of
+  the bus on or off takes a restart.** See
+  [TLS reloads](/docs/configuration/tls#tls-configuration-reloads).
 - **Authentication.** A node logs in with its node ID and node secret. It may
   publish only its own usage subject and **subscribes to nothing**. Anyone else needs an ACL token whose
   policies have a [`bus` rule](/docs/other-specifications/acl-policy#bus-rules);
