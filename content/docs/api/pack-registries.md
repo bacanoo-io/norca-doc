@@ -117,7 +117,8 @@ This endpoint creates or updates a registry and syncs it before it returns.
 - `Spec.source` `(string: <required>)` - A git URL, `oci://host/repository`, a server path, or
   `builtin` (type `dir`: the packs that ship with Norca).
 
-- `Spec.defaultRef` `(string: "latest")` - The tag or branch to fetch.
+- `Spec.defaultRef` `(string: "latest")` - The tag or branch to fetch. A plain name: only the ref
+  of a `git` registry may contain `/`, and no ref starts with `-`; another one is refused.
 
 - `Spec.syncInterval` `(duration: "")` - Sync periodically on the leader, for example `15m` or `24h`;
   at least `1m`. Empty or `0s` syncs on request only.
@@ -287,6 +288,9 @@ This endpoint returns a pack of a registry with its versions, its README and its
 
 - `version` `(string: "")` - The pack version; the newest by default.
 
+`:pack` and `version` are plain names, not paths: one with `/`, `\`, `:`, `.` or `..` is refused
+with `400`. A pack the registry does not list is `404`.
+
 ### Response
 
 - `Pack` - The catalog entry of the version.
@@ -318,7 +322,8 @@ parameter.
 
 - `Registry`, `Pack` `(string: <required>)` - The registry and the pack.
 
-- `Version` `(string: "")` - The pack version; the newest by default.
+- `Version` `(string: "")` - The pack version; the newest by default. `Pack` and `Version` are
+  plain names as in [read pack](#read-pack); a pack the registry does not list is `404`.
 
 - `Values` `(map: nil)` - The variable values. **Values of variables with a `secret` block are moved to
   their Variable item and never stored.**

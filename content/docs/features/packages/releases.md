@@ -464,7 +464,18 @@ namespace "apps" {
 ```
 
 **Applying a release grants nothing else: every resource is written with the caller's own token**, so
-someone who can't write ACL policies can't install a pack containing one. Reading the content of a
+someone who can't write ACL policies can't install a pack containing one.
+
+The token of an install, upgrade or rollback must be allowed to write **every** resource of the pack,
+hook jobs included (for a Variables entry the `write` capability is enough). Otherwise the operation
+is refused with `403` before anything is applied or recorded: no release and no revision is created
+for it. There is one exception: a namespace, quota, ACL policy, object kind, admission policy or
+external service that the release **owns already** and that the pack leaves **unchanged** needs no
+right. A team can therefore upgrade or roll back a release that an operator installed with such
+resources, as long as it leaves them as they are; when the pack would change one of them, or the
+live resource is no longer what the pack says, the operation needs the right to write it. A plan
+reports the resources the token may not write as `Permission denied`.
+ Reading the content of a
 revision (`/revision/:n`) also needs `read-job` in the namespace, as it contains job specifications.
 
 With ACLs enabled, resources that a release **adopts** without writing them are checked the same way,

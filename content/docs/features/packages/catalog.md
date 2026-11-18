@@ -99,7 +99,7 @@ and `uninstall` work on it.
 | --- | --- |
 | `spec.type` | `git`, `oci`, `dir` (a directory on the servers; the source `builtin` is the packs that ship with Norca), `bundle` (an [offline bundle](/docs/features/packages/supply-chain) on the servers) or `uploads` ([uploaded packs](#uploaded-packs)) |
 | `spec.source` | A git URL, `oci://host/repository`, a server path, or `builtin` |
-| `spec.defaultRef` | The tag or branch to fetch (`latest`) |
+| `spec.defaultRef` | The tag or branch to fetch (`latest`). A plain name: no `\`, `:`, `.` or `..`, not starting with `-`; only the ref of a `git` registry may contain `/` |
 | `spec.syncInterval` | Sync periodically, for example `15m` or `24h` (at least `1m`); empty or `0s` syncs on request only |
 | `spec.trustedKeys` | Public keys of the [signatures](/docs/features/packages/supply-chain); with keys, only packs signed by them can be installed |
 | `spec.authSecret` | `{namespace, path}` of a Variable with the credentials of a private git or OCI source ([private registries](#private-registries)) |

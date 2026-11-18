@@ -155,7 +155,9 @@ $ curl -X PUT -H "X-Nomad-Token: $NORCA_TOKEN" -d @postgres.json \
 **Fails with 409 while the engine has live leases, or expired leases that are not revoked yet (revoke
 them first).** Revoked leases whose credentials have not expired are sent to the operator before the
 engine goes; if that call fails, the delete fails with 502 and the engine stays. The ended leases are
-removed with the engine. `cas` makes the delete conditional.
+removed with the engine. `cas` makes the delete conditional. A lease created while the delete is in
+progress makes it fail with 409 (the engine has a live lease again); if the leases of the engine
+keep changing while the delete runs, it fails with 409 and can be tried again.
 
 ### Parameters
 
