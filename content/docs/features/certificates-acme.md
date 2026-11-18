@@ -185,7 +185,7 @@ keeps the credentials of the DNS service:
 
 | DNS type | For |
 | --- | --- |
-| `rfc2136` | Name servers that accept dynamic updates (RFC 2136) signed with a TSIG key (RFC 8945): BIND, Knot DNS, PowerDNS. `server` is the primary of the zone; `tsig_algorithm` is `hmac-sha256`, `hmac-sha384` or `hmac-sha512`. |
+| `rfc2136` | Name servers that accept dynamic updates (RFC 2136) signed with a TSIG key (RFC 8945): BIND, Knot DNS, PowerDNS. `server` is the primary of the zone; `tsig_algorithm` is `hmac-sha256`, `hmac-sha384` or `hmac-sha512`. With a TSIG key the queries are signed too, and an answer without a signature is refused. |
 | `mock` | Trials: records in memory, served to nobody. |
 
 ## Serving the certificate with Traefik

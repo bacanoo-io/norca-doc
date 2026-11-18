@@ -160,9 +160,10 @@ record with its load balancer.
 - **Deleting the record** removes its record set (the finalizer
   `norca.io/dns-records` keeps the object until then). A record whose zone
   is no longer registered, or no longer allows records (`records` switched
-  off, or the provider refuses the deletion with 403), goes, and its record
-  set stays in the zone: event `RecordLeft`. Any other failure of the
-  removal is the event `DeleteFailed` and is tried again.
+  off, or the provider refuses the deletion with the reason
+  `records_disabled`), goes, and its record set stays in the zone: event
+  `RecordLeft`. **Any other failure of the removal, another 403 too, is the
+  event `DeleteFailed` and is tried again.**
 
 ## Status
 
@@ -177,12 +178,18 @@ Conditions:
 
 | Condition | True when |
 | --- | --- |
-| `Ready` | The zone holds the record set. When it is false, its reason says why: `NotAllowed`, `ZoneNotFound`, `RecordsNotEnabled`, `ZoneUnavailable`, `NoValues`, `Conflict`, `InvalidSpec`, `Failed` (the error as the message: the provider or the name server can't be reached or refuses, or the cluster can't be read). |
+| `Ready` | The zone holds the record set. When it is false, its reason says why: `NotAllowed`, `ZoneNotFound`, `RecordsNotEnabled`, `ZoneUnavailable` (the provider of the zone reports no heartbeat, or the registration of the zone, its endpoint or its token, can't be used), `NoValues`, `Conflict`, `InvalidSpec`, `Failed` (the provider or the name server can't be reached or refuses, or the cluster can't be read). |
 | `Conflict` | Another record or the zone itself holds the name and type. |
 | `Degraded` | `Ready` is false. |
 
 A failure shows in the status at once, also on a record that was `Ready`
 before; the record keeps the record set it holds (`owned`) meanwhile.
+
+**The status and the events say what failed, not the details.** They name
+the step that failed and, of an answer of the provider, its status code, a
+refused token, or the provider's refusal of the request itself (the values,
+a zone without records). Endpoints, token paths and the other details of the
+error are in the log of norca-dns.
 
 Events: `RecordWritten`, `RecordDeleted`, `RecordLeft` (a record set that
 stays in the zone when its record gives it up), `DeleteFailed`,
@@ -201,6 +208,14 @@ namespace "team-a" {
 }
 ```
 
+**A name is one for the whole cluster**, so the operator looks for the
+record that holds a name in every namespace. The pack runs it for every
+namespace. An operator started with `-namespace` for one namespace writes
+there only, but **its policy still needs to read the `DNSRecord` objects and
+the metadata of every namespace**: in a namespace it can't read, it does not
+see the records that hold a name, and may take over or remove their record
+sets.
+
 ## Limits
 
 - **One cluster writes a zone.** The zone carries no marker of which record
@@ -217,6 +232,10 @@ namespace "team-a" {
   CNAME, without an error. The provider reads the record set back after it
   wrote it; a set the server does not hold is reported as `Failed`, with
   what the server holds in the message, and the record holds nothing.
+- **`rfc2136` with a TSIG key signs every message**, the queries that read
+  the record sets back as well as the updates, and **takes only signed
+  answers**: an answer without a signature is refused. The name server
+  has to sign its answers (a server that takes the signed updates does).
 - **`rfc2136`: a wildcard is not a record set.** An answer the name server
   makes from a wildcard of the zone (`*.apps.example.com`) is not taken for
   a record set of the name asked: a record below a wildcard is written
