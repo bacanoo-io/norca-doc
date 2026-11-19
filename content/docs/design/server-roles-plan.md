@@ -210,7 +210,7 @@ A job registration is forwarded to the leader, which validates it. The server th
 1. **`target_voters` defaults to 0.** Every `voter`-role server votes, as before; standbys are promoted only where a target is set.
 2. **A promoted standby steps back** when the old voter returns and is stable.
 3. **Observers take scheduled and manual backups**, not only the scheduled ones.
-4. **Request limits per token are optional** and off by default; there is no limit per client address.
+4. **Request limits per token are optional** and off by default; there is no setting of its own per client address (requests without a known token are limited per client address with the same token limits).
 5. **No database is added** for history.
 
 ## License and source rules
