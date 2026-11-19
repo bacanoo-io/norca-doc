@@ -340,6 +340,16 @@ service.
 - The provider API has no status call: the answer of `PUT` is the state, and
   the operator calls it again periodically. Two providers for one class are not
   supported; the name of the object is unique.
+- **The `nginx` and `tcpproxy` types listen on the machine of the provider:
+  one load balancer per frontend port, for every namespace together.** A second
+  `LoadBalancer` that asks for a taken port fails with `ProvisioningFailed`;
+  the message names the holder only when it is in the same namespace, and
+  otherwise says "a load balancer of another namespace" (the operator of the
+  provider finds the full name in its log). To keep [tenants](/docs/features/tenants)
+  apart, give each one its own class with its own `ports` range, for example
+  `"ports": "10000-10999"` for team A and `"11000-11999"` for team B; a class
+  does not limit which namespaces may use it, so the teams have to keep to
+  their class.
 - A MetalLB-like provider for bare metal does not exist yet. The cloud types of
   `norca-provider` are tested against fakes of the cloud APIs, not yet against
   the clouds.
