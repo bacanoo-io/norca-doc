@@ -165,6 +165,31 @@ The `raw_exec` driver will set the following client attributes:
 
 **The `raw_exec` driver provides no isolation.**
 
+A task runs as the user of the Norca agent, usually root, unless the job sets a
+[`user`](/docs/job-specification/task#user), and sees the whole file system of
+the node. **It can read the `secrets/` directory of every allocation on the
+node**: their workload identity tokens (`norca_token`), and with them the ACL
+policies bound to their jobs, and the secrets delivered to them as files. A
+command started with [`norca alloc exec`](/docs/commands/alloc/exec) in a
+`raw_exec` task, which needs the `alloc-node-exec` capability, reaches the same.
+Treat the right to run `raw_exec` tasks on a node, and `alloc-node-exec`, as
+access to everything that runs on that node.
+
+Keep operators and other privileged workloads, in particular jobs with
+[ACL policies bound to them](/docs/concepts/workload-identity#workload-associated-acl-policies),
+off the nodes where `raw_exec` is enabled, for example with a node pool of their
+own or with this constraint, which holds on every node without the driver:
+
+```hcl
+constraint {
+  attribute = "${attr.driver.raw_exec}"
+  operator  = "is_not_set"
+}
+```
+
+The operator packs of the [Norca pack registry](/docs/features/packages/registry)
+carry this constraint by default.
+
 > [!WARNING]
 > If the launched process creates a new process group, it is possible that Norca
 > will leak processes on shutdown unless the application forwards signals

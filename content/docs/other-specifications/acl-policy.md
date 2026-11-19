@@ -141,6 +141,10 @@ of `capabilities`. This includes:
   ([exec into a job with associated policies](/docs/concepts/workload-identity#exec-into-a-job-with-associated-policies)).
 - `alloc-node-exec` - Allows an operator to connect and run commands in
   allocations running without filesystem isolation, for example, `raw_exec` jobs.
+  **Such a command runs with the task's user, by default the user of the agent,
+  and can read the `secrets/` directory of every allocation on the node**,
+  including the workload identity tokens of jobs with ACL policies bound to
+  them (see [`raw_exec` isolation](/docs/drivers/raw_exec#resource-isolation)).
 - `alloc-lifecycle` - Allows an operator to stop individual allocations
   manually.
 - `csi-register-plugin` - Allows jobs to be submitted that register themselves
