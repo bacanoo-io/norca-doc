@@ -194,7 +194,10 @@ and uninstall endpoints:
 - `TakeOwnership` `(bool: false)` - Take over resources that belong to another release. With ACLs
   enabled, the token needs object `write` on `packs.norca.io/Release` in the namespace of every
   release resources are taken from. A resource another operation is writing at that moment is not
-  taken: it is a `409 Conflict` with `TakeOwnership` too.
+  taken: it is a `409 Conflict` with `TakeOwnership` too. The resources are removed from the releases
+  they are taken from after the operation has recorded its result; an operation a leader change has
+  interrupted by then takes nothing off them and answers with the warning
+  `resources of release "<namespace>/<name>" not taken over: ...`, and the next operation decides.
 
 - `MaxHistory` `(int: 10)` - Number of revisions to keep (at most 100).
 

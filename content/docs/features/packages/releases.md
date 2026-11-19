@@ -489,8 +489,10 @@ conflict too (`--deploy-override` takes them over). Jobs of a release carry the 
 `norca.owner.kind`); custom objects get an owner reference to the release. Releases delete their
 resources themselves, so the object garbage collector never deletes them, and `--orphan` keeps them.
 
-`--take-ownership` takes a resource from the release that owns it, never from an operation that is
-writing it now: a resource another release operation or a tenant pass has claimed is a conflict with
+`--take-ownership` takes a resource from the release that owns it (after the operation has recorded
+its result; an operation interrupted by a [leader change](#install-upgrade-rollback-uninstall) by
+then takes nothing off the other releases and warns `resources of release "<namespace>/<name>" not
+taken over: ...`), never from an operation that is writing it now: a resource another release operation or a tenant pass has claimed is a conflict with
 the flag too (see [install, upgrade, rollback, uninstall](#install-upgrade-rollback-uninstall)). **An
 operation fails if a resource gets another owner while it runs**: right before each write it checks
 that it still holds the claim of the resource and that no tenant and no other release (except one it
