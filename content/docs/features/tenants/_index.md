@@ -209,7 +209,7 @@ where it can be.
 | Condition | True when |
 | --- | --- |
 | `Ready` | every resource is as the spec says |
-| `Conflict` | a resource of the tenant's name exists that the tenant did not create, or that belongs to a release or to another tenant, or that holds too much to be given back (more than 32 KiB for one resource, 128 KiB for all adopted resources of a tenant); it is left alone, and with the namespace or the quota in conflict nothing else is created |
+| `Conflict` | a resource of the tenant's name exists that the tenant did not create, or that belongs to a release or to another tenant, or that a release operation is writing at that moment (until a later pass finds it free), or that holds too much to be given back (more than 32 KiB for one resource, 128 KiB for all adopted resources of a tenant); it is left alone, and with the namespace or the quota in conflict nothing else is created |
 | `NamespaceNotEmpty` | the tenant is being deleted and its namespace still has jobs, volumes, variables or objects |
 | `RestoreFailed` | a resource the tenant took over can't be given back as the tenant found it; the message says what is missing |
 | `Degraded` | a write failed; it is tried again |
@@ -274,6 +274,18 @@ type in `adopt` it is taken over and later given back, not deleted.
 A resource that a release manages is never taken over, and a release can't
 take over what a tenant created: `norca pack` refuses it, also with
 `-take-ownership`.
+
+**One resource has one owner.** Each pass claims, on the leader, the
+resources the tenant wants before it looks at who owns them, and holds the
+claims until its status is written; a release operation claims the
+resources of its pack the same way (see
+[releases](/docs/features/packages/releases#install-upgrade-rollback-uninstall)).
+A resource that a release operation is writing while the pass runs is a
+`Conflict` for that pass (`... is being written by release "apps/web"`): the
+tenant does not take it, keeps it if it lists it already, and a later pass
+looks again. A resource the tenant lists that a release owns all the same
+is dropped from the tenant's list and is not deleted: it is the release's,
+and the pass shows it as a `Conflict` (`... belongs to the release apps/web`).
 
 ## Deleting
 
