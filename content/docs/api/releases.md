@@ -156,7 +156,10 @@ another release without `TakeOwnership`**.
     `ObjectKind`, `AdmissionPolicy`, `Object`, or `Job` (API form) with an optional `Submission`.
 
   A Variables resource lists its secret item names in `SecretKeys`. **At most 256
-  resources.**
+  resources.** A Variable is written only in the state the operation read it in (check-and-set): one
+  changed meanwhile is not written, and its apply fails with "changed since the release read it".
+  A hook job is registered only while its ID is free and purged only while it belongs to the
+  release; the hook fails if a job of another owner has the ID or replaces the hook job.
 
 - `Secrets` `(array: nil)` - Secret Variables items (`Namespace`, `Path`, `Items`), written to the
   Variables but **never stored in the release**.

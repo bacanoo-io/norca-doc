@@ -108,7 +108,11 @@ the node that runs them, and the token that applies the release needs `node` wri
 **Secrets:** a Variables template lists the names of secret items in `secret_items` and must not give
 them values. Their values come from `--var-secret=<variable path>:<item>=<value>` (repeatable) and are
 written to the Variable but **never stored in the release**; an upgrade or rollback without
-`--var-secret` keeps the stored values.
+`--var-secret` keeps the stored values. **A release writes a Variable only in the state it read**
+(check-and-set, also for a Variable that did not exist): if somebody else changed it in between, for
+example rotated a password, nothing is written and the apply of that resource fails with "changed since
+the release read it", like any failed step ([atomic mode](#atomic-mode-and-production-namespaces)
+restores what the operation applied before, and leaves the changed Variable as it is).
 
 **Requirements:** `metadata.hcl` can state what the pack needs from the servers; the servers reject
 the release (also in `plan`) if they can't provide it:
@@ -369,7 +373,11 @@ meta {
 A hook is a batch (or sysbatch) job of the pack with the meta `pack.hook`: `pre-install`,
 `post-install`, `pre-upgrade`, `post-upgrade`, `pre-delete`, `post-delete` or `test` (several, comma
 separated). Hooks of a phase run one after the other ordered by `pack.hook_weight` (then job ID); an
-earlier run of a hook job is purged first. A hook succeeds when all its allocations complete; it fails
+earlier run of a hook job is purged first. **A hook job is registered only while its ID is free and
+purged only while it is the release's**: a job of the same ID that does not belong to the release is
+never overwritten or purged. The hook fails if such a job holds the ID when the hook registers, or replaces
+the hook job while it runs; a purge that finds such a job leaves it and records a warning of the
+operation. A hook succeeds when all its allocations complete; it fails
 on a failed allocation or after `pack.hook_timeout` (default 5m). The deletion policy
 `pack.hook_delete` is `on-success` (default: purge after success, keep failed runs for debugging),
 `always` or `never`. Hook jobs run with the caller's token, like all resources.
