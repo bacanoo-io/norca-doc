@@ -92,7 +92,10 @@ spec {
 
 The operator opens **an account per issuer**. The key of the account is a
 secret of the operator (`norca-acme/accounts/<issuer>`); it is made before
-the account is opened, so it cannot be lost.
+the account is opened, so it cannot be lost. The key is stored with
+check-and-set: when two instances of the operator run at once (for example
+during a rolling update), the one that finds a key stored meanwhile by the
+other uses that key, so both use the same account.
 
 The status of the issuer is the operator's:
 
