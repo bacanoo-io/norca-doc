@@ -104,6 +104,15 @@ with the servers to provide the resources available, attributes, and installed d
 Servers use this information for scheduling decisions and create allocations to assign
 work to clients.
 
+**The RPCs of a client stay in its region**: registration, heartbeats, allocation pulls and
+updates, node events, and the tokens, volume claims and certificates of its allocations. Unlike
+other requests they are not forwarded to another region: a server refuses such a request when it
+names another region than the server's own, so a client must use the servers of its own
+[`region`](/docs/configuration#region). With RPC TLS and
+[`verify_server_hostname`](/docs/configuration/tls#verify_server_hostname), the connection must also
+carry a client or server certificate of the server's region, so a server of another region can't
+forward them either.
+
 ### Jobs and scheduling
 
 Users make use of the Norca CLI or API to submit jobs to the servers. A job represents

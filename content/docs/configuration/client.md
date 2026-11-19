@@ -145,7 +145,10 @@ client {
   servers this client should join. This list is used to register the client with
   the server nodes and advertise the available resources so that the agent can
   receive work. This may be specified as an IP address or DNS, with or without
-  the port. If the port is omitted, the default port of `4647` is used.
+  the port. If the port is omitted, the default port of `4647` is used. (Norca) **The
+  servers must be in the client's own region**: they refuse the RPCs of a node
+  that name another region instead of forwarding them (see
+  [clients](/docs/concepts/architecture#clients)).
 
 - `server_join` <code>([server_join][server-join]: nil)</code> - Specifies
   how the Norca client will connect to Norca servers. The `start_join` field
