@@ -38,6 +38,7 @@ flowchart LR
 | `_<service>._<tag>.service...` | RFC 2782 style SRV name; `_tcp` and `_udp` mean no tag filter |
 | `<hex IP>.addr.norca` | The address of an SRV target |
 | `<service>.service[.<datacenter>].consul` | With `consul_compat = true`: the same in Consul's naming. The optional label is a Norca region, or a datacenter of the local region with `client { consul_compat { datacenter_from = "datacenter" } }`. |
+| `<service>.service[.<namespace>.ns][.<datacenter>.dc].consul` | (Norca) With `consul_compat = true`: Consul's labeled form, for a namespace other than the first of `namespaces` and, optionally, a datacenter (as above) |
 
 **Records.** A and AAAA queries return the addresses of the instances (each address once, in random
 order). SRV queries return one record per instance with its port; the target is
@@ -52,7 +53,23 @@ has none, the regions of the service's `failover` list are tried in order. A ser
 instances answers `NXDOMAIN`.
 
 **Namespaces.** The server answers only for the namespaces in `namespaces`; a name in any other
-namespace is answered with `REFUSED`.
+namespace is answered with `REFUSED`. The entries after the first may be patterns (`"team-*"`, `"*"`),
+so the namespaces of new [tenants](/docs/features/tenants) can be answered without a change of every
+client; the first entry, the namespace of names without one, must be a name. The queries are not
+authenticated, so the list also decides which namespaces' service addresses can be learned on the
+node.
+
+```hcl
+client {
+  dns {
+    enabled    = true
+    namespaces = ["default", "team-*"]   # default first, then every team namespace
+  }
+}
+```
+
+With this configuration, `api.service.team-a.norca` and, with `consul_compat = true`,
+`api.service.team-a.ns.consul` resolve to the instances of `api` in the namespace `team-a`.
 
 **Other names.** Queries outside the served zones are forwarded to the `recursors` when the query asks
 for recursion; without recursors they are refused.
@@ -102,7 +119,7 @@ All keys are in the `client { dns { ... } }` block. Full reference: [dns](/docs/
 | `consul_compat` | bool | `false` | Answer `*.service.consul` names as well. Not allowed with `domain = "consul"`. |
 | `recursors` | list(string) | `[]` | Nameservers (`host` or `host:port`) for other names. |
 | `ttl` | duration | `"5s"` | TTL of the answers. |
-| `namespaces` | list(string) | `["default"]` | Namespaces answered for; the first is used for names without a namespace. |
+| `namespaces` | list(string) | `["default"]` | Namespaces answered for; the first is used for names without a namespace and must be a name, the others may be patterns (`*`, `?`, `[...]`). |
 | `token` | string | node identity | ACL token used to read the catalog. Also used by native mTLS sidecars to read other regions. |
 
 ## CLI and API

@@ -46,7 +46,14 @@ client {
   TTL). Must be a non-negative duration.
 
 - `namespaces` `(array<string>: ["default"])` - Namespaces the server answers for. The first one is used
-  for names without a namespace; names of other namespaces are refused.
+  for names without a namespace; names of other namespaces are refused. (Norca) **The entries after the
+  first may be patterns**: `*` matches any characters, `?` one character, `[...]` one of a set, so
+  `"team-*"` answers for every namespace whose name starts with `team-`, and a new
+  [tenant](/docs/features/tenants) namespace of that name needs no change of the clients; `"*"`
+  answers for every namespace. The first entry must be a namespace name, not a pattern; an invalid
+  pattern is refused when the agent starts. **The queries are not authenticated:** whoever can reach
+  the server learns the addresses of the services of every namespace the list allows, so allow only
+  the namespaces whose addresses may be known on the node.
 
 - `token` `(string: "")` - ACL token used to read the catalog. Defaults to the identity of the node,
   which can read the services of every namespace of its own region (the `namespaces` setting limits

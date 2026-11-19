@@ -509,14 +509,15 @@ catalog, and the catalog has names of its own.
 [DNS server](/docs/features/service-discovery/dns) that answers
 `<service>.service.<namespace>.norca` from the catalog. It is off by default,
 and it answers only for the namespaces its configuration lists, so the
-cluster operator turns it on and adds the namespace of the tenant, on every
-client:
+cluster operator turns it on, on every client, with the namespaces of the
+tenants as a pattern: a new team namespace then needs no change of the
+clients.
 
 ```hcl {filename="client.hcl"}
 client {
   dns {
     enabled    = true
-    namespaces = ["default", "team-a"]
+    namespaces = ["default", "team-*"]
   }
 }
 ```
@@ -535,9 +536,9 @@ The port of an instance is chosen by Norca, so a caller needs the SRV record
 `namespaces` is answered with `REFUSED`.
 
 **The Consul-style name.** With `consul_compat = true` the same server also
-answers `shop.service.consul`. These names have no namespace in them: they
-are looked up in the first namespace of `namespaces`. For the service of a
-tenant use the `.norca` name, which carries the namespace. (Services
+answers `shop.service.consul`, looked up in the first namespace of
+`namespaces`, and Consul's labeled form with the namespace of the tenant:
+`shop.service.team-a.ns.consul`. (Services
 registered with `provider = "consul"` are a different matter: they live in a
 [full Consul](/docs/features/service-discovery/consul-pack), with Consul's
 own DNS.)
