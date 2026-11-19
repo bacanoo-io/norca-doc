@@ -250,6 +250,17 @@ a new one. The operator keeps the certificates it issued until they expire
 (`norca-acme/issued/<issuer>/<serial>`): they are public, and a revocation
 needs the certificate itself.
 
+The servers also revoke on their own, with the reason
+`cessationOfOperation`, when a namespace
+[loses the names](/docs/features/certificates#when-a-namespace-loses-a-name)
+of a certificate; no new certificate is issued then. The operator passes the
+`reason` of the order on to the certificate authority: `unspecified`,
+`keyCompromise`, `affiliationChanged`, `superseded` or
+`cessationOfOperation` (RFC 8555, section 7.6). An order without a reason,
+or with one the operator does not know, is revoked as `unspecified`. **A
+certificate authority that refuses the reason** (`badRevocationReason`) is
+asked once more without it: the revocation matters more than its reason.
+
 ## Settings of the norca-acme pack
 
 | Variable | Default | Meaning |

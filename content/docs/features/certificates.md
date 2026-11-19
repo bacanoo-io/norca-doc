@@ -218,6 +218,7 @@ $ norca object get -namespace team-a norca.io/Certificate web-tls
 | `issuer`, `authority` | who signed it; `authority` is the ID of the issuing CA |
 | `order` | the open order with an external issuer |
 | `failures`, `retryAt` | failed attempts in a row, and the next attempt |
+| `revoke` | the serial number of the certificate revoked last |
 
 | Condition | True when |
 | --- | --- |
@@ -229,13 +230,17 @@ $ norca object get -namespace team-a norca.io/Certificate web-tls
 | `Degraded` | `Failed` or `IssuerUnavailable` |
 
 Reasons of `Failed`: `IssuerNotFound`, `NamesNotAllowed`, `SecretConflict`,
-`InvalidSpec` (nothing is issued until the cause is gone), and
+`InvalidSpec` (nothing is issued until the cause is gone; with
+`NamesNotAllowed` the certificate is also
+[withdrawn](#when-a-namespace-loses-a-name)), and
 `AuthorityNotReady`, `AuthorityExpired`, `SecretWriteFailed`, `OrderFailed`,
 `ChainRefused` and the like (an attempt failed and is repeated).
 
 What the operator did is in the events of the object
-(`norca object events`): `Issued`, `Renewed`, `Ordered`, `Revoked`, and the
-failures.
+(`norca object events`): `Issued`, `Renewed`, `Ordered`, `Revoked`,
+`Withdrawn` (the certificate was taken back from a namespace that lost its
+names), `RevocationFailed` (the external issuer did not revoke a withdrawn
+certificate; it is asked again), and the failures.
 
 ## Who may ask for which names
 
@@ -282,13 +287,56 @@ namespace "team-a" {
 }
 ```
 
-When a namespace loses a name, nothing new is issued for it
-(`NamesNotAllowed`); the certificate it has stays until it expires.
-
 Writing a `CertificateIssuer` takes the right to write objects of that kind
 (`norca.io/CertificateIssuer`, cluster scoped), which an operator of the
 cluster grants knowingly: an issuer decides who signs for every namespace
 that may use it.
+
+### When a namespace loses a name
+
+When the namespace may no longer ask for the names or the issuer of a
+certificate (its `norca.io/certificate-*` metadata changed, or the
+`certificate_dns_suffixes`, `certificate_ip_addresses` and
+`certificate_issuers` of its [tenant](/docs/features/tenants) did), nothing new
+is issued (`NamesNotAllowed`) and **the certificate it has is withdrawn**:
+the names may be another namespace's now, and the key and a valid
+certificate for them must not stay with it until the certificate expires.
+
+1. A certificate that is still valid is **revoked** with the reason
+   `cessationOfOperation`: the built-in issuer lists it in the revocation
+   list of the CA that signed it; an external issuer gets a
+   [revocation order](#the-contract-of-an-external-issuer).
+2. **What the secret holds for the certificate is destroyed:** every
+   version of the secret not destroyed yet, with its `cert`, `key`, `ca`
+   and a waiting `next_key`; the metadata and the label of the secret stay
+   for a later certificate. With
+   `delete_secret = true` the whole secret is destroyed. Only a secret that
+   is the certificate's own is touched, and only in the state the operator
+   read.
+3. **The status is cleared:** it names no certificate, `Ready` is false,
+   `Failed` says `NamesNotAllowed`, and the event `Withdrawn` says what was
+   done.
+
+- **A revocation by an external issuer is waited for.** Until the controller
+  reports it done, the serial number stays in the status and `Failed` says
+  that the certificate waits for the issuer to revoke it; the secret is
+  emptied meanwhile. A revocation that fails gives the event
+  `RevocationFailed` and is asked for again after a minute, then twice as
+  long after every failure, up to an hour.
+- **The lost right is found also when the issuer is gone.** The CA of the
+  built-in issuer outlives the issuer object (a CA is removed only after
+  every certificate it signed has expired), so the certificate is revoked
+  all the same. **A certificate of an external issuer that is gone**, or
+  that was recreated as a built-in one, **can't be revoked**: it is taken
+  out of the secret and stays valid until it expires. `Failed` and the
+  event `Withdrawn` say so, with the serial number and the end of the
+  validity.
+- **Names given back bring a new certificate**, also while a revocation is
+  still waited for.
+- The other refusals (`InvalidSpec`, `IssuerNotFound` alone,
+  `SecretConflict`, and IP addresses an issuer recreated as an external one
+  can't sign) are no lost right: nothing new is issued, and the certificate
+  the namespace has stays until it expires.
 
 ## Revoking
 
@@ -304,8 +352,13 @@ $ norca certificate revoke -namespace team-a web-tls
 - **External issuer:** the servers write a `CertificateOrder` with `revoke`
   set to the serial number, for the controller to carry out.
 
+**A certificate the built-in issuer signed** (its status has an
+`authority`) **is always revoked at the CA that signed it**, also when an
+issuer of the same name was recreated as an external one.
+
 In both cases a new certificate with a new key is issued and written to the
-secret.
+secret. The servers also revoke on their own, without a new certificate,
+when a namespace [loses a name](#when-a-namespace-loses-a-name).
 
 ## Deleting
 
@@ -388,7 +441,14 @@ to the secrets of the namespaces.**
 
 3. **Revocations.** An order with `revoke` set to a serial number and no
    `csr` asks for a revocation; the controller answers with `valid` or
-   `failed`.
+   `failed`. `reason`, if set, is why: the name of a CRLReason of RFC 5280
+   (section 5.3.1), such as `cessationOfOperation`, which the servers give
+   when a namespace [lost the names](#when-a-namespace-loses-a-name) of the
+   certificate. A revocation with
+   [`norca certificate revoke`](/docs/commands/certificate/revoke) gives
+   none (unspecified). The revocation matters more than its reason: a
+   controller whose certificate authority refuses the reason should revoke
+   without it.
 
 **The servers check a chain before they trust it:** the certificate is for
 the key of the request and for exactly the names asked for, it is valid now,

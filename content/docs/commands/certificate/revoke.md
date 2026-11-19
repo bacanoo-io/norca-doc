@@ -8,7 +8,9 @@ weight: 3
 The `certificate revoke` command revokes the current certificate of a
 [`Certificate`](/docs/features/certificates) object. The built-in issuer
 lists it in its revocation list; an external issuer is asked to revoke it.
-**A new certificate with a new key is issued** and written to the secret.
+A certificate the built-in issuer signed is always listed by the CA that
+signed it, also when an issuer of the same name was recreated as an external
+one. **A new certificate with a new key is issued** and written to the secret.
 
 ## Usage
 

@@ -107,7 +107,7 @@ $ norca acl token create -name="alice" -role-name="team-a-developer"
 | `network.allow_from_namespaces` | | the other namespaces that may connect |
 | `network.allow_from_cidrs` | | IP prefixes that may connect: the node subnet for the tenant's own allocations on other nodes, the addresses of a load balancer (see [Network isolation](#network-isolation)). Needs `isolation = "namespace"` |
 | `network.required` | `true` | `false` places groups also on nodes that can't enforce the isolation (host networking, nodes without nftables), with warnings: the `best_effort` enforcement of a [network rule](/docs/features/network-rules). Needs `isolation = "namespace"` |
-| `certificate_dns_suffixes`, `certificate_ip_addresses`, `certificate_issuers` | | what the namespace may ask certificates for (written as its `norca.io/certificate-*` metadata) |
+| `certificate_dns_suffixes`, `certificate_ip_addresses`, `certificate_issuers` | | what the namespace may ask certificates for (written as its `norca.io/certificate-*` metadata). Narrowing them [withdraws](/docs/features/certificates#when-a-namespace-loses-a-name) the certificates of the namespace that are no longer allowed: they are revoked and taken out of their secrets |
 | `dns_suffixes` | | the names [norca-dns](/docs/features/dns-records) may write for the namespace (written as its `norca.io/dns-suffixes` metadata) |
 | `adopt` | | resource types the tenant takes over when one of its name exists: `namespace`, `quota`, `acl-policy`, `acl-role`, `network-policy` |
 | `release_without_restore` | `false` | release what the tenant took over as it is, instead of writing back what it found: the way out when a resource can't be given back (see [Deleting](#deleting)). It can be set on a tenant that is being deleted |
