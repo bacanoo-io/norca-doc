@@ -71,7 +71,7 @@ This command takes the [operation options](/docs/commands/pack#operation-options
 
 - `--regions=<string>` - Comma separated regions to install the release in, in one operation: the servers apply it on the leader of every region (the authoritative region first) and report the result per region. Overrides `regions` of `metadata.hcl`. See [multi-region installs](/docs/features/packages/releases#multi-region-installs).
 
-- `--take-ownership` `(default: false)` - Take over resources that belong to another release.
+- `--take-ownership` `(default: false)` - Take over resources that belong to another release. A resource that another release operation or a [tenant](/docs/features/tenants) pass is writing at that moment is not taken over: the operation fails with `409 Conflict` (see [install, upgrade, rollback, uninstall](/docs/features/packages/releases#install-upgrade-rollback-uninstall)).
 
 - `--timeout=<duration>` `(default: 5m)` - How long the servers wait for deployments and hooks (at most 2h).
 

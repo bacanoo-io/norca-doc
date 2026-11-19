@@ -122,7 +122,11 @@ $ curl \
 
 This endpoint installs a release, or upgrades it with a new revision. The leader runs one operation
 per release at a time; **a concurrent operation gets `409 Conflict`, as does a resource owned by
-another release without `TakeOwnership`**.
+another release without `TakeOwnership`, and a resource another release operation or a tenant pass
+is writing at that moment** (`being written by another operation`; the other operation is named only
+to a caller who may write the resource). The operation claims the resources of its pack before it
+writes anything, so nothing is written then; see
+[install, upgrade, rollback, uninstall](/docs/features/packages/releases#install-upgrade-rollback-uninstall).
 
 | Method         | Path                | Produces           |
 | -------------- | ------------------- | ------------------ |
@@ -173,7 +177,8 @@ another release without `TakeOwnership`**.
 
 - `TakeOwnership` `(bool: false)` - Take over resources that belong to another release. With ACLs
   enabled, the token needs object `write` on `packs.norca.io/Release` in the namespace of every
-  release resources are taken from.
+  release resources are taken from. A resource another operation is writing at that moment is not
+  taken: it is a `409 Conflict` with `TakeOwnership` too.
 
 - `MaxHistory` `(int: 10)` - Number of revisions to keep (at most 100).
 
@@ -251,7 +256,8 @@ resources in the form of the install request.
 
 ## Roll back release
 
-This endpoint applies the content of a kept revision as a new revision.
+This endpoint applies the content of a kept revision as a new revision. It claims the resources as
+an install does: one that another operation is writing at that moment is a `409 Conflict`.
 
 | Method         | Path                         | Produces           |
 | -------------- | ---------------------------- | ------------------ |
