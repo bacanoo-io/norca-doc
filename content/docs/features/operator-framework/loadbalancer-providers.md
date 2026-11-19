@@ -132,7 +132,7 @@ is picked up without touching the `LoadBalancer`:
 | `InvalidClass` | The registration is invalid, for example an `http` endpoint. |
 | `ProviderUnavailable` | The heartbeat is older than `-class-ttl`. Existing load balancers are not deleted. |
 | `Unsupported` | The class does not support the request: `internal = true` without `capabilities.internal`, or a port outside `capabilities.ports`. |
-| `Conflict` | A cloud resource under the name of the load balancer was not created for it: it has no owner mark, or the mark of another owner. The provider leaves it alone. The load balancer comes up once that resource is removed; the operator looks again at the not-ready interval (15 seconds). |
+| `Conflict` | A cloud resource under the name of the load balancer was not created for it: it has no [owner mark](#cloud-resource-names-and-owner-marks), or the mark of another owner. The provider leaves it alone. The load balancer comes up once that resource is removed; the operator looks again at the not-ready interval (15 seconds). |
 
 If a call to the provider fails for another reason, the operator records a
 `ProvisioningFailed` event and retries with backoff.
@@ -186,10 +186,11 @@ request the provider cannot satisfy, `502` a failure of the platform, `401` a
 wrong token. The operator retries all of them with backoff.
 
 `409` with `{"reason": "conflict"}` means that a cloud resource exists under
-the name of the load balancer that was not created for it. The provider
-changes nothing; the operator shows the reason `Conflict` and the message in
-the status and asks again at the not-ready interval. The message is read by
-the owner of the requesting `LoadBalancer`, so it names no other owner.
+the name of the load balancer that was not created for it (see
+[cloud resource names and owner marks](#cloud-resource-names-and-owner-marks)).
+The provider changes nothing; the operator shows the reason `Conflict` and the
+message in the status and asks again at the not-ready interval. The message is
+read by the owner of the requesting `LoadBalancer`, so it names no other owner.
 
 `DELETE` removes everything the provider created for the load balancer. It
 answers `2xx`, or `404` if there is nothing to delete. A resource under the
@@ -326,6 +327,48 @@ another node with round robin, targets that follow the service, an unknown and
 an unsupported class, a dynamic parameter changed in the registration, a
 provider that stops (the heartbeat) and comes back, and the removal of a
 service.
+
+## Cloud resource names and owner marks
+
+The cloud types of `norca-provider` (`aws`, `gcp`, `hcloud`, `scaleway`,
+`digitalocean`, `vultr`) find the resources of a load balancer by a name they
+derive from the class and the `LoadBalancer` object, and **they change or
+delete only a resource that carries the owner mark of that object.**
+
+The name has a readable part and a hash:
+
+- The readable part is the class parameter `name_prefix` (default `norca-`),
+  the namespace and the name of the object: `<name_prefix><namespace>-<name>`,
+  in lower case, with every run of characters other than letters and digits
+  turned into one hyphen.
+- The hash is the SHA-256 of `<class>/<namespace>/<name>`, in hex digits. It
+  keeps apart objects whose names read alike: `team-a/web` and `team/a-web`
+  both read `norca-team-a-web`, but get two names and two load balancers.
+
+| Type | Name | Owner mark |
+| --- | --- | --- |
+| `aws` | `<name_prefix><namespace>-<name>` cut to 25 characters, then `-` and 6 hex digits: at most 32 characters, the limit of a Network Load Balancer and a target group. A readable part that starts with `internal-` starts with `lb-` instead. | The tags `norca.io/namespace`, `norca.io/name` and `norca.io/class` on the Network Load Balancer and on its target group, all three with exactly the values of the object and the class. |
+| `gcp` | `<name_prefix><namespace>-<name>-<12 hex digits>`, the readable part cut so that the name keeps within 63 characters; `lb-` in front when it would not start with a letter. The health check, the network endpoint group, the backend service and the forwarding rule share the name. | The description `norca.io/class=<class> norca.io/namespace=<namespace> norca.io/name=<name>` on all four resources. `PUT` reads the four first and changes none of them if one is not its own. |
+| `hcloud` | `<name_prefix><namespace>-<name>-<12 hex digits>` within 63 characters | The label `norca.io/owner`: the SHA-256 of `<class>/<namespace>/<name>` in unpadded lower-case base32 (52 characters). The labels `norca.io/namespace`, `norca.io/name` and `norca.io/class` are informational, for people: they are cut to 63 characters and not checked. |
+| `scaleway` | `<name_prefix><namespace>-<name>-<12 hex digits>` within 63 characters | The tags `norca-namespace=<namespace>`, `norca-name=<name>` and `norca-class=<class>`. Names are not unique at Scaleway: of several load balancers with the name, the one with the tags is used. |
+| `digitalocean` | `<name_prefix><namespace>-<name>-<12 hex digits>` within 63 characters | None: the hashed name is the only mark. |
+| `vultr` | `<name_prefix><namespace>-<name>-<12 hex digits>` within 63 characters, as the label of the load balancer | None: the hashed label is the only mark. |
+
+The load balancers of DigitalOcean and Vultr have no field for an owner mark
+(no tags, labels or description), so a load balancer of that name is taken as
+the object's own, whoever made it.
+
+A resource under the derived name without the owner mark of the object, made
+by hand or for another load balancer, is a conflict: `PUT` changes nothing and
+answers `409`, the `LoadBalancer` shows the reason
+[`Conflict`](#what-the-operator-reports), and `DELETE` leaves the resource in
+place. Once the resource is removed, the load balancer comes up at the next
+pass.
+
+> **Two clusters that share one cloud account, with the same class and the
+> same `name_prefix`, derive the same names and the same owner marks for
+> objects of the same namespace and name, and change each other's load
+> balancers.** Give each cluster its own `name_prefix` in its classes.
 
 ## Permissions
 
