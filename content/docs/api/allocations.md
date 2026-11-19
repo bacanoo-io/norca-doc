@@ -846,7 +846,15 @@ The table below shows this endpoint's support for
 
 | Blocking Queries | ACL Required                                                                                 |
 | ---------------- | -------------------------------------------------------------------------------------------- |
-| `NO`             | `namespace:alloc-exec` (and `namespace:alloc-node-exec` if target task uses raw_exec driver) |
+| `NO`             | `namespace:alloc-exec` (and `namespace:alloc-node-exec` if target task uses raw_exec driver)<br />and every ACL policy bound to the allocation's job |
+
+(Norca) **An allocation of a job with ACL policies bound to it** (the parent's
+for a child of a parameterized or periodic job) needs a token that holds each
+of them, by name or through one of its roles, or a management token; otherwise
+the exec fails with `403` and an error that names the missing policies. The
+client asks the servers for this check and refuses the exec, with any token but
+a management token, when it can't reach them. See [exec into a job with
+associated policies](/docs/concepts/workload-identity#exec-into-a-job-with-associated-policies).
 
 ### Parameters
 

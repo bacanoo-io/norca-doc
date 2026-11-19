@@ -149,6 +149,24 @@ changes a child of a parameterized or periodic job is checked against the
 policies associated with the parent. `norca job stop`,
 `norca job scale` and `norca job plan` need only their usual capabilities.
 
+## Exec into a Job with Associated Policies
+
+A command started with [`norca alloc exec`](/docs/commands/alloc/exec) runs
+with the task's environment and file system, so it can read the task's
+workload identity (`NORCA_TOKEN`, `secrets/norca_token`) and act with the
+associated policies. **Exec into an allocation of a job with associated
+policies (the parent's for a child job) therefore needs a token that holds
+every one of them**, by name or through one of its roles, or a management
+token, on top of `alloc-exec` (and `alloc-node-exec` for a driver without file
+system isolation). Otherwise the exec is refused with `403` and an error that
+names the policies the token doesn't hold.
+
+Only the servers know the associated policies and the roles of a token, so
+the client asks them before every exec with a token that isn't a management
+token, whether the request came to the client directly or through a server.
+**When the client can't reach a server, such an exec is refused, whatever
+the job**; a management token still works.
+
 [allocation]: /docs/glossary#allocation
 [identity-block]: /docs/job-specification/identity/
 [plan applier]: /docs/concepts/scheduling/scheduling/

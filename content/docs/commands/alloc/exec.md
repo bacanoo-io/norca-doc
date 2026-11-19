@@ -30,7 +30,12 @@ When ACLs are enabled, this command requires a token with the `alloc-exec`,
 `read-job`, and `list-jobs` capabilities for the allocation's namespace. If
 the task driver does not have file system isolation (as with `raw_exec`),
 this command requires the `alloc-node-exec`, `read-job`, and `list-jobs`
-capabilities for the allocation's namespace.
+capabilities for the allocation's namespace. **An allocation of a job with ACL
+policies bound to it** (`norca acl policy apply -job`) also needs a token that
+holds each of those policies, or a management token, because the command can
+read the task's workload identity. The client asks the servers for this check,
+and refuses the exec when it can't reach them unless the token is a management
+token. See [exec into a job with associated policies](/docs/concepts/workload-identity#exec-into-a-job-with-associated-policies).
 
 ## General Options
 

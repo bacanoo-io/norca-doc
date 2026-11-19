@@ -136,7 +136,9 @@ of `capabilities`. This includes:
 - `read-logs` - Allows the logs associated with a job to be viewed.
 - `read-fs` - Allows the filesystem of allocations associated to be viewed.
 - `alloc-exec` - Allows an operator to connect and run commands in running
-  allocations.
+  allocations. (Norca) An allocation of a job with ACL policies bound to it
+  also needs a token that holds them, or a management token
+  ([exec into a job with associated policies](/docs/concepts/workload-identity#exec-into-a-job-with-associated-policies)).
 - `alloc-node-exec` - Allows an operator to connect and run commands in
   allocations running without filesystem isolation, for example, `raw_exec` jobs.
 - `alloc-lifecycle` - Allows an operator to stop individual allocations
