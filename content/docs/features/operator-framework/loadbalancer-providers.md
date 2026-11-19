@@ -119,11 +119,12 @@ minutes) is unavailable.
 
 ## What the operator reports
 
-The state of a `LoadBalancer` whose class cannot be used shows in its `Ready`
-condition (`norca object get norca.io/LoadBalancer <name>`) and in its event
+The state of a `LoadBalancer` whose class cannot be used, or whose cloud
+resource is not its own, shows in its `Ready` condition (`norca object get
+norca.io/LoadBalancer <name>`), in its `Degraded` condition and in its event
 log. These states are checked again by themselves, so a provider that starts
-later, comes back, or changes its capabilities is picked up without touching
-the `LoadBalancer`:
+later, comes back, or changes its capabilities, or a resource that is removed,
+is picked up without touching the `LoadBalancer`:
 
 | Reason | Meaning |
 | --- | --- |
@@ -131,9 +132,10 @@ the `LoadBalancer`:
 | `InvalidClass` | The registration is invalid, for example an `http` endpoint. |
 | `ProviderUnavailable` | The heartbeat is older than `-class-ttl`. Existing load balancers are not deleted. |
 | `Unsupported` | The class does not support the request: `internal = true` without `capabilities.internal`, or a port outside `capabilities.ports`. |
+| `Conflict` | A cloud resource under the name of the load balancer was not created for it: it has no owner mark, or the mark of another owner. The provider leaves it alone. The load balancer comes up once that resource is removed; the operator looks again at the not-ready interval (15 seconds). |
 
-If a call to the provider fails, the operator records a `ProvisioningFailed`
-event and retries with backoff.
+If a call to the provider fails for another reason, the operator records a
+`ProvisioningFailed` event and retries with backoff.
 
 ## The provider API
 
@@ -183,8 +185,17 @@ an error. A failure has the same shape as in the
 request the provider cannot satisfy, `502` a failure of the platform, `401` a
 wrong token. The operator retries all of them with backoff.
 
+`409` with `{"reason": "conflict"}` means that a cloud resource exists under
+the name of the load balancer that was not created for it. The provider
+changes nothing; the operator shows the reason `Conflict` and the message in
+the status and asks again at the not-ready interval. The message is read by
+the owner of the requesting `LoadBalancer`, so it names no other owner.
+
 `DELETE` removes everything the provider created for the load balancer. It
-answers `2xx`, or `404` if there is nothing to delete. If it fails, the
+answers `2xx`, or `404` if there is nothing to delete. A resource under the
+name of the load balancer that is not its own is left in place, and the answer
+is still `2xx`: a resource that does not belong to the object does not hold
+its finalizer. If it fails, the
 finalizer keeps the `LoadBalancer` object, and the operator tries again.
 
 ## Running a provider
