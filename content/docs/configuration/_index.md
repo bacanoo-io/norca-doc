@@ -214,6 +214,9 @@ consul {
     concurrent TCP connections a single client IP address is allowed to open to
     the agent's HTTP server. This affects the HTTP servers in both client and
     server agents. Default value is `100`. `0` disables HTTP connection limits.
+    **An IPv6 client is counted by its /64** (Norca): a host has a whole /64 to
+    connect from, so all addresses of a /64 share one limit. IPv4 and
+    IPv4-mapped IPv6 addresses are counted by the address.
 
   - `rpc_handshake_timeout` `(string: "5s")` - Configures the limit for how
     long servers will wait after a client TCP connection is established before
@@ -233,6 +236,9 @@ consul {
     to open to a single server. Client agents do not accept RPC TCP connections
     directly and therefore are not affected. It affects both clients connections
     and other server connections.
+    - **An IPv6 source is counted by its /64** (Norca), for the streaming
+      connections too: all addresses of a /64 share one limit. IPv4 and
+      IPv4-mapped IPv6 addresses are counted by the address.
     - Norca clients multiplex many RPC calls over a
       single TCP connection, except for streaming endpoints such as [log
       streaming][log-api] which require their own connection when routed through
@@ -271,17 +277,29 @@ consul {
       address, or the /64 of an IPv6 address. `X-Forwarded-For` and similar
       headers are not read, so behind a reverse proxy or a NAT all clients
       share the limit of the proxy's address.
-    - **At most 16384 tokens and 16384 client addresses** have a limit of
-      their own at a time; one beyond that shares a single limit with the
-      others beyond it, until idle ones are dropped. A token or an address
-      that sends nothing for ten minutes is dropped **once its limit is full
-      again**, so waiting gives back no more than the rate refills.
+    - **An IPv6 client is also limited by its /48**, with 16 times the rate
+      and the burst of a client, shared by all /64s of the /48. A request
+      takes from both limits; one that the /48 refuses is given back to the
+      /64. A /48 is a common assignment to one site, so a site whose hosts
+      send from several /64s has room, while the 65536 /64s of a /48
+      together get no more than 16 clients' worth of requests. IPv4 clients
+      have no such second level, and requests with a known token are limited
+      by the token only.
+    - **At most 16384 tokens, 16384 client addresses and 16384 IPv6 /48s**
+      have a limit of their own at a time. A new one beyond that takes the
+      place of the least recently used one **whose limit is full**: giving
+      back a full limit changes nothing for anyone, the next request starts
+      with a full limit again. Only when it finds no such entry among the
+      least recently used ones does the new one share a single limit with
+      the others beyond the cap. A token, an address or a /48 that sends
+      nothing for ten minutes is dropped **once its limit is full again**,
+      so waiting gives back no more than the rate refills.
     - **Never limited:** `/v1/agent/health`, `/v1/status/leader` and
       `/v1/status/peers`, which load balancers and health checks probe.
 
   - `token_read_burst` and `token_write_burst` `(int: 0)` - The requests a
     token, or a client address, may send at once above its rate. `0` is the rate itself (at least
-    1).
+    1). The burst of an IPv6 /48 is 16 times this value.
 
 - `log_level` `(string: "INFO")` - Specifies the verbosity of logs the Norca
   agent will output. Valid log levels include `WARN`, `INFO`, or `DEBUG` in
