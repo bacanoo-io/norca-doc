@@ -1,12 +1,12 @@
 ---
 title: "Security differences from Nomad v1.6.5"
 linkTitle: "Differences from Nomad"
-description: "Where Norca's access checks are stricter than those of Nomad v1.6.5: node secret IDs, snapshot save and restore, policies bound to jobs, exec into such jobs, and the region of node requests."
+description: "Where Norca's access checks are stricter than those of Nomad v1.6.5: node secret IDs, snapshot save and restore, policies bound to jobs, exec into such jobs, links into the secrets directory, and the region of node requests."
 weight: 1
 ---
 
 Norca keeps the API and the ACL system of Nomad v1.6.5, but some of its access checks are stricter.
-All but the last matter only with ACLs enabled.
+All but the last two matter only with ACLs enabled.
 
 | Difference | What to do |
 | --- | --- |
@@ -15,6 +15,7 @@ All but the last matter only with ACLs enabled.
 | [Policies bound to a job match its exact ID](#policies-bound-to-a-job-match-its-exact-id) | Bind the policy to each job that needs it |
 | [Changing a job with bound policies needs them](#changing-a-job-with-bound-policies-needs-them) | Give the token that changes the job the bound policies |
 | [Exec into a job with bound policies needs them](#exec-into-a-job-with-bound-policies-needs-them) | Give the token that runs the exec the bound policies |
+| [The file system API reads no secret through a link](#the-file-system-api-reads-no-secret-through-a-link) | Nothing, unless a tool lists the secrets directory |
 | [The requests of a node stay in its region](#the-requests-of-a-node-stay-in-its-region) | Point each client at the servers of its own region |
 
 ## Node secret IDs are not ACL tokens
@@ -91,6 +92,24 @@ reached, such an exec is refused. See
 **What to do:** give the operators who exec into such jobs the bound policies, or use a management
 token. `alloc-node-exec` into a `raw_exec` task is not isolated from the node; see the
 [`raw_exec` driver](/docs/drivers/raw_exec).
+
+## The file system API reads no secret through a link
+
+In Nomad v1.6.5, the file system API of a client ([`norca alloc fs`](/docs/commands/alloc/fs), the
+logs) refuses to read a file in the `secrets/` or `private/` directory of a task only by the path
+asked for: a symbolic link elsewhere in the allocation directory that points into it is read through.
+A task, or a sidecar that is compromised, can link the secrets of another task of the allocation into
+the shared `alloc/` directory, and any token with `read-fs` or `read-logs` then reads them, the
+workload identity token included. Listing the `secrets/` directory, and `stat` of a file in it, are
+not refused at all.
+
+In Norca **reading, listing and `stat` refuse a path that is or leads into the `secrets/` or
+`private/` directory of a task**, also through links. On Linux the client checks the file it actually
+opened as well, so a link the task swaps after the check leads neither into those directories nor out
+of the allocation directory. This holds with or without ACLs.
+
+**What to do:** nothing, unless a tool listed the `secrets/` directory through the API; it now gets
+an error.
 
 ## The requests of a node stay in its region
 

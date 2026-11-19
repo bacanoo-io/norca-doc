@@ -71,7 +71,7 @@ allocation directory like the one below.
     related to the allocation, such as Vault tokens, that are not shared with tasks
     when using [`image` isolation](#image-isolation). The contents of files in this
     directory cannot be read by the `norca alloc fs` command or via Norca's
-    API.
+    API, also not through a symbolic link elsewhere in the allocation directory.
 
     > [!WARNING]
     > While not shared with tasks that use `image` isolation, this path is
@@ -80,7 +80,9 @@ allocation directory like the one below.
 
   - **«taskname»/secrets/**: This directory is the location provided to the task as
     `NORCA_SECRETS_DIR`. The contents of files in this directory cannot be read
-    by the `norca alloc fs` command. It can be used to store secret data that
+    by the `norca alloc fs` command, and (Norca) the directory cannot be listed
+    nor its files `stat`ed, also not through a symbolic link elsewhere in the
+    allocation directory. It can be used to store secret data that
     should not be visible outside the task. Where possible it is backed by an
     in-memory filesystem and mounted `noexec`.
 

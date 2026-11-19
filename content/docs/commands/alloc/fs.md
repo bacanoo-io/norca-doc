@@ -37,6 +37,10 @@ directory].
 When ACLs are enabled, this command requires a token with the `read-fs`,
 `read-job`, and `list-jobs` capabilities for the allocation's namespace.
 
+(Norca) The `secrets/` and `private/` directories of the tasks can't be read,
+listed or `stat`ed, also not through a symbolic link elsewhere in the
+allocation directory; see the [allocation working directory].
+
 ## General Options
 
 - `-address=<addr>`: The address of the Norca server. Overrides the `NORCA_ADDR`
