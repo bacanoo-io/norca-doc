@@ -51,9 +51,46 @@ $ norca pack run norca-acme --registry=norca --name=acme
   [HTTP-01](#http-01)).
 
 > [!NOTE]
-> Run one instance of `norca-acme`. The answers of the HTTP-01 challenges
-> are in the memory of the instance that placed the order. An order that is
-> open when the instance is lost is continued by the next one.
+> Run one instance of `norca-acme`, or several with
+> [leader election](#leader-election). The answers of the HTTP-01
+> challenges are in the memory of the instance that placed the order. An
+> order that is open when the instance is lost is continued by the next one.
+
+### Leader election
+
+**With `-leader-election`** (a flag of `norca-acme`, off by default; the
+pack runs one instance without it) **several instances are safe**: they
+share a lease, the Variable `controller-lease/<controller>`
+(`controller-lease/norca-acme` by default) in the namespace of
+`-lease-namespace` (`norca-system` by default), and only the instance that
+holds it works. An allocation that was lost but still runs while its
+replacement starts then places no second order.
+
+- **Every side effect waits for the lease:** a call that changes something
+  at the certificate authority (the account, an order, a challenge, the
+  finalization, a revocation), a challenge record in a DNS zone, a write of
+  the secrets of the operator and the status of an issuer are made only
+  while the lease cannot have passed to another instance (the
+  [fence](/docs/features/operator-framework/controllers#fencing-side-effects)
+  of the controller SDK). A refused call changes nothing and counts no
+  attempt of the order.
+- **The ACL policy needs the lease.** The policy the pack installs does not
+  grant it; add to the policy bound to the job:
+
+  ```hcl
+  namespace "norca-system" {
+    variables {
+      path "controller-lease/norca-acme*" {
+        capabilities = ["list", "read", "write"]
+      }
+    }
+  }
+  ```
+
+- **More instances do not share the work.** The HTTP-01 server answers on
+  every instance, but only the one that works knows the answers: a
+  challenge request that reaches another instance gets `404`. DNS-01 does
+  not depend on it.
 
 ## The issuer
 
@@ -281,7 +318,9 @@ asked once more without it: the revocation matters more than its reason.
 ## Limits
 
 - The TLS-ALPN-01 challenge is not supported.
-- One instance of the operator.
+- One instance of the operator works at a time. With
+  [leader election](#leader-election) the others are standbys; without it,
+  run one.
 - DNS types: `rfc2136` and `mock`. The DNS services of the cloud platforms
   are not there yet.
 - A certificate that another client of the same account issued cannot be
