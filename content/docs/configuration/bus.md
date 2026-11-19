@@ -23,7 +23,8 @@ server {
     max_payload     = "1MiB"
     max_connections = 10000
 
-    consul_kv_max_bytes = "256MiB"
+    consul_kv_max_bytes      = "256MiB"
+    reader_compact_threshold = 2000
 
     events {
       enabled        = true
@@ -69,6 +70,14 @@ ports {
   eighth of `max_storage` when that is less. **A write beyond it fails**
   ("the Consul KV of the system bus is full"); no key is dropped. Raise the
   limit, or delete keys.
+
+- `reader_compact_threshold` `(int: 2000)` - How many retired
+  [CDC reader accounts](/docs/features/change-data-capture#guarantees) a server
+  must have before it drops them; they must also be more than the live ones,
+  and a server drops them at most once an hour. **Dropping them closes every
+  connection to the bus of that server once**, as a change of the servers
+  does. A higher value means fewer such reconnections and more memory (about
+  20 kB per retired account). Must be positive.
 
 - `events` - The [event stream](/docs/features/system-bus#the-event-stream)
   of the region and the handling of
@@ -265,7 +274,7 @@ and connects again: nodes, tokens, workload identities, CDC readers and leaf
 nodes. A [TLS reload](/docs/configuration/tls#tls-configuration-reloads) does
 the same, and so does dropping the retired reader accounts: a server retires
 the account of a CDC reader after 5 minutes without a connection, and drops
-the retired ones when it has at least 1000 of them and more than live ones,
+the retired ones when it has at least `reader_compact_threshold` (2000) of them and more than live ones,
 at most once an hour
 ([reader accounts](/docs/features/change-data-capture#guarantees)). NATS
 clients and leaf nodes reconnect on their own; a

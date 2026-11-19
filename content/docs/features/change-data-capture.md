@@ -365,8 +365,9 @@ A reader keeps its consumer and resumes it after a restart.
   same subjects and consumers and notices nothing, since its consumers live
   in the bus, not in the account. A retired account keeps some memory (about
   20 kB) until the server drops it. **A server drops its retired accounts
-  when it has at least 1000 of them and more retired than live ones, at most
-  once an hour.** This reloads the bus of that server: every connection to
+  when it has at least 2000 of them (`reader_compact_threshold` of the
+  [`bus` block](/docs/configuration/bus)) and more retired than live ones, at
+  most once an hour.** This reloads the bus of that server: every connection to
   it (nodes, tokens, workload identities, CDC readers, leaf nodes) is closed
   once and reconnects, as at a change of the servers. The server logs it
   (`dropping the retired reader accounts of the system bus`).
