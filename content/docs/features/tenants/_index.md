@@ -246,6 +246,17 @@ namespace) is kept. Giving an adopted resource back is written the same way,
 so `RestoreFailed` can show for a moment for the same reason; it is tried
 again.
 
+**A role of the tenant is the one of the ID it recorded**, not whatever role
+has its name now. When the tenant's role is deleted by hand and somebody
+creates another role of the same name, that role has another ID and is not
+the tenant's. While the role is in the spec, the next pass drops it from the
+tenant's list and treats it as any role it finds: a `Conflict`, or taken
+over when `acl-role` is in `adopt`. When the role leaves the spec, or the
+tenant is deleted, the tenant deletes nothing: it deletes a role only by the
+recorded ID, and no role has that ID any more. A role the tenant was
+creating whose ID it has not recorded yet (`pending: true`) is the tenant's
+only if it holds what the tenant was creating.
+
 ## Taking over what exists
 
 A namespace (or quota, policy, role, network policy) with the name a tenant
