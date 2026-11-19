@@ -166,6 +166,11 @@ The certificate is a version of the secret at `secret_path`:
   ```shell-session
   $ norca secret put -namespace team-a -label norca.io/certificate=web-tls certs/web
   ```
+- The operator **writes the secret only in the state its pass read**: a
+  secret that somebody else creates or changes while a certificate is being
+  issued is not overwritten. That attempt is not counted as a failure; the
+  next pass, soon after, reads the secret again and decides again, with
+  `SecretConflict` if it is no longer the certificate's.
 - While an order with an external issuer is open, the key that waits for its
   certificate is the item `next_key`; `cert` and `key` keep the current
   certificate until the new one is complete.
@@ -306,7 +311,9 @@ secret.
 
 Deleting a `Certificate` leaves the secret in place, so nothing that reads
 it breaks. With `delete_secret = true` the operator deletes the secret
-first, if it is the certificate's own.
+first, if it is the certificate's own. It destroys only the secret as it
+read it: a secret changed in the meantime is read again first, and kept if
+it is no longer the certificate's.
 
 ## In the web UI
 
