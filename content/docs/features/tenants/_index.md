@@ -231,6 +231,21 @@ it), `Released` (an adopted resource let go as it is, or one that no longer
 exists; also the list of what a deleted tenant gives back) and
 `RestoreFailed` (giving a resource back failed; it is tried again).
 
+**What somebody else writes meanwhile is never overwritten.** Each write of
+the tenant is a check-and-set on what its pass read: a resource is created
+only while it still does not exist, and changed only while it is as the pass
+read it. When somebody else creates a resource of the tenant's name, or
+changes one the tenant created or adopted, between the tenant's read and its
+write, the write is refused and that pass shows a write failure: a
+`WriteFailed` event, `Degraded`, and `Ready` false. The next pass reads again
+and settles: a resource made by somebody else is a `Conflict`, or is adopted
+when its type is in `adopt`; a resource the tenant created or adopted is
+written from the new read, so what was changed meanwhile in the fields a
+tenant does not write (for example the task driver capabilities of a
+namespace) is kept. Giving an adopted resource back is written the same way,
+so `RestoreFailed` can show for a moment for the same reason; it is tried
+again.
+
 ## Taking over what exists
 
 A namespace (or quota, policy, role, network policy) with the name a tenant
