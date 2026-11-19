@@ -268,6 +268,16 @@ framework, run as a job (the `nodescaler-operator` pack), and it follows the
   with it would add none until it is placed again. With leader election (`-leader-election`, on by default) only
   the leader reconciles the groups and sweeps the orphans; the other keeps its cache current and
   takes over when the leader is gone. A third instance is one more standby, not more throughput.
+- **A deposed leader changes nothing.** A leader that was paused or cut off can still be in the
+  middle of a reconcile when the standby takes the lease. Right before every create and delete of
+  an instance, every drain, eligibility, purge or meta change of a node, every status write and
+  event, and the removal of the finalizer, the operator checks that its lease cannot have passed
+  to the other instance (the
+  [fence](/docs/features/operator-framework/controllers#fencing-side-effects) of the controller
+  SDK); when it can, the call is not made, and nothing of that reconcile reaches the status. **A
+  create is idempotent by its request ID** (`<region>/<group>/<number>`, from the status and the
+  listed instances): a create asked again, by the same leader after a lost answer or by a new
+  leader that read the same status and listing, gets the instances of the first one, not new ones.
 - **What is shared out:** the [join endpoint](/docs/features/node-scaling/nodegroup#nodes-that-make-their-own-keys)
   runs on every instance, so the joins and the renewals of the certificates of the nodes are served
   by any of them; the one-time tokens are written check-and-set, so it does not matter which one a
@@ -297,7 +307,8 @@ framework, run as a job (the `nodescaler-operator` pack), and it follows the
 - **Do not run two operators for one region without leader election (`-leader-election=false`).** The
   status writes are check-and-set and the requests to a provider can be repeated, so nothing breaks
   at once, but both would act on the same groups: their writes would conflict and be retried, and
-  two of them could decide about the same node during a replacement or a drain.
+  two of them could decide about the same node during a replacement or a drain. Without leader
+  election there is no fence either.
 - When the leader is lost, nothing is reconciled until the standby has the lease (20 seconds by
   default); the state is in the objects, the nodes and the provider, so the new leader goes on
   from there.

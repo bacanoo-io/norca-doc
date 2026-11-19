@@ -76,8 +76,9 @@ lists.** These rules are what make that safe.
 
 - **A create is idempotent by its `request_id`, also after a restart of the provider.** The operator
   repeats a request after a failure or a restart of its own, and must get the instances of the first
-  one back, not new ones. Keep the request ID on the platform (a tag or a label of the machine), not
-  in memory.
+  one back, not new ones. The same request can also come from two instances of the operator around
+  a change of leader: a deposed leader makes no new call, but one it made just before can still
+  arrive. Keep the request ID on the platform (a tag or a label of the machine), not in memory.
 - **List from the platform, not from memory.** A restarted provider lists the same instances as
   before. The lab restarts its provider to change its limits, and the docker provider finds its
   containers again by their labels.
