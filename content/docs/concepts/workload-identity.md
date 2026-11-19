@@ -119,6 +119,29 @@ A policy applied with `-job` matches **the exact job ID**: a policy for the job
 `example` is not granted to a job `example-2` or `ex`. It is granted to every
 allocation of the job, whoever registered the job.
 
+## Children of Parameterized and Periodic Jobs
+
+The allocations of a child job, an instance of a parameterized job made by
+[`norca job dispatch`](/docs/commands/job/dispatch) or a launch of a periodic
+job, **get the policies associated with the parent**, the group- and
+task-scoped ones included, and their workload identity names the parent as its
+job.
+
+Dispatching needs only `dispatch-job` in the namespace (forcing a periodic
+launch `dispatch-job` or `submit-job`), not the parent's policies. The caller
+chooses the dispatch payload and the values of the meta keys the parent
+declares; everything else of the child comes from the parent. **Treat the
+payload and the meta of a parameterized job with associated policies as
+untrusted input** in its tasks, and give `dispatch-job` in its namespace only
+to those who may start it. An [admission policy](/docs/features/admission-control)
+can narrow dispatch further: its rules see the child job with
+`request.operation == "dispatch"`.
+
+A job that is both parameterized and periodic is an exception: dispatching it
+makes a periodic child, and the launches of that child have the child as their
+parent. **These launches get none of the policies associated with the
+parameterized job**, and their workload identity names the dispatched child.
+
 ## Changing a Job with Associated Policies
 
 **A registration that changes a job with associated policies needs a token

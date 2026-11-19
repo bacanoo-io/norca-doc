@@ -47,7 +47,10 @@ When ACLs are enabled, this command requires a token with the `dispatch-job`
 capability for the job's namespace. The `list-jobs` capability is required to
 run the command with a job prefix instead of the exact job ID. The `read-job`
 capability is required to monitor the resulting evaluation when `-detach` is
-not used.
+not used. **The dispatched job runs with the ACL policies bound to the
+parameterized job**, which the dispatching token doesn't need to hold; treat
+the payload and the meta as untrusted input in its tasks. See [children of
+parameterized and periodic jobs](/docs/concepts/workload-identity#children-of-parameterized-and-periodic-jobs).
 
 See the [multiregion] documentation for additional considerations when
 dispatching parameterized jobs.

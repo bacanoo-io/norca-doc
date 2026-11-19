@@ -25,7 +25,9 @@ placement information for the forced evaluation. The monitor will exit after
 scheduling has finished or failed.
 
 When ACLs are enabled, this command requires a token with the `submit-job`
-capability for the job's namespace. The `list-jobs` capability is required to
+or `dispatch-job` capability for the job's namespace. The launch runs with the
+ACL policies bound to the periodic job ([children of parameterized and
+periodic jobs](/docs/concepts/workload-identity#children-of-parameterized-and-periodic-jobs)). The `list-jobs` capability is required to
 run the command with a job prefix instead of the exact job ID. The `read-job`
 capability is required to monitor the resulting evaluation when `-detach` is
 not used.

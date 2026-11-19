@@ -1801,6 +1801,11 @@ The table below shows this endpoint's support for
 | ---------------- | ------------------------ |
 | `NO`             | `namespace:dispatch-job` |
 
+(Norca) The dispatched job runs with the ACL policies bound to the
+parameterized job, which the caller doesn't need to hold; its `Payload` and
+`Meta` are the caller's input. See [children of parameterized and periodic
+jobs](/docs/concepts/workload-identity#children-of-parameterized-and-periodic-jobs).
+
 ### Parameters
 
 - `:job_id` `(string: <required>)` - Specifies the ID of the job (as specified
