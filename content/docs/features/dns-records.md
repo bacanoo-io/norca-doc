@@ -196,6 +196,13 @@ record with its load balancer.
   shop.team-a.example.com in the zone example.com changed while norca-dns
   wrote them; nothing was written`, and the record is looked at again a
   minute later.
+- **Only the leader writes the zones.** With leader election
+  (`-leader-election` of `norca-dns`) the operator writes or removes a
+  record set only while its lease cannot have passed to another instance
+  (the [fence](/docs/features/operator-framework/controllers#fencing-side-effects)
+  of the controller SDK); an instance that may no longer lead writes
+  nothing to the zone and records no event or condition for it, and the
+  leader looks at the record again.
 - **A changed name or type** removes the old record set first, before the
   record waits for a zone or for values (`ZoneNotFound`,
   `RecordsNotEnabled`, `ZoneUnavailable`, `NoValues`) or for another record
