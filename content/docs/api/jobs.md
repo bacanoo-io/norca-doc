@@ -141,7 +141,9 @@ policies](/docs/concepts/workload-identity#changing-a-job-with-associated-polici
 - `EnforceIndex` `(bool: false)` - If set, the job will only be registered if the
   passed `JobModifyIndex` matches the current job's index. If the index is zero,
   the register only occurs if the job is new. This paradigm allows check-and-set
-  style job updating.
+  style job updating. (Norca) The index is checked again when the registration
+  is applied, so a job created or changed after the server checked the request
+  is never overwritten: the registration then fails with the same error.
 
 - `DryRunCapacity` `(bool: false)` - The server that receives the request runs
   a dry run of the placements on its own copy of the state before the job goes
@@ -1731,7 +1733,9 @@ policies](/docs/concepts/workload-identity#changing-a-job-with-associated-polici
 - `EnforceIndex` `(bool: false)` - If set, the job will only be registered if the
   passed `JobModifyIndex` matches the current job's index. If the index is zero,
   the register only occurs if the job is new. This paradigm allows check-and-set
-  style job updating.
+  style job updating. (Norca) The index is checked again when the registration
+  is applied, so a job created or changed after the server checked the request
+  is never overwritten: the registration then fails with the same error.
 
 - `DryRunCapacity` `(bool: false)` - The server that receives the request runs
   a dry run of the placements on its own copy of the state before the job goes
@@ -1893,7 +1897,8 @@ token, as for [registering a job](#create-job).
 
 - `EnforcePriorVersion` `(integer: nil)` - Optional value specifying the current
   job's version. This is checked and acts as a check-and-set value before
-  reverting to the specified job.
+  reverting to the specified job. (Norca) The check holds until the revert is
+  applied: a job changed after the check fails the revert.
 
 - `ConsulToken` `(string:"")` - Optional value specifying the [consul token](/docs/commands/job/revert/)
   used for Consul [service identity policy authentication checking](/docs/configuration/consul#allow_unauthenticated).

@@ -112,7 +112,8 @@ policies](/docs/concepts/workload-identity#changing-a-job-with-associated-polici
   updated if the passed job modify index matches the server side version.
   **If a check-index value of zero is passed, the job is only registered if it does
   not yet exist.** If a non-zero value is passed, it ensures that the job is being
-  updated from a known state. The use of this flag is most common in conjunction
+  updated from a known state. (Norca) The servers check the index again when they
+  apply the registration, so no change in between is overwritten. The use of this flag is most common in conjunction
   with [`job plan` command].
 
 - `-detach`: Return immediately instead of monitoring. A new evaluation ID
