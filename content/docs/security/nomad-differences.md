@@ -98,7 +98,7 @@ token. `alloc-node-exec` into a `raw_exec` task is not isolated from the node; s
 
 In Nomad v1.6.5, a deployment with [`auto_revert`](/docs/job-specification/update#auto_revert)
 registers the latest stable version of the job again when it fails, without a token. Any token with
-`submit-job` can mark any version stable (`PUT /v1/job/:job_id/stable`) and fail a running deployment
+`submit-job` can mark any version stable (`POST /v1/job/:job_id/stable`) and fail a running deployment
 (`norca deployment fail`), so it can make the revert run a version from before the policies were bound
 to the job, under those policies.
 
