@@ -263,8 +263,13 @@ control plane, and the data is on both disks.
 another address), **every connection to the bus of a server is closed once**
 and connects again: nodes, tokens, workload identities, CDC readers and leaf
 nodes. A [TLS reload](/docs/configuration/tls#tls-configuration-reloads) does
-the same. NATS clients reconnect on their own; a
-[CDC reader](/docs/features/change-data-capture) gets its account back when it
+the same, and so does dropping the retired reader accounts: a server retires
+the account of a CDC reader after 5 minutes without a connection, and drops
+the retired ones when it has at least 1000 of them and more than live ones,
+at most once an hour
+([reader accounts](/docs/features/change-data-capture#guarantees)). NATS
+clients and leaf nodes reconnect on their own; a
+[CDC reader](/docs/features/change-data-capture) gets an account again when it
 reconnects and continues from its durable consumer.
 
 [`norca operator bus status`](/docs/commands/operator/bus/status) shows the

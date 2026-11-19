@@ -352,10 +352,24 @@ A reader keeps its consumer and resumes it after a restart.
 - **Retention:** `max_age` (72h) and `max_bytes` of the
   [`bus` block](/docs/configuration/bus); the streams share `max_bytes`.
 - **Reconnects:** when the servers of the region change (a server joins,
-  leaves or gets another address) and at a TLS reload, the connection of a
-  reader is closed once, as every connection to the bus is. The reader
-  reconnects (NATS clients do it on their own), gets its account back, and
-  continues from its durable consumer where it stopped.
+  leaves or gets another address), at a TLS reload and when a server drops
+  its retired reader accounts (below), the connection of a reader is closed
+  once, as every connection to the bus of that server is. The reader
+  reconnects (NATS clients and leaf nodes do it on their own), gets an
+  account again, and continues from its durable consumer where it stopped.
+  A reader that connects while the server reloads is refused and
+  connects again.
+- **Idle reader accounts are retired:** a reader account lives on the server
+  the reader connected to. **After 5 minutes without a connection the server
+  retires it**; a reader that comes back later gets a new account with the
+  same subjects and consumers and notices nothing, since its consumers live
+  in the bus, not in the account. A retired account keeps some memory (about
+  20 kB) until the server drops it. **A server drops its retired accounts
+  when it has at least 1000 of them and more retired than live ones, at most
+  once an hour.** This reloads the bus of that server: every connection to
+  it (nodes, tokens, workload identities, CDC readers, leaf nodes) is closed
+  once and reconnects, as at a change of the servers. The server logs it
+  (`dropping the retired reader accounts of the system bus`).
 
 ## What CDC does not give
 

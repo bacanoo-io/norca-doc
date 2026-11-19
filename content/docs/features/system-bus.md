@@ -181,7 +181,10 @@ reader needs** rather than `norca.eu.>`. **Wildcards are whole tokens.**
 > connection**, as the user `cdc` with the token as the password
 > (`nats --user cdc --password "$TOKEN"`, nats.go `nats.UserInfo("cdc", token)`);
 > its plain connection has the `bus` rule and the changes live, without JetStream.
-> A fetch waits at most 30 seconds.
+> A fetch waits at most 30 seconds. The account is made on the server the reader
+> connects to and is retired after 5 minutes without a connection; a reader that
+> comes back later gets a new one
+> ([guarantees](/docs/features/change-data-capture#guarantees)).
 
 **A task connects with its workload identity instead of a token.** The rules
 of the policies bound to its job, group or task apply

@@ -185,8 +185,10 @@ certificate and TLS settings as well:
 
 - **Its client and leaf node connections are closed**, all of them (nodes,
   tokens, workload identities, CDC readers, leaf nodes), and connect again
-  under the new configuration. NATS clients reconnect on their own; a CDC
-  reader continues from its durable consumer.
+  under the new configuration, as at a
+  [change of the servers](/docs/configuration/bus#clustering) or when the
+  server drops its retired reader accounts. NATS clients and leaf nodes
+  reconnect on their own; a CDC reader continues from its durable consumer.
 - **Its routes to the other servers are checked against the new CA and
   distrusted CA list;** a route the new configuration refuses is closed. A
   route that passes stays open, so a renewed certificate of the same CA does

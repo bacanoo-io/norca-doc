@@ -103,7 +103,8 @@ A reader whose token also has a `bus` rule reads the consumer over a
 connection of its own, logged in as the user `cdc` with the token as the
 password ([connecting](/docs/features/change-data-capture#connecting)).
 The connection of a reader is closed once when the servers of the region
-change and at a TLS reload; it reconnects and continues from the consumer
+change, at a TLS reload and when the server drops its retired reader
+accounts; it reconnects and continues from the consumer
 ([guarantees](/docs/features/change-data-capture#guarantees)).
 
 ## Read the Consumer
