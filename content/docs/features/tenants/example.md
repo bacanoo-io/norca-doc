@@ -54,83 +54,76 @@ only the lines this example depends on.
 ### The pack registry
 
 The packs below come from the [Norca pack registry](/docs/features/packages/registry),
-pinned to the tag `v0.4.0`:
+pinned to the tag `v0.5.0`:
 
 ```shell-session
-$ norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.4.0
+$ norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.5.0
 ```
+
+### The namespace of the operators
+
+The three operators of this example (the LoadBalancer operator,
+norca-provider and norca-dns) are operator packs: their jobs run with ACL
+policies bound to them, in the namespace `norca-system`, where their token
+Variables and secrets are too. The packs expect the namespace and don't
+create it (see [operator packs](/docs/features/packages/registry#packs));
+create it once:
+
+```shell-session
+$ norca namespace apply -description "Norca operators" norca-system
+```
+
+Give rights in it to the operators of the cluster only. A team never needs
+it: the jobs that serve the team stay out of its quota and out of its reach.
+
+The jobs keep off nodes with the `raw_exec` driver and run their binaries
+with `exec`. Build `norca-loadbalancer`, `norca-provider` and `norca-dns` in
+a checkout of [norca-platform](https://github.com/bacanoo-io/norca-platform)
+(`go build ./cmd/<name>`) and install them on the nodes in `/usr/local/bin`,
+where the packs look for them (`binary`). Nothing in this example needs
+`raw_exec`; only the `docker` platform of norca-provider, which calls the
+docker CLI of its host, does, with `driver = "raw_exec"` and
+`allow_raw_exec_nodes = true`. On a lab whose nodes all have `raw_exec`, add
+`--var=allow_raw_exec_nodes=true` to each `norca pack run` below.
 
 ### The LoadBalancer operator, for the namespace of the team
 
-The LoadBalancer operator (`norca-loadbalancer`) keeps the `LoadBalancer`
-objects of the namespaces its `-namespace` flag names; `"*"` is every
-namespace its token can access. Here it has to keep the ones of `team-a`,
-from a job that is **not** in that namespace.
-
-> [!NOTE]
-> The [loadbalancer-operator pack](/docs/features/packages/registry#loadbalancer-operator)
-> starts the controller for one namespace: the one its own job runs in
-> (`namespace`). In the namespace of a tenant that job would count against
-> the quota of the team and keep the namespace from being deleted. This
-> example therefore runs the controller from the files
-> of the [operator](https://github.com/bacanoo-io/norca-platform/tree/main/loadbalancer/operator)
-> in the repository `norca-platform`, in the namespace `default`, for every
-> namespace. From version 0.4.0 of the pack, which the tag `v0.4.0` of the
-> registry does not hold yet, its variable `watch_namespace` does the same,
-> and the operator packs on the registry's `main` branch run their jobs in the
-> namespace `norca-system` by default, off the nodes with the `raw_exec`
-> driver (see [operator packs](/docs/features/packages/registry#packs)).
-
-The ACL policy of the operator, `loadbalancer-policy.hcl`, has the rules of
-the namespace `default`, where the job runs. Two things are added to it. In
-the `variables` block of the namespace `default`, the tokens the operator
-sends to the providers (the `token_variable` of a class):
-
-```hcl
-    path "providers/*" {
-      capabilities = ["read"]
-    }
-```
-
-And a block for the namespace of the tenant:
-
-```hcl
-# The namespace of a tenant: its services, and its LoadBalancer objects.
-namespace "team-a" {
-  capabilities = ["list-jobs", "read-job", "submit-job"]
-
-  variables {
-    path "nomad/jobs/lb-*" {
-      capabilities = ["list", "read", "write", "destroy"]
-    }
-  }
-
-  object "norca.io/LoadBalancer" {
-    capabilities = ["read", "write", "write-status", "write-events", "manage-finalizers"]
-  }
-}
-```
-
-A block `namespace "*"` instead of `namespace "team-a"` covers every tenant,
-also the ones written later.
-
-Then, in the directory `loadbalancer/operator` of a checkout of the
-repository:
+The LoadBalancer operator (`norca-loadbalancer`) comes from the
+[loadbalancer-operator pack](/docs/features/packages/registry#loadbalancer-operator).
+Its controller job runs in `norca-system`, and it keeps the `LoadBalancer`
+objects of the namespace its variable `watch_namespace` names (`default` by
+default). Here it has to keep the ones of `team-a`, from a job that is
+**not** in that namespace: in the namespace of a tenant the job would count
+against the quota of the team and keep the namespace from being deleted.
 
 ```shell-session
-$ norca object-kind apply loadbalancer.kind.hcl
-$ norca object-kind apply loadbalancerclass.kind.hcl
-$ norca acl policy apply -namespace default -job loadbalancer-controller \
-    loadbalancer-controller loadbalancer-policy.hcl
-$ norca job run -var 'namespace=*' -var 'objects=native' loadbalancer.norca.hcl
+$ norca pack run loadbalancer-operator --registry=norca --var='watch_namespace=*'
 ```
 
-The job runs two instances of the controller with leader election; its
-header says how to build the binary and install it on the nodes. The flags
-for the providers (`-class-ca-file`, `-class-ttl`, `-class-token-namespace`)
-are described in
-[Load balancer providers](/docs/features/operator-framework/loadbalancer-providers);
-add the ones your provider needs to the `args` of the job.
+`"*"` is every namespace: one release serves `team-a` and every tenant
+written later. `watch_namespace=team-a` would serve this tenant only, and
+each further tenant would need a release of its own (with
+`loadbalancer_kind_enabled=false` and `class_kind_enabled=false`, as the
+kinds belong to the release that installed them first).
+
+The release registers the kinds `norca.io/LoadBalancer` and
+`norca.io/LoadBalancerClass`, and binds the ACL policy of the operator to
+its job, so no policy is written by hand. The policy gives the controller:
+
+- in every watched namespace, `team-a` among them: `list-jobs`, `read-job`
+  and `submit-job`, the Variables `nomad/jobs/lb-*` of its proxy jobs, and
+  `read`, `write`, `write-status`, `write-events` and `manage-finalizers` on
+  the `LoadBalancer` objects;
+- in `norca-system`: its leader election leases, and `read` on the tokens it
+  sends to the providers: the Variables `providers/*` (`class_token_path`)
+  of the namespace of the job (`class_token_namespace`, empty by default);
+- `read` on the `LoadBalancerClass` objects and on the nodes.
+
+The job runs two instances of the controller with leader election. The pack
+variables `class_ca_cert` (the CA of the https certificate of a provider,
+when a private CA signed it), `class_ttl` and `class_allow_http` set the
+flags described in
+[Load balancer providers](/docs/features/operator-framework/loadbalancer-providers).
 
 ### norca-provider: a load balancer class and a DNS zone
 
@@ -138,8 +131,7 @@ add the ones your provider needs to the `args` of the job.
 serves both things the example needs from outside the cluster: the load
 balancer class `edge`, and the DNS zone `example.com`. These are the
 `providers` of its configuration (the variable `providers` of the
-[norca-provider pack](/docs/features/packages/registry#norca-provider),
-0.4.0 or later):
+[norca-provider pack](/docs/features/packages/registry#norca-provider)):
 
 ```json
 [
@@ -170,21 +162,45 @@ balancer class `edge`, and the DNS zone `example.com`. These are the
   an address of the machine norca-provider runs on (`advertise_address`),
   and `ports` are the frontend ports the class offers. Any other class works
   the same way in this example: a load balancer of a cloud has its own
-  address.
+  address. Keep norca-provider on the machine of `advertise_address`, for
+  example with a node pool of its own (`node_pool` of the pack).
 - **The zone.** `"records": true` lets norca-dns write record sets in the
   zone. Without it the zone serves only the challenge records of
   [certificates from ACME](/docs/features/certificates-acme#dns-01).
-- **The tokens.** `providers/edge` and `providers/dns-eu` are Variables of
-  the namespace `default` (item `token`) that the two operators read. The
-  `env:` values are items of the Variable `nomad/jobs/norca-provider`
-  (`secrets = true` of the pack).
+- **The tokens.** Each token is written twice, both times in
+  `norca-system`. The `env:` values are items of the Variable of the job,
+  `nomad/jobs/norca-provider` (`secrets = true` of the pack). The same
+  tokens are in `providers/edge` and `providers/dns-eu` (item `token`), the
+  paths the operators read: the LoadBalancer operator and norca-dns read
+  `providers/*` of their own namespace by default.
 - **https.** The two operators call norca-provider over https
-  (`tls_enabled` of the pack); they accept an http endpoint only when told
-  to, for a lab.
+  (`tls_enabled` of the pack, with the items `tls_cert` and `tls_key` of the
+  job's Variable); they accept an http endpoint only when told to, for a
+  lab.
 
-`provider.hcl` holds the variable `providers` with this JSON and the other
-values of the pack. The kind `norca.io/LoadBalancerClass` was registered in
-the step before, so the class can register:
+```shell-session
+$ norca var put -namespace norca-system nomad/jobs/norca-provider \
+    EDGE_TOKEN=... DNS_TOKEN=... TSIG_SECRET=... \
+    tls_cert=@provider.crt tls_key=@provider.key
+$ norca var put -namespace norca-system providers/edge token=...
+$ norca var put -namespace norca-system providers/dns-eu token=...
+```
+
+`provider.hcl` holds the values of the pack, with the JSON above:
+
+```hcl {filename="provider.hcl"}
+secrets     = true
+tls_enabled = true
+providers   = <<EOT
+[
+  ... the two providers above ...
+]
+EOT
+```
+
+The pack runs in `norca-system` by default. The kind
+`norca.io/LoadBalancerClass` was registered in the step before, so the
+class can register:
 
 ```shell-session
 $ norca pack run norca-provider --registry=norca -f provider.hcl
@@ -194,14 +210,16 @@ $ norca pack run norca-provider --registry=norca -f provider.hcl
 
 The operator of the `DNSRecord` objects, from the
 [norca-dns pack](/docs/features/packages/registry#norca-dns). It keeps the
-records of every namespace:
+records of every namespace, from its job in `norca-system`, and reads the
+token of the zone from `providers/dns-eu` there:
 
 ```shell-session
 $ norca pack run norca-dns --registry=norca
 ```
 
 If the certificate of norca-provider is signed by a private CA, give the CA
-to the pack in `zone_ca_cert`.
+to this pack in `zone_ca_cert`, and to the loadbalancer-operator pack in
+`class_ca_cert`.
 
 ### What you see
 
@@ -210,8 +228,9 @@ to the pack in `zone_ca_cert`.
 | `norca object list norca.io/LoadBalancerClass` | the class `edge` |
 | `norca object get norca.io/LoadBalancerClass edge` | `spec.endpoint`, `spec.capabilities.ports = "8000-8999"`, and a recent `status.heartbeat` |
 | `norca object get norca.io/DNSZone example.com` | `spec.records = true` and a recent `status.heartbeat` |
-| `norca job status loadbalancer-controller` | two running allocations |
-| `norca job status norca-dns` | one running allocation |
+| `norca job status -namespace norca-system loadbalancer-controller` | two running allocations |
+| `norca job status -namespace norca-system norca-provider` | one running allocation |
+| `norca job status -namespace norca-system norca-dns` | one running allocation |
 
 ## 2. The tenant
 
