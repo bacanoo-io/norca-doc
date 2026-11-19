@@ -371,6 +371,21 @@ new version, like `norca job revert`. The release becomes `failed`, its deployed
 previous one, and the failed revision is kept for inspection. With `--atomic=false` the release stays
 as far as it got.
 
+**The restore puts back only what is still as the operation left it.** It reads each resource again
+right before it acts. A resource somebody else changed after the operation's write, or created again
+after the operation deleted it, is theirs: it is left as it is, and the operation records a warning
+naming it (`status.lastOperation.warnings`), for example
+`namespace "web" was not restored: it changed after the operation wrote it, and is left as it is`.
+The write back is a check-and-set against that read where the endpoint of the type has one
+(namespaces, quotas, ACL policies, Variables, object kinds, objects and jobs; of the deletions, those
+of Variables and objects), so a change made in between is kept as well, with the same kind of
+warning; for the other writes and deletions the one request after the read is the window left. A
+resource the restore wrote back or created again stays the release's: `status.resources` records it
+with its modify index and version after the restore. In a region that is not the authoritative
+region, a namespace, quota or ACL policy of a release that is not a
+[multi-region install](#multi-region-installs) is compared with its replicated copy, which has
+indexes of its own: the restore reports it as changed and leaves it.
+
 Without `--atomic`, the namespace decides: **a namespace is a production namespace when its meta
 `environment` is `production` or `prod`** (case insensitive), and operations on releases there are
 atomic. The namespace meta `pack.atomic = "true"` or `"false"` overrides this for any namespace:

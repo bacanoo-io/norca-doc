@@ -56,7 +56,7 @@ This command takes the [operation options](/docs/commands/pack#operation-options
 
 ## Release options
 
-- `--atomic=<string>` - `"true"` restores the previous revision if any step of the release fails (resources, deployments, hooks); `"false"` leaves a failed release as far as it got. If not set, production namespaces (namespace meta `environment = "production"` or `"prod"`, or `pack.atomic`) are atomic.
+- `--atomic=<string>` - `"true"` restores the previous revision if any step of the release fails (resources, deployments, hooks); `"false"` leaves a failed release as far as it got. If not set, production namespaces (namespace meta `environment = "production"` or `"prod"`, or `pack.atomic`) are atomic. The restore puts back only what is still as the operation left it: a resource somebody else changed or created again meanwhile is left as it is, with a warning of the operation in the release (see [atomic mode](/docs/features/packages/releases#atomic-mode-and-production-namespaces)).
 
 - `--client-side` `(default: false)` - Deploy the jobs from the client, as Nomad Pack does, instead of letting the servers apply the release; the servers only record the revision. Also set by `NORCA_PACK_CLIENT_SIDE=1` (or `NORCA_PACK_CLIENT_SIDE`).
 

@@ -169,7 +169,11 @@ writes anything, so nothing is written then; see
   Variables but **never stored in the release**.
 
 - `Atomic` `(bool: <optional>)` - Restore the previous state on failure; if unset, the namespace
-  decides (production namespaces are atomic).
+  decides (production namespaces are atomic). The restore puts back only what is still as the
+  operation left it: a resource somebody else changed after the operation's write, or created again
+  after the operation deleted it, is left as it is, with a warning naming it in
+  `Status.LastOperation.Warnings` of the release (see
+  [atomic mode](/docs/features/packages/releases#atomic-mode-and-production-namespaces)).
 
 - `Wait` `(bool: false)` - Wait for the deployments of the jobs.
 
