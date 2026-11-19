@@ -212,7 +212,11 @@ Managing kinds needs `operator` write. See the
 - `replicated = true` is reserved: replication of kinds across regions is not
   implemented and the servers reject it. Controllers run per region.
 - Leader election of controllers uses a lease Variable written with
-  check-and-set; there is no native lease object.
+  check-and-set; there is no native lease object. A call outside the
+  servers (a cloud or DNS API) carries no fencing token the other system
+  could check: the
+  [fence](/docs/features/operator-framework/controllers#fencing-side-effects)
+  of a reconcile is a check of the clock right before the call.
 - Type-bound webhooks are https only, without client certificates.
 - There are no server-wide default limits and no limits on event stream
   subscriptions; limits apply only to kinds with a `limits` block.

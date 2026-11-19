@@ -26,7 +26,7 @@ separate module: projects use `replace` directives to a Norca checkout
 | `Informer` | Lists the objects of a kind, follows the `CustomObject` event topic and keeps a local cache; lists again when the server answers `410 Gone`. |
 | `Queue` | Deduplicating work queue with per-key exponential backoff and an overall rate limit. A key is never reconciled by two workers at once. |
 | `Controller` | Runs the `Reconciler` for the keys the informer, the owned jobs watch and extra `Source`s put on the queue, with periodic resynchronization. |
-| `LeaderElector` | Leader election over a lease Variable written with check-and-set. |
+| `LeaderElector` | Leader election over a lease Variable written with check-and-set. `Leading` (also on `Controller`) is the [fence](#fencing-side-effects) of a side effect that no check-and-set protects. |
 | `Objects` | Reads and writes objects: spec, status (with check-and-set retries), finalizers, event log. |
 | `EventRecorder` | Writes the object event log and drops repetitions. |
 | `CommonStatus`, `Condition` | Status conventions: `observedGeneration` and the `Ready`, `Progressing`, `Degraded` conditions. |
@@ -164,8 +164,11 @@ reconciles. The lease is a Variable at `controller-lease/<controller name>`
 (configurable with `LeaderElectionConfig.Path`) written with check-and-set. The
 leader renews it every 4 seconds; candidates take over a lease that has not
 changed for 20 seconds, measured with their own clock, so clock skew does not
-matter. `ReleaseOnCancel` releases the lease on shutdown so the other instance
-takes over at once.
+matter. A leader that has not renewed it for 15 seconds, counted from the start
+of its last successful renewal, stops leading (the renew deadline, 5 seconds
+before another candidate may take the lease). `ReleaseOnCancel` releases the
+lease on shutdown so the other instance takes over at once. The three times are
+`LeaseDuration`, `RenewDeadline` and `RetryPeriod` of `LeaderElectionConfig`.
 
 What happens when the leader is in trouble (checked in the lab with the node
 scaling operator):
@@ -178,11 +181,64 @@ scaling operator):
   partition) stops renewing; the other instance takes the lease 20 seconds after
   the last renewal and goes on from the state in the cluster. When the old
   leader comes back it reads the lease, sees another holder and does not lead
-  again; only one instance reconciles.
+  again; only one instance reconciles. A reconcile that was already running
+  when it stopped can go on, though: its calls outside the servers are
+  guarded by [`Leading`](#fencing-side-effects).
+- **A lease write answered after the renew deadline does not make the
+  candidate the leader.** The other candidates count the 20 seconds from a
+  moment soon after the write started, so a candidate whose write took 15
+  seconds or more to be answered tries again after the retry period instead
+  of leading. The lease names it then: the next attempt renews it if nobody
+  wrote it since, and otherwise another candidate takes it over, as after
+  any leader that stopped renewing.
 - **Which instance leads:** the item `holder` of the lease Variable is the
   allocation ID of the leader
   (`norca var get -namespace <ns> controller-lease/<controller name>`), and
   `norca_controller_leader` is `1` on the leader and `0` on the others.
+
+### Fencing side effects
+
+A write to the servers that carries a check-and-set index fails by itself
+when another leader wrote in between. **A call outside the servers has no
+such check**: a cloud API that creates a machine, a DNS service that changes
+a zone, a certificate authority. A leader that was paused, or whose
+goroutines were starved, notices late that its term ended, and a reconcile
+of that term could still make the call after the lease passed to another
+instance. `Controller.Leading(ctx)` is the fence for it: call it with the
+context of the reconcile right before the side effect, and make the side
+effect only if it returns `nil`.
+
+```go
+if err := r.ctrl.Leading(ctx); err != nil {
+	return 0, err // wraps controller.ErrNotLeader
+}
+_, err := r.cloud.CreateMachine(ctx, req)
+```
+
+- **What it checks:** the controller leads, the context is not done (the
+  context of a reconcile ends with its term), and less than the renew
+  deadline less a tenth of it has passed since the start of the last
+  successful renewal: 13.5 seconds with the defaults. It reads the clock
+  itself, so it refuses also while the renewal loop has not yet noticed the
+  deadline. Otherwise it returns an error wrapping `controller.ErrNotLeader`.
+- **The margin** (`RenewDeadline/10`) is for the time between the check and
+  the moment the call leaves the process. A call allowed at the last moment
+  still has `LeaseDuration - RenewDeadline` (5 seconds with the defaults) to
+  arrive before another candidate can lead.
+- **What it does not bound:** a call that takes longer than that to arrive,
+  and a pause of the process after the check. Make the side effects
+  idempotent as well (a request ID the other system keeps, for example), so
+  that a call that still arrives late does no harm.
+- **A reconcile that returns an error wrapping `ErrNotLeader` is not a
+  failure:** the controller logs it at info level, counts it as `requeue` in
+  `norca_controller_reconcile_total`, and tries the object again with
+  backoff while it leads.
+- **Without leader election** `Leading` returns `nil`.
+
+`LeaderElector.Leading(ctx)` is the same check for a program that runs a
+`LeaderElector` without a `Controller`; there, `ctx` is the context the
+elector passed to the function that runs while it leads, or one derived
+from it.
 
 ### Metrics
 
