@@ -38,7 +38,8 @@ stateDiagram-v2
   operators of the servers put it on and take it off (tenants, volume
   requests, snapshot schedules). On the finalizers endpoint only a management
   token may add or remove it; any other token gets `403`, also with
-  `manage-finalizers`.
+  `manage-finalizers`. An apply from any other token leaves it out of the
+  finalizers it adds.
 - An object has at most 32 finalizers. Names start and end with a letter or
   digit and may contain `.`, `_`, `/` and `-`.
 

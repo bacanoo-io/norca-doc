@@ -273,7 +273,10 @@ object marked for deletion, the object is then removed.
 **Adding or removing `norca.io/operators` needs a management token.** The
 servers manage this finalizer themselves; a request from any other token that
 would add it to an object without it, or remove it from an object that has it,
-is refused with `403`.
+is refused with `403`. An apply of an object from such a token leaves it out of
+the finalizers it adds instead of refusing the object, so an exported object
+or a [selective backup restore](/docs/commands/operator/backup/restore) still
+goes through; the built-in operators put it on their own objects themselves.
 
 ## Read the Event Log
 

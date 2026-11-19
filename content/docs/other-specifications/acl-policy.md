@@ -250,7 +250,7 @@ list of `capabilities`, or both:
 | write | Create, update and delete objects (spec and metadata); set the scale. |
 | write-status | Write the status of objects. |
 | write-events | Write the event log of objects. |
-| manage-finalizers | Add and remove finalizers. It does not cover removing `norca.io/operators`, which only the servers or a management token can remove. |
+| manage-finalizers | Add and remove finalizers. It does not cover adding or removing `norca.io/operators`, which only the servers or a management token can do; an apply leaves it out. |
 | deny | No permissions on objects of the kind. |
 
 `policy = "read"` grants `read`, and `policy = "write"` grants `read` and
