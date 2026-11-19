@@ -261,7 +261,8 @@ doesn't compile is rejected when the pack is loaded.
 
 The leader runs one operation per release at a time (a second one gets `409 Conflict`):
 
-1. validation: requirements, admission (signatures), ownership conflicts;
+1. validation: requirements, admission (signatures), the claims of the pack's resources (below),
+   ownership conflicts;
 2. `pre-install` or `pre-upgrade` hooks;
 3. every resource in the fixed order, through the normal endpoint of its type with the caller's token
    (admission, quotas and ACL apply), then the resources of the previous revision that are no longer
@@ -277,7 +278,7 @@ sequenceDiagram
     participant L as Leader
     participant E as Endpoints
     C->>L: rendered resources + pack metadata
-    L->>L: requirements, admission, ownership
+    L->>L: requirements, admission, claims, ownership
     L->>E: pre-install / pre-upgrade hooks
     L->>E: apply resources in order (caller's token)
     L->>E: delete resources no longer in the pack
@@ -293,6 +294,19 @@ job diffs, without writing. `rollback <release> [revision]` applies the content 
 packs installed as releases) runs the `pre-delete` hooks, deletes the resources in reverse order, runs
 the `post-delete` hooks and deletes the release; `--orphan` keeps the resources and `--no-hooks`
 skips the hooks.
+
+**A resource is written by one operation at a time.** An install, upgrade or rollback claims every
+resource of its pack (hooks aside) on the leader before it writes anything, the release itself
+included, and holds the claims until it has recorded in the release what it owns. The
+[tenant operator](/docs/features/tenants) claims the resources of a tenant the same way for each of
+its passes. A resource that another release operation or a tenant pass is writing at that moment
+fails the operation with `409 Conflict`, and nothing is written, for example
+`resources of the pack are being written by other operations: namespace "shared" is being written by release "apps/web"`.
+The other operation is named only to a caller who may write the resource; anybody else reads
+`is being written by another operation`. Run the operation again when the other one is over.
+`norca pack plan` (a dry run) claims nothing, but the resources other operations are writing are
+conflicts for it too (`409 Conflict`); one the caller may not write is shown as denied in the plan
+instead.
 
 An operation interrupted by a leader change is marked `failed` by the new leader.
 
@@ -429,6 +443,16 @@ conflict too (`--deploy-override` takes them over). Jobs of a release carry the 
 `pack.release_namespace` and the owner reference of the operator framework (`norca.owner`,
 `norca.owner.kind`); custom objects get an owner reference to the release. Releases delete their
 resources themselves, so the object garbage collector never deletes them, and `--orphan` keeps them.
+
+`--take-ownership` takes a resource from the release that owns it, never from an operation that is
+writing it now: a resource another release operation or a tenant pass has claimed is a conflict with
+the flag too (see [install, upgrade, rollback, uninstall](#install-upgrade-rollback-uninstall)). **An
+operation fails if a resource gets another owner while it runs**: right before each write it checks
+that it still holds the claim of the resource and that no tenant and no other release (except one it
+takes the resource from) owns it now, for example
+`namespace "shared" belongs to release "apps/other" now` (a caller who may not write the resource
+reads `has another owner now`). On one leader the claims already rule this out; the check counts
+after a leader change, as the new leader starts without the claims of the old one.
 
 ## Signatures in protected namespaces
 
