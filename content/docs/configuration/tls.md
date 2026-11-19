@@ -103,7 +103,19 @@ agent certificates.
   browsers.
 
 - `verify_server_hostname` `(bool: false)` - Specifies if outgoing TLS
-  connections should verify the server's hostname.
+  connections should verify the server's hostname. On a server with
+  `rpc = true` it also decides **who may connect to the RPC port**: every
+  incoming connection must present a certificate of the CA whose common name
+  or a DNS name is `client.<region of the server>.norca` or
+  `server.<any region>.norca`. Any other certificate, such as one made with
+  `norca tls cert create -cli`, is refused in the TLS handshake.
+
+  **A node registers the first time without a credential of its own, so this
+  setting is what limits node registration to node and server certificates.**
+  Without it, any certificate signed by the CA may register a node; without
+  RPC TLS, or with [`rpc_upgrade_mode`](#rpc_upgrade_mode), anyone who reaches
+  the RPC port may. The node certificates that Norca issues (`norca-join`, the
+  node scaling operator, the deployer) carry `client.<region>.norca`.
 
 ## `tls` Examples
 

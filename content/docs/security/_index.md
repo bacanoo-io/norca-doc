@@ -27,6 +27,10 @@ The deployment examples [single node](/docs/getting-started/examples/02-single-n
 
 TLS, ACLs and gossip encryption work as in Nomad v1.6.5. Use TLS with
 `verify_server_hostname = true`; HTTPS client certificates can stay off when ACLs are enabled.
+**`verify_server_hostname` is also what limits node registration**: with it, only certificates for
+`client.<region>.norca` and `server.<region>.norca` may connect to the RPC port and register a node;
+without it any certificate of the CA may, and without RPC TLS anyone who reaches the RPC port may
+(see [`verify_server_hostname`](/docs/configuration/tls#verify_server_hostname)).
 
 ## Workloads
 
