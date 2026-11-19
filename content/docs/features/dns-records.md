@@ -182,6 +182,14 @@ record with its load balancer.
   compares the record with the zone, every 5 minutes (`requeue` of the
   pack) and at every change of the record: event `DriftCorrected`,
   `status.drifts`.
+- **A record set that changes while norca-dns writes it is not written
+  over.** The operator writes a set only if the zone still holds it as the
+  operator read it (the same values, or no set of the name and type), and the
+  provider checks that in the same step as the write. A set someone wrote or
+  changed in between gives `Conflict`, `the A records of
+  shop.team-a.example.com in the zone example.com changed while norca-dns
+  wrote them; nothing was written`, and the record is looked at again a
+  minute later.
 - **A changed name or type** removes the old record set first, before the
   record waits for a zone or for values (`ZoneNotFound`,
   `RecordsNotEnabled`, `ZoneUnavailable`, `NoValues`) or for another record
@@ -191,7 +199,9 @@ record with its load balancer.
   its values), it reads the set from the zone: a set whose values or TTL
   differ from what norca-dns wrote (changed by hand, or written by a record
   that took it over) stays in the zone, and so does a set another record
-  holds. Event `RecordLeft`; the record gives the set up.
+  holds. The deletion is conditional too: a set that changed between that
+  read and the deletion stays (`it changed in the zone while norca-dns
+  removed it`). Event `RecordLeft`; the record gives the set up.
 - **Deleting the record** removes its record set (the finalizer
   `norca.io/dns-records` keeps the object until then). With
   `deletion_policy = "retain"` the record goes without touching the zone, and
@@ -220,7 +230,7 @@ Conditions:
 | Condition | True when |
 | --- | --- |
 | `Ready` | The zone holds the record set. When it is false, its reason says why: `NotAllowed`, `ZoneNotFound`, `RecordsNotEnabled`, `ZoneUnavailable` (the provider of the zone reports no heartbeat, or the registration of the zone, its endpoint or its token, can't be used), `NoValues`, `Conflict`, `InvalidSpec`, `Failed` (the provider or the name server can't be reached or refuses, or the cluster can't be read), or `DeleteFailed` during a deletion (its message says that `deletion_policy = "retain"` lets the record go). |
-| `Conflict` | Another record or the zone itself holds the name and type. |
+| `Conflict` | Another record or the zone itself holds the name and type, or the record set changed in the zone while the operator wrote it. |
 | `Degraded` | `Ready` is false. |
 
 A failure shows in the status at once, also on a record that was `Ready`
@@ -262,6 +272,15 @@ sets.
 - **One cluster writes a zone.** The zone carries no marker of which record
   sets are whose; two clusters writing one zone would set back each other's
   changes.
+- **Writes and deletions are conditional** on the record set as the
+  operator read it. The `rfc2136` type puts the condition into the
+  prerequisites of the update message (RFC 2136), so the name server checks
+  it and applies the update in one step. A DNS type of norca-provider that
+  can't check a condition is written without it, right after the operator
+  read the set; the log of norca-dns says so once for every zone.
+- **norca-dns and norca-provider are updated together.** An older
+  norca-provider does not know the condition and writes and deletes without
+  it.
 - **The nodes of a service are not a source** (a later version): they change
   with every placement, faster than a TTL lets clients follow.
 - The DNS types that write records are `rfc2136` and `mock`; the cloud DNS
