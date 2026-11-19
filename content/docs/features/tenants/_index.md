@@ -105,6 +105,8 @@ $ norca acl token create -name="alice" -role-name="team-a-developer"
 | `roles.<role> { capabilities, objects, policy }` | | the same, plus the rights on [custom objects](/docs/features/operator-framework) in the namespace and a full ACL policy for what these can't say |
 | `network.isolation` | `none` | `namespace`: only the namespace itself and `allow_from_namespaces` may connect to its allocations, on the same node (see [Network isolation](#network-isolation)) |
 | `network.allow_from_namespaces` | | the other namespaces that may connect |
+| `network.allow_from_cidrs` | | IP prefixes that may connect: the node subnet for the tenant's own allocations on other nodes, the addresses of a load balancer (see [Network isolation](#network-isolation)). Needs `isolation = "namespace"` |
+| `network.required` | `true` | `false` places groups also on nodes that can't enforce the isolation (host networking, nodes without nftables), with warnings: the `best_effort` enforcement of a [network rule](/docs/features/network-rules). Needs `isolation = "namespace"` |
 | `certificate_dns_suffixes`, `certificate_ip_addresses`, `certificate_issuers` | | what the namespace may ask certificates for (written as its `norca.io/certificate-*` metadata) |
 | `dns_suffixes` | | the names [norca-dns](/docs/features/dns-records) may write for the namespace (written as its `norca.io/dns-suffixes` metadata) |
 | `adopt` | | resource types the tenant takes over when one of its name exists: `namespace`, `quota`, `acl-policy`, `acl-role`, `network-policy` |
@@ -159,6 +161,29 @@ allocations of the namespace itself and of `allow_from_namespaces`.
 > the allowed namespaces that run on the same node, and the node itself. A
 > load balancer on another node, and the tenant's own allocations on other
 > nodes, are dropped.
+
+**`allow_from_cidrs` lets traffic from other nodes in.** List the subnet of
+the nodes to admit the tenant's own allocations on other nodes and the
+proxies of a load balancer, or only the addresses of the load balancer. A
+prefix admits whatever arrives with an address in it: with the node subnet,
+any allocation on any other node, of any namespace, can connect. Where that
+is too wide, protect the services with
+[native mTLS and service intentions](/docs/features/native-mtls), which check
+the identity of the caller across nodes.
+
+```hcl
+network {
+  isolation             = "namespace"
+  allow_from_namespaces = ["ingress"]
+  allow_from_cidrs      = ["10.0.0.0/24"] # the subnet of the nodes
+  required              = false           # place host networked groups too
+}
+```
+
+**The rule is required by default:** a group that can't be isolated, for
+example one with host networking, is not placed in the namespace. With
+`required = false` it is placed with a warning, and the rule is enforced
+where it can be.
 
 ## Status
 

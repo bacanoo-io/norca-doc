@@ -656,43 +656,33 @@ strictly. For this example that means:
   is dropped; one of team A, or of a namespace in `allow_from_namespaces`, on
   the same node gets through.
 - **Groups need `bridge` or CNI networking**, on nodes that can program
-  nftables. A group in host networking is not placed in the namespace. (The
-  job `shop` above is in `bridge` mode.)
+  nftables. A group in host networking is not placed in the namespace, unless
+  the tenant says `required = false` (then it is placed, with a warning, and
+  not isolated). (The job `shop` above is in `bridge` mode.)
 - **Traffic from other nodes and from outside is dropped too.** The rule of
   the tenant matches allocations on the same node. What comes from another
   node or from outside arrives at the host port of an allocation with the
   address of the machine that sent it, and such traffic is matched by CIDR
-  only, which a tenant does not write.
+  only: the tenant's `allow_from_cidrs`.
   This includes **the load balancer**: the `LoadBalancer` stays `Ready`,
   because it has healthy targets, and its connections are dropped at the
   allocations. It also includes the instances of team A on other nodes.
 
-Network policies add up, so the cluster operator lets the load balancer in
-with a second policy in the namespace, for the address norca-provider
-connects from:
+The tenant lets the load balancer in with `allow_from_cidrs`, for the address
+norca-provider connects from:
 
-```hcl {filename="from-load-balancer.hcl"}
-name        = "from-load-balancer"
-namespace   = "team-a"
-description = "The load balancers of the class edge may connect"
-
-ingress {
-  from {
-    cidr = ["203.0.113.10/32"]
-  }
+```hcl
+network {
+  isolation        = "namespace"
+  allow_from_cidrs = ["203.0.113.10/32"]
 }
 ```
 
-```shell-session
-$ norca network-policy apply from-load-balancer.hcl
-```
+The CIDR is part of `tenant-isolation`, so it goes with the tenant.
 
-The tenant keeps only the policy it made, `tenant-isolation`: this one is
-the cluster operator's to delete when the tenant goes.
-
-The same kind of rule for the network of the nodes would let the instances
-of team A reach each other across nodes, but an address of a node does not
-say which namespace the caller is in. Between nodes, who may call a service
+The subnet of the nodes in `allow_from_cidrs` would let the instances of
+team A reach each other across nodes, but an address of a node does not say
+which namespace the caller is in. Between nodes, who may call a service
 is decided by identity: [native mTLS](/docs/features/native-mtls) and its
 service intentions.
 
