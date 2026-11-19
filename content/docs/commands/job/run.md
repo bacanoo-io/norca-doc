@@ -51,7 +51,11 @@ When ACLs are enabled, this command requires a token with the `submit-job`
 capability for the job's namespace. Jobs that mount CSI volumes require a
 token with the `csi-mount-volume` capability for the volume's namespace. Jobs
 that mount host volumes require a token with the `host_volume` capability for
-that volume.
+that volume. **A job with ACL policies bound to it** (`norca acl policy apply
+-job`) can be created or changed only with a token that holds each of those
+policies, or a management token; running the job exactly as it is needs none
+of them. See [changing a job with associated
+policies](/docs/concepts/workload-identity#changing-a-job-with-associated-policies).
 
 ## General Options
 

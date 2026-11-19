@@ -68,7 +68,12 @@ This command requires a management ACL token.
 - `-description`: Sets the human readable description for the ACL policy.
 
 - `-job`: Attaches the policy to the specified job. Requires that `-namespace` is
-    also set.
+    also set. The policy matches the exact job ID, and the children of a
+    parameterized or periodic job get the policies of their parent. **Once a
+    policy is attached, registering a new version of the job (or a first
+    one under that ID) needs a token that holds the policy, or a management
+    token**; see [changing a job with associated
+    policies](/docs/concepts/workload-identity#changing-a-job-with-associated-policies).
 
 - `-namespace`: Attaches the policy to the specified namespace. Requires that
     `-job` is also set.

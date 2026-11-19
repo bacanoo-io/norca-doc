@@ -475,8 +475,18 @@ right. A team can therefore upgrade or roll back a release that an operator inst
 resources, as long as it leaves them as they are; when the pack would change one of them, or the
 live resource is no longer what the pack says, the operation needs the right to write it. A plan
 reports the resources the token may not write as `Permission denied`.
- Reading the content of a
-revision (`/revision/:n`) also needs `read-job` in the namespace, as it contains job specifications.
+
+**A job with ACL policies bound to it** (the `job_acl` of a policy, or `norca acl policy apply -job`)
+needs more than `submit-job`: when the release would create the job or change it in any way, the
+token must hold every policy bound to it, by name or through one of its roles, or be a management
+token. The release refuses such an operation with `403` before anything is applied, and the error
+names the missing policies; no revision is recorded. An upgrade or rollback that leaves the job
+exactly as it is needs none of them, so a team can upgrade an operator's release that doesn't touch
+its job. The plan shows the error on the job's change. See
+[changing a job with associated policies](/docs/concepts/workload-identity#changing-a-job-with-associated-policies).
+
+Reading the content of a revision (`/revision/:n`) also needs `read-job` in the namespace, as it
+contains job specifications.
 
 With ACLs enabled, resources that a release **adopts** without writing them are checked the same way,
 before anything is written. These are every resource of a `record_only` revision

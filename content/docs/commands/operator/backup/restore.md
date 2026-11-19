@@ -38,8 +38,11 @@ norca operator backup restore [options] <id>
 If ACLs are enabled, this command requires the `read` capability of the
 [`backup` policy](/docs/other-specifications/acl-policy#backup-rules) and the
 permissions of the normal writes (for example `submit-job`, Variables `write`,
-`write-secret`, or a management token for namespaces and ACL objects). A full
-restore requires a management token, and ACLs must be enabled.
+`write-secret`, or a management token for namespaces and ACL objects). A job
+with ACL policies bound to it also needs a token that holds them when the
+restore changes it (see [changing a job with associated
+policies](/docs/concepts/workload-identity#changing-a-job-with-associated-policies)).
+A full restore requires a management token, and ACLs must be enabled.
 
 ## General Options
 

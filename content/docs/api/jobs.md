@@ -116,7 +116,15 @@ The table below shows this endpoint's support for
 
 | Blocking Queries | ACL Required                                                                      |
 | ---------------- | --------------------------------------------------------------------------------- |
-| `NO`             | `namespace:submit-job` |
+| `NO`             | `namespace:submit-job`<br />and every ACL policy bound to the job, when the registration creates or changes it |
+
+(Norca) **A job with ACL policies bound to it** (the policy's `JobACL`, the
+parent's for a child of a parameterized or periodic job) can be created or
+changed in any way only with a token that holds each of those policies, by name
+or through one of its roles, or with a management token; otherwise the request
+fails with `403` and an error that names the missing policies. Registering the
+job exactly as it is needs none of them. See [changing a job with associated
+policies](/docs/concepts/workload-identity#changing-a-job-with-associated-policies).
 
 ### Parameters
 
@@ -1699,7 +1707,15 @@ The table below shows this endpoint's support for
 
 | Blocking Queries | ACL Required                                                                      |
 | ---------------- | --------------------------------------------------------------------------------- |
-| `NO`             | `namespace:submit-job` |
+| `NO`             | `namespace:submit-job`<br />and every ACL policy bound to the job, when the registration creates or changes it |
+
+(Norca) **A job with ACL policies bound to it** (the policy's `JobACL`, the
+parent's for a child of a parameterized or periodic job) can be created or
+changed in any way only with a token that holds each of those policies, by name
+or through one of its roles, or with a management token; otherwise the request
+fails with `403` and an error that names the missing policies. Registering the
+job exactly as it is needs none of them. See [changing a job with associated
+policies](/docs/concepts/workload-identity#changing-a-job-with-associated-policies).
 
 ### Parameters
 
@@ -1853,7 +1869,11 @@ The table below shows this endpoint's support for
 
 | Blocking Queries | ACL Required           |
 | ---------------- | ---------------------- |
-| `NO`             | `namespace:submit-job` |
+| `NO`             | `namespace:submit-job`<br />and every ACL policy bound to the job, when the revert changes it |
+
+(Norca) A revert registers the older version again, so **a job with ACL
+policies bound to it needs a token that holds each of them**, or a management
+token, as for [registering a job](#create-job).
 
 ### Parameters
 

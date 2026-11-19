@@ -37,7 +37,10 @@ When ACLs are enabled, this command requires a token with the `submit-job`
 capability for the job's namespace. The `list-jobs` capability is required to
 run the command with a job prefix instead of the exact job ID. The `read-job`
 capability is required to monitor the resulting evaluation when `-detach` is
-not used.
+not used. **Reverting a job with ACL policies bound to it** needs a token that
+holds each of those policies, or a management token, unless the older version
+is the same as the current one; see [changing a job with associated
+policies](/docs/concepts/workload-identity#changing-a-job-with-associated-policies).
 
 ## General Options
 

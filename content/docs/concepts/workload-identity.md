@@ -115,6 +115,40 @@ norca acl policy apply \
 {{< /tab >}}
 {{< /tabs >}}
 
+A policy applied with `-job` matches **the exact job ID**: a policy for the job
+`example` is not granted to a job `example-2` or `ex`. It is granted to every
+allocation of the job, whoever registered the job.
+
+## Changing a Job with Associated Policies
+
+**A registration that changes a job with associated policies needs a token
+that holds every one of them**, whatever group or task they name: each
+policy named in the token, or in one of its roles. A management token may
+always change the job. Otherwise the registration is refused with `403` and
+an error that names the policies the token doesn't hold. The rule covers
+every way a job is registered:
+
+- `norca job run` and the [register API](/docs/api/jobs#create-job), with any
+  change: tasks, meta, datacenters, node pool, constraints, or `Stop`;
+- [`norca job revert`](/docs/commands/job/revert);
+- a release install, upgrade or rollback
+  ([release permissions](/docs/features/packages/releases#permissions));
+- a selective [backup restore](/docs/commands/operator/backup/restore) of
+  the job, which registers it with the caller's token.
+
+**Registering the job exactly as it is needs none of the policies.** A team
+may therefore upgrade a release that an operator installed, as long as the
+upgrade leaves the job unchanged. A workload identity holds the policies
+associated with its own job, group and task, so a task may register its job
+again when every policy associated with the job applies to it.
+
+The first registration of a job ID that already has associated policies
+needs them too: applying a policy with `-job` before the job exists doesn't
+hand the policy to whoever registers that ID first. A registration that
+changes a child of a parameterized or periodic job is checked against the
+policies associated with the parent. `norca job stop`,
+`norca job scale` and `norca job plan` need only their usual capabilities.
+
 [allocation]: /docs/glossary#allocation
 [identity-block]: /docs/job-specification/identity/
 [plan applier]: /docs/concepts/scheduling/scheduling/

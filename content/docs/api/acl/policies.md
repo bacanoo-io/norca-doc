@@ -90,7 +90,11 @@ The table below shows this endpoint's support for
     Required if `JobID` is set.
 
   - `JobID` `(string: <optional>)` - The job to attach to the policy. Required
-    if `Group` is set.
+    if `Group` is set. It matches the exact job ID; the children of a
+    parameterized or periodic job get the policies of their parent. A
+    registration that creates or changes the job then needs a token that
+    holds the policy, or a management token ([changing a job with associated
+    policies][concepts_workload_identity_change]).
 
   - `Group` `(string: <optional>)` - The group to attach to the policy.
     Required if `Task` is set.
@@ -186,3 +190,4 @@ $ curl \
 ```
 
 [concepts_workload_identity_acl]: /docs/concepts/workload-identity#workload-associated-acl-policies
+[concepts_workload_identity_change]: /docs/concepts/workload-identity#changing-a-job-with-associated-policies
