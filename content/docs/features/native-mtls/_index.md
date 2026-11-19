@@ -37,7 +37,7 @@ is verified per trust domain: a CA is trusted only for the trust domain in its o
 pair and sends only a certificate signing request, with the task's workload identity, to the servers.
 **The servers derive the identity from the allocation, never from the request:**
 
-- URI SAN: `spiffe://<trust-domain>/ns/<namespace>/job/<job>/group/<group>`;
+- URI SAN: `spiffe://<trust-domain>/ns/<namespace>/job/<job>/group/<group>`, where `<job>` is the parent job for a dispatched or periodic child (as in its workload identity), so intentions name the parent;
 - DNS SANs, for every mtls service of the group: `<service>.service.<namespace>.norca`,
   `<service>.service.<namespace>.<region>.norca`, and `<service>.service.norca` in the `default`
   namespace.

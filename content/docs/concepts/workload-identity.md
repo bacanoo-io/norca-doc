@@ -137,10 +137,14 @@ to those who may start it. An [admission policy](/docs/features/admission-contro
 can narrow dispatch further: its rules see the child job with
 `request.operation == "dispatch"`.
 
-A job that is both parameterized and periodic is an exception: dispatching it
-makes a periodic child, and the launches of that child have the child as their
-parent. **These launches get none of the policies associated with the
-parameterized job**, and their workload identity names the dispatched child.
+A job that is both parameterized and periodic: dispatching it makes a periodic
+child, and the launches of that child have the child as their parent. **These
+launches get the policies associated with the parameterized job** (Norca looks
+along the chain of parents), and changing one needs them as well. Their
+workload identity still names their direct parent, the dispatched child: the
+[Variables](/docs/concepts/variables) such a task reads implicitly are those
+of the dispatched child's job ID, not of the parameterized job. If the
+dispatched child is gone, its launches get no associated policies.
 
 ## Changing a Job with Associated Policies
 
