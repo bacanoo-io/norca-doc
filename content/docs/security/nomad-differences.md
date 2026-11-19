@@ -1,7 +1,7 @@
 ---
 title: "Security differences from Nomad v1.6.5"
 linkTitle: "Differences from Nomad"
-description: "Where Norca's access checks are stricter than those of Nomad v1.6.5: node secret IDs, snapshot save and restore, policies bound to jobs, exec into such jobs, links into the secrets directory, and the region of node requests."
+description: "Where Norca's access checks are stricter than those of Nomad v1.6.5: node secret IDs, snapshot save and restore, policies bound to jobs, exec into such jobs, automatic reverts of such jobs, links into the secrets directory, and the region of node requests."
 weight: 1
 ---
 
@@ -15,6 +15,7 @@ All but the last two matter only with ACLs enabled.
 | [Policies bound to a job match its exact ID](#policies-bound-to-a-job-match-its-exact-id) | Bind the policy to each job that needs it |
 | [Changing a job with bound policies needs them](#changing-a-job-with-bound-policies-needs-them) | Give the token that changes the job the bound policies |
 | [Exec into a job with bound policies needs them](#exec-into-a-job-with-bound-policies-needs-them) | Give the token that runs the exec the bound policies |
+| [An automatic revert keeps to versions registered under the bound policies](#an-automatic-revert-keeps-to-versions-registered-under-the-bound-policies) | Register a version after changing a bound policy |
 | [The file system API reads no secret through a link](#the-file-system-api-reads-no-secret-through-a-link) | Nothing, unless a tool lists the secrets directory |
 | [The requests of a node stay in its region](#the-requests-of-a-node-stay-in-its-region) | Point each client at the servers of its own region |
 
@@ -92,6 +93,22 @@ reached, such an exec is refused. See
 **What to do:** give the operators who exec into such jobs the bound policies, or use a management
 token. `alloc-node-exec` into a `raw_exec` task is not isolated from the node; see the
 [`raw_exec` driver](/docs/drivers/raw_exec).
+
+## An automatic revert keeps to versions registered under the bound policies
+
+In Nomad v1.6.5, a deployment with [`auto_revert`](/docs/job-specification/update#auto_revert)
+registers the latest stable version of the job again when it fails, without a token. Any token with
+`submit-job` can mark any version stable (`PUT /v1/job/:job_id/stable`) and fail a running deployment
+(`norca deployment fail`), so it can make the revert run a version from before the policies were bound
+to the job, under those policies.
+
+In Norca **the revert goes only to a stable version registered after the policies bound to the job
+last changed**. With an older one the deployment fails without a revert, and its status description
+says so. See [changing a job with associated
+policies](/docs/concepts/workload-identity#changing-a-job-with-associated-policies).
+
+**What to do:** after binding a policy to a job, or changing a bound policy, register a version of the
+job so that a revert has a target.
 
 ## The file system API reads no secret through a link
 

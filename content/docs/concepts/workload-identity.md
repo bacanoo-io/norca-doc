@@ -172,6 +172,16 @@ changes a child of a parameterized or periodic job is checked against the
 policies associated with the parent. `norca job stop`,
 `norca job scale` and `norca job plan` need only their usual capabilities.
 
+**An automatic revert** ([`auto_revert`](/docs/job-specification/update#auto_revert))
+registers a stable version again without a token, so it goes only to a
+stable version registered after the associated policies last changed (were
+applied, or their rules edited): such a version was registered by a holder
+of the policies. When the latest stable version is older, the deployment
+fails without a revert, and its status description says so. The stability
+flags, which any token with `submit-job` can set, choose only among these
+versions. After a change of an associated policy, register a version of the
+job (`norca job run`) to have a revert target again.
+
 ## Exec into a Job with Associated Policies
 
 A command started with [`norca alloc exec`](/docs/commands/alloc/exec) runs

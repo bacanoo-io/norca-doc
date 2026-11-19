@@ -91,7 +91,11 @@ job "docs" {
 
 - `auto_revert` `(bool: false)` - Specifies if the job should auto-revert to the
   last stable job on deployment failure. A job is marked as stable if all the
-  allocations as part of its deployment were marked healthy.
+  allocations as part of its deployment were marked healthy. (Norca) **For a
+  job with ACL policies associated with it, the revert goes only to a stable
+  version registered after those policies last changed**; with an older one
+  the deployment fails without a revert. See [changing a job with associated
+  policies](/docs/concepts/workload-identity#changing-a-job-with-associated-policies).
 
 - `auto_promote` `(bool: false)` - Specifies if the job should auto-promote to
   the canary version when all canaries become healthy during a
