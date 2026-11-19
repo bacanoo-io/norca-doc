@@ -300,6 +300,13 @@ looks again. A resource the tenant lists that a release owns all the same
 is dropped from the tenant's list and is not deleted: it is the release's,
 and the pass shows it as a `Conflict` (`... belongs to the release apps/web`).
 
+**A pass ends with the leadership.** A pass runs in the leadership term of
+the server that started it. When the leader changes, a pass still running
+on the old leader stops before its next write: it creates, changes, deletes
+or gives back no further resource and writes no status or event; a tenant
+being deleted keeps its finalizer. The pass of the new leader reads the
+tenant and its resources again and finishes the work.
+
 ## Deleting
 
 ```shell-session
