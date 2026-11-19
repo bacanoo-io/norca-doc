@@ -157,7 +157,12 @@ record with its load balancer.
   holds yet goes to the oldest record of a namespace whose allow list holds
   the name; a record that is `NotAllowed` keeps nobody from the name. A
   deleted record holds its set until the operator has removed it, so a new
-  record of the same name waits for it. The message of the `Conflict` (and
+  record of the same name waits for it. **A waiting record takes the name
+  over as soon as the other record gives it up** (is deleted, or moves to
+  another name or type). An operator that keeps the records of one namespace
+  (`-namespace` other than `*`) does not see the records of the other
+  namespaces change, so it looks at a record that waits for one of them again
+  every 10 seconds (`-conflict-requeue` of `norca-dns`). The message of the `Conflict` (and
   of a `RecordLeft` because another record holds the set) names the other
   record when it is in the same namespace; a record of another namespace is
   only `a DNSRecord in another namespace`, so a team does not learn the
