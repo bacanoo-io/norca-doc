@@ -152,8 +152,14 @@ record with its load balancer.
   waits for a zone or for values.
 - **A record set in the zone that the operator did not write** gives the
   condition `Conflict`, and nothing is written, unless the record says
-  `adopt = true` (event `Adopted`). A set that is in the zone exactly as the
-  record wants it is taken over without `adopt`.
+  `adopt = true` (event `Adopted`). **This holds also for a set with exactly
+  the values the record asks for:** the zone carries no marker of who wrote
+  a set, and a record that took it over would remove it when it is deleted.
+  The message then says `with the values this record asks for; set adopt =
+  true to take them over`. Without `adopt`, a record takes over only the set
+  of a record whose namespace may no longer write the name (see the next
+  point), and a set the zone holds exactly as its own status says norca-dns
+  was about to write it (`pending`).
 - **Two records of one name and type** (in any namespaces): the record whose
   status holds the record set (`owned`) keeps it, whichever is older, and
   the other one gets `Conflict` and holds nothing. A set that no record
@@ -201,7 +207,10 @@ record with its load balancer.
   that took it over) stays in the zone, and so does a set another record
   holds. The deletion is conditional too: a set that changed between that
   read and the deletion stays (`it changed in the zone while norca-dns
-  removed it`). Event `RecordLeft`; the record gives the set up.
+  removed it`). Event `RecordLeft`; the record gives the set up. A set the
+  zone holds exactly as `pending` says is one norca-dns wrote: a record
+  deleted right after the status write that followed its zone write was
+  lost still removes its set.
 - **Deleting the record** removes its record set (the finalizer
   `norca.io/dns-records` keeps the object until then). With
   `deletion_policy = "retain"` the record goes without touching the zone, and
@@ -220,8 +229,9 @@ record with its load balancer.
 
 | Field | Meaning |
 | --- | --- |
-| `zone`, `name`, `type`, `ttl`, `values` | The record set the operator wrote last, or found as it wanted it. |
+| `zone`, `name`, `type`, `ttl`, `values` | The record set the operator wrote last, or found as it wanted it when it took the set over (`adopt`, or the set of a record whose namespace may no longer write the name). |
 | `owned` | The record set is the operator's: only then does it change or remove it. |
+| `pending` | The record set the operator is about to write (`zone`, `name`, `type`, `ttl`, `values`), written to the status before the zone is written. A set the zone holds exactly so is the record's, also when the status write after the zone write was lost; while the status holds no set, the operator removes this one where it would remove the held set (deletion, a changed name or type, a lost name). When `pending` can't be written, nothing is written to the zone and the reason is `Failed`. It is cleared when the status holds the set (`owned`), when the write was not done, and when the set is given up. |
 | `writtenAt` | When the operator last wrote the set. |
 | `drifts`, `lastDrift` | Changes made by hand that the operator set back. |
 

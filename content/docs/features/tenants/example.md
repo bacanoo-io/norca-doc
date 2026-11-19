@@ -614,8 +614,9 @@ spec {
 ```
 
 The record set is written with the address of the load balancer, and the
-record gets the event `Adopted`. A record set that is in the zone exactly as
-the record wants it is taken over without `adopt`.
+record gets the event `Adopted`. A record set that norca-dns did not write
+needs `adopt` also when it is in the zone exactly as the record wants it:
+the message then adds `with the values this record asks for`.
 
 ### Another team tries
 
