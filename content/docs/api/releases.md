@@ -128,6 +128,18 @@ to a caller who may write the resource). The operation claims the resources of i
 writes anything, so nothing is written then; see
 [install, upgrade, rollback, uninstall](/docs/features/packages/releases#install-upgrade-rollback-uninstall).
 
+**A leader change answers `503 Service Unavailable`** in two ways, here and for the rollback, test
+and uninstall endpoints:
+
+- `this server is not the leader, and release operations run on the leader; retry the operation` -
+  The request reached a server that is not (or no longer) the leader, and nothing was written. Retry
+  it.
+- `release "<name>": the operation was interrupted by a leader change; the new leader marks the release failed` -
+  The operation stopped at its next write when its server lost the leadership (or the new leader had
+  already marked the release `failed`). What it wrote so far stays: no atomic rollback, hook jobs
+  are not purged. The new leader marks the release `failed`; upgrade or roll back again. See
+  [install, upgrade, rollback, uninstall](/docs/features/packages/releases#install-upgrade-rollback-uninstall).
+
 | Method         | Path                | Produces           |
 | -------------- | ------------------- | ------------------ |
 | `PUT` / `POST` | `/v1/release/:name` | `application/json` |
@@ -263,7 +275,9 @@ resources in the form of the install request.
 ## Roll back release
 
 This endpoint applies the content of a kept revision as a new revision. It claims the resources as
-an install does: one that another operation is writing at that moment is a `409 Conflict`.
+an install does: one that another operation is writing at that moment is a `409 Conflict`. A leader
+change answers `503 Service Unavailable` as for an
+[install or upgrade](#install-or-upgrade-release).
 
 | Method         | Path                         | Produces           |
 | -------------- | ---------------------------- | ------------------ |
@@ -296,7 +310,9 @@ $ curl \
 ## Run tests
 
 This endpoint runs the `test` hooks of the deployed revision and records the result in
-`Status.LastTest`.
+`Status.LastTest`. A leader change answers `503 Service Unavailable` as for an
+[install or upgrade](#install-or-upgrade-release); an interrupted test records no result, and the
+phase of the release stays as it was.
 
 | Method         | Path                     | Produces           |
 | -------------- | ------------------------ | ------------------ |
@@ -343,7 +359,10 @@ condition.
 ## Uninstall release
 
 This endpoint uninstalls a release: `pre-delete` hooks, the resources in reverse order, `post-delete`
-hooks, then the release and its revisions.
+hooks, then the release and its revisions. A leader change answers `503 Service Unavailable` as for
+an [install or upgrade](#install-or-upgrade-release); an interrupted uninstall leaves the release
+and the resources it has not deleted yet, and the new leader marks the release `failed`: uninstall
+it again.
 
 | Method   | Path                | Produces           |
 | -------- | ------------------- | ------------------ |

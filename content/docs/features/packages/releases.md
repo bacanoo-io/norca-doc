@@ -320,7 +320,24 @@ The other operation is named only to a caller who may write the resource; anybod
 conflicts for it too (`409 Conflict`); one the caller may not write is shown as denied in the plan
 instead.
 
-An operation interrupted by a leader change is marked `failed` by the new leader.
+**An operation is tied to the leadership of the server that runs it.** When that server loses the
+leadership, or establishes it again (after a snapshot restore, for example), the operation stops at
+its next write, and stops waiting for deployments and hook jobs. Every write of an operation is also
+checked against the state of its release: an operation stops too when the new leader has already
+marked its release `failed`, or another operation has changed it since, even before its own server
+learns that it is no longer the leader. **What the operation wrote so far stays as it is**: there is
+no atomic rollback, hook jobs are not purged, and nothing more is recorded in the release. The
+request answers `503 Service Unavailable`, for example
+`release "web": the operation was interrupted by a leader change; the new leader marks the release failed`.
+The new leader marks the release `failed` (its last operation reads
+`the operation was interrupted by a leader change`); a server that becomes the leader again does so
+once the interrupted operations there have stopped. Upgrade or roll back again (or uninstall again)
+to bring the release to a known state. A test run that is interrupted records no result and does not
+change the phase of the release.
+
+A server that is not the leader refuses a release operation with `503 Service Unavailable`
+(`this server is not the leader, and release operations run on the leader; retry the operation`),
+for example right after a leader change; retry it.
 
 ## Multi-region installs
 
