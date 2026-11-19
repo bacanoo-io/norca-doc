@@ -1945,9 +1945,13 @@ The table below shows this endpoint's support for
 [blocking queries](/docs/api#blocking-queries) and
 [required ACLs](/docs/api#acls).
 
-| Blocking Queries | ACL Required           |
-| ---------------- | ---------------------- |
-| `NO`             | `namespace:submit-job` |
+| Blocking Queries | ACL Required                                                        |
+| ---------------- | ------------------------------------------------------------------- |
+| `NO`             | `namespace:submit-job`<br />and every ACL policy bound to the job |
+
+(Norca) For a job with ACL policies bound to it, the token must hold each of
+them, or be a management token: this request steers its automatic revert. See
+[changing a job with associated policies](/docs/concepts/workload-identity#changing-a-job-with-associated-policies).
 
 ### Parameters
 

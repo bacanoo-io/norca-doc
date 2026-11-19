@@ -22,6 +22,9 @@ prefix.
 
 When ACLs are enabled, this command requires a token with the `submit-job`
 and `read-job` capabilities for the deployment's namespace.
+(Norca) For a job with ACL policies bound to it, the token must also hold
+each of them, or be a management token, as failing the deployment starts its
+automatic revert; see [changing a job with associated policies](/docs/concepts/workload-identity#changing-a-job-with-associated-policies).
 
 ## General Options
 

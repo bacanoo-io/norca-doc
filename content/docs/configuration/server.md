@@ -39,6 +39,19 @@ server {
   region refused. Must be greater than `0s`; another value is refused at start.
   This is specified using a label suffix like "30s" or "1m".
 
+- `auto_revert_bound_policies` `(string: "any_stable")` - (Norca) Specifies
+  which version the automatic revert of a deployment
+  ([`auto_revert`](/docs/job-specification/update#auto_revert)) registers for a
+  job with ACL policies associated with it. `any_stable` reverts to the latest
+  stable version, as in Nomad v1.6.5. `strict` reverts only to a stable version
+  registered after the associated policies last changed (were applied, or their
+  rules edited); with an older one the deployment fails without a revert. In
+  both modes, only a token that holds the associated policies may mark versions
+  of such a job stable, fail its deployment or set the health of its
+  allocations. See [changing a job with associated
+  policies](/docs/concepts/workload-identity#changing-a-job-with-associated-policies).
+  Another value is refused at start.
+
 - `admission` - (Norca) Configures the webhooks of dynamic admission control.
   See the [`admission` block](/docs/configuration/admission).
 
