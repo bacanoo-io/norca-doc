@@ -49,7 +49,7 @@ can be read with the object API (`norca object list packs.norca.io/Release`), bu
 | `status.revision` | the deployed revision (after a failed atomic upgrade: the previous one) |
 | `status.resources` | the resources the release owns, with the modify index, version and content hash after the apply |
 | `status.conditions` | `Ready`, `HooksSucceeded`, `Drifted` |
-| `status.lastOperation`, `status.lastTest` | the last operation (action, user, error, rollback) and test run |
+| `status.lastOperation`, `status.lastTest` | the last operation (ID, action, user, error, rollback) and test run |
 
 A revision holds the rendered resources (msgpack, gzip, base64; at most about 224 KiB compressed), the
 variable overrides (values of variables whose name looks secret, for example `password` or `token`,
@@ -332,8 +332,9 @@ request answers `503 Service Unavailable`, for example
 The new leader marks the release `failed` (its last operation reads
 `the operation was interrupted by a leader change`); a server that becomes the leader again does so
 once the interrupted operations there have stopped. Upgrade or roll back again (or uninstall again)
-to bring the release to a known state. A test run that is interrupted records no result and does not
-change the phase of the release.
+to bring the release to a known state. A test run that is interrupted answers
+`release "web": the test was interrupted by a leader change; no result was recorded`, records no
+result and no event, and does not change the phase of the release.
 
 A server that is not the leader refuses a release operation with `503 Service Unavailable`
 (`this server is not the leader, and release operations run on the leader; retry the operation`),

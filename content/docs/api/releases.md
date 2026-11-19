@@ -105,8 +105,8 @@ This endpoint reads a release.
 - `Status.Conditions` - `Ready`, `HooksSucceeded` and `Drifted`, each with `Type`, `Status`
   (`True`, `False`, `Unknown`), `Reason`, `Message`, `LastTransitionTime`.
 
-- `Status.LastOperation` - `Action`, `Revision`, `User`, `StartTime`, `EndTime`, `Error`, `Warnings`,
-  `RolledBack`.
+- `Status.LastOperation` - `ID` (the operation's unique ID, set when it starts), `Action`, `Revision`,
+  `User`, `StartTime`, `EndTime`, `Error`, `Warnings`, `RolledBack`.
 
 - `Status.LastTest` - `Revision`, `StartTime`, `EndTime`, `Succeeded`, `Hooks` (per hook job:
   `Phase`, `Namespace`, `Job`, `Status` (`succeeded`, `failed`, `timeout`), `Message`).
@@ -311,8 +311,10 @@ $ curl \
 
 This endpoint runs the `test` hooks of the deployed revision and records the result in
 `Status.LastTest`. A leader change answers `503 Service Unavailable` as for an
-[install or upgrade](#install-or-upgrade-release); an interrupted test records no result, and the
-phase of the release stays as it was.
+[install or upgrade](#install-or-upgrade-release), with the message
+`release "<name>": the test was interrupted by a leader change; no result was recorded`. An
+interrupted test records no result and no `TestSucceeded` or `TestFailed` event, and the phase of
+the release stays as it was.
 
 | Method         | Path                     | Produces           |
 | -------------- | ------------------------ | ------------------ |
