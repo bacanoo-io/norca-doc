@@ -25,6 +25,12 @@ registration. The proxy job belongs to its `LoadBalancer` object, so deleting
 such an object in the default mode needs `submit-job` in its namespace
 besides the object right (see
 [owners](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection)).
+The operator registers the proxy job with check-and-set, over the job as it
+read it: a job with the same ID that somebody else created is never taken
+over, and the conditions of the object report that the job exists and is
+not owned by this load balancer. One created between the read and the
+registration fails that registration (a `ProvisioningFailed` event) and is
+reported so by the next pass.
 
 A load balancer of a registered class in the namespace of a
 [tenant](/docs/features/tenants), with a DNS name that follows its address,
