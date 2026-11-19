@@ -240,7 +240,9 @@ configuration). Changes are published on the event stream topic
 
 See [Network policies API](/docs/api/network-policies) for parameters and
 payloads. The Go API client has `NetworkPolicies()` with `List`, `Info`,
-`Register`, `Delete`, `Status` and the `Admin*` variants. The web UI shows the
+`Register`, `Delete`, `Status` and the `Admin*` variants, and
+`CheckedRegister`, a check-and-set write against the modify index the caller
+read (`0`: create only). The web UI shows the
 network policies of a namespace with their selected allocations, and the admin
 policies, on the Network page.
 

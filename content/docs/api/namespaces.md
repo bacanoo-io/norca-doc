@@ -131,6 +131,17 @@ The table below shows this endpoint's support for
 
 ### Parameters
 
+- `cas` `(int: <unset>)` - (Norca) Check-and-set: write only if the
+  namespace's modify index is this value; `0` writes only if the namespace
+  does not exist. A mismatch writes nothing and fails with status 409 and a
+  message naming the namespace, for example `check-and-set conflict: namespace
+  "api-prod" has modify index 12, expected 10`; a value that is not a number
+  fails with status 400. **Namespaces are written in the authoritative region,
+  so the index must be the `ModifyIndex` that region reports: the index of the
+  replica in another region does not match.** Query parameter. In the Go API
+  client: `Namespaces().CheckedRegister`, whose conflict error wraps
+  `api.ErrIndexConflict`.
+
 - `Name` `(string: <required>)` - Specifies the namespace to create or
   update.
 
@@ -183,6 +194,15 @@ $ curl \
     --request POST \
     --data @namespace.json \
     https://localhost:4646/v1/namespace
+```
+
+Create the namespace only if it does not exist yet:
+
+```shell
+$ curl \
+    --request POST \
+    --data @namespace.json \
+    "https://localhost:4646/v1/namespace/api-prod?cas=0"
 ```
 
 ## Delete Namespace

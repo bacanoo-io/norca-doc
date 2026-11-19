@@ -78,6 +78,17 @@ The table below shows this endpoint's support for
 - `Name` `(string: <required>)` - Specifies the name of the policy.
   **Creates the policy if the name does not exist, otherwise updates the existing policy.**
 
+- `cas` `(int: <unset>)` - (Norca) Check-and-set: write only if the policy's
+  modify index is this value; `0` writes only if the policy does not exist. A
+  mismatch writes nothing and fails with status 409 and a message naming the
+  policy, for example `check-and-set conflict: ACL policy "my-policy" has
+  modify index 13, expected 12`; a value that is not a number fails with
+  status 400. **The index must be the `ModifyIndex` that the authoritative
+  region reports: the index of the replica in another region does not
+  match.** Query parameter. In the Go API client:
+  `ACLPolicies().CheckedUpsert`, whose conflict error wraps
+  `api.ErrIndexConflict`.
+
 - `Description` `(string: <optional>)` - Specifies a human readable description.
 
 - `Rules` `(string: <required>)` - Specifies the Policy rules in HCL or JSON format.
@@ -122,6 +133,15 @@ $ curl \
     --request POST \
     --data @payload.json \
     https://localhost:4646/v1/acl/policy/my-policy
+```
+
+Create the policy only if it does not exist yet:
+
+```shell
+$ curl \
+    --request POST \
+    --data @payload.json \
+    "https://localhost:4646/v1/acl/policy/my-policy?cas=0"
 ```
 
 ## Read Policy

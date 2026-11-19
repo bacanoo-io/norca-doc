@@ -152,6 +152,18 @@ $ curl \
 - `namespace` `(string: "default")` - The namespace of the policy if the
   payload has no `Namespace`. The namespace must exist.
 
+- `cas` `(int: <unset>)` - Check-and-set: write only if the policy's modify
+  index is this value; `0` writes only if the policy does not exist. The
+  policy checked is the one written: in the payload's `Namespace`, or in the
+  `namespace` of the request when the payload has none. A mismatch writes
+  nothing and fails with status 409 and a message naming the policy, for
+  example `check-and-set conflict: network policy "apps/test-app" has modify
+  index 121, expected 120`; a value that is not a number fails with status
+  400. Network policies are regional, so the index is the one the region of
+  the request reports. Query parameter. In the Go API client:
+  `NetworkPolicies().CheckedRegister`, whose conflict error wraps
+  `api.ErrIndexConflict`.
+
 The payload is a network policy object. **`Enforcement` defaults to `required`.**
 
 ### Sample Request
@@ -161,6 +173,15 @@ $ curl \
     --request PUT \
     --data @netpol.json \
     https://localhost:4646/v1/network-policy/test-app
+```
+
+Create the policy only if it does not exist yet:
+
+```shell
+$ curl \
+    --request PUT \
+    --data @netpol.json \
+    "https://localhost:4646/v1/network-policy/test-app?namespace=apps&cas=0"
 ```
 
 ## Delete Network Policy

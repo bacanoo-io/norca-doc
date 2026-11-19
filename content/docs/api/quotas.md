@@ -138,6 +138,19 @@ The table below shows this endpoint's support for
 | ---------------- | ------------- |
 | `NO`             | `quota:write` |
 
+### Parameters
+
+- `cas` `(int: <unset>)` - (Norca) Check-and-set: write only if the quota
+  specification's modify index is this value; `0` writes only if the quota
+  does not exist. A mismatch writes nothing and fails with status 409 and a
+  message naming the quota, for example `check-and-set conflict: quota
+  "shared-quota" exists (modify index 56), expected it not to exist`; a value
+  that is not a number fails with status 400. **The index must be the
+  `ModifyIndex` that the authoritative region reports: the index of the
+  replica in another region does not match.** Query parameter. In the Go API
+  client: `Quotas().CheckedRegister`, whose conflict error wraps
+  `api.ErrIndexConflict`.
+
 ### Body
 
 The request body contains a valid, JSON quota specification (see the
@@ -182,6 +195,16 @@ $ curl \
     --request POST \
     --data @spec.json \
     https://localhost:4646/v1/quota
+```
+
+Update the quota only if nobody changed it since it was read with modify
+index 56:
+
+```shell
+$ curl \
+    --request POST \
+    --data @spec.json \
+    "https://localhost:4646/v1/quota/shared-quota?cas=56"
 ```
 
 ## Delete Quota Specification
