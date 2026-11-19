@@ -8,6 +8,12 @@ The `pack uninstall` command uninstalls a [release](/docs/features/packages/rele
 `pre-delete` hooks, deletes its resources in the reverse of the application order, runs its
 `post-delete` hooks, and deletes the release with its revisions.
 
+It deletes only what is still the release's. A resource somebody else deleted and created again
+under its name, or that a tenant or another release owns or another operation is writing, is left
+as it is; the changes table shows it with `not deleted: <why>` in the Note column. A resource that
+was only changed (drift) is deleted. See
+[install, upgrade, rollback, uninstall](/docs/features/packages/releases#install-upgrade-rollback-uninstall).
+
 In a multi-region install, `uninstall` alone uninstalls the release of the local (or `--region`)
 region and warns that the install has other regions; `--all-regions` or `--regions` uninstall in
 reverse order, the global region last.

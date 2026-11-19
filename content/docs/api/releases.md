@@ -205,7 +205,9 @@ writes anything, so nothing is written then; see
 - `Revision` - The number of the new revision.
 - `Changes` - Per resource: `Type`, `Namespace`, `Name`, `Action` (`create`, `update`, `delete`,
   `unchanged`, `hook`, `adopt`, `remote`), `Hook`, `Owner`, `JobDiff` (plans), `Region` (for
-  `remote`).
+  `remote`), `Error` (the change failed). A resource the upgrade dropped and did not delete because
+  it is no longer the release's is a `delete` with `Error` `not deleted: <why>`
+  ([install, upgrade, rollback, uninstall](/docs/features/packages/releases#install-upgrade-rollback-uninstall)).
 - `Warnings` - Warnings, for example of admission policies with `action = "warn"`.
 - `Regions` - With `Regions` in the request: one result per region (`Region`, `Release`, `Revision`,
   `Changes`, `Warnings`, `Error`), in the order the regions were applied.
@@ -358,7 +360,11 @@ hooks, then the release and its revisions.
 - `no_hooks` `(bool: false)` - Skip the hooks. Query parameter.
 - `timeout` `(duration: "5m")` - How long to wait for the hooks. Query parameter.
 
-The response has `Release` (the release before deletion) and `Changes`.
+The response has `Release` (the release before deletion) and `Changes`. The uninstall deletes only
+what is still the release's: a resource somebody else created again under its name, or that a
+tenant or another release owns or another operation is writing, is left, and its change has the
+`Error` `not deleted: <why>`. As the release object is gone, the warnings of the uninstall are in
+`Release.Status.LastOperation.Warnings` of the response.
 
 ### Sample request
 

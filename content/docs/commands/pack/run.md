@@ -14,6 +14,12 @@ order and record a revision of the release named after the deployment name (`--n
 [`pack uninstall`](/docs/commands/pack/uninstall). Against older servers, or with `--client-side`, the
 jobs are deployed by the client.
 
+When an update drops a resource of the release from the pack, the servers delete it only if it is
+still the release's: one somebody else created again under its name, or that a tenant or another
+release owns or another operation is writing, is left as it is. The changes table shows it with
+`not deleted: <why>` in the Note column, a warning names it, and the release no longer lists it (see
+[install, upgrade, rollback, uninstall](/docs/features/packages/releases#install-upgrade-rollback-uninstall)).
+
 The command waits for the deployments unless `--detach` is given and prints the output template of the
 pack afterwards.
 

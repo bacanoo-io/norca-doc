@@ -10,6 +10,12 @@ exist or the servers do not support releases**; use [`pack run`](/docs/commands/
 
 It takes the same options as `pack run`.
 
+A resource of the release that the new revision no longer has is deleted only if it is still the
+release's: one somebody else created again under its name, or that a tenant or another release owns
+or another operation is writing, is left as it is. The changes table shows it with
+`not deleted: <why>` in the Note column, a warning names it, and the release no longer lists it (see
+[install, upgrade, rollback, uninstall](/docs/features/packages/releases#install-upgrade-rollback-uninstall)).
+
 ## Usage
 
 ```plaintext

@@ -295,6 +295,18 @@ packs installed as releases) runs the `pre-delete` hooks, deletes the resources 
 the `post-delete` hooks and deletes the release; `--orphan` keeps the resources and `--no-hooks`
 skips the hooks.
 
+**An upgrade that drops a resource, and an uninstall, delete only what is still the release's.**
+Right before each deletion the operation claims the resource and reads it again. It does not delete
+a resource that somebody else deleted and created again under its name since the release recorded
+it, nor one that a tenant or another release owns or that another release operation or a tenant
+pass is writing at that moment. Such a resource is left as it is: the change of the operation says
+`not deleted: <why>`, for example `not deleted: it was deleted and created again since the release recorded it`,
+the operation records a warning naming it, and the release no longer lists it. A resource that was
+only changed since (drift) is still the release's and is deleted. A Variable or an object is deleted
+with a check-and-set against that read, so one changed in between is not deleted either; for the
+other types the one deletion request after the read is the window left. A quota is detached only
+from the namespaces that are still the release's.
+
 **A resource is written by one operation at a time.** An install, upgrade or rollback claims every
 resource of its pack (hooks aside) on the leader before it writes anything, the release itself
 included, and holds the claims until it has recorded in the release what it owns. The
