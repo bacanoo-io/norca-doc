@@ -110,7 +110,9 @@ dispatching parameterized jobs.
   be merged into the job's metadata. The job may define a default value for the
   key which is overridden when dispatching. The flag can be provided more than
   once to inject multiple metadata key/value pairs. **Arbitrary keys are not
-  allowed. The parameterized job must allow the key to be merged.**
+  allowed. The parameterized job must allow the key to be merged.** (Norca)
+  The keys and values of a dispatch together are limited to 16384 bytes
+  (16KiB), apart from the payload.
 
 - `-detach`: Return immediately instead of monitoring. A new evaluation ID
   will be output, which can be used to examine the evaluation using the
@@ -119,7 +121,9 @@ dispatching parameterized jobs.
 - `-idempotency-token`: Optional identifier used to prevent more than one
   instance of the job from being dispatched.
 
-- `-id-prefix-template`: Optional prefix added to dispatched job IDs.
+- `-id-prefix-template`: Optional prefix added to dispatched job IDs. (Norca)
+  At most 128 bytes, valid UTF-8, without spaces, other whitespace or control
+  characters, as it becomes part of the job ID.
 
 - `-verbose`: Show full information.
 

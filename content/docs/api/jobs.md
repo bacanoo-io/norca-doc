@@ -1816,13 +1816,16 @@ jobs](/docs/concepts/workload-identity#children-of-parameterized-and-periodic-jo
   URL query parameter.
 
 - `IdPrefixTemplate` `(string: "")` - Optional prefix added to dispatched job
-  IDs.
+  IDs. (Norca) At most 128 bytes, valid UTF-8, without spaces, other whitespace
+  or control characters, as it becomes part of the job ID; otherwise the
+  request fails with `400`.
 
 - `Payload` `(string: "")` - Specifies a base64 encoded string containing the
-  payload. **This is limited to 65536 bytes (64KiB).**
+  payload. **The decoded payload is limited to 16384 bytes (16KiB).**
 
 - `Meta` `(meta<string|string>: nil)` - Specifies arbitrary metadata to pass to
-  the job.
+  the job. (Norca) Its keys and values together are limited to 16384 bytes
+  (16KiB), apart from the payload; a larger meta fails with `400`.
 
 - `namespace` `(string: "default")` - Specifies the target namespace. If ACL is
 enabled, this value must match a namespace that the token is allowed to
