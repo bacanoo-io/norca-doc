@@ -228,8 +228,10 @@ The events of the tenant (`norca object events norca.io/Tenant team-a`) say
 what was `Created`, `Updated` (set back after a change by hand), `Adopted`,
 `Deleted`, `Restored` (an adopted resource given back as the tenant found
 it), `Released` (an adopted resource let go as it is, or one that no longer
-exists; also the list of what a deleted tenant gives back) and
-`RestoreFailed` (giving a resource back failed; it is tried again).
+exists; also the list of what a deleted tenant gives back),
+`RestoreFailed` (giving a resource back failed; it is tried again) and the
+warning `NotDeleted` (a resource the tenant would delete belongs to a
+release; it is left, and the tenant no longer lists it).
 
 **What somebody else writes meanwhile is never overwritten.** Each write of
 the tenant is a check-and-set on what its pass read: a resource is created
@@ -335,6 +337,17 @@ deleted tenant stay listable** (`norca object events norca.io/Tenant team-a`)
 for
 [`object_tombstone_gc_threshold`](/docs/configuration/server#object_tombstone_gc_threshold)
 (5 minutes by default); the line in the log of the servers stays.
+
+**A resource of a release is not deleted with the tenant.** Right before the
+tenant deletes a resource, when it leaves the spec or when the tenant is
+deleted, it claims the resource and reads who owns it. A resource a release
+owns is left: the tenant drops it from its list and records the warning
+event `NotDeleted`, which names the release, for example
+`did not delete acl-policy team-a-viewer: it belongs to the release apps/web; the tenant no longer lists it`.
+A resource that a release operation is writing at that moment is not
+deleted in that pass and stays listed: a running tenant shows it as a
+`Conflict` and a later pass deletes it if it is still the tenant's; a
+deleted tenant stops there and tries again.
 
 **When a resource can't be given back**, for example because the quota an
 adopted namespace named was deleted meanwhile, or a policy an adopted role
