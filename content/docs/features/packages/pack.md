@@ -30,7 +30,7 @@ nomad/packs
 ```
 
 A registry added without `--ref` is cached under the ref `latest` (its default branch); a registry
-added with `--ref=v0.4.0` under `v0.4.0`. Several refs of a registry can be cached side by side. The
+added with `--ref=v0.5.0` under `v0.5.0`. Several refs of a registry can be cached side by side. The
 ref a registry was last added or updated with is its default ref (recorded in
 `<cache>/<registry>/default-ref`), which pack commands without `--ref` use.
 
@@ -75,12 +75,12 @@ To download a single pack or an entire registry at a specific version or SHA, us
 **Pin release tags in anything but experiments:**
 
 ```shell
-norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.4.0
+norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.5.0
 norca pack run nats --registry=norca
 ```
 
 The pack commands (`render`, `plan`, `run`, `info`, `status`, ...) without `--ref` use the packs at
-the default ref of the registry, here `v0.4.0` (if the pack is cached at it; otherwise `latest`, then
+the default ref of the registry, here `v0.5.0` (if the pack is cached at it; otherwise `latest`, then
 the only cached ref), and name the deployment and the release after the pack (`nats`). An explicit
 `--ref` selects another cached ref, and the default deployment name is then `pack@ref`. See
 [refs and deployment names](/docs/commands/pack#refs-and-deployment-names).

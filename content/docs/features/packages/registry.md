@@ -25,7 +25,7 @@ AGPL-3.0.
 Add the registry once, pinned to a release tag, and use the packs by name:
 
 ```shell
-norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.4.0
+norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.5.0
 norca pack registry list
 
 norca pack info   rustfs --registry=norca
@@ -37,7 +37,7 @@ norca pack run    rustfs --registry=norca -f rustfs.hcl
 `--ref` takes a tag, a branch or a commit; without it the default branch is used. The cache keeps
 every ref in its own directory, and the registry remembers the ref it was last added or updated with:
 `render`, `plan`, `run` and the other pack commands without `--ref` use the packs at that ref (here
-`v0.4.0`), and without `--name` the release is named after the pack (`rustfs`), so it keeps its name
+`v0.5.0`), and without `--name` the release is named after the pack (`rustfs`), so it keeps its name
 when the registry moves to a new tag. An explicit `--ref` selects another cached ref; the default
 release name is then `pack-ref`. See [refs and deployment names](/docs/commands/pack#refs-and-deployment-names).
 
@@ -48,7 +48,7 @@ norca` removes the registry (`--ref` removes one ref). Added under the name `def
 be used without `--registry`:
 
 ```shell
-norca pack registry add default https://github.com/bacanoo-io/norca-registry --ref=v0.4.0
+norca pack registry add default https://github.com/bacanoo-io/norca-registry --ref=v0.5.0
 norca pack run nats
 ```
 
@@ -79,27 +79,27 @@ updating and air-gapped use are described in
 
 ## Packs
 
-| Pack | Version | In `v0.4.0` | What it deploys |
+| Pack | Version | In `v0.5.0` | What it deploys |
 | --- | --- | --- | --- |
 | [consul](#consul) | 0.2.0 | 0.2.0 | The official HashiCorp Consul release (BSL 1.1, referenced, never shipped; accepted by the user at install): servers on host volumes over datacenters, client agents, gossip/TLS/ACL bootstrap from Variables, optional snapshots to S3, optional agent metrics |
 | [forgejo](#forgejo) | 0.2.0 | 0.2.0 | Forgejo (GPL-3.0-or-later, referenced, never shipped) as the internal git server and container registry: SQLite and repositories on a host volume, packages and LFS in RustFS, secrets from the built-in secret store, optional HTTPS, SSH, initial admin and periodic dumps; optional `/metrics` |
-| [loadbalancer-operator](#loadbalancer-operator) | 0.4.0 | 0.3.0 | The LoadBalancer operator as an operator pack: object kind (webhooks, limits), the LoadBalancerClass kind, ACL policy bound to the controller job, admission policy, controller job |
+| [loadbalancer-operator](#loadbalancer-operator) | 0.4.0 | 0.4.0 | The LoadBalancer operator as an operator pack: object kind (webhooks, limits), the LoadBalancerClass kind, ACL policy bound to the controller job, admission policy, controller job |
 | [mtls-gateway](#mtls-gateway) | 0.2.1 | 0.2.1 | The cross-region native mTLS gateway of a region (`mtls { mode = "gateway" }`): SNI passthrough Envoy on the gateway nodes, injected by the servers or defined by the pack; optional Envoy statistics |
 | [nats](#nats) | 0.7.0 | 0.7.0 | A NATS cluster per region for the applications (JetStream, supercluster gateways, TLS and auth from Variables, or users in accounts with subject permissions and passwords from the built-in secret store), optional Prometheus exporter |
-| [nodescaler-operator](https://github.com/bacanoo-io/norca-registry/tree/v0.4.0/packs/nodescaler-operator) | 0.11.0 | 0.10.0 | The node scaling operator of Norca (`norca-nodescaler` of norca-platform) as one release: the ACL policy bound to its job and the job, two instances on different nodes, never on a node the operator created; the kinds NodeGroup and NodeProvider are registered by the core |
-| [norca-acme](#norca-acme) | 0.2.0 | 0.1.0 | The ACME operator (`norca-acme` of norca-platform) as a job: the controller of the certificate issuers that sign through an ACME certificate authority such as Let's Encrypt; it fulfils the certificate orders of the servers, answers the HTTP-01 challenge behind the traefik pack and proves names in the DNS zones of norca-provider; ACL policy bound to the job (Norca 0.3.0) |
-| [norca-dns](#norca-dns) | 0.2.0 | 0.1.0 | The DNS records operator (`norca-dns` of norca-platform) as a job: the `norca.io/DNSRecord` object kind and the controller that keeps their record sets (A, AAAA, CNAME, TXT; values given or from a LoadBalancer object) in the zones of norca-provider that allow records, under the allow list of each namespace; ACL policy bound to the job (Norca 0.3.0) |
-| [norca-provider](#norca-provider) | 0.5.0 | 0.4.0 | `norca-provider` of norca-platform as a job: the node providers, load balancer classes and DNS zones of its configuration, registered as NodeProvider, LoadBalancerClass and DNSZone objects, with its ACL policy and a `/healthz` check; the DNSZone object kind |
+| [nodescaler-operator](https://github.com/bacanoo-io/norca-registry/tree/v0.5.0/packs/nodescaler-operator) | 0.11.0 | 0.11.0 | The node scaling operator of Norca (`norca-nodescaler` of norca-platform) as one release: the ACL policy bound to its job and the job, two instances on different nodes, never on a node the operator created; the kinds NodeGroup and NodeProvider are registered by the core |
+| [norca-acme](#norca-acme) | 0.2.0 | 0.2.0 | The ACME operator (`norca-acme` of norca-platform) as a job: the controller of the certificate issuers that sign through an ACME certificate authority such as Let's Encrypt; it fulfils the certificate orders of the servers, answers the HTTP-01 challenge behind the traefik pack and proves names in the DNS zones of norca-provider; ACL policy bound to the job (Norca 0.3.0) |
+| [norca-dns](#norca-dns) | 0.2.0 | 0.2.0 | The DNS records operator (`norca-dns` of norca-platform) as a job: the `norca.io/DNSRecord` object kind and the controller that keeps their record sets (A, AAAA, CNAME, TXT; values given or from a LoadBalancer object) in the zones of norca-provider that allow records, under the allow list of each namespace; ACL policy bound to the job (Norca 0.3.0) |
+| [norca-provider](#norca-provider) | 0.5.0 | 0.5.0 | `norca-provider` of norca-platform as a job: the node providers, load balancer classes and DNS zones of its configuration, registered as NodeProvider, LoadBalancerClass and DNSZone objects, with its ACL policy and a `/healthz` check; the DNSZone object kind |
 | [openobserve](#openobserve) | 0.2.0 | 0.2.0 | OpenObserve (AGPL-3.0, referenced, never shipped) as the observability backend (logs, metrics, traces): single node on a host volume or a cluster of node roles on PostgreSQL, NATS and RustFS, TLS with Norca's workload certificates, root user and the ingest credentials of the collectors in the built-in secret store |
 | [otel-collector](#otel-collector) | 0.1.2 | 0.1.2 | The OpenTelemetry Collector (contrib, Apache-2.0) on every node: host, Norca agent, NATS, RustFS, Forgejo, mTLS gateway, Consul and PostgreSQL metrics found through the native catalog, an OTLP receiver for the applications, export to OpenObserve trusting Norca's CA |
 | [postgres](#postgres) | 0.1.0 | 0.1.0 | A single PostgreSQL server (PostgreSQL License, referenced, never shipped): data on a host volume, superuser, application databases and a `pg_monitor` role from the built-in secret store, optional TLS with Norca's workload certificates, optional periodic dumps to S3 |
 | [rustfs](#rustfs) | 0.2.0 | 0.2.0 | RustFS (Apache-2.0) as the S3 store of the Norca backups: single node or distributed, credentials from the built-in secret store, host volumes, health check roles, optional bucket creation, optional OTLP metrics |
-| [seaweedfs](https://github.com/bacanoo-io/norca-registry/tree/v0.4.0/packs/seaweedfs) | 0.1.0 | 0.1.0 | A single SeaweedFS server (Apache-2.0, release archive referenced, never shipped): master, volume server and filer in one process with `raw_exec`, data in a directory of the node, in the native catalog; the storage of the `seaweedfs-csi` pack |
-| [seaweedfs-csi](https://github.com/bacanoo-io/norca-registry/tree/v0.4.0/packs/seaweedfs-csi) | 0.1.0 | 0.1.0 | The SeaweedFS CSI driver (Apache-2.0, binaries referenced, never shipped) on every node with `raw_exec`: the mount service and the driver as a monolith CSI plugin with volume statistics and conditions, the filer found in the native catalog |
+| [seaweedfs](https://github.com/bacanoo-io/norca-registry/tree/v0.5.0/packs/seaweedfs) | 0.1.0 | 0.1.0 | A single SeaweedFS server (Apache-2.0, release archive referenced, never shipped): master, volume server and filer in one process with `raw_exec`, data in a directory of the node, in the native catalog; the storage of the `seaweedfs-csi` pack |
+| [seaweedfs-csi](https://github.com/bacanoo-io/norca-registry/tree/v0.5.0/packs/seaweedfs-csi) | 0.1.0 | 0.1.0 | The SeaweedFS CSI driver (Apache-2.0, binaries referenced, never shipped) on every node with `raw_exec`: the mount service and the driver as a monolith CSI plugin with volume statistics and conditions, the filer found in the native catalog |
 | [traefik](#traefik) | 0.3.0 | 0.3.0 | Traefik Proxy (MIT, the official image) as the edge router of a region: entrypoints for HTTP, HTTPS, TCP and UDP edited as a table in the install form, certificates from the built-in secret store applied without a restart, routes from the tags of the native catalog and static configuration; examples for web, WebSocket, gRPC and TCP (Norca 0.3.0) |
 
 The *Version* column shows the pack versions on the registry's `main` branch, the next column the
-versions the `v0.4.0` tag contains. The packs without a section here are described in their README in the
+versions the `v0.5.0` tag contains. The packs without a section here are described in their README in the
 registry. The packs need Norca 0.1.0 or newer;
 packs with `requires` in their `metadata.hcl` state the server features they use.
 

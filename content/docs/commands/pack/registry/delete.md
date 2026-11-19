@@ -24,5 +24,5 @@ norca pack registry delete <name> [options]
 
 ```shell
 norca pack registry delete norca
-norca pack registry delete norca --target=nats --ref=v0.4.0
+norca pack registry delete norca --target=nats --ref=v0.5.0
 ```

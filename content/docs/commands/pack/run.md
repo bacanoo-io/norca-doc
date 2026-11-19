@@ -89,7 +89,7 @@ norca pack run example --name=dev
 # Run a pack with variables from a file.
 norca pack run example --var-file="./overrides.hcl"
 
-# Run a pack of a registry added with --ref=v0.4.0: the pack at v0.4.0, release "nats".
+# Run a pack of a registry added with --ref=v0.5.0: the pack at v0.5.0, release "nats".
 norca pack run nats --registry=norca -f nats.hcl
 
 # Install a release in two regions at once.

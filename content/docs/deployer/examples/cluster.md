@@ -274,7 +274,7 @@ packs:
     - name: norca                   # The Norca pack registry (nats, postgres, rustfs, ...).
       type: git
       url: https://github.com/bacanoo-io/norca-registry
-      ref: v0.4.0                   # Pin a tag.
+      ref: v0.5.0                   # Pin a tag.
   deploy:
     - name: cache                   # Release name (lower case, digits, '-').
       registry: builtin             # Needed with several registries.
@@ -723,7 +723,7 @@ packs {
     name = "norca"                     # The Norca pack registry (nats, postgres, ...).
     type = "git"
     url  = "https://github.com/bacanoo-io/norca-registry"
-    ref  = "v0.4.0"
+    ref  = "v0.5.0"
   }
 
   deploy {

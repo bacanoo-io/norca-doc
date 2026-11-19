@@ -28,5 +28,5 @@ This command takes the [operation options](/docs/commands/pack#operation-options
 ```shell
 norca pack info hello_world
 norca pack info nats --registry=norca                 # at the default ref of the registry
-norca pack info nats --registry=norca --ref=v0.4.0    # at a given cached ref
+norca pack info nats --registry=norca --ref=v0.5.0    # at a given cached ref
 ```

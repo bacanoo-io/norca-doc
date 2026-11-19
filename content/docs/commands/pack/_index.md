@@ -88,8 +88,8 @@ Deployments that were run without `--name` and `--ref` by earlier versions are n
 with `--name=<pack>@latest`, which works at any ref.
 
 ```shell
-norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.4.0
-norca pack run nats --registry=norca -f nats.hcl      # nats at v0.4.0, release "nats"
+norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.5.0
+norca pack run nats --registry=norca -f nats.hcl      # nats at v0.5.0, release "nats"
 norca pack registry update norca --ref=<new tag>
 norca pack upgrade nats --registry=norca -f nats.hcl  # the same release at the new tag
 ```
