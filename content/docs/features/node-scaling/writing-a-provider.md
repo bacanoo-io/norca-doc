@@ -126,7 +126,8 @@ unavailable, so **a heartbeat every 10–30 seconds is right.**
   `provider_allow_http` variable of the pack, for a lab).
 - The token is the item `token` of the Variable `token_variable` names. The operator reads it with
   its own policy: the `nodescaler-operator` pack grants read on `nodescaler/*` in the namespace of
-  the bootstrap, so put it there (for example `nodescaler/providers/<name>`).
+  the bootstrap (`norca-system` by default), so put it there (for example
+  `nodescaler/providers/<name>`).
 - The provider writes its object and its status with a token of its own, which needs write and
   write-status on the kind `norca.io/NodeProvider`.
 - Deregister on a clean exit, so the operator reports the provider as unknown at once instead of

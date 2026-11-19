@@ -53,9 +53,14 @@ with [`norca object apply`](/docs/commands/object/apply), read with
    anything else the zone serves. The norca-provider pack 0.4.0 or later
    is needed (its `DNSZone` kind knows the field).
 
-2. **The operator.** Run the norca-dns pack:
+2. **The operator.** Run the norca-dns pack. Like the other
+   [operator packs](/docs/features/packages/registry#packs), its job runs in
+   the namespace `norca-system` by default, which must exist, reads the
+   token Variables of the zones there, and keeps off nodes with the
+   `raw_exec` driver:
 
    ```shell-session
+   $ norca namespace apply -description "Norca operators" norca-system
    $ norca pack run norca-dns --registry=norca
    ```
 

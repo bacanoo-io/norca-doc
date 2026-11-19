@@ -30,9 +30,13 @@ authority.
 
 ## Install
 
-Three packs of the [pack registry](/docs/features/packages/registry):
+Three packs of the [pack registry](/docs/features/packages/registry). norca-acme and
+norca-provider are [operator packs](/docs/features/packages/registry#packs): their jobs run in the
+namespace `norca-system` by default, which must exist, and keep off nodes with the `raw_exec`
+driver.
 
 ```shell-session
+$ norca namespace apply -description "Norca operators" norca-system
 $ norca pack run traefik --registry=norca --name=traefik --var acme_challenge=true ...
 $ norca pack run norca-provider --registry=norca --name=dns -f dns.hcl     # for DNS-01
 $ norca pack run norca-acme --registry=norca --name=acme
@@ -40,8 +44,8 @@ $ norca pack run norca-acme --registry=norca --name=acme
 
 - **norca-acme** installs the job and an ACL policy bound to it: `read` and
   `write-status` on `CertificateIssuer` and `CertificateOrder`, `read` on
-  `DNSZone`, its own secrets below `norca-acme/`, the tokens of the DNS
-  zones.
+  `DNSZone`, its own secrets below `norca-acme/` and the tokens of the DNS
+  zones, both in the namespace of its job.
 - **norca-provider** is needed for DNS-01 only (see [DNS-01](#dns-01)).
 - **traefik** needs `acme_challenge = true` for HTTP-01 only (see
   [HTTP-01](#http-01)).
@@ -142,9 +146,12 @@ on port 80. The operator answers it itself.
    leaves the path of the challenge out. The redirect becomes a router of
    the dynamic configuration instead of the redirection of the entrypoint;
    everything else is redirected as before.
-3. **The namespace of `norca-acme` in `catalog_namespaces` of Traefik**: the
-   service of the operator carries the router of the path as catalog tags
-   (`http01_entrypoints` of the norca-acme pack, `["web"]`).
+3. **The namespace of `norca-acme` (`norca-system` by default) in
+   `catalog_namespaces` of Traefik**: the service of the operator carries the
+   router of the path as catalog tags (`http01_entrypoints` of the norca-acme
+   pack, `["web"]`). Traefik reads the services of another namespace than its
+   own only with an ACL policy bound to its job that allows it; the output of
+   the traefik pack prints one.
 
 With another edge router, route that path of every host on port 80 to the
 service `norca-acme`.
@@ -244,10 +251,12 @@ needs the certificate itself.
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
+| `namespace` | `norca-system` | The namespace of the operator job and its secrets; it must exist. |
+| `driver`, `allow_raw_exec_nodes` | `exec`, `false` | The task driver; the job keeps off nodes with `raw_exec` unless `allow_raw_exec_nodes` is set. |
 | `controller` | `norca-acme` | The name issuers name the operator by. |
 | `secret_prefix` | `norca-acme/` | Where the operator keeps its secrets in its namespace. |
 | `http01_enabled`, `http01_entrypoints` | `true`, `["web"]` | The HTTP-01 service and the Traefik entrypoints its router is on. |
-| `zone_token_namespace`, `zone_token_path` | `default`, `providers/*` | The Variables with the tokens of the DNS zones. |
+| `zone_token_namespace`, `zone_token_path` | `""` (the namespace of the job), `providers/*` | The Variables with the tokens of the DNS zones. |
 | `zone_ttl` | `3m` | When a zone without a heartbeat counts as away. |
 | `zone_allow_http`, `zone_ca_cert` | `false`, `""` | http endpoints of DNS providers (trials only); the CA of their https certificates. |
 | `dns_resolver` | the resolver of the node | The recursive resolver the name servers of a zone are found with. |

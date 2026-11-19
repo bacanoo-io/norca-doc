@@ -111,9 +111,12 @@ Successfully applied object kind "norca.io/LoadBalancer"!
 
 Install the operator as a pack, which applies the kind, the ACL policy of the
 controller and the controller job as one release (see
-[Ecosystem](/docs/features/operator-framework/ecosystem#operator-packs)):
+[Ecosystem](/docs/features/operator-framework/ecosystem#operator-packs)). The
+controller job runs in the namespace `norca-system`, which must exist, and
+keeps the `LoadBalancer` objects of `default` (`watch_namespace`):
 
 ```shell
+$ norca namespace apply -description "Norca operators" norca-system
 $ norca pack run ./packs/loadbalancer-operator --name=lb
 ```
 

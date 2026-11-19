@@ -202,7 +202,7 @@ job "loadbalancer-controller" {
     count = 2
 
     task "controller" {
-      driver = "raw_exec"
+      driver = "exec"
 
       config {
         command = "/usr/local/bin/norca-loadbalancer"
@@ -287,6 +287,12 @@ calls:
 - **One controller (or one set) per region** that has the objects it serves:
   objects belong to a region, and so does the controller.
 - **Give it the least privilege**: the policy bound to the job, as above.
+- **Keep it in a namespace of its own, off `raw_exec` nodes.** Put the job where only the
+  operators of the cluster write (the operator packs use `norca-system`), and
+  keep it off nodes with the `raw_exec` driver with the constraint
+  `${attr.driver.raw_exec}` `is_not_set`: a `raw_exec` task on the same node
+  can read the workload identity token of the controller, and with it the
+  policy bound to its job ([`raw_exec` isolation](/docs/drivers/raw_exec#resource-isolation)).
 - **A provider application runs outside the failure domain it serves**: not on
   the nodes of the group it creates, not behind the load balancer it manages;
   it is reachable from the controller at the address it registered.

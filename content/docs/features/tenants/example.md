@@ -71,12 +71,15 @@ from a job that is **not** in that namespace.
 > The [loadbalancer-operator pack](/docs/features/packages/registry#loadbalancer-operator)
 > starts the controller for one namespace: the one its own job runs in
 > (`namespace`). In the namespace of a tenant that job would count against
-> the quota of the team, and the tokens of the team that may submit jobs
-> could change it. This example therefore runs the controller from the files
+> the quota of the team and keep the namespace from being deleted. This
+> example therefore runs the controller from the files
 > of the [operator](https://github.com/bacanoo-io/norca-platform/tree/main/loadbalancer/operator)
 > in the repository `norca-platform`, in the namespace `default`, for every
 > namespace. From version 0.4.0 of the pack, which the tag `v0.4.0` of the
-> registry does not hold yet, its variable `watch_namespace` does the same.
+> registry does not hold yet, its variable `watch_namespace` does the same,
+> and the operator packs on the registry's `main` branch run their jobs in the
+> namespace `norca-system` by default, off the nodes with the `raw_exec`
+> driver (see [operator packs](/docs/features/packages/registry#packs)).
 
 The ACL policy of the operator, `loadbalancer-policy.hcl`, has the rules of
 the namespace `default`, where the job runs. Two things are added to it. In

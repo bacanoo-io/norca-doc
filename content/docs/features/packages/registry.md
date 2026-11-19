@@ -86,10 +86,10 @@ updating and air-gapped use are described in
 | [loadbalancer-operator](#loadbalancer-operator) | 0.4.0 | 0.3.0 | The LoadBalancer operator as an operator pack: object kind (webhooks, limits), the LoadBalancerClass kind, ACL policy bound to the controller job, admission policy, controller job |
 | [mtls-gateway](#mtls-gateway) | 0.2.1 | 0.2.1 | The cross-region native mTLS gateway of a region (`mtls { mode = "gateway" }`): SNI passthrough Envoy on the gateway nodes, injected by the servers or defined by the pack; optional Envoy statistics |
 | [nats](#nats) | 0.7.0 | 0.7.0 | A NATS cluster per region for the applications (JetStream, supercluster gateways, TLS and auth from Variables, or users in accounts with subject permissions and passwords from the built-in secret store), optional Prometheus exporter |
-| [nodescaler-operator](https://github.com/bacanoo-io/norca-registry/tree/v0.4.0/packs/nodescaler-operator) | 0.10.0 | 0.10.0 | The node scaling operator of Norca (`norca-nodescaler` of norca-platform) as one release: the ACL policy bound to its job and the job, two instances on different nodes, never on a node the operator created; the kinds NodeGroup and NodeProvider are registered by the core |
-| [norca-acme](#norca-acme) | 0.1.0 | 0.1.0 | The ACME operator (`norca-acme` of norca-platform) as a job: the controller of the certificate issuers that sign through an ACME certificate authority such as Let's Encrypt; it fulfils the certificate orders of the servers, answers the HTTP-01 challenge behind the traefik pack and proves names in the DNS zones of norca-provider; ACL policy bound to the job (Norca 0.3.0) |
-| [norca-dns](#norca-dns) | 0.1.1 | 0.1.0 | The DNS records operator (`norca-dns` of norca-platform) as a job: the `norca.io/DNSRecord` object kind and the controller that keeps their record sets (A, AAAA, CNAME, TXT; values given or from a LoadBalancer object) in the zones of norca-provider that allow records, under the allow list of each namespace; ACL policy bound to the job (Norca 0.3.0) |
-| [norca-provider](#norca-provider) | 0.4.0 | 0.4.0 | `norca-provider` of norca-platform as a job: the node providers, load balancer classes and DNS zones of its configuration, registered as NodeProvider, LoadBalancerClass and DNSZone objects, with its ACL policy and a `/healthz` check; the DNSZone object kind |
+| [nodescaler-operator](https://github.com/bacanoo-io/norca-registry/tree/v0.4.0/packs/nodescaler-operator) | 0.11.0 | 0.10.0 | The node scaling operator of Norca (`norca-nodescaler` of norca-platform) as one release: the ACL policy bound to its job and the job, two instances on different nodes, never on a node the operator created; the kinds NodeGroup and NodeProvider are registered by the core |
+| [norca-acme](#norca-acme) | 0.2.0 | 0.1.0 | The ACME operator (`norca-acme` of norca-platform) as a job: the controller of the certificate issuers that sign through an ACME certificate authority such as Let's Encrypt; it fulfils the certificate orders of the servers, answers the HTTP-01 challenge behind the traefik pack and proves names in the DNS zones of norca-provider; ACL policy bound to the job (Norca 0.3.0) |
+| [norca-dns](#norca-dns) | 0.2.0 | 0.1.0 | The DNS records operator (`norca-dns` of norca-platform) as a job: the `norca.io/DNSRecord` object kind and the controller that keeps their record sets (A, AAAA, CNAME, TXT; values given or from a LoadBalancer object) in the zones of norca-provider that allow records, under the allow list of each namespace; ACL policy bound to the job (Norca 0.3.0) |
+| [norca-provider](#norca-provider) | 0.5.0 | 0.4.0 | `norca-provider` of norca-platform as a job: the node providers, load balancer classes and DNS zones of its configuration, registered as NodeProvider, LoadBalancerClass and DNSZone objects, with its ACL policy and a `/healthz` check; the DNSZone object kind |
 | [openobserve](#openobserve) | 0.2.0 | 0.2.0 | OpenObserve (AGPL-3.0, referenced, never shipped) as the observability backend (logs, metrics, traces): single node on a host volume or a cluster of node roles on PostgreSQL, NATS and RustFS, TLS with Norca's workload certificates, root user and the ingest credentials of the collectors in the built-in secret store |
 | [otel-collector](#otel-collector) | 0.1.2 | 0.1.2 | The OpenTelemetry Collector (contrib, Apache-2.0) on every node: host, Norca agent, NATS, RustFS, Forgejo, mTLS gateway, Consul and PostgreSQL metrics found through the native catalog, an OTLP receiver for the applications, export to OpenObserve trusting Norca's CA |
 | [postgres](#postgres) | 0.1.0 | 0.1.0 | A single PostgreSQL server (PostgreSQL License, referenced, never shipped): data on a host volume, superuser, application databases and a `pg_monitor` role from the built-in secret store, optional TLS with Norca's workload certificates, optional periodic dumps to S3 |
@@ -106,6 +106,26 @@ packs with `requires` in their `metadata.hcl` state the server features they use
 Each pack's README in the registry (`packs/<pack>/README.md`) describes it completely: what it
 deploys, prerequisites, secrets, all variables, health checks, metrics and limitations. The sections
 below summarize them.
+
+**Operator packs.** loadbalancer-operator, nodescaler-operator, norca-acme, norca-dns and
+norca-provider run their jobs with ACL policies bound to them, **in the namespace `norca-system` by
+default** (`namespace`), where their token Variables and secrets are too. The packs expect the
+namespace and don't create it, as a namespace that a release installs belongs to that release: create
+it once and give rights in it to the operators of the cluster only.
+
+```shell
+norca namespace apply -description "Norca operators" norca-system
+```
+
+**Their jobs keep off nodes with the `raw_exec` driver**, because a `raw_exec` task on a node can read
+the secrets of every allocation there ([`raw_exec` isolation](/docs/drivers/raw_exec#resource-isolation)):
+they carry a constraint that `${attr.driver.raw_exec}` is not set, their default `driver` is `exec`
+(the binary below `/usr`, inside the chroot of `exec`), and they refuse to render with
+`driver = "raw_exec"`. The variable `allow_raw_exec_nodes = true` drops the constraint and allows
+`raw_exec`; set it only where every token that may place `raw_exec` work or use `alloc-node-exec` on
+those nodes may hold the operators' policies anyway (a lab, a single-tenant cluster). The docker
+platform of norca-provider, which calls the docker CLI of its host, needs it. The constraint counts
+when an allocation is placed: enabling `raw_exec` on a node later doesn't move an operator away.
 
 ## consul
 
@@ -193,21 +213,24 @@ needs, in the fixed order of the extended pack format. It is the reference for w
 | `service-marks.admission.hcl.tpl` | Admission policy: services marked with `norca_lb_port` must name a valid port (optional) |
 | `controller.nomad.tpl` | The controller job (two instances with leader election) and the optional webhook task |
 
-Key variables: `namespace`, `watch_namespace`, `count`, `driver` and `binary` or `image` (the controller), `acl_policy_enabled`
+Key variables: `namespace`, `watch_namespace`, `count`, `driver` and `binary` or `image` (the controller),
+`allow_raw_exec_nodes`, `proxy_driver` (`exec` by default, like the controller), `acl_policy_enabled`
 (set `false` on agents without ACLs), `admission_policy_enabled`, `webhook_enabled`, `webhook_url`,
 `classes`, `default_class`, `webhook_failure_policy`, and the limits `write_rate`, `identity_write_rate`,
 `max_objects_per_namespace`, `max_watches_per_identity`.
 
-**Namespaces (0.4.0).** By default the controller keeps the `LoadBalancer` objects of the namespace
-its job runs in (`namespace`). `watch_namespace` names the namespace of the objects apart from the
-namespace of the job: a namespace, or `*` for every namespace. The job then stays in a namespace
-where only operators write, outside the quota of the teams it serves; the ACL policy gives the
-controller its job, Variable and object rights in the watched namespaces, and the leader election
-leases stay in the namespace of the job. `namespace` itself is the name of a namespace, never `*`.
+**Namespaces (0.4.0).** The controller job runs in `namespace`, `norca-system` by default, with its
+leader election leases and, by default, the token Variables of the classes (`class_token_namespace`).
+`watch_namespace` names the namespace of the `LoadBalancer` objects apart from the namespace of the
+job: a namespace (`default` by default), `*` for every namespace, or empty for the namespace of the
+job. The job stays in a namespace where only operators write, outside the quota of the teams it
+serves; the ACL policy gives the controller its job, Variable and object rights in the watched
+namespaces. `namespace` itself is the name of a namespace, never `*`.
 A second release for another namespace or region sets `loadbalancer_kind_enabled = false` and
 `class_kind_enabled = false`: the kinds belong to the release that installed them first.
 
 ```shell
+norca namespace apply -description "Norca operators" norca-system
 norca pack plan loadbalancer-operator --registry=norca --name=lb
 norca pack run  loadbalancer-operator --registry=norca --name=lb
 norca pack status lb

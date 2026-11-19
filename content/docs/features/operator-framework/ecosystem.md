@@ -29,7 +29,13 @@ The reference operator pack is `loadbalancer-operator` in the
 | `service-marks.admission.hcl.tpl` | Admission policy: services marked with `norca_lb_port` must name a valid port (optional) |
 | `controller.nomad.tpl` | The controller job (two instances with leader election) and the optional webhook task |
 
+The operator packs of the registry run their jobs in the namespace
+`norca-system` by default, which they expect and don't create, and keep off
+nodes with the `raw_exec` driver (see
+[operator packs](/docs/features/packages/registry#packs)):
+
 ```shell
+$ norca namespace apply -description "Norca operators" norca-system
 $ norca pack plan ./packs/loadbalancer-operator
 $ norca pack run ./packs/loadbalancer-operator --name=lb
 $ norca pack status lb

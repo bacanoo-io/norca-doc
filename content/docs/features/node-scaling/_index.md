@@ -275,6 +275,13 @@ framework, run as a job (the `nodescaler-operator` pack), and it follows the
 - **More work on the leader:** `-workers` (2 by default) is how many groups the leader reconciles at
   the same time. One group is never reconciled by two workers at once, so raise it when there are
   many groups. The pack does not set it: add the flag to the arguments of the job to change it.
+- **Its own namespace, no `raw_exec` nodes.** Like the other
+  [operator packs](/docs/features/packages/registry#packs), the job runs in the namespace
+  `norca-system` by default (`namespace`, which must exist) and keeps off nodes with the `raw_exec`
+  driver. It reads the Variables under `nodescaler/` (the bootstrap with the key of the node CA,
+  the network ranges, the provider tokens) in the namespace of its job unless `variables_namespace`
+  names another one, so the deployer must write them there too
+  ([`node_scaling.namespace`](/docs/deployer/configuration#node_scaling)).
 
 - **The provider is one instance.** A second one would not be a standby: a registration has one
   endpoint, and the heartbeat of the other instance would hide that the endpoint is dead. What makes

@@ -33,7 +33,7 @@ LoadBalancer operator, the mTLS gateway) come from the
 | Clusters of several nodes (03, 04) | The system bus of the servers (on by default): clients reach the servers on 4649, the servers each other on 4650, next to 4646–4648. The autoscaler and the usage history get their data over it |
 | Backups (02–04) | An S3-compatible store (RustFS with the `rustfs` pack, AWS S3, ...); [age](https://github.com/FiloSottile/age) for the backup key pair |
 | The packs of the registry (02–04) | git and access to GitHub, or a checkout of the [Norca pack registry](https://github.com/bacanoo-io/norca-registry) |
-| The LoadBalancer operator (03) | Go, to build `norca-loadbalancer`, and the `raw_exec` driver |
+| The LoadBalancer operator (03) | Go, to build `norca-loadbalancer` (it runs with the `exec` driver) |
 | Multi region (04) | A network between the regions (e.g. a WireGuard VPN) |
 
 > [!WARNING]
