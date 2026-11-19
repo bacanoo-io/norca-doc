@@ -1,17 +1,21 @@
 ---
 title: "Security differences from Nomad v1.6.5"
 linkTitle: "Differences from Nomad"
-description: "Where Norca's access checks are stricter than those of Nomad v1.6.5: node secret IDs are not ACL tokens, and snapshot save and restore stop after a denial."
+description: "Where Norca's access checks are stricter than those of Nomad v1.6.5: node secret IDs, snapshot save and restore, policies bound to jobs, exec into such jobs, and the region of node requests."
 weight: 1
 ---
 
-Norca keeps the API and the ACL system of Nomad v1.6.5, but two of its access checks are stricter.
-Both matter only with ACLs enabled.
+Norca keeps the API and the ACL system of Nomad v1.6.5, but some of its access checks are stricter.
+All but the last matter only with ACLs enabled.
 
 | Difference | What to do |
 | --- | --- |
 | [Node secret IDs are not ACL tokens](#node-secret-ids-are-not-acl-tokens) | Replace node secret IDs used as tokens by ACL tokens |
 | [Snapshot save and restore stop after a denial](#snapshot-save-and-restore-stop-after-a-denial) | Use a management token |
+| [Policies bound to a job match its exact ID](#policies-bound-to-a-job-match-its-exact-id) | Bind the policy to each job that needs it |
+| [Changing a job with bound policies needs them](#changing-a-job-with-bound-policies-needs-them) | Give the token that changes the job the bound policies |
+| [Exec into a job with bound policies needs them](#exec-into-a-job-with-bound-policies-needs-them) | Give the token that runs the exec the bound policies |
+| [The requests of a node stay in its region](#the-requests-of-a-node-stay-in-its-region) | Point each client at the servers of its own region |
 
 ## Node secret IDs are not ACL tokens
 
@@ -44,3 +48,61 @@ as `403` too.
 
 **What to do:** nothing beyond the documented requirement: `norca operator snapshot save` and
 `restore` need a management token.
+
+## Policies bound to a job match its exact ID
+
+In Nomad v1.6.5, the ACL policies bound to a job (`norca acl policy apply -job`, the `JobACL` of a
+policy) are looked up by job ID prefix: the allocations of a job `ctr` or `c` in the namespace get
+the policies bound to the job `ctrl` too.
+
+In Norca a bound policy is granted only to the job with exactly that ID (and to the children of a
+parameterized or periodic job with that ID).
+
+**What to do:** a job that relied on getting the policies of another job through a shorter ID needs
+its own binding. See [workload associated ACL policies](/docs/concepts/workload-identity#workload-associated-acl-policies).
+
+## Changing a job with bound policies needs them
+
+In Nomad v1.6.5, any token with `submit-job` in the namespace can register a new version of a job
+with policies bound to it, and the new tasks run with those policies, so the token gets the rights of
+policies it doesn't hold.
+
+In Norca **a registration that creates or changes such a job needs a token that holds every bound
+policy** (by name or through one of its roles), or a management token; otherwise it fails with `403`
+and names the missing policies. This covers `norca job run`, the register API, `norca job revert`,
+release install, upgrade and rollback, and a selective backup restore. Registering the job exactly
+as it is needs none of the policies. See
+[changing a job with associated policies](/docs/concepts/workload-identity#changing-a-job-with-associated-policies).
+
+**What to do:** the tokens or roles of the teams and pipelines that deploy such a job must include
+its bound policies, or the job is deployed with a management token.
+
+## Exec into a job with bound policies needs them
+
+In Nomad v1.6.5, `alloc-exec` (part of the namespace `write` policy) is enough to open a shell in an
+allocation. The session sees the task's workload identity token (`NORCA_TOKEN`,
+`secrets/norca_token`), so whoever may exec also gets the policies bound to the job.
+
+In Norca **exec into an allocation of a job with bound policies needs a token that holds every bound
+policy**, or a management token. The client asks a server and fails closed: when no server can be
+reached, such an exec is refused. See
+[exec into a job with associated policies](/docs/concepts/workload-identity#exec-into-a-job-with-associated-policies).
+
+**What to do:** give the operators who exec into such jobs the bound policies, or use a management
+token. `alloc-node-exec` into a `raw_exec` task is not isolated from the node; see the
+[`raw_exec` driver](/docs/drivers/raw_exec).
+
+## The requests of a node stay in its region
+
+In Nomad v1.6.5, the requests of a client node are forwarded to the region they name, like any other
+request: a node with a certificate of one region can register itself in another region through a
+server of its own, keep its status there and attract placements.
+
+In Norca **the requests of a node** (registration, heartbeats, allocation pulls and updates, node
+events, and the tokens, volume claims and certificates of its allocations) **are not forwarded to
+another region**: a server refuses them when they name another region. With RPC TLS and
+[`verify_server_hostname`](/docs/configuration/tls#verify_server_hostname), the connection must also
+carry a client or server certificate of the server's region. This holds with or without ACLs.
+
+**What to do:** each client's [`servers`](/docs/configuration/client#servers) must be servers of
+its own [`region`](/docs/configuration#region). See [clients](/docs/concepts/architecture#clients).
