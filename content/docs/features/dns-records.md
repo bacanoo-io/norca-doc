@@ -146,7 +146,10 @@ record with its load balancer.
 - **The name must be in the allow list** of the namespace (`NotAllowed`).
   When the allow list no longer holds the name of a record, the record set
   the operator wrote for it is removed; it is written again when the name is
-  allowed again.
+  allowed again. **This comes first, whatever the spec says:** the operator
+  checks the name of the record set the status holds, and removes the set
+  also when the spec can't be read (`InvalidSpec`), names another name, or
+  waits for a zone or for values.
 - **A record set in the zone that the operator did not write** gives the
   condition `Conflict`, and nothing is written, unless the record says
   `adopt = true` (event `Adopted`). A set that is in the zone exactly as the
@@ -155,7 +158,14 @@ record with its load balancer.
   status holds the record set (`owned`) keeps it, whichever is older, and
   the other one gets `Conflict` and holds nothing. A set that no record
   holds yet goes to the oldest record of a namespace whose allow list holds
-  the name; a record that is `NotAllowed` keeps nobody from the name. A
+  the name; a record that is `NotAllowed` keeps nobody from the name.
+  **Neither does a record whose namespace may no longer write the name**,
+  even while its status still holds the set: the record that may write the
+  name takes the set over when the zone holds it exactly as the other
+  record's status says norca-dns wrote it (zone, TTL and values; event
+  `Adopted`, `taken over from a record whose namespace may no longer write
+  the name`), and the other record gives the set up. A set that is no longer
+  as norca-dns wrote it counts as one the operator did not write. A
   deleted record holds its set until the operator has removed it, so a new
   record of the same name waits for it. **A waiting record takes the name
   over as soon as the other record gives it up** (is deleted, or moves to
@@ -172,7 +182,16 @@ record with its load balancer.
   compares the record with the zone, every 5 minutes (`requeue` of the
   pack) and at every change of the record: event `DriftCorrected`,
   `status.drifts`.
-- **A changed name or type** removes the old record set first.
+- **A changed name or type** removes the old record set first, before the
+  record waits for a zone or for values (`ZoneNotFound`,
+  `RecordsNotEnabled`, `ZoneUnavailable`, `NoValues`) or for another record
+  of the new name: a name the record no longer asks for is not served on.
+- **A record set is removed only as norca-dns wrote it.** Before the
+  operator removes a set (the record is deleted, moves, or loses its name or
+  its values), it reads the set from the zone: a set whose values or TTL
+  differ from what norca-dns wrote (changed by hand, or written by a record
+  that took it over) stays in the zone, and so does a set another record
+  holds. Event `RecordLeft`; the record gives the set up.
 - **Deleting the record** removes its record set (the finalizer
   `norca.io/dns-records` keeps the object until then). With
   `deletion_policy = "retain"` the record goes without touching the zone, and
