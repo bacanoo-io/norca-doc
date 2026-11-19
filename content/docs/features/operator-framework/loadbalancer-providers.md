@@ -314,8 +314,11 @@ service.
 
 - The **operator** reads the registrations: `read` on `norca.io/LoadBalancerClass`
   in the namespace `"*"` of its ACL policy (the kind is cluster-scoped), and
-  `read` on the token Variables (`-class-token-namespace`, default `default`).
-  `loadbalancer-policy.hcl` of the operator has the rules.
+  `read` on the token Variables (`-class-token-namespace`, default
+  `norca-system`, the operations namespace of the operators). The ACL policy
+  the [loadbalancer-operator pack](/docs/features/packages/registry#loadbalancer-operator)
+  binds to its job has the rules (`providers/*` in the namespace of the job),
+  as does `loadbalancer-policy.hcl` of the operator for a job run by hand.
 - A **provider** needs `read`, `write` and `write-status` on
   `norca.io/LoadBalancerClass` (and on `norca.io/NodeProvider` if it also
   serves nodes), and nothing else. Who may write the kind
