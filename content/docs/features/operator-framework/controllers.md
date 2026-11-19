@@ -31,6 +31,7 @@ separate module: projects use `replace` directives to a Norca checkout
 | `EventRecorder` | Writes the object event log and drops repetitions. |
 | `CommonStatus`, `Condition` | Status conventions: `observedGeneration` and the `Ready`, `Progressing`, `Degraded` conditions. |
 | Owner helpers | `SetOwner`, `ListOwnedJobs`, `AdoptJobs`, `SetObjectOwner`, `SetManagedBy`, `PreserveScaledCounts`. |
+| `Backend` | The calls to the servers (`controller.NewBackend` over an API client): Variables, objects, events and jobs. `RegisterJob` registers a job unconditionally; `EnforceRegisterJob(ctx, job, modifyIndex)` registers it only while the stored job's `JobModifyIndex` is `modifyIndex` (`0`: the job must not exist) and otherwise returns an error wrapping `ErrConflict`. |
 | `controller/webhook` | Serves the [type-bound webhooks](/docs/features/operator-framework/ecosystem#type-bound-webhooks) of a kind. |
 | `controller/envtest` | Starts a real dev agent from the `norca` binary for tests. |
 | `controller/fake` | In-memory backend for unit tests without an agent. |
