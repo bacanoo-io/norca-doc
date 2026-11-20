@@ -295,7 +295,22 @@ to `keyCompromise` if the operator has not finished the order; any other
 reason leaves the order as it is. A certificate the certificate authority
 has revoked already keeps the reason it was revoked for: the operator takes
 its answer `alreadyRevoked` as done. Once the new certificate is issued,
-`norca certificate revoke` revokes that one.
+`norca certificate revoke` without `-serial` revokes that one.
+
+**An earlier certificate is revoked by its serial number**, as long as it
+is valid: `norca certificate revoke -serial <serial> <name>`, with a serial
+number from `earlier` of the status of the `Certificate` object
+([Earlier certificates](/docs/features/certificates#earlier-certificates)).
+The servers write a revocation order with that serial number, for the
+issuer that signed the certificate; the operator finds the certificate
+under `norca-acme/issued/<issuer>/<serial>` and revokes it at the
+certificate authority. **No new certificate is issued**, and the current
+one stays. This is the way to revoke a certificate that a renewal or a
+deleted version of the secret replaced. With `-reason keyCompromise` it
+also reaches a certificate that was revoked before its successor was
+issued: an order the operator has not finished gets the reason, and when
+none is left a new order with the reason is written, which changes nothing
+at a certificate authority that has revoked the certificate already.
 
 The servers also revoke on their own, with the reason
 `cessationOfOperation`, when a namespace

@@ -102,15 +102,19 @@ without a reason (unspecified) has none.
 
 ## Revoke a Certificate
 
-This endpoint revokes the current certificate of a `Certificate` object; a
-new one is issued. Revoking a certificate that is revoked already changes
-nothing, except that the `Reason` `keyCompromise` raises its reason to
-`keyCompromise`: in the revocation list of the built-in issuer, where the
-entry keeps its `RevokedAt`, or in a revocation order an external issuer has
-not finished. **The current certificate is the one revoked:** once the new
-certificate is issued, which the built-in issuer does right after a
-revocation, another call revokes the new certificate and does not change the
-reason of the earlier one.
+This endpoint revokes a certificate of a `Certificate` object: the current
+one, and a new one is issued, or with `Serial` an
+[earlier one](/docs/features/certificates#earlier-certificates) that is
+still valid, and nothing is issued. Revoking a certificate that is revoked
+already changes nothing, except that the `Reason` `keyCompromise` raises its
+reason to `keyCompromise`: in the revocation list of the built-in issuer,
+where the entry keeps its `RevokedAt`, or in a revocation order an external
+issuer has not finished. **Without `Serial` the current certificate is the
+one revoked:** once the new certificate is issued, which the built-in issuer
+does right after a revocation, another call without `Serial` revokes the new
+certificate. The reason of the one revoked before is then raised by its
+`Serial`. See
+[Revoking an earlier certificate](/docs/features/certificates#revoking-an-earlier-certificate).
 
 | Method | Path                           | Produces           |
 | ------ | ------------------------------ | ------------------ |
@@ -131,12 +135,34 @@ reason of the earlier one.
   revocation list of the built-in issuer carries its code, and an external
   issuer is given it. Without a body, or with `""` or `unspecified`, the
   revocation gives no reason.
+- `Serial` `(string: "")` - The serial number of the certificate to revoke,
+  in the same JSON body: in hexadecimal, as the status of the object shows
+  it; upper case, colons between the octets, a leading `0x` and leading
+  zeros are accepted. Without it, or with `""`, the current certificate is
+  revoked. It names one of:
+  - the current certificate (`serial` of the status): the call does what it
+    does without `Serial`;
+  - an earlier certificate of the object that is still valid, an entry of
+    `earlier` of its status: that one is revoked, the current certificate
+    and the secret stay as they are, and no new certificate is issued;
+  - with the built-in issuer, a revoked certificate of the object that the
+    status no longer lists but a revocation list of a CA of the region
+    does: only its reason can change, to `keyCompromise`.
 
 ### Sample Payload
 
 ```json
 {
   "Reason": "keyCompromise"
+}
+```
+
+An earlier certificate, by its serial number:
+
+```json
+{
+  "Serial": "1d8e03b6a2c94f57e0b1c6a47f3d9e25",
+  "Reason": "superseded"
 }
 ```
 
@@ -159,16 +185,23 @@ $ curl -X PUT -H "X-Nomad-Token: $NORCA_TOKEN" \
 
 ```json
 {
-  "Serial": "4f2a9c01d37be6a85c1f0b2e9d44a7c3"
+  "Serial": "4f2a9c01d37be6a85c1f0b2e9d44a7c3",
+  "Earlier": false
 }
 ```
+
+- `Serial` is the serial number the call was about, in lower case
+  hexadecimal, as the status holds it.
+- `Earlier` is `true` when that is not the current certificate of the
+  object but an earlier one: the current certificate stays, and no new one
+  is issued.
 
 | Code | When |
 | --- | --- |
 | `200` | the serial number that was revoked, also when it was revoked before |
-| `400` | the body can't be decoded, or `Reason` is not one of the names above; nothing is revoked |
-| `404` | no such certificate |
-| `409` | the certificate has not been issued yet |
+| `400` | the body can't be decoded, `Reason` is not one of the names above, or `Serial` is not a hexadecimal serial number; nothing is revoked |
+| `404` | no such `Certificate` object; or `Serial` is not a certificate of the object that can be revoked: neither its current certificate nor an earlier one that is still valid. The message is the same whether nobody has the serial number or another object does |
+| `409` | without `Serial`: the certificate has not been issued yet. With the `Serial` of an earlier certificate: no issuer is left to revoke it (its external issuer is gone or was recreated as a built-in one); the message says until when it stays valid |
 
 ## Import an Issuing CA
 

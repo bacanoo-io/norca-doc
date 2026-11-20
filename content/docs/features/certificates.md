@@ -207,7 +207,15 @@ neither soft deleted nor destroyed. **A deleted current version brings a new
 certificate at once**, in a new version of the secret: the built-in issuer
 writes it right away; for an external issuer an order is placed, and its key
 waits in a new version. The old certificate is not revoked: a deletion is no
-key compromise, and a soft delete can be undone.
+key compromise, and a soft delete can be undone. It stays valid until it
+expires. `norca certificate revoke` without a serial number would revoke
+the new certificate, not the old one: **to revoke the old one, give its
+serial number** from `earlier` of the status
+([Earlier certificates](#earlier-certificates)):
+
+```shell-session
+$ norca certificate revoke -namespace team-a -serial <serial> web-tls
+```
 
 Every certificate has a new key. **While a renewal fails, the current
 certificate stays in the secret**; the operator tries again after a minute,
@@ -227,7 +235,8 @@ $ norca object get -namespace team-a norca.io/Certificate web-tls
 | `issuer`, `authority` | who signed it; `authority` is the ID of the issuing CA |
 | `order` | the open order with an external issuer |
 | `failures`, `retryAt` | failed attempts in a row, and the next attempt |
-| `revoke` | the serial number of the certificate revoked last |
+| `revoke` | the serial number of a revoked certificate that is not replaced yet: set by a revocation of the current certificate and by a withdrawal that revoked it, gone once the next certificate is issued |
+| `earlier` | the [earlier certificates](#earlier-certificates) of the object that are still valid |
 
 | Condition | True when |
 | --- | --- |
@@ -255,7 +264,52 @@ What the operator did is in the events of the object
 `keyCompromise`),
 `Withdrawn` (the certificate was taken back from a namespace that lost its
 names), `RevocationFailed` (the external issuer did not revoke a withdrawn
-certificate; it is asked again), and the failures.
+certificate; it is asked again), `EarlierCertificateDropped` (an
+[earlier certificate](#earlier-certificates) is no longer kept in the
+status), and the failures. `Revoked` and `RevocationReason` name the serial
+number, and say "earlier certificate" when it was not the current one.
+
+### Earlier certificates
+
+**A certificate that a new one replaces stays valid until it expires**,
+unless it was revoked: after a renewal, a changed spec, a changed issuing
+CA, a deleted version of the secret. The status keeps these certificates in
+`earlier`, the oldest first, so that one of them can still be
+[revoked by its serial number](#revoking):
+
+```json
+"earlier": [
+  {
+    "authority": "7b1d9e04-52c6-4f1a-9c3e-d0a8f6b2e415",
+    "issuer": "internal",
+    "notAfter": "2027-02-13T12:00:00Z",
+    "serial": "1d8e03b6a2c94f57e0b1c6a47f3d9e25"
+  }
+]
+```
+
+| Field | Meaning |
+| --- | --- |
+| `serial` | the serial number, in hexadecimal |
+| `issuer`, `authority` | who signed it: the name of the issuer, and the ID of the issuing CA if that was the built-in issuer |
+| `notAfter` | the end of its validity |
+| `revoked` | `true` once its issuer was told to revoke it: the built-in issuer lists it in its revocation list, an external issuer was given a revocation order |
+
+- **An entry is added when a certificate that is still valid leaves the
+  status:** a new certificate takes its place, or it is
+  [withdrawn](#when-a-namespace-loses-a-name). A revoked one is kept too,
+  with `revoked`: its reason may still be raised to `keyCompromise`.
+- **An entry is dropped when its certificate has expired**, on the next
+  pass of the operator. An expired certificate needs no revocation, and is
+  not revoked by its serial number either.
+- **The list holds at most 16 entries.** When one more is added, the oldest
+  is dropped, and the warning event `EarlierCertificateDropped` names its
+  serial number and the end of its validity: that certificate can no longer
+  be revoked by its serial number.
+- **The list is written by the servers only**, like the rest of the status
+  of a certificate: a serial number can't be added to it by hand.
+- **Deleting the `Certificate` object drops the list** with the object. See
+  [Deleting](#deleting).
 
 ## Who may ask for which names
 
@@ -329,9 +383,17 @@ certificate for them must not stay with it until the certificate expires.
    `delete_secret = true` the whole secret is destroyed. Only a secret that
    is the certificate's own is touched, and only in the state the operator
    read.
-3. **The status is cleared:** it names no certificate, `Ready` is false,
-   `Failed` says `NamesNotAllowed`, and the event `Withdrawn` says what was
-   done.
+3. **The status is cleared:** it names no current certificate, `Ready` is
+   false, `Failed` says `NamesNotAllowed`, and the event `Withdrawn` says
+   what was done. The withdrawn certificate, if it is still valid, is
+   listed in `earlier` of the status
+   ([Earlier certificates](#earlier-certificates)), with `revoked` when it
+   was revoked; `revoke` keeps its serial number then.
+
+**A withdrawal revokes the current certificate only.** The earlier
+certificates of the object that are still valid are not revoked with it:
+they stay in `earlier` and stay valid until each is
+[revoked by its serial number](#revoking) or expires.
 
 - **A revocation by an external issuer is waited for.** Until the controller
   reports it done, the serial number stays in the status and `Failed` says
@@ -346,7 +408,7 @@ certificate for them must not stay with it until the certificate expires.
   that was recreated as a built-in one, **can't be revoked**: it is taken
   out of the secret and stays valid until it expires. `Failed` and the
   event `Withdrawn` say so, with the serial number and the end of the
-  validity.
+  validity. It is listed in `earlier` without `revoked`.
 - **Names given back bring a new certificate**, also while a revocation is
   still waited for.
 - The other refusals (`InvalidSpec`, `IssuerNotFound` alone,
@@ -400,23 +462,84 @@ revoked for something else is what the clients have to learn.
   whom. A call that changes nothing records no event.
 
 > [!IMPORTANT]
-> **A revocation acts on the current certificate of the object**, the one
-> with the `serial` of the status. The built-in issuer issues the new
-> certificate right after a revocation, so a second
-> `norca certificate revoke` revokes the new certificate and leaves the
-> reason of the earlier one as it is. The reason is raised only while the
-> revoked certificate is still the current one (`revoke` of the status is
-> its `serial`): until the new certificate is issued, which with an
-> external issuer takes as long as its order. If the key is exposed, say so
-> in the first revocation.
+> **Without a serial number a revocation acts on the current certificate of
+> the object**, the one with the `serial` of the status. The built-in
+> issuer issues the new certificate right after a revocation, so a second
+> `norca certificate revoke` without `-serial` revokes the new certificate
+> and leaves the reason of the one revoked first as it is. That one is an
+> [earlier certificate](#earlier-certificates) by then: **to raise its
+> reason, name it by its serial number**
+> (`-serial <serial> -reason keyCompromise`).
 
 **A certificate the built-in issuer signed** (its status has an
 `authority`) **is always revoked at the CA that signed it**, also when an
 issuer of the same name was recreated as an external one.
 
-In both cases a new certificate with a new key is issued and written to the
-secret. The servers also revoke on their own, without a new certificate,
-when a namespace [loses a name](#when-a-namespace-loses-a-name).
+After a revocation of the current certificate, with either issuer, a new
+certificate with a new key is issued and written to the secret. The servers
+also revoke on their own, without a new certificate, when a namespace
+[loses a name](#when-a-namespace-loses-a-name).
+
+### Revoking an earlier certificate
+
+```shell-session
+$ norca object get -namespace team-a norca.io/Certificate web-tls
+$ norca certificate revoke -namespace team-a -serial 1d8e03b6a2c94f57e0b1c6a47f3d9e25 web-tls
+```
+
+**A revocation may name the certificate by its serial number** (`-serial`),
+in hexadecimal, as the status shows it; upper case, colons between the
+octets, a leading `0x` and leading zeros are accepted. What happens depends
+on whose serial number it is:
+
+- **The current certificate** (`serial` of the status): the revocation is
+  what it is without a serial number, and a new certificate is issued.
+- **An [earlier certificate](#earlier-certificates)** (an entry of
+  `earlier` of the status): it is revoked by the issuer that signed it, the
+  `issuer` and `authority` of the entry, whatever the issuer of the object
+  is now. **No new certificate is issued**: the current certificate stays,
+  the secret is not touched, and `revoke` of the status is not set. The
+  entry gets `revoked` and stays in the list until the certificate expires.
+  - **Built-in issuer:** the serial number goes onto the revocation list of
+    the CA that signed it.
+  - **External issuer:** a revocation order with the serial number and the
+    reason is written for the controller of the issuer that signed it.
+- **An earlier certificate that is revoked already** (its entry has
+  `revoked`): only `keyCompromise` changes its reason, as for the current
+  certificate, in the entry of the revocation list or in the revocation
+  order; any other call changes nothing. This is how the reason of a
+  certificate is raised after its successor was issued.
+- **A revoked certificate of the object that the status no longer lists**,
+  with the built-in issuer: while a revocation list of a CA of the region
+  still has the serial number as a certificate of this object, its reason
+  can be raised to `keyCompromise`. Any other call changes nothing.
+
+The event `Revoked` of an earlier certificate reads
+`earlier certificate with the serial <serial> revoked by <who>`, with the
+reason if one was given, and ends with `the current certificate stays`. A
+raised reason gives the event `RevocationReason`, which names the earlier
+certificate by its serial number.
+
+**What is refused**, with nothing revoked:
+
+- **A serial number that is not hexadecimal.**
+- **A serial number that is not a certificate of the object:** neither its
+  current certificate, nor an entry of `earlier`, nor a revoked serial
+  number of the object in a revocation list. This is so for an earlier
+  certificate that has expired, and for one that was dropped from `earlier`,
+  unless a revocation list still has it. The message is the same whether
+  nobody has the serial number or another `Certificate` object does.
+- **An earlier certificate that no issuer is left to revoke:** its external
+  issuer is gone, or was recreated as a built-in one. The message says so,
+  and until when the certificate stays valid; its entry is not marked
+  `revoked`.
+
+> [!WARNING]
+> **Only the status of the object says which certificates were its own.**
+> Deleting the `Certificate` object drops `earlier` with it: its
+> certificates that are still valid, the current one and the earlier ones,
+> can no longer be revoked by `norca certificate revoke`. Revoke what has to
+> be revoked before deleting the object.
 
 ## Deleting
 
@@ -425,6 +548,12 @@ it breaks. With `delete_secret = true` the operator deletes the secret
 first, if it is the certificate's own. It destroys only the secret as it
 read it: a secret changed in the meantime is read again first, and kept if
 it is no longer the certificate's.
+
+**Deleting revokes nothing, and drops what a later revocation would need.**
+The current certificate and the
+[earlier certificates](#earlier-certificates) stay valid until they expire,
+and with the object gone `norca certificate revoke` no longer finds them.
+[Revoke](#revoking) them first if they must not stay valid.
 
 ## In the web UI
 

@@ -22,6 +22,6 @@ Usage: `norca certificate <subcommand> [options]`
 | --- | --- |
 | [`roots`](/docs/commands/certificate/roots) | Print the trust bundle of the built-in certificate issuer |
 | [`crl`](/docs/commands/certificate/crl) | Print the revocation list of the built-in certificate issuer |
-| [`revoke`](/docs/commands/certificate/revoke) | Revoke the current certificate of a Certificate object |
+| [`revoke`](/docs/commands/certificate/revoke) | Revoke the current or an earlier certificate of a Certificate object |
 | [`ca import`](/docs/commands/certificate/ca-import) | Bring a CA of the organisation in the place of the issuing CA |
 | [`ca rotate`](/docs/commands/certificate/ca-rotate) | Replace the issuing CA with a new one of the leader |
