@@ -248,6 +248,17 @@ namespace) is kept. Giving an adopted resource back is written the same way,
 so `RestoreFailed` can show for a moment for the same reason; it is tried
 again.
 
+**A role is changed by its ID, and only as the tenant read it.** A role
+that somebody else renames between the tenant's read and its write keeps
+its new name: the write is refused like any other.
+
+- **In a pass:** the renamed role is no longer the role of the tenant's
+  name. The next pass creates the tenant's own role of that name and leaves
+  the renamed one as it is, with what it holds then; the tenant no longer
+  lists it and has nothing to give back for it.
+- **While an adopted role is given back:** `RestoreFailed` shows, and the
+  next attempt gives the role back under its new name.
+
 **A role of the tenant is the one of the ID it recorded**, not whatever role
 has its name now. When the tenant's role is deleted by hand and somebody
 creates another role of the same name, that role has another ID and is not

@@ -31,6 +31,15 @@ The table below shows this endpoint's support for
   Role. The name can contain alphanumeric characters, dashes, and underscores.
   **This name must be unique and must not exceed 128 characters.**
 
+- `cas` `(int: <unset>)` - (Norca) Check-and-set: with `0`, create the role
+  only if no role has its name. A role of the name writes nothing and fails
+  with status 409 and a message naming the role, for example `check-and-set
+  conflict: ACL role "example-acl-role" exists (modify index 26), expected it
+  not to exist`; without `cas` the same request fails with status 400. A
+  value that is not a number fails with status 400. Query parameter. In the
+  Go API client: `ACLRoles().CheckedUpsert` with a role without an ID and
+  the index 0, whose conflict error wraps `api.ErrIndexConflict`.
+
 - `Description` `(string: <optional>)` - A free form human-readable description
   of the ACL Role. It must not exceed 256 characters.
 
@@ -60,6 +69,16 @@ $ curl \
     --header "X-Nomad-Token: <NORCA_TOKEN_SECRET_ID>" \
     --data @payload.json \
     https://localhost:4646/v1/acl/role
+```
+
+Create the role only if no role has its name yet:
+
+```shell
+$ curl \
+    --request POST \
+    --header "X-Nomad-Token: <NORCA_TOKEN_SECRET_ID>" \
+    --data @payload.json \
+    "https://localhost:4646/v1/acl/role?cas=0"
 ```
 
 ### Sample Response
@@ -105,6 +124,17 @@ The table below shows this endpoint's support for
   Role. The name can contain alphanumeric characters, dashes, and underscores.
   **This name must be unique and must not exceed 128 characters.**
 
+- `cas` `(int: <unset>)` - (Norca) Check-and-set: write only if the modify
+  index of the role with this ID is this value, also when the request
+  changes its name. A mismatch writes nothing and fails with status 409 and a
+  message naming the role by the name in the payload, for example
+  `check-and-set conflict: ACL role "example-acl-role" has modify index 31,
+  expected 26`; a value that is not a number fails with status 400. **The
+  index must be the `ModifyIndex` that the authoritative region reports: the
+  index of the replica in another region does not match.** Query parameter.
+  In the Go API client: `ACLRoles().CheckedUpsert` with a role that has its
+  ID, whose conflict error wraps `api.ErrIndexConflict`.
+
 - `Description` `(string: <optional>)` - A free form human-readable description
   of the ACL Role. It must not exceed 256 characters.
 
@@ -135,6 +165,16 @@ $ curl \
     --header "X-Nomad-Token: <NORCA_TOKEN_SECRET_ID>" \
     --data @payload.json \
     https://localhost:4646/v1/acl/role/77c50812-fcdd-701b-9f1a-6cf55387b09d
+```
+
+Update the role only if it still has the modify index 26 it was read with:
+
+```shell
+$ curl \
+    --request POST \
+    --header "X-Nomad-Token: <NORCA_TOKEN_SECRET_ID>" \
+    --data @payload.json \
+    "https://localhost:4646/v1/acl/role/77c50812-fcdd-701b-9f1a-6cf55387b09d?cas=26"
 ```
 
 ### Sample Response
