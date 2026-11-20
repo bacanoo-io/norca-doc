@@ -241,17 +241,48 @@ only to the instance whose `/readyz` answers `204`**:
   that returns every instance, the edge also sends challenges to the
   standbys, and those challenges fail.
 
+**The operator answers a challenge at once, but tells the certificate
+authority to check it only a settle time after the instance started to
+answer**: `-http01-settle`, a flag of `norca-acme`, `30s` by default. An
+edge router that routes by `/readyz` does not route to an instance at the
+moment it becomes ready: the check of the service runs on its interval,
+Norca passes the result on, and the edge router reads the services on an
+interval of its own. A challenge the certificate authority checks before
+that reaches nobody, and its order fails.
+
+- **The time counts from the start of the process**, and with leader
+  election from every time the instance gains the lease: an instance that
+  loses the lease and gains it again waits again.
+- **An order that waits counts no failed attempt** and goes on when the
+  settle time is over. An order that comes later than the settle time does
+  not wait.
+- **DNS-01 does not wait for it**, and neither does `/readyz`: the edge
+  router needs it to start routing.
+- **The settle time should cover** the interval and the timeout of the
+  check on `/readyz`, the time Norca takes to pass the result of the check
+  on, and the edge router's refresh of the services. With a longer check
+  interval or a slower refresh set it above their sum.
+- `0` turns the wait off; a negative value is refused.
+
 **When the lease passes to another instance**, the answers of the instance
 that held it are gone. The new one presents the challenge of an open order
-again when it first works on the order, before it tells the certificate
-authority to check it. **Until then, and until the edge router follows the
-readiness of the new instance, nobody answers.** A challenge the
-certificate authority checks in that time fails: the certificate authority
-ends the order, the operator fails it with that problem, and the servers
-place a new order after their delay (see [Failures](#failures)). The
-operator does not wait for the edge router before it tells the certificate
-authority to check, so an order that is open at the change can fail once
-this way too. No order stays open: a failed one is placed again.
+again when it first works on the order. **Until then, and until the edge
+router follows the readiness of the new instance, nobody answers.** The new
+instance tells the certificate authority to check a challenge only when its
+settle time is over, so an order whose challenge the certificate authority
+was not told to check before the change waits and does not fail.
+
+**A challenge the certificate authority was told to check before the change
+cannot be held back.** If the certificate authority checks it while nobody
+answers, the challenge fails: the certificate authority ends the order, the
+operator fails it with that problem, and the servers place a new order
+after their delay (see [Failures](#failures)). No order stays open: a
+failed one is placed again.
+
+**A restart of a single instance is the same**: its answers are gone, the
+instance that starts presents the challenge of an open order again at once
+and tells the certificate authority to check it after the settle time,
+unless it was told before the restart.
 
 ### DNS-01
 
