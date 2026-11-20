@@ -198,7 +198,16 @@ in `tls_certificates`.
    ([`norca certificate revoke`](/docs/commands/certificate/revoke)).
 4. When the **issuing CA changes** (rotation, import), with the built-in
    issuer.
-5. When the secret is gone.
+5. When the secret is gone, or **its current version is soft deleted or
+   destroyed** by hand.
+
+A certificate counts as held only while the current version of its secret
+can be read: it is the certificate's, it holds `cert` and `key`, and it is
+neither soft deleted nor destroyed. **A deleted current version brings a new
+certificate at once**, in a new version of the secret: the built-in issuer
+writes it right away; for an external issuer an order is placed, and its key
+waits in a new version. The old certificate is not revoked: a deletion is no
+key compromise, and a soft delete can be undone.
 
 Every certificate has a new key. **While a renewal fails, the current
 certificate stays in the secret**; the operator tries again after a minute,
@@ -234,7 +243,11 @@ Reasons of `Failed`: `IssuerNotFound`, `NamesNotAllowed`, `SecretConflict`,
 `NamesNotAllowed` the certificate is also
 [withdrawn](#when-a-namespace-loses-a-name)), and
 `AuthorityNotReady`, `AuthorityExpired`, `SecretWriteFailed`, `OrderFailed`,
-`ChainRefused` and the like (an attempt failed and is repeated).
+`ChainRefused`, `KeyLost` and the like (an attempt failed and is repeated).
+`KeyLost` says that the key waiting for the chain of an open order with an
+external issuer is gone: the secret was deleted, the version that held the
+key was soft deleted or destroyed, or the secret no longer holds the key.
+The order is dropped, and a new one is placed with a new key.
 
 What the operator did is in the events of the object
 (`norca object events`): `Issued`, `Renewed`, `Ordered`, `Revoked`,
