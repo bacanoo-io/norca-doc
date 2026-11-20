@@ -92,8 +92,8 @@ The existing pack structure (`metadata.hcl`, `variables.hcl`, `templates/`, `out
 
 | Template extension | Resource | Apply order |
 | --- | --- | --- |
-| `*.namespace.hcl.tpl` | Namespace | 1 |
-| `*.quota.hcl.tpl` | Quota (K8s item 1) | 2 |
+| `*.quota.hcl.tpl` | Quota (K8s item 1) | 1 |
+| `*.namespace.hcl.tpl` | Namespace | 2 |
 | `*.acl.hcl.tpl` | ACL policy (can also be bound to a job) | 3 |
 | `*.var.hcl.tpl` | Variables entry (without secret values, see below) | 4 |
 | `*.kind.hcl.tpl` | Type definition (K8s item 8) | 5 |

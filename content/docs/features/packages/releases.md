@@ -82,8 +82,8 @@ their extension. The format of each file is that of the corresponding `norca ...
 
 | Template | Resource | Format | Order |
 | --- | --- | --- | --- |
-| `*.namespace.hcl.tpl` | Namespace | `norca namespace apply` | 1 |
-| `*.quota.hcl.tpl` | Quota | `norca quota apply` | 2 |
+| `*.quota.hcl.tpl` | Quota | `norca quota apply` | 1 |
+| `*.namespace.hcl.tpl` | Namespace | `norca namespace apply` | 2 |
 | `*.acl.hcl.tpl` | ACL policy | `policy "<name>" { description, rules, job_acl { ... } }` | 3 |
 | `*.var.hcl.tpl` | Variables entry | `norca var put` file, plus `secret_items = [...]` | 4 |
 | `*.kind.hcl.tpl` | Object kind | `norca object-kind apply` | 5 |
@@ -92,8 +92,9 @@ their extension. The format of each file is that of the corresponding `norca ...
 | `*.object.hcl.tpl` | Custom object | `norca object apply` | 8 |
 | `*.nomad.tpl` | Job | job specification | 9 |
 
-Deletion uses the reverse order. A namespace that references a quota of the same pack is created first
-and attached to the quota once it exists. **`*.kind.hcl.tpl` and `*.object.hcl.tpl` can't call
+Deletion uses the reverse order. A quota is applied before the namespaces, so a namespace that
+references a quota of the same pack is written once, with the quota, and never exists without it; and
+a namespace is deleted before its quota. **`*.kind.hcl.tpl` and `*.object.hcl.tpl` can't call
 `file()`**, which the files of `norca object-kind apply` and `norca object apply` can: a pack renders
 to the same release at the command line and in the servers. Put a schema into the template itself, or
 into a helper template. `*.netpol.hcl.tpl` (network rules) is reserved and rejected
@@ -304,20 +305,20 @@ pass is writing at that moment. Such a resource is left as it is: the change of 
 the operation records a warning naming it, and the release no longer lists it. A resource that was
 only changed since (drift) is still the release's and is deleted. A Variable or an object is deleted
 with a check-and-set against that read, so one changed in between is not deleted either; for the
-other types the one deletion request after the read is the window left. A quota is detached only
-from the namespaces that are still the release's.
+other types the one deletion request after the read is the window left.
 
-**A quota deleted with a namespace is detached from it first, and attached back if the namespace
-stays.** The quota is deleted before the namespaces that name it, so the operation first writes
-those namespaces without the quota, with a check-and-set against the namespace as it just read it.
-A namespace that is then not deleted (it is no longer the release's, its deletion is refused, or the
-operation fails before it) gets its quota back when the deletions are done, with a check-and-set
-against the detach. A namespace changed since the detach is left as it is, with a warning, for
-example `namespace "web" was not deleted, and its quota "web" was not attached back: it changed after the release detached the quota`.
-When the quota was already deleted by then, the namespace can't name it: unless an atomic restore
-follows (see [Atomic mode](#atomic-mode-and-production-namespaces)), the namespace stays without its
-quota, and the operation warns
-`namespace "web" was not deleted, and no longer names the quota "web": the quota was deleted`.
+**A namespace is deleted before the quota it names, and a namespace that stays keeps its quota.**
+No quota is taken off a namespace. A namespace that is not deleted (it is no longer the release's,
+or its deletion is refused, for example because it still has running jobs or Variables) is not
+written at all and still names the quota, so the quota is not deleted either: the quota endpoint
+refuses to delete a quota in use. The operation fails with that error, for example
+`quota "web" is in use by namespace "web"`, the release keeps the quota (`status.resources` still
+lists it), and the operation warns
+`quota "web" was not deleted: namespace "web", which the operation did not delete, still names it; the release keeps the quota`.
+An upgrade stops at the first deletion that fails: when the deletion of the namespace itself is
+refused, the upgrade fails with the error of the namespace and does not come to the quota, which
+stays the release's too. A quota that a namespace outside the release names is not deleted either,
+with the same error and without the warning.
 
 **A resource is written by one operation at a time.** An install, upgrade or rollback claims every
 resource of its pack (hooks aside) on the leader before it writes anything, the release itself
@@ -424,9 +425,8 @@ of Variables and objects), so a change made in between is kept as well, with the
 warning; for the other writes and deletions the one request after the read is the window left. A
 resource the restore wrote back or created again stays the release's: `status.resources` records it
 with its modify index and version after the restore. A quota the operation deleted with a
-namespace that named it is attached again: the restore creates the namespace again (without the
-quota, which does not exist yet), then the quota, and then writes the namespace back as it was before
-the detach, naming the quota. In a region that is not the authoritative
+namespace that named it comes back first: the restore creates the quota again, and then the
+namespace, with its quota, in one write. In a region that is not the authoritative
 region, a namespace, quota or ACL policy of a release that is not a
 [multi-region install](#multi-region-installs) is compared with its replicated copy, which has
 indexes of its own: the restore reports it as changed and leaves it.
