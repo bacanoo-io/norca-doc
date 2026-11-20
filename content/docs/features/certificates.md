@@ -599,20 +599,34 @@ issuer of the same name was recreated as an external one.
 After a revocation of the current certificate, with either issuer, a new
 certificate with a new key is issued and written to the secret; with an
 external issuer it does not wait for the revocation order, and is issued
-also when the order fails. The servers
+also when the order fails. A request that is refused (see below) issues
+nothing. The servers
 also revoke on their own, without a new certificate, when a namespace
 [loses a name](#when-a-namespace-loses-a-name).
 
-**A repeated revocation of the current certificate after a failed order is
-refused in two cases**, with nothing placed:
+**A revocation of the current certificate that nobody can carry out is
+refused** with `409`, at the first request and at a repeated one after a
+failed order, in two cases:
 
-- **The failed order is still there**, in the short time before the
-  operator has removed it: the message says that the last revocation order
-  of the serial number is over and the certificate is not revoked, and to
-  ask again.
-- **No issuer is left to revoke it:** its external issuer is gone, or was
-  recreated as a built-in one. The message says so, and until when the
-  certificate stays valid.
+- **A revocation order of the serial number that is over without the
+  revocation is still there**, in the short time before the operator has
+  removed it: the failed order of the request before, or one that a
+  withdrawal placed before the namespace got its names back. The message is
+  `the last revocation order of the certificate with the serial <serial> is over, and the certificate is not revoked; ask again`.
+  Asked again once the order is removed, a new order is placed.
+- **No issuer is left to revoke it:** its external issuer is gone, or the
+  issuer of that name is no longer the external issuer that signed it. The
+  message says which, and until when the certificate stays valid:
+  `the certificate with the serial <serial> is not revoked, nobody can revoke the certificate: the issuer "<issuer>" is gone; it stays valid until <time>, and the request changes nothing`,
+  or with
+  `the issuer "<issuer>" is no longer the external issuer that signed it`
+  in the place of `the issuer "<issuer>" is gone`. A repeated request
+  gets the same without `, and the request changes nothing`.
+
+**A refused request writes nothing**: no order is placed, the status is not
+changed and no event is recorded. A first request so leaves the status
+without `revoke`, and no new certificate is issued: the certificate stays
+the current one and in use, whatever reason the request gave.
 
 ### Revoking an earlier certificate
 

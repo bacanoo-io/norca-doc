@@ -93,15 +93,26 @@ certificate. The certificate revoked before is an earlier one then: its
 reason is raised with its serial number,
 `-serial <serial> -reason keyCompromise`.
 
-**An earlier certificate that nobody is left to revoke is refused**: its
-external issuer is gone or was recreated as a built-in one. The command
-says so, and until when the certificate stays valid. The same holds for the
-current certificate when the command is run again after a failed
-revocation.
+**A certificate that nobody is left to revoke is refused**, the current one
+as an earlier one, the first time the command is run as any later time: its
+external issuer is gone, or the issuer of that name is no longer the
+external issuer that signed it. The command says so, and until when the
+certificate stays valid. **Nothing changes then**: for the current
+certificate the message ends with `and the request changes nothing` the
+first time, no new certificate is issued, and the certificate stays in use
+until it expires or is replaced.
 
-**A command run right after a failed revocation may be refused** with
+```shell-session
+$ norca certificate revoke -namespace team-a web-tls
+Error revoking the certificate: Unexpected response code: 409 (the certificate with the serial 4f2a9c01d37be6a85c1f0b2e9d44a7c3 is not revoked, nobody can revoke the certificate: the issuer "acme" is gone; it stays valid until 2027-02-18T10:04:11Z, and the request changes nothing)
+```
+
+**A command may be refused** with
 `the last revocation order of the certificate with the serial <serial> is over, and the certificate is not revoked; ask again`:
-the servers have not removed the failed order yet. Run it again.
+a revocation order of the certificate has failed and the servers have not
+removed it yet. It is the order of a failed revocation asked for just
+before, or one the servers placed themselves when the namespace had lost a
+name of the certificate. Nothing is written. Run the command again.
 
 **Revoke before deleting.** The earlier certificates are known from the
 status of the object only. Once the `Certificate` object is deleted, its
