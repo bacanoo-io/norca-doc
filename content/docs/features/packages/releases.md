@@ -307,6 +307,18 @@ with a check-and-set against that read, so one changed in between is not deleted
 other types the one deletion request after the read is the window left. A quota is detached only
 from the namespaces that are still the release's.
 
+**A quota deleted with a namespace is detached from it first, and attached back if the namespace
+stays.** The quota is deleted before the namespaces that name it, so the operation first writes
+those namespaces without the quota, with a check-and-set against the namespace as it just read it.
+A namespace that is then not deleted (it is no longer the release's, its deletion is refused, or the
+operation fails before it) gets its quota back when the deletions are done, with a check-and-set
+against the detach. A namespace changed since the detach is left as it is, with a warning, for
+example `namespace "web" was not deleted, and its quota "web" was not attached back: it changed after the release detached the quota`.
+When the quota was already deleted by then, the namespace can't name it: unless an atomic restore
+follows (see [Atomic mode](#atomic-mode-and-production-namespaces)), the namespace stays without its
+quota, and the operation warns
+`namespace "web" was not deleted, and no longer names the quota "web": the quota was deleted`.
+
 **A resource is written by one operation at a time.** An install, upgrade or rollback claims every
 resource of its pack (hooks aside) on the leader before it writes anything, the release itself
 included, and holds the claims until it has recorded in the release what it owns. The
@@ -411,7 +423,10 @@ The write back is a check-and-set against that read where the endpoint of the ty
 of Variables and objects), so a change made in between is kept as well, with the same kind of
 warning; for the other writes and deletions the one request after the read is the window left. A
 resource the restore wrote back or created again stays the release's: `status.resources` records it
-with its modify index and version after the restore. In a region that is not the authoritative
+with its modify index and version after the restore. A quota the operation deleted with a
+namespace that named it is attached again: the restore creates the namespace again (without the
+quota, which does not exist yet), then the quota, and then writes the namespace back as it was before
+the detach, naming the quota. In a region that is not the authoritative
 region, a namespace, quota or ACL policy of a release that is not a
 [multi-region install](#multi-region-installs) is compared with its replicated copy, which has
 indexes of its own: the restore reports it as changed and leaves it.
