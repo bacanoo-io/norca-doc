@@ -53,8 +53,9 @@ $ norca pack run norca-acme --registry=norca --name=acme
 > [!NOTE]
 > Run one instance of `norca-acme`, or several with
 > [leader election](#leader-election). The answers of the HTTP-01
-> challenges are in the memory of the instance that placed the order. An
-> order that is open when the instance is lost is continued by the next one.
+> challenges are in the memory of the instance that works on the orders and
+> are not shared. An order that is open when the instance is lost is
+> continued by the next one, which presents its challenge again.
 
 ### Leader election
 
@@ -87,10 +88,11 @@ replacement starts then places no second order.
   }
   ```
 
-- **More instances do not share the work.** The HTTP-01 server answers on
-  every instance, but only the one that works knows the answers: a
-  challenge request that reaches another instance gets `404`. DNS-01 does
-  not depend on it.
+- **More instances do not share the work.** The others are standbys. Only
+  the instance that holds the lease answers the HTTP-01 challenges and
+  reports ready: a standby answers a challenge request with `503`, and the
+  edge must send the challenges to the ready instance only (see
+  [HTTP-01](#http-01)). DNS-01 does not depend on it.
 
 ## The issuer
 
@@ -195,6 +197,61 @@ on port 80. The operator answers it itself.
 
 With another edge router, route that path of every host on port 80 to the
 service `norca-acme`.
+
+The port of the challenges (`-http01-listen`, `:8089` by default) also
+answers two paths for checks:
+
+| Path | Answer |
+| --- | --- |
+| `GET /healthz` | `204` while the process is up, on every instance. |
+| `GET /readyz` | `204` while the instance answers the challenges, `503` on a standby. Without [leader election](#leader-election) always `204`. |
+
+**With leader election only the instance that holds the lease answers the
+challenges.** The answers are in its memory and are not shared with the
+others. A standby answers `/readyz` and every challenge request with `503`
+and the text `norca-acme standby: only the instance that holds the leader
+election lease answers HTTP-01 challenges`, also for a challenge it
+presented while it held the lease. So **route the path of the challenge
+only to the instance whose `/readyz` answers `204`**:
+
+- **Give the service that carries the router a check on `/readyz` that
+  does not count for the deployment.** A standby fails the check for as
+  long as it is one: with the default `on_update` its allocation never
+  becomes healthy and the deployment fails. A check on `/healthz` can
+  count for the deployment, it passes on every instance.
+
+  ```hcl
+  check {
+    name      = "leading"
+    type      = "http"
+    path      = "/readyz"
+    interval  = "5s"
+    timeout   = "2s"
+    on_update = "ignore"
+  }
+  ```
+
+- **Let the edge router see the healthy instances only.** A lookup of the
+  service returns every instance, the standbys too, unless it asks for the
+  healthy ones: with the `healthy` parameter of the
+  [service API](/docs/api/services#additional-parameters-of-read-service),
+  or, for the lookups of the workloads of a client, with
+  [`native_service_discovery { default_healthy_only = true }`](/docs/configuration/native_service_discovery)
+  (`false` by default). With a check on `/healthz` alone, or with a lookup
+  that returns every instance, the edge also sends challenges to the
+  standbys, and those challenges fail.
+
+**When the lease passes to another instance**, the answers of the instance
+that held it are gone. The new one presents the challenge of an open order
+again when it first works on the order, before it tells the certificate
+authority to check it. **Until then, and until the edge router follows the
+readiness of the new instance, nobody answers.** A challenge the
+certificate authority checks in that time fails: the certificate authority
+ends the order, the operator fails it with that problem, and the servers
+place a new order after their delay (see [Failures](#failures)). The
+operator does not wait for the edge router before it tells the certificate
+authority to check, so an order that is open at the change can fail once
+this way too. No order stays open: a failed one is placed again.
 
 ### DNS-01
 
