@@ -86,6 +86,17 @@ time of the revocation unchanged; an open revocation order of an external
 issuer gets the reason. The same holds for an earlier certificate named
 with `-serial`.
 
+**`-reason keyCompromise` for a revoked certificate is refused when no
+issuer is left to tell**: its external issuer is gone, or the issuer of
+that name is no longer the external issuer that signed it. The certificate
+stays revoked for the reason it has, and nothing changes. Any other reason,
+or none, is not refused then, and changes nothing either.
+
+```shell-session
+$ norca certificate revoke -namespace team-a -reason keyCompromise web-tls
+Error revoking the certificate: Unexpected response code: 409 (the certificate with the serial 4f2a9c01d37be6a85c1f0b2e9d44a7c3 is revoked already, and the reason of that is not changed to keyCompromise, nobody can revoke the certificate: the issuer "acme" is gone)
+```
+
 **Without `-serial` the command revokes the current certificate.** Once the
 new certificate is issued, which the built-in issuer does right after a
 revocation, running the command again without `-serial` revokes the new

@@ -582,6 +582,20 @@ revoked for something else is what the clients have to learn.
   and with `which its issuer has not done yet` for one whose revocation
   order is open. A call that changes nothing records no event.
 
+**A reason that no issuer is left to tell is refused** with `409`: a call
+with `-reason keyCompromise` for a revoked certificate of an external
+issuer, the current one or an [earlier one](#earlier-certificates), when
+that issuer is gone, or the issuer of that name is no longer the external
+issuer that signed it. The message says that the certificate is revoked,
+and that its reason stays:
+`the certificate with the serial <serial> is revoked already, and the reason of that is not changed to keyCompromise, nobody can revoke the certificate: the issuer "<issuer>" is gone`,
+or with
+`the issuer "<issuer>" is no longer the external issuer that signed it`
+in the place of `the issuer "<issuer>" is gone`. **Nothing is written**: no
+order is placed, the status keeps `revoked` and `revokeReason` as they are,
+and no event is recorded. A call with any other reason, or with none, is
+not refused: it changes nothing, as with the issuer in place.
+
 > [!IMPORTANT]
 > **Without a serial number a revocation acts on the current certificate of
 > the object**, the one with the `serial` of the status. The built-in
@@ -621,7 +635,11 @@ failed order, in two cases:
   or with
   `the issuer "<issuer>" is no longer the external issuer that signed it`
   in the place of `the issuer "<issuer>" is gone`. A repeated request
-  gets the same without `, and the request changes nothing`.
+  gets the same without `, and the request changes nothing`. So does a
+  request with `-reason keyCompromise` while the revocation order is still
+  open (`revoking`): the reason of the order is not changed. For a
+  certificate that is revoked already the message is that of a reason no
+  issuer is left to tell (see above).
 
 **A refused request writes nothing**: no order is placed, the status is not
 changed and no event is recorded. A first request so leaves the status
@@ -701,7 +719,12 @@ The events of an earlier certificate:
 - **An earlier certificate that no issuer is left to revoke:** its external
   issuer is gone, or was recreated as a built-in one. The message says so,
   and until when the certificate stays valid; its entry is not marked
-  `revoked`.
+  `revoked`. **For an entry that has `revoked` already**, what is refused
+  is the reason `keyCompromise`, and the message says
+  `the certificate with the serial <serial> is revoked already, and the reason of that is not changed to keyCompromise`,
+  and why: the entry keeps `revoked` and its `revokeReason`. A call with
+  another reason, or with none, for such an entry is not refused, and
+  changes nothing.
 - **An earlier certificate whose last revocation order is over without the
   revocation**, in the short time before the operator has removed that
   order: the order failed, and the entry has no `revoked`. The message says
