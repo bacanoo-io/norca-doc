@@ -259,6 +259,14 @@ recorded ID, and no role has that ID any more. A role the tenant was
 creating whose ID it has not recorded yet (`pending: true`) is the tenant's
 only if it holds what the tenant was creating.
 
+**An adopted role is given back by its recorded ID too.** When the role
+leaves the spec, or the tenant is deleted, the tenant gives back the role of
+that ID. When no role has that ID, the tenant's role is gone: it is released
+(event `Released`, `released acl-role team-a-dev: it no longer exists`), and
+a role of the same name with another ID is not written. A role that is given
+back keeps the name it has: the tenant writes back only its description and
+the policies it linked.
+
 ## Taking over what exists
 
 A namespace (or quota, policy, role, network policy) with the name a tenant
