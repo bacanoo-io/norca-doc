@@ -105,8 +105,11 @@ without a reason (unspecified) has none.
 This endpoint revokes a certificate of a `Certificate` object: the current
 one, and a new one is issued, or with `Serial` an
 [earlier one](/docs/features/certificates#earlier-certificates) that is
-still valid, and nothing is issued. Revoking a certificate that is revoked
-already changes nothing, except that the `Reason` `keyCompromise` raises its
+still valid, and nothing is issued. The built-in issuer revokes at once; an
+external issuer is asked with a revocation order, and the certificate is
+revoked when its controller has done the order (`Pending` of the response).
+Revoking a certificate that is revoked
+already, or asked for already, changes nothing, except that the `Reason` `keyCompromise` raises its
 reason to `keyCompromise`: in the revocation list of the built-in issuer,
 where the entry keeps its `RevokedAt`, or in a revocation order an external
 issuer has not finished. **Without `Serial` the current certificate is the
@@ -186,7 +189,8 @@ $ curl -X PUT -H "X-Nomad-Token: $NORCA_TOKEN" \
 ```json
 {
   "Serial": "4f2a9c01d37be6a85c1f0b2e9d44a7c3",
-  "Earlier": false
+  "Earlier": false,
+  "Pending": false
 }
 ```
 
@@ -195,13 +199,20 @@ $ curl -X PUT -H "X-Nomad-Token: $NORCA_TOKEN" \
 - `Earlier` is `true` when that is not the current certificate of the
   object but an earlier one: the current certificate stays, and no new one
   is issued.
+- `Pending` is `true` when the certificate is not revoked yet: its external
+  issuer was asked to revoke it with a revocation order, and has not
+  answered. The status of the object says how that stands: `revoking`
+  while the issuer is asked, `revoked` once it is done. A revocation the
+  issuer fails ends without either, with the event `RevocationFailed`, and
+  can be asked for again. The built-in issuer revokes at once: `Pending`
+  is `false`. See [Revoking](/docs/features/certificates#revoking).
 
 | Code | When |
 | --- | --- |
-| `200` | the serial number that was revoked, also when it was revoked before |
+| `200` | the serial number the call was about: revoked, or with `Pending` asked to be revoked by its external issuer; also when it was revoked or asked for before |
 | `400` | the body can't be decoded, `Reason` is not one of the names above, or `Serial` is not a hexadecimal serial number; nothing is revoked |
 | `404` | no such `Certificate` object; or `Serial` is not a certificate of the object that can be revoked: neither its current certificate nor an earlier one that is still valid. The message is the same whether nobody has the serial number or another object does |
-| `409` | without `Serial`: the certificate has not been issued yet. With the `Serial` of an earlier certificate: no issuer is left to revoke it (its external issuer is gone or was recreated as a built-in one); the message says until when it stays valid |
+| `409` | without `Serial`: the certificate has not been issued yet. With the `Serial` of an earlier certificate, or for the current certificate asked for again after a failed revocation order: no issuer is left to revoke it (its external issuer is gone or was recreated as a built-in one), and the message says until when it stays valid; or the last revocation order of the serial number failed and the servers have not removed it yet, and the message says `the last revocation order of the certificate with the serial <serial> is over, and the certificate is not revoked; ask again` |
 
 ## Import an Issuing CA
 

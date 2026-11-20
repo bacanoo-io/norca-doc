@@ -289,6 +289,17 @@ a new one. **The reason a user gives** (`-reason`, for example
 issued until they expire (`norca-acme/issued/<issuer>/<serial>`): they are
 public, and a revocation needs the certificate itself.
 
+**The order revokes nothing until the operator reports it done.** The
+command prints `Asked the issuer to revoke ...`, and the status of the
+`Certificate` object shows `revoking` for the certificate, with the reason
+of the order. When the operator has set the order to `valid`, the servers
+set `revoked` and `revokeReason` and record the event `Revoked`. **An order
+the operator fails**, or does not answer within 24 hours, gives the warning
+event `RevocationFailed` on the `Certificate` object: `revoking` is
+removed, the certificate is not revoked, and the servers do not place the
+order again. Run `norca certificate revoke` again to place a new one. See
+[Revoking](/docs/features/certificates#revoking).
+
 **Revoking the same certificate again with `-reason keyCompromise`**, while
 the new one is not issued yet, changes the `reason` of its revocation order
 to `keyCompromise` if the operator has not finished the order; any other
@@ -318,7 +329,8 @@ The servers also revoke on their own, with the reason
 of a certificate; no new certificate is issued then. They write one
 revocation order per serial number, each with that reason: for the current
 certificate of the `Certificate` object and for every earlier one that is
-still valid and not marked revoked. The operator passes the
+still valid, unless the status marks it `revoked` already. The operator
+passes the
 `reason` of the order on to the certificate authority: `unspecified`,
 `keyCompromise`, `affiliationChanged`, `superseded` or
 `cessationOfOperation` (RFC 8555, section 7.6). An order without a reason,

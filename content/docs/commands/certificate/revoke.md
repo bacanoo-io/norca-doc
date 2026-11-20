@@ -19,6 +19,25 @@ one.
   No new certificate is issued: the current certificate stays, and the
   secret is not touched.
 
+**The built-in issuer revokes at once. An external issuer is asked to**,
+and the command says so: it prints `Asked the issuer to revoke ...` instead
+of `Revoked ...`. The certificate is revoked when the issuer has done it.
+
+- **Until then** the status of the object shows `revoking` for the
+  certificate, with the reason asked for: at the top of the status for the
+  current certificate, in its entry of `earlier` for an earlier one.
+- **Once it is done** the status shows `revoked` and `revokeReason` there,
+  and the event `Revoked` says so.
+- **A revocation the issuer fails**, or does not answer within 24 hours,
+  ends with neither: `revoking` is removed, `revoked` is not set, and the
+  warning event `RevocationFailed` on the object says why
+  (`norca object events`). Nothing is tried again. Run the command again
+  to place a new order; this works for the current certificate too.
+
+Running the command again while the revocation is pending changes nothing
+and prints the same `Asked the issuer to revoke ...` line; only
+`-reason keyCompromise` changes the reason of the open order.
+
 ## Usage
 
 ```plaintext
@@ -76,7 +95,13 @@ reason is raised with its serial number,
 
 **An earlier certificate that nobody is left to revoke is refused**: its
 external issuer is gone or was recreated as a built-in one. The command
-says so, and until when the certificate stays valid.
+says so, and until when the certificate stays valid. The same holds for the
+current certificate when the command is run again after a failed
+revocation.
+
+**A command run right after a failed revocation may be refused** with
+`the last revocation order of the certificate with the serial <serial> is over, and the certificate is not revoked; ask again`:
+the servers have not removed the failed order yet. Run it again.
 
 **Revoke before deleting.** The earlier certificates are known from the
 status of the object only. Once the `Certificate` object is deleted, its
@@ -103,4 +128,15 @@ object lists in `earlier`:
 ```shell-session
 $ norca certificate revoke -namespace team-a -serial 1d8e03b6a2c94f57e0b1c6a47f3d9e25 web-tls
 Revoked the earlier certificate with the serial 1d8e03b6a2c94f57e0b1c6a47f3d9e25 of "web-tls"; the current certificate stays
+```
+
+With an external issuer the certificate is not revoked yet when the command
+returns:
+
+```shell-session
+$ norca certificate revoke -namespace team-a -reason superseded web-tls
+Asked the issuer to revoke the certificate with the serial 4f2a9c01d37be6a85c1f0b2e9d44a7c3 of "web-tls"; it is revoked when the issuer has done so: the status of the object says revoking until then, and revoked after; a new one is being issued
+
+$ norca certificate revoke -namespace team-a -serial 1d8e03b6a2c94f57e0b1c6a47f3d9e25 web-tls
+Asked the issuer to revoke the earlier certificate with the serial 1d8e03b6a2c94f57e0b1c6a47f3d9e25 of "web-tls"; it is revoked when the issuer has done so: the status of the object says revoking until then, and revoked after; the current certificate stays
 ```

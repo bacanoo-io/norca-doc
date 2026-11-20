@@ -235,7 +235,10 @@ $ norca object get -namespace team-a norca.io/Certificate web-tls
 | `issuer`, `authority` | who signed it; `authority` is the ID of the issuing CA |
 | `order` | the open order with an external issuer |
 | `failures`, `retryAt` | failed attempts in a row, and the next attempt |
-| `revoke` | the serial number of a revoked certificate that is not replaced yet: set by a revocation of the current certificate and by a withdrawal that revoked it, gone once the next certificate is issued |
+| `revoke` | the serial number of a certificate that was asked to be revoked and is not replaced yet: set by a revocation of the current certificate and by a withdrawal of it, gone once the next certificate is issued. It says what was asked for, not that the revocation is done |
+| `revoked` | `true` once the revocation of the current certificate is done: the built-in issuer lists the serial number in the revocation list of its CA, or the external issuer has done a revocation order for it |
+| `revokeReason` | with an external issuer only: the reason of the revocation order that was done, `unspecified` for none. The built-in issuer has the reason in its revocation list |
+| `revoking` | set while a revocation order that a user asked an external issuer for is open: the reason of the order, `unspecified` for none. See [Revoking](#revoking) |
 | `earlier` | the [earlier certificates](#earlier-certificates) of the object that are still valid |
 
 | Condition | True when |
@@ -259,17 +262,36 @@ key was soft deleted or destroyed, or the secret no longer holds the key.
 The order is dropped, and a new one is placed with a new key.
 
 What the operator did is in the events of the object
-(`norca object events`): `Issued`, `Renewed`, `Ordered`, `Revoked`,
-`RevocationReason` (the reason of a certificate revoked before was raised to
-`keyCompromise`),
+(`norca object events`): `Issued`, `Renewed`, `Ordered`, `Revoked` (a
+revocation is done: at once when a user asks the built-in issuer, and with
+an external issuer when the operator finds the revocation order done; a
+withdrawal says it in `Withdrawn`), `RevocationOrdered` (a user asked an
+external issuer to revoke a certificate: the revocation order is placed,
+and nothing is revoked yet),
+`RevocationReason` (the reason of a certificate was raised to
+`keyCompromise`; the text ends with `revoked before` for a certificate that
+was revoked, and with `which its issuer has not done yet` for one whose
+revocation order is still open),
 `Withdrawn` (the certificate was taken back from a namespace that lost its
 names, or an earlier certificate of it was revoked or found not revocable
-for that), `RevocationFailed` (the external issuer did not revoke a
-certificate under withdrawal, the current or an earlier one; it is asked
-again), `EarlierCertificateDropped` (an
-[earlier certificate](#earlier-certificates) is no longer kept in the
-status), and the failures. `Revoked` and `RevocationReason` name the serial
-number, and say "earlier certificate" when it was not the current one.
+for that), `RevocationFailed` (a warning: an external issuer did not revoke
+a certificate, the current or an earlier one), `EarlierCertificateDropped`
+(an [earlier certificate](#earlier-certificates) is no longer kept in the
+status), and the failures. `Revoked`, `RevocationOrdered`,
+`RevocationReason` and `RevocationFailed` name the serial number, and say
+"earlier certificate" when it was not the current one.
+
+`RevocationFailed` has two forms:
+
+- **A revocation a user asked for** gives one event when its order failed,
+  or when the controller of the issuer did not answer it within 24 hours:
+  `the issuer "<issuer>" did not revoke the certificate with the serial <serial>: <why>; it is not revoked, and nothing is tried again: revoke it again to place a new order`.
+  `<why>` is the problem of the order, `the issuer gave no reason` without
+  one, or `its controller did not answer within 24h0m0s`. Nothing is tried
+  again; see [Revoking](#revoking).
+- **A revocation of a [withdrawal](#when-a-namespace-loses-a-name)** gives
+  one event for every failed order, and is asked for again: the text ends
+  with `tried again at <time>`.
 
 ### Earlier certificates
 
@@ -295,7 +317,9 @@ CA, a deleted version of the secret. The status keeps these certificates in
 | `serial` | the serial number, in hexadecimal |
 | `issuer`, `authority` | who signed it: the name of the issuer, and the ID of the issuing CA if that was the built-in issuer |
 | `notAfter` | the end of its validity |
-| `revoked` | `true` once it is revoked as far as the servers know. A [revocation by its serial number](#revoking-an-earlier-certificate) sets it when its issuer was told: the built-in issuer lists it in its revocation list, an external issuer was given a revocation order. A [withdrawal](#when-a-namespace-loses-a-name) sets it when the revocation is done: at once with the built-in issuer, with an external issuer when its revocation order is done |
+| `revoked` | `true` once its revocation is done: the built-in issuer lists the serial number in the revocation list of its CA, or the external issuer has done a revocation order for it, whether a [revocation by its serial number](#revoking-an-earlier-certificate) or a [withdrawal](#when-a-namespace-loses-a-name) placed the order. A revocation that was only asked for does not set it |
+| `revokeReason` | with an external issuer only: the reason of the revocation order that was done last, `unspecified` for none. The built-in issuer has the reason in its revocation list |
+| `revoking` | set while a revocation order that a user asked an external issuer for is open: the reason of the order, `unspecified` for none. Together with `revoked`: the open order raises the reason of a certificate that is revoked already. It is removed when the order ends: with `revoked` set if the order was done, without it if the order failed or was not answered in time |
 | `failures`, `retryAt` | set only while a [withdrawal](#when-a-namespace-loses-a-name) has it revoked by an external issuer: how many revocation orders for it failed in a row, and when the next one is placed |
 | `notRevocable` | set only by a [withdrawal](#when-a-namespace-loses-a-name): why no issuer is left to revoke it |
 
@@ -303,6 +327,12 @@ CA, a deleted version of the secret. The status keeps these certificates in
   status:** a new certificate takes its place, or it is
   [withdrawn](#when-a-namespace-loses-a-name). A revoked one is kept too,
   with `revoked`: its reason may still be raised to `keyCompromise`.
+- **An entry is added with `revoked` only if the revocation was done by
+  then.** A certificate that was asked to be revoked (`revoke` of the
+  status) and that its external issuer has not revoked enters without
+  `revoked`: with `revoking` while the revocation order of a user is open,
+  and with neither when the order failed. The operator sets `revoked` on
+  the entry when the order is done.
 - **An entry is dropped when its certificate has expired**, on the next
   pass of the operator. An expired certificate needs no revocation, and is
   not revoked by its serial number either.
@@ -379,13 +409,15 @@ is issued (`NamesNotAllowed`) and **the certificate it has is withdrawn**:
 the names may be another namespace's now, and the key and a valid
 certificate for them must not stay with it until the certificate expires.
 
-1. Every certificate of the object that is still valid is **revoked** with
-   the reason `cessationOfOperation`, the current one and the
-   [earlier ones](#earlier-certificates) not marked `revoked`, each by the
+1. Every certificate of the object that is still valid and not revoked
+   already is **revoked** with the reason `cessationOfOperation`, the
+   current one and the [earlier ones](#earlier-certificates), each by the
    issuer that signed it: the built-in issuer lists it in the revocation
    list of the CA that signed it, with that reason code; an external issuer
    gets a [revocation order](#the-contract-of-an-external-issuer) with that
-   reason, one for every serial number.
+   reason, one for every serial number. **A certificate with `revoked` is
+   not revoked again**, the current one or an earlier one: its issuer is
+   not asked, and it keeps its reason.
 2. **What the secret holds for the certificate is destroyed:** every
    version of the secret not destroyed yet, with its `cert`, `key`, `ca`
    and a waiting `next_key`; the metadata and the label of the secret stay
@@ -398,7 +430,8 @@ certificate for them must not stay with it until the certificate expires.
    what was done. The withdrawn certificate, if it is still valid, is
    listed in `earlier` of the status
    ([Earlier certificates](#earlier-certificates)), with `revoked` when it
-   was revoked; `revoke` keeps its serial number then. The status is
+   was revoked, and with the reason in `revokeReason` when an external
+   issuer revoked it; `revoke` keeps its serial number then. The status is
    cleared when the current certificate is revoked and the secret emptied:
    it does not wait for the earlier certificates.
 
@@ -413,8 +446,12 @@ own: none waits for another, nor for the current certificate.
 - **Built-in issuer:** the serial number is in the revocation list at once,
   and the entry gets `revoked` in the same pass.
 - **External issuer:** the entry gets `revoked` only when its revocation
-  order is done; an order that is placed revokes nothing yet.
+  order is done, and `revokeReason` with the reason of that order; an order
+  that is placed revokes nothing yet.
 - **An entry a user revoked is left as it is**: its reason is not changed.
+  An entry a user asked to be revoked, with a revocation order that is
+  still open (`revoking`), is not revoked yet: the withdrawal waits for
+  that order as for one of its own.
 - **The event `Withdrawn` names the earlier certificates too**, by their
   serial numbers: the ones a pass revoked, and the ones it found that can't
   be revoked. It is recorded when the current certificate is given up, and
@@ -449,13 +486,16 @@ What holds for both the current and the earlier certificates:
   withdrawal: when the issuer exists again as an external one, it gets a
   revocation order, and the entry gets `revoked` when the order is done.
 - **Names given back bring a new certificate**, also while a revocation is
-  still waited for. **The withdrawal ends there**, for the earlier
+  still waited for: the certificate that was waited for is then listed in
+  `earlier` without `revoked`, since an order that is placed has revoked
+  nothing. **The withdrawal ends there**, for the earlier
   certificates too: a revocation order that is placed runs its course, no
-  new one is placed, a failed one is not placed again and gives no event,
-  and `failures`, `retryAt` and `notRevocable` are removed from the
-  entries. An entry whose order the issuer finishes gets `revoked`, and the
-  event `Revoked` says so; one whose order fails stays valid and without
-  `revoked`. The next withdrawal takes up what is still not revoked.
+  new one is placed, a failed order of the withdrawal is not placed again
+  and gives no event, and `failures`, `retryAt` and `notRevocable` are
+  removed from the entries. An entry whose order the issuer finishes gets
+  `revoked` and `revokeReason`, and the event `Revoked` says so; one whose
+  order fails stays valid and without `revoked`. The next withdrawal takes
+  up what is still not revoked.
 - The other refusals (`InvalidSpec`, `IssuerNotFound` alone,
   `SecretConflict`, and IP addresses an issuer recreated as an external one
   can't sign) are no lost right: nothing new is issued, and the certificate
@@ -486,11 +526,39 @@ revocation gives none.
   set to the serial number and `reason` set to the reason, if there is one,
   for the controller to carry out.
 
+**The built-in issuer revokes at once; an external issuer is only asked.**
+A revocation order revokes nothing until the controller reports it done:
+
+- **Asked:** the answer of the call says that the revocation is pending,
+  and `norca certificate revoke` prints `Asked the issuer to revoke ...`
+  instead of `Revoked ...`. The status shows `revoking` with the reason of
+  the order (`unspecified` for none), and the event `RevocationOrdered`
+  reads
+  `revocation of the certificate with the serial <serial> ordered from the issuer "<issuer>" by <who> for the reason <reason>`.
+- **Done:** when the controller has set the order to `valid`, the operator
+  removes `revoking`, sets `revoked` and `revokeReason`, and records the
+  event `Revoked`:
+  `certificate with the serial <serial> revoked by the issuer "<issuer>" for the reason <reason>: its revocation order is done`.
+- **Failed:** when the controller has set the order to `failed`, or has not
+  answered it within 24 hours, the operator removes `revoking`, does not
+  set `revoked`, and records one warning event `RevocationFailed`, with the
+  serial number, the issuer and why. **Nothing is tried again**, and the
+  conditions of the certificate stay as they are. The certificate is not
+  revoked: **revoke it again to place a new order**. This can be done for
+  the current certificate too, before the new one is issued.
+
+The same holds for an [earlier certificate](#earlier-certificates) revoked
+by its serial number, with these fields in its entry of `earlier`. A
+certificate that is replaced while its order is open takes `revoking` with
+it into `earlier`, and its entry is brought to an end there, by `revoked`
+or by `RevocationFailed`.
+
 **Only `keyCompromise` changes the reason of a revoked certificate.**
 Revoking a certificate that is revoked already with any other reason, or
 with none, changes nothing: its entry in the revocation list keeps its
 reason, and an open revocation order of its serial number is not written
-again. This holds also when a namespace
+again. The same holds for a certificate whose revocation is pending
+(`revoking`): no second order is placed. This holds also when a namespace
 [loses a name](#when-a-namespace-loses-a-name) of a certificate that was
 just revoked by hand. Revoking it again with `-reason keyCompromise` raises
 its reason to `keyCompromise`: a key found exposed after its certificate was
@@ -500,12 +568,19 @@ revoked for something else is what the clients have to learn.
   gets the reason `keyCompromise` and keeps its time of revocation. The list
   carries the code of `keyCompromise` from then on.
 - **External issuer:** a revocation order of the serial number that the
-  controller has not finished gets the reason `keyCompromise`. When no
-  order of the serial number is left (a finished one is removed), a new one
-  with the reason is placed; what the certificate authority does with a
-  reason for a certificate it has revoked already is its own matter.
+  controller has not finished gets the reason `keyCompromise`, and
+  `revoking` of the status with it. When no order of the serial number is
+  left (a finished one is removed), a new one with the reason is placed;
+  what the certificate authority does with a reason for a certificate it
+  has revoked already is its own matter. A certificate with `revoked` then
+  has `revoking` too, until the order ends: done, its `revokeReason` is
+  `keyCompromise`; failed or not answered in time, the event
+  `RevocationFailed` reads
+  `the issuer "<issuer>" did not take the reason keyCompromise for the certificate with the serial <serial>, revoked before: <why>; it stays revoked for the reason <reason>, and nothing is tried again`.
 - The event `RevocationReason` says that the reason was raised, and by
-  whom. A call that changes nothing records no event.
+  whom: it ends with `revoked before` for a certificate that is revoked,
+  and with `which its issuer has not done yet` for one whose revocation
+  order is open. A call that changes nothing records no event.
 
 > [!IMPORTANT]
 > **Without a serial number a revocation acts on the current certificate of
@@ -522,9 +597,22 @@ revoked for something else is what the clients have to learn.
 issuer of the same name was recreated as an external one.
 
 After a revocation of the current certificate, with either issuer, a new
-certificate with a new key is issued and written to the secret. The servers
+certificate with a new key is issued and written to the secret; with an
+external issuer it does not wait for the revocation order, and is issued
+also when the order fails. The servers
 also revoke on their own, without a new certificate, when a namespace
 [loses a name](#when-a-namespace-loses-a-name).
+
+**A repeated revocation of the current certificate after a failed order is
+refused in two cases**, with nothing placed:
+
+- **The failed order is still there**, in the short time before the
+  operator has removed it: the message says that the last revocation order
+  of the serial number is over and the certificate is not revoked, and to
+  ask again.
+- **No issuer is left to revoke it:** its external issuer is gone, or was
+  recreated as a built-in one. The message says so, and until when the
+  certificate stays valid.
 
 ### Revoking an earlier certificate
 
@@ -545,11 +633,21 @@ on whose serial number it is:
   `issuer` and `authority` of the entry, whatever the issuer of the object
   is now. **No new certificate is issued**: the current certificate stays,
   the secret is not touched, and `revoke` of the status is not set. The
-  entry gets `revoked` and stays in the list until the certificate expires.
+  entry stays in the list until the certificate expires.
   - **Built-in issuer:** the serial number goes onto the revocation list of
-    the CA that signed it.
+    the CA that signed it, and the entry gets `revoked` at once.
   - **External issuer:** a revocation order with the serial number and the
-    reason is written for the controller of the issuer that signed it.
+    reason is written for the controller of the issuer that signed it. The
+    entry gets `revoking` with the reason of the order, not `revoked`: the
+    operator sets `revoked` and `revokeReason` when the order is done. An
+    order that fails, or is not answered within 24 hours, ends `revoking`
+    with the event `RevocationFailed` and leaves the entry without
+    `revoked`; the certificate can then be revoked again, which places a
+    new order. See [Revoking](#revoking).
+- **An earlier certificate whose revocation is pending** (its entry has
+  `revoking` and no `revoked`): a call with the same reason, another
+  reason or none changes nothing and places no second order; only
+  `keyCompromise` rewrites the open order, and `revoking` with it.
 - **An earlier certificate that is revoked already** (its entry has
   `revoked`): only `keyCompromise` changes its reason, as for the current
   certificate, in the entry of the revocation list or in the revocation
@@ -560,15 +658,22 @@ on whose serial number it is:
   still has the serial number as a certificate of this object, its reason
   can be raised to `keyCompromise`. Any other call changes nothing.
 
-The event `Revoked` of an earlier certificate reads
-`earlier certificate with the serial <serial> revoked by <who>`, with the
-reason if one was given, and ends with `the current certificate stays`. A
-raised reason gives the event `RevocationReason`, which names the earlier
-certificate by its serial number. The operator records `Revoked` for an
-earlier certificate too, when the issuer finishes a revocation order that a
-[withdrawal](#when-a-namespace-loses-a-name) placed and the namespace has
-the names back by then:
-`earlier certificate with the serial <serial> revoked by the issuer "<issuer>": its revocation order is done`.
+The events of an earlier certificate:
+
+- **Built-in issuer:** `Revoked` reads
+  `earlier certificate with the serial <serial> revoked by <who>`, with the
+  reason if one was given, and ends with `the current certificate stays`.
+- **External issuer:** `RevocationOrdered` reads
+  `revocation of the earlier certificate with the serial <serial> ordered from the issuer "<issuer>" by <who> for the reason <reason>; the current certificate stays`.
+  The operator records `Revoked` when the order is done:
+  `earlier certificate with the serial <serial> revoked by the issuer "<issuer>" for the reason <reason>: its revocation order is done`.
+  It records this for a revocation order that a
+  [withdrawal](#when-a-namespace-loses-a-name) placed too, when the issuer
+  finishes it and the namespace has the names back by then. A failed order
+  of a user gives `RevocationFailed`, with `earlier certificate` in the
+  place of `certificate`.
+- A raised reason gives the event `RevocationReason`, which names the
+  earlier certificate by its serial number.
 
 **What is refused**, with nothing revoked:
 
@@ -583,6 +688,12 @@ the names back by then:
   issuer is gone, or was recreated as a built-in one. The message says so,
   and until when the certificate stays valid; its entry is not marked
   `revoked`.
+- **An earlier certificate whose last revocation order is over without the
+  revocation**, in the short time before the operator has removed that
+  order: the order failed, and the entry has no `revoked`. The message says
+  that the last revocation order of the serial number is over and the
+  certificate is not revoked, and to ask again. Once the order is removed,
+  the same call places a new one.
 
 > [!WARNING]
 > **Only the status of the object says which certificates were its own.**
@@ -689,7 +800,10 @@ to the secrets of the namespaces.**
    controller whose certificate authority refuses the reason should revoke
    without it. The servers may change the `reason` of an order that is not
    `valid` or `failed` yet to `keyCompromise`, when a user
-   [revokes the certificate again](#revoking) for that reason.
+   [revokes the certificate again](#revoking) for that reason. A
+   revocation order that is neither `valid` nor `failed` 24 hours after it
+   was written is removed: the revocation of a user ends as a failed one
+   then, and a withdrawal places a new order.
 
 **The servers check a chain before they trust it:** the certificate is for
 the key of the request and for exactly the names asked for, it is valid now,
