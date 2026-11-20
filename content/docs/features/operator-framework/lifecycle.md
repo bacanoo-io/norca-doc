@@ -59,10 +59,45 @@ Objects and jobs can belong to a custom object:
 - **Objects** list their owners in `Owners` (in a file: `owner { kind, name,
   namespace }` blocks; the SDK's `SetObjectOwner`). An owner's namespace
   defaults to the object's namespace. `Job` and `Variable` owner kinds are
-  stored but not acted on. A new owner that is a custom object outside the
-  namespace of the object (another namespace, or cluster-scoped) needs the
-  `write` or `manage-finalizers` capability on the owner, else the write is
-  refused with `403`.
+  stored but not acted on.
+
+**Naming an owner takes a right on the owner.** A dependent holds back the
+foreground deletion of its owner, and the deletion of an owner asks its
+caller for rights on the dependents (see below). So whoever makes a custom
+object the owner of an object or of a job needs the `write` or
+`manage-finalizers` capability on the kind of the owner in the namespace of
+the owner (the `object` rules of `namespace "*"` for a cluster-scoped
+owner). **It holds for every owner**: one in another namespace, a
+cluster-scoped one, and one in the namespace of the dependent, of another
+kind or of its own. Without the right the write is refused with `403`:
+
+```plaintext
+owner db.example.com/PostgresCluster "billing" in namespace "prod": naming an owner requires the write or manage-finalizers capability on the owner
+```
+
+For a cluster-scoped owner the message says `cluster-scoped` in the place of
+`in namespace "<namespace>"`. The owner need not exist, and the answer is
+the same whether it exists or not. Management tokens and clusters without
+ACLs are not restricted.
+
+- **On an object** the right is asked for a new owner. A reference the stored
+  object already has (the same kind, namespace and name) is kept without it.
+  The stored reference, and the one in the reply, carries the `ID` of an
+  owner that exists only when the writer may read the owner (`read` on its
+  kind in its namespace).
+- **On a job** the right is asked when a registration brings a new mark: a
+  new job, or a `norca.owner` or `norca.owner.kind` that differs from the
+  stored job's (a revert to a version with another mark included). A
+  registration that keeps the mark of the stored job is not checked again, so
+  whoever may update the job still can, and removing the mark takes no right
+  on the owner. A `norca.owner` that is not of the form above, or a
+  `norca.owner.kind` that is not the kind the value names, is refused with
+  `400`.
+- **A dispatch can't set the reserved meta keys** `norca.owner`,
+  `norca.owner.kind` and `norca.managed-by` (`400`), and a
+  [parameterized job](/docs/job-specification/parameterized) that lists one
+  of them in `meta_required` or `meta_optional` is not accepted. The children
+  of a parameterized or periodic job inherit the mark of their parent.
 
 When an owner is deleted, a garbage collector on the leader deletes what it
 owned, according to the deletion mode chosen on the delete
@@ -129,6 +164,30 @@ object.
   whose owner the servers deleted themselves, is not deleted: it stays, its
   reference to the deleted owner is removed, and it gets the warning event
   `DependentKept`.
+
+**Letting go of the dependents.** Deleting an object again with
+`-propagation orphan` (`?propagation=orphan`), while it is marked for
+deletion in the `background` or `foreground` mode, turns that deletion into
+an `orphan` one. It takes what a first `orphan` deletion takes: the right to
+delete the object, and none on the dependents. Use it when a `foreground`
+deletion waits for a dependent whose finalizer nobody removes.
+
+- The collector takes no further dependent of the object.
+- The object no longer waits for its dependents: it goes when its own
+  finalizers are removed, at once if it has none, and leaves the tombstone of
+  an `orphan` deletion.
+- The dependents that were not deleted yet stay as they are, and keep their
+  reference to the owner.
+- **What was done already is not undone**: a deleted dependent is gone, a
+  dependent that was marked for deletion stays marked and goes when its
+  finalizers are removed, and a stopped job stays stopped. A pass of the
+  collector that runs at that moment may still take the dependents it had
+  read.
+
+Every other repeated delete of an object that is being deleted changes
+nothing and returns the object as it is: an `orphan` deletion is not turned
+into another mode, nor a `background` deletion into a `foreground` one or
+back.
 
 ## Event log
 

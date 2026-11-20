@@ -26,7 +26,9 @@ finalizers in the file are added to the stored ones.
 
 If ACLs are enabled, this command requires a token with the `write` capability
 of an object rule matching the kind in the namespace. Adding finalizers also
-requires `manage-finalizers`. If the object's `managed_by` names an identity,
+requires `manage-finalizers`. A new `owner` that is a custom object requires
+`write` or `manage-finalizers` on the kind of the owner in the owner's
+namespace. If the object's `managed_by` names an identity,
 only that identity or a management token may update it.
 
 ## General Options

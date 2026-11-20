@@ -39,6 +39,13 @@ This command accepts the general options of the Norca CLI (`-address`,
   - `foreground` deletes them first and the object afterwards,
   - `orphan` leaves them in place.
 
+  **Running the command again with `-propagation orphan`** on an object that
+  is marked for deletion in the `background` or `foreground` mode lets go of
+  what the object owns: nothing more of it is deleted or stopped, what was
+  deleted or stopped already stays so, and the object goes when its own
+  finalizers are removed. Any other repeated delete changes nothing. See
+  [Lifecycle](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection).
+
   In every mode the event log of the object stays listable with
   [`object events`](/docs/commands/object/events) for
   [`object_tombstone_gc_threshold`](/docs/configuration/server#object_tombstone_gc_threshold)

@@ -263,13 +263,18 @@ that applies to a namespace is `policy = "deny"`, no `object` block of any
 policy of the token gives access to the objects of that namespace. Objects of
 cluster-scoped kinds are denied by a deny of `namespace "*"` only.
 
-**An owner outside the namespace of an object takes a right on the owner.**
+**Naming an owner takes a right on the owner.**
 Writing an object with a new [owner](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection)
-that is a custom object of another namespace, or cluster-scoped, needs `write`
+that is a custom object needs `write`
 or `manage-finalizers` on the kind of the owner in the owner's namespace
 (`namespace "*"` for a cluster-scoped owner): a dependent holds back the
-foreground deletion of its owner. Owners in the namespace of the object need
-nothing more.
+foreground deletion of its owner. It holds for an owner in the namespace of
+the object too, of another kind or of the object's own. Registering a job
+with a new or changed owner mark (the meta `norca.owner`) needs the same on
+the owner the mark names, besides `submit-job`; for the jobs of a controller
+that keeps its objects in Variables this is an `object` rule for a kind that
+is not registered, since the rule is matched by its `<group>/<Kind>` label
+alone.
 
 ```hcl
 namespace "prod" {

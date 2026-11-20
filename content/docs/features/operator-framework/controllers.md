@@ -50,7 +50,12 @@ separate module: projects use `replace` directives to a Norca checkout
   `my-db.example.com` is `my--db-example-com`), so distinct groups never share
   a path. It has no schema, finalizers, owners or event log; the
   controller records a hash of the spec instead of a generation. Reconcilers
-  see the same `Object` type with both storages.
+  see the same `Object` type with both storages. `SetOwner` writes the same
+  job meta with both, and registering a job with it
+  [takes a right on the owner](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection):
+  with this storage the token of the controller needs an
+  `object "<group>/<Kind>"` rule with `manage-finalizers` (or `write`) in the
+  namespace of the Variable, although no such kind is registered.
 
 ### The reconcile function
 

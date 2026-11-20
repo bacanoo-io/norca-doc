@@ -147,7 +147,7 @@ replaced; **`Finalizers` in the body are added to the stored ones**.
 
 | Blocking Queries | ACL Required |
 | ---------------- | ------------ |
-| `NO`             | object `write` on the kind; `manage-finalizers` to add finalizers |
+| `NO`             | object `write` on the kind; `manage-finalizers` to add finalizers; `write` or `manage-finalizers` on the kind of each new custom object owner, in the owner's namespace |
 
 ### Parameters
 
@@ -155,6 +155,14 @@ replaced; **`Finalizers` in the body are added to the stored ones**.
   must match the body (which may leave them empty).
 - `namespace`, `cas`, `dry_run` - See above. The namespace can also be given in
   the body.
+
+**A new entry of `Owners` that names a custom object takes a right on that
+owner**, in whatever namespace it is and of whatever kind; without it the
+request fails with `403`, with the same message whether the owner exists or
+not. An entry the stored object already has is kept without it. The `ID` of
+an entry is filled in only for an owner that exists and that the writer may
+read. See
+[Lifecycle](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection).
 
 ### Sample Payload
 
@@ -200,7 +208,12 @@ object is returned; **it disappears when its finalizers are removed**.
   [Lifecycle](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection).
   This is specified as a query string parameter. In every mode the event log
   of the object stays readable after it is gone (see
-  [Read the Event Log](#read-the-event-log)).
+  [Read the Event Log](#read-the-event-log)). **For an object that is being
+  deleted already, only `orphan` changes something**, and only when the
+  deletion under way is a `background` or `foreground` one: the garbage
+  collector takes no further dependent, and the object goes when its own
+  finalizers are removed. Any other repeated delete returns the object
+  unchanged.
 - `namespace`, `cas`, `dry_run` - See above.
 
 ### Sample Request

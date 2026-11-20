@@ -1829,7 +1829,12 @@ jobs](/docs/concepts/workload-identity#children-of-parameterized-and-periodic-jo
 
 - `Meta` `(meta<string|string>: nil)` - Specifies arbitrary metadata to pass to
   the job. (Norca) Its keys and values together are limited to 16384 bytes
-  (16KiB), apart from the payload; a larger meta fails with `400`.
+  (16KiB), apart from the payload; a larger meta fails with `400`. The
+  reserved keys `norca.owner`, `norca.owner.kind` and `norca.managed-by`
+  can't be set, whether the parameterized job lists them or not: the request
+  fails with `400` and
+  `the meta key "<key>" is reserved: a dispatch can't set it`. The dispatched
+  job has them from the parameterized job.
 
 - `namespace` `(string: "default")` - Specifies the target namespace. If ACL is
 enabled, this value must match a namespace that the token is allowed to

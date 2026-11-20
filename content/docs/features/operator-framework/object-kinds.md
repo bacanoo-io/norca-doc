@@ -260,6 +260,8 @@ operator {
 
 `policy = "read"` grants `read`, `policy = "write"` grants `read` and `write`.
 Reading a kind needs `operator` read or any object capability on it.
+Making an object the [owner](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection)
+of another object or of a job needs `write` or `manage-finalizers` on it.
 
 ## Watching changes
 

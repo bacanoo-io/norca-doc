@@ -64,6 +64,11 @@ dispatching parameterized jobs.
 - `meta_required` `(array<string>: nil)` - Specifies the set of metadata keys that
   must be provided when dispatching against the job.
 
+  (Norca) Neither list may name a reserved meta key: `norca.owner`,
+  `norca.owner.kind` or `norca.managed-by`. A dispatch can't set them, so a
+  job that lists one is refused when it is registered or planned. A
+  dispatched job has the values of these keys from the parameterized job.
+
 - `payload` `(string: "optional")` - Specifies the requirement of providing a
   payload when dispatching against the parameterized job. The **maximum size of a
   `payload` is 16 KiB**. The options for this

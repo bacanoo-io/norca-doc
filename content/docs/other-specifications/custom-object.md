@@ -75,7 +75,10 @@ The status is not part of the file; controllers write it through the
   namespace (empty for owners of a cluster-scoped kind).
 
 When all custom object owners of an object are deleted in the `background` or
-`foreground` mode, the garbage collector deletes the object. See
+`foreground` mode, the garbage collector deletes the object. Naming a custom
+object as a new owner needs `write` or `manage-finalizers` on the owner's
+kind in the owner's namespace, also for an owner in the object's own
+namespace. See
 [Lifecycle](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection).
 
 ## Spec Blocks

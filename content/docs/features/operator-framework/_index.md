@@ -183,6 +183,14 @@ The capabilities are `read`, `write`, `write-status`, `write-events`,
 Managing kinds needs `operator` write. See the
 [ACL policy specification](/docs/other-specifications/acl-policy#custom-objects-norca).
 
+**A controller that marks its jobs with `SetOwner` needs `write` or
+`manage-finalizers` on the kind of the owner in the namespace of the owner**,
+besides `submit-job`: registering a job with a new owner mark
+[takes that right](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection).
+The rule above gives it. A controller that keeps its objects in Variables
+needs such an `object "<group>/<Kind>"` rule too, although no kind of that
+name is registered.
+
 ## CLI and API
 
 | Task | CLI | HTTP API |
