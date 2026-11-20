@@ -878,6 +878,11 @@ When `?ws_handshake=true`, **the first request frame must contain the authentica
 the server closes the WebSocket with the code 1008 and the reason
 `no handshake message within 5s`. The limit is fixed, and it does not apply to
 the session after the handshake.
+**That frame may be at most 16384 bytes (16 KiB)** (Norca): the server closes
+the WebSocket with the code 1009 (message too big) as soon as a longer one
+passes that size, without reading the rest. This limit is fixed too, and it
+does not apply to the frames of the session after the handshake, nor to a
+request without `ws_handshake`.
 
 The following are valid formats:
 
