@@ -283,9 +283,11 @@ default certificate), which clients do not trust.
 
 `norca certificate revoke <name>` writes a revocation order; the operator
 revokes the certificate at the certificate authority and the servers issue
-a new one. The operator keeps the certificates it issued until they expire
-(`norca-acme/issued/<issuer>/<serial>`): they are public, and a revocation
-needs the certificate itself.
+a new one. **The reason a user gives** (`-reason`, for example
+`-reason keyCompromise`) is the `reason` of the order; without one, or with
+`unspecified`, the order has none. The operator keeps the certificates it
+issued until they expire (`norca-acme/issued/<issuer>/<serial>`): they are
+public, and a revocation needs the certificate itself.
 
 The servers also revoke on their own, with the reason
 `cessationOfOperation`, when a namespace

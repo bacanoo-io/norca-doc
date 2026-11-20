@@ -317,8 +317,9 @@ certificate for them must not stay with it until the certificate expires.
 
 1. A certificate that is still valid is **revoked** with the reason
    `cessationOfOperation`: the built-in issuer lists it in the revocation
-   list of the CA that signed it; an external issuer gets a
-   [revocation order](#the-contract-of-an-external-issuer).
+   list of the CA that signed it, with that reason code; an external issuer
+   gets a [revocation order](#the-contract-of-an-external-issuer) with that
+   reason.
 2. **What the secret holds for the certificate is destroyed:** every
    version of the secret not destroyed yet, with its `cert`, `key`, `ca`
    and a waiting `next_key`; the metadata and the label of the secret stay
@@ -354,16 +355,33 @@ certificate for them must not stay with it until the certificate expires.
 ## Revoking
 
 ```shell-session
-$ norca certificate revoke -namespace team-a web-tls
+$ norca certificate revoke -namespace team-a -reason keyCompromise web-tls
 ```
+
+**A revocation may give its reason** (`-reason`), by the name of a
+CRLReason of RFC 5280: one of the reasons a subscriber may give (RFC 8555,
+section 7.6), `unspecified`, `keyCompromise`, `affiliationChanged`,
+`superseded` or `cessationOfOperation`. Any other reason is refused before
+anything is revoked. Without a reason, or with `unspecified`, the
+revocation gives none.
 
 - **Built-in issuer:** the serial number goes onto the revocation list of
   the issuing CA: [`norca certificate crl`](/docs/commands/certificate/crl)
   or `GET /v1/certificates/crl`, a list in the form of RFC 5280, signed when
   it is asked for. A client that wants to honour it has to fetch it; the
-  certificates carry no distribution point.
+  certificates carry no distribution point. **An entry carries the code of
+  its reason**; a revocation without a reason (`unspecified`) has no reason
+  code, as RFC 5280 asks.
 - **External issuer:** the servers write a `CertificateOrder` with `revoke`
-  set to the serial number, for the controller to carry out.
+  set to the serial number and `reason` set to the reason, if there is one,
+  for the controller to carry out.
+
+**A certificate keeps the reason of its first revocation.** Revoking a
+certificate that is revoked already changes nothing: its entry in the
+revocation list keeps its reason, and an open revocation order of its
+serial number is not written again. This holds also when a namespace
+[loses a name](#when-a-namespace-loses-a-name) of a certificate that was
+just revoked by hand.
 
 **A certificate the built-in issuer signed** (its status has an
 `authority`) **is always revoked at the CA that signed it**, also when an
@@ -403,7 +421,7 @@ The page of a `Certificate` object adds a panel above the spec and the
 status: the names, links to the issuer, to the secret and to the open order,
 the serial number, and the validity as a bar with the time of the renewal.
 **Revoke** is there for a token with `write` on the kind in the namespace;
-it asks for a confirmation.
+it asks for a confirmation and gives no reason.
 
 The page of a secret that is kept for a certificate links back to the
 certificate.
@@ -457,9 +475,11 @@ to the secrets of the namespaces.**
    `failed`. `reason`, if set, is why: the name of a CRLReason of RFC 5280
    (section 5.3.1), such as `cessationOfOperation`, which the servers give
    when a namespace [lost the names](#when-a-namespace-loses-a-name) of the
-   certificate. A revocation with
-   [`norca certificate revoke`](/docs/commands/certificate/revoke) gives
-   none (unspecified). The revocation matters more than its reason: a
+   certificate, or the reason a user gave to
+   [`norca certificate revoke`](/docs/commands/certificate/revoke): one of
+   `keyCompromise`, `affiliationChanged`, `superseded` and
+   `cessationOfOperation`. An order without `reason` gives none
+   (unspecified). The revocation matters more than its reason: a
    controller whose certificate authority refuses the reason should revoke
    without it.
 

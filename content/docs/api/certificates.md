@@ -64,7 +64,10 @@ $ curl https://localhost:4646/v1/certificates/roots
 - `Chain` holds the certificates above an imported CA that is not
   self-signed, the root last.
 - `Revoked` lists the revoked certificates of a CA that have not expired:
-  `Serial`, `Certificate` (`<namespace>/<name>`), `RevokedAt`, `NotAfter`.
+  `Serial`, `Certificate` (`<namespace>/<name>`), `RevokedAt`, `NotAfter`,
+  and `Reason`, the name of the RFC 5280 CRLReason of the revocation
+  (`keyCompromise`, `affiliationChanged`, `superseded` or
+  `cessationOfOperation`), empty for none (unspecified).
 
 ## Read the Revocation List
 
@@ -92,12 +95,16 @@ This endpoint returns the revocation list of an issuing CA of the region
 }
 ```
 
+An entry of the list carries the code of the reason of its revocation; one
+without a reason (unspecified) has none.
+
 `404` when the region has no such issuing CA.
 
 ## Revoke a Certificate
 
 This endpoint revokes the current certificate of a `Certificate` object; a
-new one is issued.
+new one is issued. A certificate keeps the reason of its first revocation:
+revoking a certificate that is revoked already changes nothing.
 
 | Method | Path                           | Produces           |
 | ------ | ------------------------------ | ------------------ |
@@ -112,11 +119,33 @@ new one is issued.
 - `:name` `(string: <required>)` - The name of the `Certificate` object.
 - `namespace` `(string: "default")` - The namespace of the object, as a
   query parameter.
+- `Reason` `(string: "")` - The reason of the revocation, in an optional JSON
+  body: the name of an RFC 5280 CRLReason, `unspecified`, `keyCompromise`,
+  `affiliationChanged`, `superseded` or `cessationOfOperation`. The
+  revocation list of the built-in issuer carries its code, and an external
+  issuer is given it. Without a body, or with `""` or `unspecified`, the
+  revocation gives no reason.
+
+### Sample Payload
+
+```json
+{
+  "Reason": "keyCompromise"
+}
+```
 
 ### Sample Request
 
 ```shell-session
 $ curl -X PUT -H "X-Nomad-Token: $NORCA_TOKEN" \
+    "https://localhost:4646/v1/certificate/web-tls/revoke?namespace=team-a"
+```
+
+With a reason:
+
+```shell-session
+$ curl -X PUT -H "X-Nomad-Token: $NORCA_TOKEN" \
+    --data @payload.json \
     "https://localhost:4646/v1/certificate/web-tls/revoke?namespace=team-a"
 ```
 
@@ -131,6 +160,7 @@ $ curl -X PUT -H "X-Nomad-Token: $NORCA_TOKEN" \
 | Code | When |
 | --- | --- |
 | `200` | the serial number that was revoked |
+| `400` | the body can't be decoded, or `Reason` is not one of the names above; nothing is revoked |
 | `404` | no such certificate |
 | `409` | the certificate has not been issued yet |
 
