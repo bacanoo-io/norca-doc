@@ -874,6 +874,10 @@ associated policies](/docs/concepts/workload-identity#exec-into-a-job-with-assoc
 
 Request frames represent the `stdin` stream from the command as well as TTY resize events.
 When `?ws_handshake=true`, **the first request frame must contain the authentication token.**
+**That frame must arrive within 5 seconds** of the upgrade (Norca): otherwise
+the server closes the WebSocket with the code 1008 and the reason
+`no handshake message within 5s`. The limit is fixed, and it does not apply to
+the session after the handshake.
 
 The following are valid formats:
 
