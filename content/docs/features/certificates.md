@@ -251,6 +251,8 @@ The order is dropped, and a new one is placed with a new key.
 
 What the operator did is in the events of the object
 (`norca object events`): `Issued`, `Renewed`, `Ordered`, `Revoked`,
+`RevocationReason` (the reason of a certificate revoked before was raised to
+`keyCompromise`),
 `Withdrawn` (the certificate was taken back from a namespace that lost its
 names), `RevocationFailed` (the external issuer did not revoke a withdrawn
 certificate; it is asked again), and the failures.
@@ -376,12 +378,37 @@ revocation gives none.
   set to the serial number and `reason` set to the reason, if there is one,
   for the controller to carry out.
 
-**A certificate keeps the reason of its first revocation.** Revoking a
-certificate that is revoked already changes nothing: its entry in the
-revocation list keeps its reason, and an open revocation order of its
-serial number is not written again. This holds also when a namespace
+**Only `keyCompromise` changes the reason of a revoked certificate.**
+Revoking a certificate that is revoked already with any other reason, or
+with none, changes nothing: its entry in the revocation list keeps its
+reason, and an open revocation order of its serial number is not written
+again. This holds also when a namespace
 [loses a name](#when-a-namespace-loses-a-name) of a certificate that was
-just revoked by hand.
+just revoked by hand. Revoking it again with `-reason keyCompromise` raises
+its reason to `keyCompromise`: a key found exposed after its certificate was
+revoked for something else is what the clients have to learn.
+
+- **Built-in issuer:** the entry of the certificate in the revocation list
+  gets the reason `keyCompromise` and keeps its time of revocation. The list
+  carries the code of `keyCompromise` from then on.
+- **External issuer:** a revocation order of the serial number that the
+  controller has not finished gets the reason `keyCompromise`. When no
+  order of the serial number is left (a finished one is removed), a new one
+  with the reason is placed; what the certificate authority does with a
+  reason for a certificate it has revoked already is its own matter.
+- The event `RevocationReason` says that the reason was raised, and by
+  whom. A call that changes nothing records no event.
+
+> [!IMPORTANT]
+> **A revocation acts on the current certificate of the object**, the one
+> with the `serial` of the status. The built-in issuer issues the new
+> certificate right after a revocation, so a second
+> `norca certificate revoke` revokes the new certificate and leaves the
+> reason of the earlier one as it is. The reason is raised only while the
+> revoked certificate is still the current one (`revoke` of the status is
+> its `serial`): until the new certificate is issued, which with an
+> external issuer takes as long as its order. If the key is exposed, say so
+> in the first revocation.
 
 **A certificate the built-in issuer signed** (its status has an
 `authority`) **is always revoked at the CA that signed it**, also when an
@@ -481,7 +508,9 @@ to the secrets of the namespaces.**
    `cessationOfOperation`. An order without `reason` gives none
    (unspecified). The revocation matters more than its reason: a
    controller whose certificate authority refuses the reason should revoke
-   without it.
+   without it. The servers may change the `reason` of an order that is not
+   `valid` or `failed` yet to `keyCompromise`, when a user
+   [revokes the certificate again](#revoking) for that reason.
 
 **The servers check a chain before they trust it:** the certificate is for
 the key of the request and for exactly the names asked for, it is valid now,

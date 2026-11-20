@@ -103,8 +103,14 @@ without a reason (unspecified) has none.
 ## Revoke a Certificate
 
 This endpoint revokes the current certificate of a `Certificate` object; a
-new one is issued. A certificate keeps the reason of its first revocation:
-revoking a certificate that is revoked already changes nothing.
+new one is issued. Revoking a certificate that is revoked already changes
+nothing, except that the `Reason` `keyCompromise` raises its reason to
+`keyCompromise`: in the revocation list of the built-in issuer, where the
+entry keeps its `RevokedAt`, or in a revocation order an external issuer has
+not finished. **The current certificate is the one revoked:** once the new
+certificate is issued, which the built-in issuer does right after a
+revocation, another call revokes the new certificate and does not change the
+reason of the earlier one.
 
 | Method | Path                           | Produces           |
 | ------ | ------------------------------ | ------------------ |
@@ -159,7 +165,7 @@ $ curl -X PUT -H "X-Nomad-Token: $NORCA_TOKEN" \
 
 | Code | When |
 | --- | --- |
-| `200` | the serial number that was revoked |
+| `200` | the serial number that was revoked, also when it was revoked before |
 | `400` | the body can't be decoded, or `Reason` is not one of the names above; nothing is revoked |
 | `404` | no such certificate |
 | `409` | the certificate has not been issued yet |

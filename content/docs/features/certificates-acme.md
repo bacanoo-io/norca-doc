@@ -289,6 +289,14 @@ a new one. **The reason a user gives** (`-reason`, for example
 issued until they expire (`norca-acme/issued/<issuer>/<serial>`): they are
 public, and a revocation needs the certificate itself.
 
+**Revoking the same certificate again with `-reason keyCompromise`**, while
+the new one is not issued yet, changes the `reason` of its revocation order
+to `keyCompromise` if the operator has not finished the order; any other
+reason leaves the order as it is. A certificate the certificate authority
+has revoked already keeps the reason it was revoked for: the operator takes
+its answer `alreadyRevoked` as done. Once the new certificate is issued,
+`norca certificate revoke` revokes that one.
+
 The servers also revoke on their own, with the reason
 `cessationOfOperation`, when a namespace
 [loses the names](/docs/features/certificates#when-a-namespace-loses-a-name)

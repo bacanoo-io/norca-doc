@@ -32,8 +32,18 @@ the kind `norca.io/Certificate` in the namespace.
   other reason is refused, and nothing is revoked. Without it, or with
   `unspecified`, the revocation gives no reason.
 
-A certificate keeps the reason of its first revocation: revoking a
-certificate that is revoked already changes nothing.
+Revoking a certificate that is revoked already changes nothing, with one
+exception: `-reason keyCompromise` raises the reason of a certificate that
+was revoked for another reason, or for none, to `keyCompromise`. The
+revocation list of the built-in issuer then carries that code, with the
+time of the revocation unchanged; an open revocation order of an external
+issuer gets the reason.
+
+**The command revokes the current certificate.** Once the new certificate
+is issued, which the built-in issuer does right after a revocation, running
+the command again revokes the new certificate and does not change the
+reason of the earlier one. See
+[Revoking](/docs/features/certificates#revoking).
 
 ## Examples
 
