@@ -315,7 +315,10 @@ at a certificate authority that has revoked the certificate already.
 The servers also revoke on their own, with the reason
 `cessationOfOperation`, when a namespace
 [loses the names](/docs/features/certificates#when-a-namespace-loses-a-name)
-of a certificate; no new certificate is issued then. The operator passes the
+of a certificate; no new certificate is issued then. They write one
+revocation order per serial number, each with that reason: for the current
+certificate of the `Certificate` object and for every earlier one that is
+still valid and not marked revoked. The operator passes the
 `reason` of the order on to the certificate authority: `unspecified`,
 `keyCompromise`, `affiliationChanged`, `superseded` or
 `cessationOfOperation` (RFC 8555, section 7.6). An order without a reason,

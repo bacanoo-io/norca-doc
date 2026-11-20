@@ -263,8 +263,10 @@ What the operator did is in the events of the object
 `RevocationReason` (the reason of a certificate revoked before was raised to
 `keyCompromise`),
 `Withdrawn` (the certificate was taken back from a namespace that lost its
-names), `RevocationFailed` (the external issuer did not revoke a withdrawn
-certificate; it is asked again), `EarlierCertificateDropped` (an
+names, or an earlier certificate of it was revoked or found not revocable
+for that), `RevocationFailed` (the external issuer did not revoke a
+certificate under withdrawal, the current or an earlier one; it is asked
+again), `EarlierCertificateDropped` (an
 [earlier certificate](#earlier-certificates) is no longer kept in the
 status), and the failures. `Revoked` and `RevocationReason` name the serial
 number, and say "earlier certificate" when it was not the current one.
@@ -293,7 +295,9 @@ CA, a deleted version of the secret. The status keeps these certificates in
 | `serial` | the serial number, in hexadecimal |
 | `issuer`, `authority` | who signed it: the name of the issuer, and the ID of the issuing CA if that was the built-in issuer |
 | `notAfter` | the end of its validity |
-| `revoked` | `true` once its issuer was told to revoke it: the built-in issuer lists it in its revocation list, an external issuer was given a revocation order |
+| `revoked` | `true` once it is revoked as far as the servers know. A [revocation by its serial number](#revoking-an-earlier-certificate) sets it when its issuer was told: the built-in issuer lists it in its revocation list, an external issuer was given a revocation order. A [withdrawal](#when-a-namespace-loses-a-name) sets it when the revocation is done: at once with the built-in issuer, with an external issuer when its revocation order is done |
+| `failures`, `retryAt` | set only while a [withdrawal](#when-a-namespace-loses-a-name) has it revoked by an external issuer: how many revocation orders for it failed in a row, and when the next one is placed |
+| `notRevocable` | set only by a [withdrawal](#when-a-namespace-loses-a-name): why no issuer is left to revoke it |
 
 - **An entry is added when a certificate that is still valid leaves the
   status:** a new certificate takes its place, or it is
@@ -305,7 +309,11 @@ CA, a deleted version of the secret. The status keeps these certificates in
 - **The list holds at most 16 entries.** When one more is added, the oldest
   is dropped, and the warning event `EarlierCertificateDropped` names its
   serial number and the end of its validity: that certificate can no longer
-  be revoked by its serial number.
+  be revoked by its serial number. A
+  [withdrawal](#when-a-namespace-loses-a-name) has the entries of a full
+  list revoked before the oldest is dropped for the withdrawn certificate:
+  the built-in issuer has listed the dropped one by then; a revocation by
+  an external issuer that is not done by then is not asked for again.
 - **The list is written by the servers only**, like the rest of the status
   of a certificate: a serial number can't be added to it by hand.
 - **Deleting the `Certificate` object drops the list** with the object. See
@@ -371,11 +379,13 @@ is issued (`NamesNotAllowed`) and **the certificate it has is withdrawn**:
 the names may be another namespace's now, and the key and a valid
 certificate for them must not stay with it until the certificate expires.
 
-1. A certificate that is still valid is **revoked** with the reason
-   `cessationOfOperation`: the built-in issuer lists it in the revocation
+1. Every certificate of the object that is still valid is **revoked** with
+   the reason `cessationOfOperation`, the current one and the
+   [earlier ones](#earlier-certificates) not marked `revoked`, each by the
+   issuer that signed it: the built-in issuer lists it in the revocation
    list of the CA that signed it, with that reason code; an external issuer
    gets a [revocation order](#the-contract-of-an-external-issuer) with that
-   reason.
+   reason, one for every serial number.
 2. **What the secret holds for the certificate is destroyed:** every
    version of the secret not destroyed yet, with its `cert`, `key`, `ca`
    and a waiting `next_key`; the metadata and the label of the secret stay
@@ -388,33 +398,69 @@ certificate for them must not stay with it until the certificate expires.
    what was done. The withdrawn certificate, if it is still valid, is
    listed in `earlier` of the status
    ([Earlier certificates](#earlier-certificates)), with `revoked` when it
-   was revoked; `revoke` keeps its serial number then.
+   was revoked; `revoke` keeps its serial number then. The status is
+   cleared when the current certificate is revoked and the secret emptied:
+   it does not wait for the earlier certificates.
 
-**A withdrawal revokes the current certificate only.** The earlier
-certificates of the object that are still valid are not revoked with it:
-they stay in `earlier` and stay valid until each is
-[revoked by its serial number](#revoking) or expires.
+**A withdrawal revokes the earlier certificates too.** A certificate that a
+renewal, a changed spec or a deleted version of the secret replaced is as
+valid for the lost names as the current one. On every pass of the operator,
+as long as the namespace may not ask for the certificate, every entry of
+`earlier` that is still valid and has no `revoked` is revoked by the issuer
+that signed it (the `issuer` and `authority` of the entry), each on its
+own: none waits for another, nor for the current certificate.
+
+- **Built-in issuer:** the serial number is in the revocation list at once,
+  and the entry gets `revoked` in the same pass.
+- **External issuer:** the entry gets `revoked` only when its revocation
+  order is done; an order that is placed revokes nothing yet.
+- **An entry a user revoked is left as it is**: its reason is not changed.
+- **The event `Withdrawn` names the earlier certificates too**, by their
+  serial numbers: the ones a pass revoked, and the ones it found that can't
+  be revoked. It is recorded when the current certificate is given up, and
+  again whenever a later pass has such news of an earlier certificate;
+  nothing is said twice.
+- **With a full list of earlier certificates** the revocations come before
+  the oldest entry is dropped for the withdrawn certificate
+  ([Earlier certificates](#earlier-certificates)).
+
+What holds for both the current and the earlier certificates:
 
 - **A revocation by an external issuer is waited for.** Until the controller
   reports it done, the serial number stays in the status and `Failed` says
   that the certificate waits for the issuer to revoke it; the secret is
   emptied meanwhile. A revocation that fails gives the event
   `RevocationFailed` and is asked for again after a minute, then twice as
-  long after every failure, up to an hour.
+  long after every failure, up to an hour. **An earlier certificate waits
+  on its own:** its failed orders are counted in `failures` of its entry,
+  the next order is placed at the `retryAt` of the entry, and the event and
+  `Failed` say "earlier certificate" with its serial number.
 - **The lost right is found also when the issuer is gone.** The CA of the
   built-in issuer outlives the issuer object (a CA is removed only after
   every certificate it signed has expired), so the certificate is revoked
   all the same. **A certificate of an external issuer that is gone**, or
   that was recreated as a built-in one, **can't be revoked**: it is taken
-  out of the secret and stays valid until it expires. `Failed` and the
+  out of the secret and stays valid until it expires, unless its issuer is
+  back before. `Failed` and the
   event `Withdrawn` say so, with the serial number and the end of the
-  validity. It is listed in `earlier` without `revoked`.
+  validity. It is listed in `earlier` without `revoked`, with the reason in
+  `notRevocable`; an earlier certificate without an issuer is marked the
+  same way. **Such an entry is tried again on every pass** of the
+  withdrawal: when the issuer exists again as an external one, it gets a
+  revocation order, and the entry gets `revoked` when the order is done.
 - **Names given back bring a new certificate**, also while a revocation is
-  still waited for.
+  still waited for. **The withdrawal ends there**, for the earlier
+  certificates too: a revocation order that is placed runs its course, no
+  new one is placed, a failed one is not placed again and gives no event,
+  and `failures`, `retryAt` and `notRevocable` are removed from the
+  entries. An entry whose order the issuer finishes gets `revoked`, and the
+  event `Revoked` says so; one whose order fails stays valid and without
+  `revoked`. The next withdrawal takes up what is still not revoked.
 - The other refusals (`InvalidSpec`, `IssuerNotFound` alone,
   `SecretConflict`, and IP addresses an issuer recreated as an external one
   can't sign) are no lost right: nothing new is issued, and the certificate
-  the namespace has stays until it expires.
+  the namespace has stays until it expires. A withdrawal under way ends
+  with them as it does with the names given back.
 
 ## Revoking
 
@@ -518,7 +564,11 @@ The event `Revoked` of an earlier certificate reads
 `earlier certificate with the serial <serial> revoked by <who>`, with the
 reason if one was given, and ends with `the current certificate stays`. A
 raised reason gives the event `RevocationReason`, which names the earlier
-certificate by its serial number.
+certificate by its serial number. The operator records `Revoked` for an
+earlier certificate too, when the issuer finishes a revocation order that a
+[withdrawal](#when-a-namespace-loses-a-name) placed and the namespace has
+the names back by then:
+`earlier certificate with the serial <serial> revoked by the issuer "<issuer>": its revocation order is done`.
 
 **What is refused**, with nothing revoked:
 
