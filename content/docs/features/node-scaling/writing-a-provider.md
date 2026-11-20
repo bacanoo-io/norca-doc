@@ -72,7 +72,8 @@ load balancer contract answers its failures in the same shape.
 ## What the operator relies on
 
 **The operator keeps no state of its own about the machines: what it knows is what the provider
-lists.** These rules are what make that safe.
+lists**, and, from the status of the group, how many instances a request made that the listing has
+not shown yet. These rules are what make that safe.
 
 - **A create is idempotent by its `request_id`, also after a restart of the provider.** The operator
   repeats a request after a failure or a restart of its own, and must get the instances of the first
@@ -82,6 +83,13 @@ lists.** These rules are what make that safe.
 - **List from the platform, not from memory.** A restarted provider lists the same instances as
   before. The lab restarts its provider to change its limits, and the docker provider finds its
   containers again by their labels.
+- **A listing may show a new instance late.** The operator counts the instances of a request the
+  provider answered for up to its `-list-grace` (2 minutes by default) while the listing does not
+  show them, and matches the listing with the request by the `request_id` of the instances. After
+  that time, if the group is short, it makes the request again with the same `request_id`: by the
+  first rule the answer is the instances of that request, and the listing must come to show each
+  of them once. See
+  [instances the provider does not list yet](/docs/features/node-scaling/nodegroup#instances-the-provider-does-not-list-yet).
 - **Keep the name.** The machine is named after `name` (the platform's name of the machine, and the
   node name). The node registers with it in its meta (`norca.instance`), which is how the operator
   matches a node with its instance.

@@ -278,6 +278,10 @@ framework, run as a job (the `nodescaler-operator` pack), and it follows the
   create is idempotent by its request ID** (`<region>/<group>/<number>`, from the status and the
   listed instances): a create asked again, by the same leader after a lost answer or by a new
   leader that read the same status and listing, gets the instances of the first one, not new ones.
+  A request the provider answered stays in the status (`status.pendingRequests`) until the listing
+  shows its instances, and they count meanwhile, so a listing that lags behind a create brings no
+  second request either: see
+  [instances the provider does not list yet](/docs/features/node-scaling/nodegroup#instances-the-provider-does-not-list-yet).
 - **What is shared out:** the [join endpoint](/docs/features/node-scaling/nodegroup#nodes-that-make-their-own-keys)
   runs on every instance, so the joins and the renewals of the certificates of the nodes are served
   by any of them; the one-time tokens are written check-and-set, so it does not matter which one a

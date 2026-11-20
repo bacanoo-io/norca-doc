@@ -123,18 +123,19 @@ it once) and the others still hold. The reason of a `Scaled` event names the win
 | Field | Written by | Meaning |
 | --- | --- | --- |
 | `status.replicas` | operator | Nodes of the group that are ready. Without it the autoscaler reads the ready nodes from the cluster gauges. |
-| `status.joining`, `status.failed` | operator | Nodes asked for and not joined yet, and failed. Joining nodes count as capacity for the blocked work. |
+| `status.joining`, `status.failed` | operator | Nodes asked for and not joined yet, and failed. Joining nodes count as capacity for the blocked work. `joining` includes the instances of a request [the provider does not list yet](#instances-the-provider-does-not-list-yet). |
 | `status.allocatable`, `status.capacity` | operator | The size of one node (`cpu`, `memory`, `disk`). Without `allocatable` the size comes from `spec.node`. |
 | `status.decision` | autoscaler | What the last raise of the scale was made for, kept until the group has that many ready nodes (or its scale is set below it): `time`, `replicas`, `previous`, `check` (`blocked-demand` or `headroom`), `reason`, `evaluations` (the IDs of the blocked evaluations, at most 50) and `work` (`namespace`, `job`, `group` and `count` of the blocked work, at most 20). Not written for a dry run. |
 | `status.nodes` | operator | One entry per instance of the provider: `instance`, `state` (`creating`, `running`, `deleting`, `failed`), `request`, `created`, a `reason` when it failed, `node` and `ready` once its node joined, `slow` while it joins after `join.slow_after`, and `removing` (the phase) for the instance a scale down removes. |
 | `status.lastRequest` | operator | The number of the last request to the provider. A request ID is `<region>/<group>/<number>`; the provider creates nothing more for an ID it has seen. |
+| `status.pendingRequests` | operator | The requests the provider answered whose instances its listing has not all shown: `number`, `count` (the instances the request made), `at` (when it was made, the last time), `asks` (how many times it was made) and `listed` (the IDs of its instances a listing has shown). Gone when there is none. See [instances the provider does not list yet](#instances-the-provider-does-not-list-yet). |
 | `status.join` | operator | The join failures in a row: `failures`, `lastFailure`, and the template (`revision`) and resume generation (`resumed`) they count for. |
 | `status.strayNodes` | operator | Nodes of the group without an instance: `node`, `name`, `instance` and `kind`: `gone` (down, what is left of a deleted instance) or `foreign` (ready, without a machine the operator asked for; made ineligible). |
 | `status.removal` | operator | The instance a scale down removes: `instance`, `name`, `node`, `selector`, `phase` (`leaving`, `draining`, `settling`, `deleting`, `deleted`), `started`, `settleUntil` for an empty node, and `held` for a node that was out of service by hand when it was taken ([a node drained by hand](#a-node-drained-by-hand)). Another operator instance goes on with it. |
 | `status.scaleDown` | operator | The vetoes of the scale down in a row: `vetoes`, `retryAfter`, `reason` (`NoCandidate` or `DrainStuck`), `message`. Gone after a scale down that worked. |
 | `status.deletion` | operator | While a deleted group is kept by the finalizer of the operator: the `policy` being applied, `deleted` (when each instance was deleted, by its name) and `waiting` (what the deletion waits for). |
 | `status.rollout` | operator | The rolling replacement: `replacing` (per node being replaced: `instance`, `name`, `node`, `nodeName`, `reason` (`marked`, `revision`, `generation`, `age`, `expiry`), `surge`, `drain`, `phase` (`surging`, `leaving`, `emptying`, `draining`, `deleted`), `since`, `started`, `expires`, its hard limit, and `held` as in `status.removal`), `outdated` (the names of the outdated nodes not replaced yet), `backoff` (`vetoes`, `retryAfter`, `reason`, `message`), `warned` (the nodes that raised the warning of their hard limit) and `took` (how long the last replacement took). |
-| `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`), `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, or `JoinFailing`), `JoinFailing` (`True` with `TooManyFailures`), `ForeignNode` (`True` while a ready node of the group runs without an instance), `ScaleDownBlocked` (`True` when no node of the group may go; `retryAfter` is the time, RFC 3339, before which the autoscaler does not lower the scale again), `DeletionBlocked` (`True` with `DrainTimeout` when the deletion of the group has waited longer than `deletion.drain_timeout`), `Rolling` (`True` with `Replacing` while nodes are replaced; `False` with `UpToDate`, or with `Waiting`, `BackedOff`, `Paused` or `DryRun` when outdated nodes are not replaced), `RollBlocked` (`True` while a backed off replacement has a node close to its hard age limit, with the reason of the backoff and `retryAfter`), `RollBehind` (`True` with `Behind` when the replacements, `max_unavailable` at a time, would not reach every node before its hard age limit; `False` with `OnTime`, or `NotRolling` with `enforce = false` or `rolling.mode = "paused"`), `RepairHeld` (`True` with `TooManyDown` while nodes that are due for [repair](#the-repair-of-nodes) are left alone because half or more of the group are down), and `NetworkCovered` (`True` when `network` is inside the cluster ranges the deployer publishes, `False` when the firewall of the servers would not let the nodes in, `Unknown` with `NetworkUnchecked` when the ranges are not published or `NoNetwork` when the group names none). |
+| `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`), `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, `JoinFailing`, or `NotListed` while the provider does not list the instances of a request that was made again), `JoinFailing` (`True` with `TooManyFailures`), `ForeignNode` (`True` while a ready node of the group runs without an instance), `ScaleDownBlocked` (`True` when no node of the group may go; `retryAfter` is the time, RFC 3339, before which the autoscaler does not lower the scale again), `DeletionBlocked` (`True` with `DrainTimeout` when the deletion of the group has waited longer than `deletion.drain_timeout`), `Rolling` (`True` with `Replacing` while nodes are replaced; `False` with `UpToDate`, or with `Waiting`, `BackedOff`, `Paused` or `DryRun` when outdated nodes are not replaced), `RollBlocked` (`True` while a backed off replacement has a node close to its hard age limit, with the reason of the backoff and `retryAfter`), `RollBehind` (`True` with `Behind` when the replacements, `max_unavailable` at a time, would not reach every node before its hard age limit; `False` with `OnTime`, or `NotRolling` with `enforce = false` or `rolling.mode = "paused"`), `RepairHeld` (`True` with `TooManyDown` while nodes that are due for [repair](#the-repair-of-nodes) are left alone because half or more of the group are down), and `NetworkCovered` (`True` when `network` is inside the cluster ranges the deployer publishes, `False` when the firewall of the servers would not let the nodes in, `Unknown` with `NetworkUnchecked` when the ranges are not published or `NoNetwork` when the group names none). |
 
 ## The join of the nodes
 
@@ -146,7 +147,7 @@ changes (`spec.node`, `provider` or `group`) or `join.resume_generation` is rais
 joins ends the row. A node still joining after `join.slow_after` (5 minutes) stays in
 `status.nodes` but no longer counts in `status.joining`, so the autoscaler may ask for another.
 
-The events of the operator in the log of the group: `InstancesRequested`, `CreateFailed`,
+The events of the operator in the log of the group: `InstancesRequested`, `InstancesNotListed`, `CreateFailed`,
 `NodeJoined`, `JoinSlow`, `JoinTimeout`, `InstanceFailed`, `JoinFailing`, `NodeWithoutInstance`,
 `ForeignNode`, `NodeIneligible`, `NetworkNotCovered`, and of the scale down `ScaleDown`,
 `InstanceDeleted`, `ScaleDownBlocked`, `DrainStuck`, `NodeNotEmpty` and `ScaleDownCanceled`, of the
@@ -161,6 +162,38 @@ does not have is reported once: down, it is what is left of a deleted instance; 
 **foreign** (a bootstrap that left through the user data, for example) and is made ineligible for
 new work. A second ready node with the name of an instance that has one is foreign too. Nodes without
 the marks, installed by hand, are left alone.
+
+## Instances the provider does not list yet
+
+The listing of a platform can show a new instance later than the answer to the request that
+created it. **The operator keeps each request the provider answered in `status.pendingRequests`
+until a listing has shown all of its instances, and those not shown yet count as instances of the
+group and in `status.joining` for a grace time**, so a listing that lags behind a create brings no
+second request for the same machines. The grace time is the flag `-list-grace` of the operator
+(2 minutes by default, at least 1 second). An instance counts once: the listing is matched with a
+request by the request ID of the instances, and an instance a listing has shown stays in `listed`,
+so one that is deleted later is not waited for again. While instances are awaited, the message of
+`Provisioned` says how many (`2 instances for a scale of 2; 2 of them are asked for and not in the
+listing of the provider yet`).
+
+- **A scale raised during the grace time** brings a new request, for the difference only.
+- **A scale lowered during the grace time** brings no request, and no removal of a node that has
+  joined starts: the awaited instances are above the scale too, and they
+  [go first](#the-removal-of-nodes) once the listing shows them.
+
+**When the grace time has passed and the group is short of its scale, the request is made again
+with the same ID**: a provider that has the instances answers with them and creates nothing. The
+answer says what the request made, and the grace time starts again for those of its instances the
+listing does not show. The operator records the warning event `InstancesNotListed` (`provider
+"hetzner-eu" did not list 2 instances of request eu/workers-dc2/7 in 2m1s; the request was made
+again with the same ID and answered with 2 instances`), and `Provisioned` is `False` with
+`NotListed` (`provider "hetzner-eu" does not list 2 instances of request eu/workers-dc2/7, made 2
+times, the last time at 2026-11-06T10:44:01Z`) until the listing shows them. When the group is not
+short by then (its scale was lowered meanwhile), the request is dropped from the status and not
+made again.
+
+**Set `-list-grace` above the lag of the listing of the slowest provider.** The
+`nodescaler-operator` pack does not set it: add the flag to the arguments of the job to change it.
 
 ## Nodes that make their own keys
 
@@ -255,7 +288,9 @@ the check does not verify it (`tls_skip_verify`).
 
 When the group has more instances than `spec.replicas`, the operator removes one at a time:
 
-1. An instance whose node has not joined goes first, at once: nothing runs on it.
+1. An instance whose node has not joined goes first, at once: nothing runs on it. While instances
+   of a request are [not in the listing of the provider yet](#instances-the-provider-does-not-list-yet),
+   no node is chosen for the grace time: they go first once the listing shows them.
 2. Otherwise a node is chosen by `policy.scale_down.selector`:
    - `least_busy` (the default): the node with the fewest allocations (the oldest of them on a tie)
      is drained with `drain_deadline` (15 minutes by default), with the built-in drainer, so the
