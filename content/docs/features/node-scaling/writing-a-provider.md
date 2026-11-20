@@ -88,7 +88,13 @@ not shown yet. These rules are what make that safe.
   show them, and matches the listing with the request by the `request_id` of the instances. After
   that time, if the group is short, it makes the request again with the same `request_id`: by the
   first rule the answer is the instances of that request, and the listing must come to show each
-  of them once. See
+  of them once. The request made again is not a copy of the first: the operator renders the
+  bootstraps anew each time (a new certificate and key, or a new join token), and with the
+  [join endpoint](/docs/features/node-scaling/nodegroup#nodes-that-make-their-own-keys) the entry
+  of an instance whose node has joined carries its `name` and no `bootstrap`. The operator relies
+  on the first rule here: a provider that has the instances of the `request_id` answers with them
+  and creates nothing from the entries of the repeated request. A machine made from an entry
+  without a bootstrap could not join. See
   [instances the provider does not list yet](/docs/features/node-scaling/nodegroup#instances-the-provider-does-not-list-yet).
 - **Keep the name.** The machine is named after `name` (the platform's name of the machine, and the
   node name). The node registers with it in its meta (`norca.instance`), which is how the operator
