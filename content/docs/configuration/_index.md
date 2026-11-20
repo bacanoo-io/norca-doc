@@ -217,6 +217,11 @@ consul {
     **An IPv6 client is counted by its /64** (Norca): a host has a whole /64 to
     connect from, so all addresses of a /64 share one limit. IPv4 and
     IPv4-mapped IPv6 addresses are counted by the address.
+    **A connection that a request took over counts until it is closed**
+    (Norca): the WebSocket of `alloc exec`, from the CLI or the web UI, keeps
+    its place in the limit. Exec sessions that reach the agent from one
+    address, for example through one proxy or from behind one NAT, share the
+    limit with the other requests of that address.
 
   - `rpc_handshake_timeout` `(string: "5s")` - Configures the limit for how
     long servers will wait after a client TCP connection is established before
