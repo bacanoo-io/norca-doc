@@ -198,8 +198,16 @@ where it can be.
   was creating was made by somebody else, and is a `Conflict` unless its
   type is in `adopt` (then it is adopted, with its `original` saved). A
   resource the tenant took over has
-  `adopted: true` and `original`: what it held when the tenant took it, in
-  the fields a tenant writes (the table below). Both stay while the tenant
+  `adopted: true` and `original`: what it held when the tenant first wrote
+  it, in the fields a tenant writes (the table below). Until that first
+  write it also has `writing`, a fingerprint of what it will hold once the
+  tenant wrote it: nothing of the tenant is in the resource yet. A resource
+  that somebody changes in those fields before the tenant's first write is
+  taken over again as it is: `adopt` and the size limits are asked again,
+  there is a second `Adopted` event, and `original` is what the resource
+  holds then, so the change is given back later. `writing` goes with the
+  first write; on a resource that already holds what the spec says, with
+  the next pass. `adopted` and `original` stay while the tenant
   lists the resource, also when `adopt` leaves the spec. Both go when the
   resource is deleted by hand and the tenant makes it again: it is then the
   tenant's own, and is deleted with it;
@@ -227,8 +235,9 @@ What `original` holds of an adopted resource:
 The events of the tenant (`norca object events norca.io/Tenant team-a`) say
 what was `Created`, `Updated` (set back after a change by hand), `Adopted`,
 `Deleted`, `Restored` (an adopted resource given back as the tenant found
-it), `Released` (an adopted resource let go as it is, or one that no longer
-exists; also the list of what a deleted tenant gives back),
+it), `Released` (an adopted resource let go as it is, one the tenant had
+not written yet, or one that no longer exists, for a role: no role has the
+recorded ID; also the list of what a deleted tenant gives back),
 `RestoreFailed` (giving a resource back failed; it is tried again) and the
 warning `NotDeleted` (a resource the tenant would delete belongs to a
 release; it is left, and the tenant no longer lists it).
@@ -244,7 +253,9 @@ and settles: a resource made by somebody else is a `Conflict`, or is adopted
 when its type is in `adopt`; a resource the tenant created or adopted is
 written from the new read, so what was changed meanwhile in the fields a
 tenant does not write (for example the task driver capabilities of a
-namespace) is kept. Giving an adopted resource back is written the same way,
+namespace) is kept; an adopted resource the tenant had not written yet is
+taken over again as it is, so what was changed in it is its `original`
+(see `writing` above). Giving an adopted resource back is written the same way,
 so `RestoreFailed` can show for a moment for the same reason; it is tried
 again.
 
@@ -253,9 +264,10 @@ that somebody else renames between the tenant's read and its write keeps
 its new name: the write is refused like any other.
 
 - **In a pass:** the renamed role is no longer the role of the tenant's
-  name. The next pass creates the tenant's own role of that name and leaves
-  the renamed one as it is, with what it holds then; the tenant no longer
-  lists it and has nothing to give back for it.
+  name. A role the tenant created is left as it is, with what it holds
+  then: the next pass creates the tenant's own role of that name and no
+  longer lists the renamed one. A role the tenant adopted is given back
+  first (see below).
 - **While an adopted role is given back:** `RestoreFailed` shows, and the
   next attempt gives the role back under its new name.
 
@@ -264,7 +276,9 @@ has its name now. When the tenant's role is deleted by hand and somebody
 creates another role of the same name, that role has another ID and is not
 the tenant's. While the role is in the spec, the next pass drops it from the
 tenant's list and treats it as any role it finds: a `Conflict`, or taken
-over when `acl-role` is in `adopt`. When the role leaves the spec, or the
+over when `acl-role` is in `adopt`. A role the tenant adopted that still
+exists under another name is given back before that (see below). When the
+role leaves the spec, or the
 tenant is deleted, the tenant deletes nothing: it deletes a role only by the
 recorded ID, and no role has that ID any more. A role the tenant was
 creating whose ID it has not recorded yet (`pending: true`) is the tenant's
@@ -277,6 +291,27 @@ that ID. When no role has that ID, the tenant's role is gone: it is released
 a role of the same name with another ID is not written. A role that is given
 back keeps the name it has: the tenant writes back only its description and
 the policies it linked.
+
+**An adopted role renamed by hand is given back before the tenant makes
+another.** When the role of the recorded ID no longer has the tenant's name
+(no role has the name, or another role has it), the next pass gives it back
+first, whenever the rename happened:
+
+- **The role is given back by its ID, under the name it has now:** its
+  description and the policies it linked are written back with a
+  check-and-set (event `Restored`). A role the tenant had not written yet is
+  released untouched (event `Released`,
+  `released acl-role team-a-dev: the tenant had not written it`). When no
+  role has the recorded ID, there is nothing to give back (event `Released`,
+  `... it no longer exists`).
+- **Only then** does the tenant drop the role from its list and make its own
+  role of the name, or treat the role that has the name now as any role it
+  finds: a `Conflict`, or taken over when `acl-role` is in `adopt`.
+- **When the role can't be given back** (somebody changes it at that moment,
+  or a policy it linked no longer exists), `RestoreFailed` shows, the tenant
+  keeps the role in its list and makes no role of the name in that pass; the
+  next pass tries again. Put back what is missing, or set
+  `release_without_restore = true`: the role is then released as it is.
 
 ## Taking over what exists
 
@@ -346,7 +381,9 @@ management token can remove it.
 
 **Only what the tenant created is deleted; what it adopted is given back.**
 Each adopted resource (`adopted: true` in `status.resources`) is set back to
-its `original` and stays. The resources left in conflict, which the tenant
+its `original` and stays; one the tenant had not written yet is released
+untouched (event `Released`, `... the tenant had not written it`). The
+resources left in conflict, which the tenant
 never took, stay as they are. For an adopted namespace this means:
 
 - the tenant does not wait for it to empty: it is not going to delete it;
