@@ -230,7 +230,10 @@ eligible. With the [join endpoint](#nodes-that-make-their-own-keys) the join rec
 instance is kept too, so the certificate of its node renews. Only the names of the request count
 (as many as `asked`): a node with another name of the group, and a second ready node with a name of
 the request, are foreign. Once the request is dropped from the status, its names are handled like
-any other.
+any other. The same holds, with the join endpoint, for an instance whose request the status lost
+(the status write after the create was lost): its [join record](#nodes-that-make-their-own-keys)
+stands in for the status, for the grace time after the join. Without the join endpoint such a node
+is foreign for one look, and is made eligible again when the listing shows its instance.
 
 **When the grace time has passed and the group is short of its scale, the request is made again
 with the same ID**: a provider that has the instances answers with them and creates nothing. The
@@ -315,6 +318,18 @@ group:** a token for the name asked for by another group is refused while the re
 instance has joined, or one of its tokens is valid). The record is left as it is, and the group
 that asked shows `Provisioned` `False` with `NoBootstrap` and the event `BootstrapFailed`. Only a
 record nothing can use any more is replaced by another group.
+
+**The record of an instance is dropped when the instance is gone**: neither the listing of the
+provider nor a request in `status.pendingRequests` names it. Then a record whose instance has
+joined goes at the next look, and one whose tokens were never used goes once they have expired.
+One case is kept apart: **the record of an instance that has joined, issued for a request the status does not know**
+(its number is above `status.lastRequest`, because the status write after the create was lost),
+**stays for the grace time of the listing (`-list-grace`) after the join**. The record says that
+the instance is one of the group, so the certificate of its node renews and its node is not
+reported as a [node without an instance](#the-join-of-the-nodes). A later look writes the request
+into `status.pendingRequests`; if neither that nor a listing names the instance by the end of the
+grace time, the record is dropped. The records of a group deleted with its instances go with it:
+see [the deletion of a group](#the-deletion-of-a-group).
 
 > [!WARNING]
 > **A proxy, a load balancer or NAT in front of the endpoint that changes the source address
@@ -567,6 +582,9 @@ too: the deletion waits for them for the grace time `-list-grace`, counted from 
 was made (the last time), and drains or deletes each when the listing shows it. Meanwhile
 `status.deletion.waiting` names the request and until when (`2 instances of request
 eu/workers-dc2/7 that provider "hetzner-eu" does not list yet (until 2026-11-06T10:46:01Z)`). The
+deletion also waits, for the grace time after the join, for an instance that has joined and whose
+request the status does not know (its [join record](#nodes-that-make-their-own-keys) says it is one
+of the group); `status.deletion.waiting` names the instance and until when. The
 join records of the group are dropped only when nothing is waited for any more. **A deleted group
 makes no request again**: after the grace time the instances count as not there, the group goes
 with a warning in the log of the operator, and a machine that turns up later is an orphan. With
