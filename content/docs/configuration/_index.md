@@ -209,6 +209,8 @@ consul {
     limits how many connections an unauthenticated attacker can open if
     [`tls.http = true`][tls] is being used (strongly recommended in
     production). Default value is `5s`. `0` disables HTTP handshake timeouts.
+    (Norca) It also bounds the `429` answer to an HTTPS connection over
+    `http_max_conns_per_client`, see below.
 
   - `http_max_conns_per_client` `(int: 100)` - Configures a limit of how many
     concurrent TCP connections a single client IP address is allowed to open to
@@ -222,6 +224,14 @@ consul {
     its place in the limit. Exec sessions that reach the agent from one
     address, for example through one proxy or from behind one NAT, share the
     limit with the other requests of that address.
+    **A connection over the limit is answered with `429 Too Many Requests`
+    and closed** (Norca), for HTTPS after the TLS handshake: the client has
+    `https_handshake_timeout` for the handshake and the answer together (5
+    seconds when that timeout is `0`), and is closed when it is over. The
+    answer is HTTP/1.1; the handshake of such a connection offers only
+    `http/1.1`. When more than 10 such answers a second are due (after a
+    burst of 100), or for HTTPS more than 100 are on their way at a time,
+    the connection is closed without an answer.
 
   - `rpc_handshake_timeout` `(string: "5s")` - Configures the limit for how
     long servers will wait after a client TCP connection is established before
