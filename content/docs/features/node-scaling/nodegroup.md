@@ -128,13 +128,13 @@ it once) and the others still hold. The reason of a `Scaled` event names the win
 | `status.decision` | autoscaler | What the last raise of the scale was made for, kept until the group has that many ready nodes (or its scale is set below it): `time`, `replicas`, `previous`, `check` (`blocked-demand` or `headroom`), `reason`, `evaluations` (the IDs of the blocked evaluations, at most 50) and `work` (`namespace`, `job`, `group` and `count` of the blocked work, at most 20). Not written for a dry run. |
 | `status.nodes` | operator | One entry per instance of the provider: `instance`, `state` (`creating`, `running`, `deleting`, `failed`), `request`, `created`, a `reason` when it failed, `node` and `ready` once its node joined, `slow` while it joins after `join.slow_after`, and `removing` (the phase) for the instance a scale down removes. |
 | `status.lastRequest` | operator | The number of the last request to the provider. A request ID is `<region>/<group>/<number>`; the provider creates nothing more for an ID it has seen. |
-| `status.pendingRequests` | operator | The requests the provider answered whose instances its listing has not all shown: `number`, `count` (the instances the request made), `at` (when it was made, the last time), `asks` (how many times it was made), `asked` (the largest number of instances it was made for or answered with: its instances have the names of the group with `-<number>-1` to `-<number>-<asked>`) and `listed` (the IDs of its instances a listing has shown). Gone when there is none. See [instances the provider does not list yet](#instances-the-provider-does-not-list-yet). |
+| `status.pendingRequests` | operator | The requests the provider answered whose instances its listing has not all shown: `number`, `count` (the instances the request made), `at` (when it was made, the last time), `asks` (how many times it was made), `asked` (the largest number of instances it was made for or answered with: its instances have the [names](#the-names-of-the-instances) `<base>-<number>-1` to `<base>-<number>-<asked>`) and `listed` (the IDs of its instances a listing has shown). Gone when there is none. See [instances the provider does not list yet](#instances-the-provider-does-not-list-yet). |
 | `status.join` | operator | The join failures in a row: `failures`, `lastFailure`, and the template (`revision`) and resume generation (`resumed`) they count for. |
 | `status.strayNodes` | operator | Nodes of the group without an instance: `node`, `name`, `instance` and `kind`: `gone` (down, what is left of a deleted instance) or `foreign` (ready, without a machine the operator asked for; made ineligible). |
 | `status.madeIneligible` | operator | The nodes the operator made ineligible because their instance was not known: `node`, `name` and `at` (when). Only these are [made eligible again](#the-join-of-the-nodes), once the listing shows their instance. Gone when there is none. |
 | `status.removal` | operator | The instance a scale down removes: `instance`, `name`, `node`, `selector`, `phase` (`leaving`, `draining`, `settling`, `deleting`, `deleted`), `started`, `settleUntil` for an empty node, and `held` for a node that was out of service by hand when it was taken ([a node drained by hand](#a-node-drained-by-hand)). Another operator instance goes on with it. |
 | `status.scaleDown` | operator | The vetoes of the scale down in a row: `vetoes`, `retryAfter`, `reason` (`NoCandidate` or `DrainStuck`), `message`. Gone after a scale down that worked. |
-| `status.deletion` | operator | While a deleted group is kept by the finalizer of the operator: the `policy` being applied, `deleted` (when each instance was deleted, by its name) and `waiting` (what the deletion waits for). |
+| `status.deletion` | operator | While a deleted group is kept by the finalizer of the operator: the `policy` being applied, `deleted` (when each instance was deleted, by its name) and `waiting` (what the deletion waits for, also the instances of a request the provider does not list yet). See [the deletion of a group](#the-deletion-of-a-group). |
 | `status.rollout` | operator | The rolling replacement: `replacing` (per node being replaced: `instance`, `name`, `node`, `nodeName`, `reason` (`marked`, `revision`, `generation`, `age`, `expiry`), `surge`, `drain`, `phase` (`surging`, `leaving`, `emptying`, `draining`, `deleted`), `since`, `started`, `expires`, its hard limit, and `held` as in `status.removal`), `outdated` (the names of the outdated nodes not replaced yet), `backoff` (`vetoes`, `retryAfter`, `reason`, `message`), `warned` (the nodes that raised the warning of their hard limit) and `took` (how long the last replacement took). |
 | `status.conditions` | operator | `ProviderAvailable` (`False` with `UnknownProvider`, `ProviderUnavailable`, `UnknownGroup` or `InvalidProvider`), `Provisioned` (`False` with `Quota`, `NoCapacity`, `Invalid` or `ProviderError` when the provider can't create the instances, `JoinFailing`, or `NotListed` while the provider does not list the instances of a request that was made again), `JoinFailing` (`True` with `TooManyFailures`), `ForeignNode` (`True` while a ready node of the group runs without an instance), `ScaleDownBlocked` (`True` when no node of the group may go; `retryAfter` is the time, RFC 3339, before which the autoscaler does not lower the scale again), `DeletionBlocked` (`True` with `DrainTimeout` when the deletion of the group has waited longer than `deletion.drain_timeout`), `Rolling` (`True` with `Replacing` while nodes are replaced; `False` with `UpToDate`, or with `Waiting`, `BackedOff`, `Paused` or `DryRun` when outdated nodes are not replaced), `RollBlocked` (`True` while a backed off replacement has a node close to its hard age limit, with the reason of the backoff and `retryAfter`), `RollBehind` (`True` with `Behind` when the replacements, `max_unavailable` at a time, would not reach every node before its hard age limit; `False` with `OnTime`, or `NotRolling` with `enforce = false` or `rolling.mode = "paused"`), `RepairHeld` (`True` with `TooManyDown` while nodes that are due for [repair](#the-repair-of-nodes) are left alone because half or more of the group are down), and `NetworkCovered` (`True` when `network` is inside the cluster ranges the deployer publishes, `False` when the firewall of the servers would not let the nodes in, `Unknown` with `NetworkUnchecked` when the ranges are not published or `NoNetwork` when the group names none). |
 
@@ -157,6 +157,20 @@ rolling replacement `Replacing`, `InstanceDeleted`, `Replaced`, `ReplacementCanc
 `LeaveTimeout` and `ShortShutdownDelay`, of the deletion of the group `Deleting`, `DrainStarted`, `InstanceDeleted`, `DeletionFailed` and
 `DeletionBlocked`, and of the [node certificates](#nodes-that-make-their-own-keys)
 `CertificateIssued`, `CertificateRenewed` and `RenewalRefused`.
+
+### The names of the instances
+
+The operator names every instance `<base>-<number>-<i>`: the base of the group, the number of the
+request and the place of the instance in it. The name is a host name of at most 63 characters, and
+the node registers with it in its meta (`norca.instance`). **Two groups never name an instance the
+same:**
+
+- **A group name that is a host name already** (lower case letters, digits and dashes, at most 39
+  characters, not ending in a dash and 8 hex digits) is the base as it is: the instances of
+  `workers-dc1` are `workers-dc1-1-1`, `workers-dc1-1-2`, and so on.
+- **Any other group name** is made a host name (lower case, a dash for every other character), cut
+  to 30 characters, and followed by `-` and the first 8 hex digits of the SHA-256 of the group
+  name: the first instance of `Edge_Pool` is `edge-pool-d68a2eab-1-1`.
 
 A node with the marks of the group (`norca.node_group`, `norca.instance`) whose instance the provider
 does not have is reported once: down, it is what is left of a deleted instance; ready, it is
@@ -223,6 +237,9 @@ times, the last time at 2026-11-06T10:44:01Z`) until the listing shows them. Whe
 short by then (its scale was lowered meanwhile), the request is dropped from the status and not
 made again.
 
+A group that is deleted meanwhile waits for these instances too, and makes no request again: see
+[the deletion of a group](#the-deletion-of-a-group).
+
 **Set `-list-grace` above the lag of the listing of the slowest provider.** The
 `nodescaler-operator` pack does not set it: add the flag to the arguments of the job to change it.
 
@@ -275,7 +292,11 @@ earlier tokens are kept, the oldest is dropped first). **Whichever of them a mac
 once**: the join voids every token of the instance, and a used token is never valid again. An
 instance of the request that has joined gets no token and no bootstrap in the repeated request, and
 its join record is not written, so its renewals go on. A token issued for the same instance name by
-another request, or for another group, voids every token issued for the name before.
+another request voids every token issued for the name before. **A join record belongs to its
+group:** a token for the name asked for by another group is refused while the record is in use (its
+instance has joined, or one of its tokens is valid). The record is left as it is, and the group
+that asked shows `Provisioned` `False` with `NoBootstrap` and the event `BootstrapFailed`. Only a
+record nothing can use any more is replaced by another group.
 
 > [!WARNING]
 > **A proxy, a load balancer or NAT in front of the endpoint that changes the source address
@@ -520,6 +541,18 @@ as it is), and then the finalizer is removed and the object goes. What the delet
 condition `DeletionBlocked` names it; the deletion goes on waiting until a person sets
 `deletion.policy` to `terminate` or `orphan` (the spec of a group being deleted can still be
 changed), which the operator applies at once.
+
+**With `drain` and `terminate` the deletion also waits for the instances the provider does not list
+yet.** The instances of a request in `status.pendingRequests` that
+[the listing has not shown](#instances-the-provider-does-not-list-yet) are instances of the group
+too: the deletion waits for them for the grace time `-list-grace`, counted from when the request
+was made (the last time), and drains or deletes each when the listing shows it. Meanwhile
+`status.deletion.waiting` names the request and until when (`2 instances of request
+eu/workers-dc2/7 that provider "hetzner-eu" does not list yet (until 2026-11-06T10:46:01Z)`). The
+join records of the group are dropped only when nothing is waited for any more. **A deleted group
+makes no request again**: after the grace time the instances count as not there, the group goes
+with a warning in the log of the operator, and a machine that turns up later is an orphan. With
+`orphan` the deletion waits for nothing.
 
 An instance of a group that is gone (deleted with `orphan`, or whose finalizer was removed by force)
 is an **orphan**. The leader of the operator looks for them every `-orphan-sweep` (5 minutes; the
