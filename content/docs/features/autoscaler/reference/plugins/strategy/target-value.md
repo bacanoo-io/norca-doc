@@ -91,17 +91,17 @@ check "target-value-check" {
 ```
 
 - `target` `(float: <required>)` - Specifies the metric value the autoscaler
-  should try to meet. Validated at job submission.
+  should try to meet. A finite number, 0 or more; validated at job submission.
 
 - `threshold` `(float: 0.01)` - Specifies how significant a change in the input
   metric should be considered. Small threshold values can lead to output
-  fluctuation.
+  fluctuation. A finite number, 0 or more.
 
 - `max_scale_up` `(int: <none>)` - The maximum number of instances added by one
-  scaling action.
+  scaling action. An integer, 0 or more.
 
 - `max_scale_down` `(int: <none>)` - The maximum number of instances removed by
-  one scaling action.
+  one scaling action. An integer, 0 or more.
 
 If the current count is `0`, the new count is the scaling factor rounded up, so a
 group can scale up from zero. With `target = 0` the metric value itself is used

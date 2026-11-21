@@ -28,11 +28,15 @@ a language-independent plugin interface: plugins implement a set of gRPC service
 and methods which the server manages by running the plugin and calling the
 implemented RPCs. The handshake, the gRPC services and the messages are those of
 the plugin SDK of the external autoscaler (version 0.6), so **existing APM and
-strategy plugin binaries built with that SDK run unchanged.**
+strategy plugin binaries built with that SDK run unchanged.** The server sets the
+magic cookie of the handshake both under its own key and under the key that
+SDK reads.
 
 Each external plugin runs in its own process. A plugin that crashes, hangs or
 fails to start **only fails the checks that use it**, and it is started again on its
-next use with an exponential backoff (from 1 second up to 2 minutes). Plugin
+next use with an exponential backoff (from 1 second up to 2 minutes). A process
+that does not answer three calls in a row, each within the call timeout, is
+stopped and started again the same way. Plugin
 processes run while the server is the leader and the autoscaler is enabled.
 
 To make plugin development easier, a set of Go interfaces and structs exist for

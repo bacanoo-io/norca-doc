@@ -68,19 +68,20 @@ policy {
 
 - `percentage` `(float: <optional>)` - Specifies a percentage value by which
   the current count should be increased (positive value) or decreased (negative
-  value). Conflicts with `delta` and `value`.
+  value). A finite number. Conflicts with `delta` and `value`.
 
 - `value` `(int: <optional>)` - Specifies an absolute value that should be set
   as the new target count. Conflicts with `delta` and `percentage`.
 
 - `within_bounds_trigger` `(int: 5)` - The number of data points in the query
   result time series that must be within the bound values to trigger the
-  action. Must be `1` for a check with `query_window = "instant"`.
+  action. At least `1`; must be `1` for a check with `query_window = "instant"`.
 
 At least one of `lower_bound` or `upper_bound` must be defined. If
 `lower_bound` is not defined, any value below `upper_bound` is considered
 within bounds. Similarly, if `upper_bound` is not defined, any value above
-`lower_bound` will be considered within bounds.
+`lower_bound` will be considered within bounds. When both are set,
+`lower_bound` must be below `upper_bound`; neither may be `NaN`.
 
 **One, and only one, of `delta`, `percentage`, or `value` must be defined.** These
 rules are validated when the job is submitted.

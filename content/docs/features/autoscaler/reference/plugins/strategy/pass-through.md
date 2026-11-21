@@ -42,7 +42,11 @@ check "pass-through-check" {
 ```
 
 - `max_scale_up` `(int: <none>)` - The maximum number of instances added by one
-  scaling action.
+  scaling action. An integer, 0 or more; validated at job submission.
 
 - `max_scale_down` `(int: <none>)` - The maximum number of instances removed by
-  one scaling action.
+  one scaling action. An integer, 0 or more; validated at job submission.
+
+The metric value is truncated to a whole count, and the direction of the
+scaling is that of the truncated count: a value of `3.5` with 3 instances is no
+change, not a scale up.

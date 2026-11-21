@@ -49,7 +49,7 @@ server {
   when making requests to Prometheus.
 
 - `ca_cert` `(string: "")` - Path to a PEM encoded CA cert file to use to
-  connect to the Prometheus server.
+  connect to the Prometheus server. A file without a certificate is an error.
 
 - `header_*` `(string: "")` - Additional HTTP headers to set when making
   requests to Prometheus. Several headers may be specified and the final header
@@ -71,7 +71,11 @@ check "sessions" {
 }
 ```
 
-The query should return a single time series. The time range is the check's
-`query_window`; with `query_window = "instant"` an instant query is made.
+**The query must return a single time series;** one that returns several is an
+error, for an instant query as for a range query. The time range is the
+check's `query_window`; with `query_window = "instant"` an instant query is
+made. A range query has a step of 1 second; a window that would have more than
+11000 points, the most Prometheus answers for a series, gets a wider step in
+whole seconds.
 
 [prometheus_io]: https://prometheus.io/
