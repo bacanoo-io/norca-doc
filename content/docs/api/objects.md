@@ -193,6 +193,11 @@ This endpoint deletes an object. **An object with finalizers is only marked for
 deletion** (`DeletionTime` and `DeletionPropagation` are set) and the marked
 object is returned; **it disappears when its finalizers are removed**.
 
+An object the request removes is returned as it was, with `DeletionTime` 0:
+**that is how a removal is told from a mark**. This also holds for a repeated
+`orphan` delete that removes an object which is being deleted: the returned
+object has no `DeletionTime`, `DeletionPropagation` or `DeletionApproved`.
+
 | Method   | Path                            | Produces           |
 | -------- | ------------------------------- | ------------------ |
 | `DELETE` | `/v1/object/:group/:kind/:name` | `application/json` |
@@ -212,8 +217,9 @@ object is returned; **it disappears when its finalizers are removed**.
   deleted already, only `orphan` changes something**, and only when the
   deletion under way is a `background` or `foreground` one: the garbage
   collector takes no further dependent, and the object goes when its own
-  finalizers are removed. Any other repeated delete returns the object
-  unchanged.
+  finalizers are removed (at once, by this request, if it has none; the
+  response is then the removed object with `DeletionTime` 0). Any other
+  repeated delete returns the object unchanged.
 - `namespace`, `cas`, `dry_run` - See above.
 
 ### Sample Request

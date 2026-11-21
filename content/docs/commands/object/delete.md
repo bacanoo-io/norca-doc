@@ -43,7 +43,10 @@ This command accepts the general options of the Norca CLI (`-address`,
   is marked for deletion in the `background` or `foreground` mode lets go of
   what the object owns: nothing more of it is deleted or stopped, what was
   deleted or stopped already stays so, and the object goes when its own
-  finalizers are removed. Any other repeated delete changes nothing. See
+  finalizers are removed. If it has no finalizers of its own, it is removed
+  at once and the command prints
+  `Successfully deleted object "<group>/<Kind>/<name>"!`. Any other repeated
+  delete changes nothing. See
   [Lifecycle](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection).
 
   In every mode the event log of the object stays listable with
@@ -65,4 +68,5 @@ Delete an object but keep the jobs it owns:
 
 ```shell
 $ norca object delete -propagation orphan db.example.com/PostgresCluster billing
+Successfully deleted object "db.example.com/PostgresCluster/billing"!
 ```
