@@ -55,8 +55,9 @@ agent certificates.
   - **Set it on
     the servers.**
   - The list is checked when a connection is made, and the file is
-    read again when it changes; when it can't be read any more, the last list
-    that could be read stays in force.
+    read again when it changes (another file renamed over it, its modification
+    or change time, its size) and at least every 30 seconds; when it can't be
+    read any more, the last list that could be read stays in force.
   - **A missing or empty file at start is an
     error.**
   - **Connections that are open already stay open until a `SIGHUP`:** the file

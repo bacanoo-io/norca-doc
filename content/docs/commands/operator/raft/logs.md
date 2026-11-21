@@ -14,6 +14,10 @@ directory on disk. The Norca server locks access to the data
 directory, so **this command cannot be run on a data directory that is
 being used by a running Norca server**.
 
+(Norca) The store of a server that did not stop cleanly, and every store on
+Windows, is read from a temporary copy: opening it would write to it. The
+command says so on stderr and does not change the store.
+
 > [!WARNING]
 > This is a low-level debugging tool and not subject to
 >   Norca's usual backward compatibility guarantees.
