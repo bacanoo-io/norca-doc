@@ -414,7 +414,9 @@ at a certificate authority that has revoked the certificate already.
 The servers also revoke on their own, with the reason
 `cessationOfOperation`, when a namespace
 [loses the names](/docs/features/certificates#when-a-namespace-loses-a-name)
-of a certificate; no new certificate is issued then. They write one
+of a certificate, and when a `Certificate` object is
+[deleted](/docs/features/certificates#deleting) (unless its spec says
+`keep_certificates = true`); no new certificate is issued then. They write one
 revocation order per serial number, each with that reason: for the current
 certificate of the `Certificate` object and for every earlier one that is
 still valid, unless the status marks it `revoked` already. The operator

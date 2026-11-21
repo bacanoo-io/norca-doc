@@ -64,7 +64,9 @@ $ curl https://localhost:4646/v1/certificates/roots
 - `Chain` holds the certificates above an imported CA that is not
   self-signed, the root last.
 - `Revoked` lists the revoked certificates of a CA that have not expired:
-  `Serial`, `Certificate` (`<namespace>/<name>`), `RevokedAt`, `NotAfter`,
+  `Serial`, `Certificate` (`<namespace>/<name>`), `Object` (the ID of that
+  `Certificate` object: an object created again under the name of a deleted
+  one has another ID), `RevokedAt`, `NotAfter`,
   and `Reason`, the name of the RFC 5280 CRLReason of the revocation
   (`keyCompromise`, `affiliationChanged`, `superseded` or
   `cessationOfOperation`), empty for none (unspecified).

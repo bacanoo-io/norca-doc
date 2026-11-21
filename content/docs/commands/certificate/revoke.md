@@ -125,10 +125,14 @@ removed it yet. It is the order of a failed revocation asked for just
 before, or one the servers placed themselves when the namespace had lost a
 name of the certificate. Nothing is written. Run the command again.
 
-**Revoke before deleting.** The earlier certificates are known from the
-status of the object only. Once the `Certificate` object is deleted, its
-certificates that are still valid can no longer be revoked. See
-[Revoking](/docs/features/certificates#revoking).
+**Deleting the `Certificate` object revokes its certificates**, the current
+one and the earlier ones that are still valid, with the reason
+`cessationOfOperation`: nothing has to be revoked by hand before. **With
+`keep_certificates = true` in its spec, revoke before deleting.** The
+certificates of the object are known from its status only, and the deletion
+of such an object revokes nothing: once it is deleted, its certificates
+that are still valid can no longer be revoked. See
+[Deleting](/docs/features/certificates#deleting).
 
 ## Examples
 

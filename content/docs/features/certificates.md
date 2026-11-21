@@ -143,6 +143,7 @@ spec {
 | `renew_before` | | renew this long before the end of the validity, instead of at two thirds of it |
 | `key_type` | `ecdsa-p256` | `ecdsa-p256`, `ecdsa-p384`, `rsa-2048`, `rsa-4096` or `ed25519` |
 | `delete_secret` | `false` | delete the secret when the certificate is deleted |
+| `keep_certificates` | `false` | keep the certificates of the object valid when it is deleted; without it they are revoked first. See [Deleting](#deleting) |
 
 ### The secret
 
@@ -256,6 +257,9 @@ Reasons of `Failed`: `IssuerNotFound`, `NamesNotAllowed`, `SecretConflict`,
 [withdrawn](#when-a-namespace-loses-a-name)), and
 `AuthorityNotReady`, `AuthorityExpired`, `SecretWriteFailed`, `OrderFailed`,
 `ChainRefused`, `KeyLost` and the like (an attempt failed and is repeated).
+`RevocationPending` is the reason while the object is being
+[deleted](#deleting) and waits for its certificates to be revoked: the
+message names what it waits for, `Degraded` is true and `Ready` is false.
 `KeyLost` says that the key waiting for the chain of an open order with an
 external issuer is gone: the secret was deleted, the version that held the
 key was soft deleted or destroyed, or the secret no longer holds the key.
@@ -274,8 +278,11 @@ was revoked, and with `which its issuer has not done yet` for one whose
 revocation order is still open),
 `Withdrawn` (the certificate was taken back from a namespace that lost its
 names, or an earlier certificate of it was revoked or found not revocable
-for that), `RevocationFailed` (a warning: an external issuer did not revoke
-a certificate, the current or an earlier one), `EarlierCertificateDropped`
+for that), `RevokedOnDelete` (the object is being [deleted](#deleting):
+which of its certificates a pass revoked; a warning when it names one that
+nobody could revoke), `RevocationFailed` (a warning: an external issuer did
+not revoke a certificate, the current or an earlier one, also during a
+deletion), `EarlierCertificateDropped`
 (an [earlier certificate](#earlier-certificates) is no longer kept in the
 status), and the failures. `Revoked`, `RevocationOrdered`,
 `RevocationReason` and `RevocationFailed` name the serial number, and say
@@ -289,9 +296,9 @@ status), and the failures. `Revoked`, `RevocationOrdered`,
   `<why>` is the problem of the order, `the issuer gave no reason` without
   one, or `its controller did not answer within 24h0m0s`. Nothing is tried
   again; see [Revoking](#revoking).
-- **A revocation of a [withdrawal](#when-a-namespace-loses-a-name)** gives
-  one event for every failed order, and is asked for again: the text ends
-  with `tried again at <time>`.
+- **A revocation of a [withdrawal](#when-a-namespace-loses-a-name) or of a
+  [deletion](#deleting)** gives one event for every failed order, and is
+  asked for again: the text ends with `tried again at <time>`.
 
 ### Earlier certificates
 
@@ -320,8 +327,8 @@ CA, a deleted version of the secret. The status keeps these certificates in
 | `revoked` | `true` once its revocation is done: the built-in issuer lists the serial number in the revocation list of its CA, or the external issuer has done a revocation order for it, whether a [revocation by its serial number](#revoking-an-earlier-certificate) or a [withdrawal](#when-a-namespace-loses-a-name) placed the order. A revocation that was only asked for does not set it |
 | `revokeReason` | with an external issuer only: the reason of the revocation order that was done last, `unspecified` for none. The built-in issuer has the reason in its revocation list |
 | `revoking` | set while a revocation order that a user asked an external issuer for is open: the reason of the order, `unspecified` for none. Together with `revoked`: the open order raises the reason of a certificate that is revoked already. It is removed when the order ends: with `revoked` set if the order was done, without it if the order failed or was not answered in time |
-| `failures`, `retryAt` | set only while a [withdrawal](#when-a-namespace-loses-a-name) has it revoked by an external issuer: how many revocation orders for it failed in a row, and when the next one is placed |
-| `notRevocable` | set only by a [withdrawal](#when-a-namespace-loses-a-name): why no issuer is left to revoke it |
+| `failures`, `retryAt` | set only while a [withdrawal](#when-a-namespace-loses-a-name) or the [deletion](#deleting) of the object has it revoked by an external issuer: how many revocation orders for it failed in a row, and when the next one is placed |
+| `notRevocable` | set only by a [withdrawal](#when-a-namespace-loses-a-name) or the [deletion](#deleting) of the object: why no issuer is left to revoke it |
 
 - **An entry is added when a certificate that is still valid leaves the
   status:** a new certificate takes its place, or it is
@@ -346,7 +353,9 @@ CA, a deleted version of the secret. The status keeps these certificates in
   an external issuer that is not done by then is not asked for again.
 - **The list is written by the servers only**, like the rest of the status
   of a certificate: a serial number can't be added to it by hand.
-- **Deleting the `Certificate` object drops the list** with the object. See
+- **Deleting the `Certificate` object revokes the entries of the list**
+  that are still valid, before the list goes with the object; with
+  `keep_certificates = true` the list is dropped and nothing is revoked. See
   [Deleting](#deleting).
 
 ## Who may ask for which names
@@ -688,7 +697,11 @@ on whose serial number it is:
 - **A revoked certificate of the object that the status no longer lists**,
   with the built-in issuer: while a revocation list of a CA of the region
   still has the serial number as a certificate of this object, its reason
-  can be raised to `keyCompromise`. Any other call changes nothing.
+  can be raised to `keyCompromise`. Any other call changes nothing. The
+  entry of the revocation list carries the ID of the object: **an object
+  created again under the namespace and name of a deleted one can't raise
+  the reason of the certificates of the deleted one**; for it they are
+  serial numbers that are not its own.
 
 The events of an earlier certificate:
 
@@ -734,24 +747,80 @@ The events of an earlier certificate:
 
 > [!WARNING]
 > **Only the status of the object says which certificates were its own.**
-> Deleting the `Certificate` object drops `earlier` with it: its
-> certificates that are still valid, the current one and the earlier ones,
-> can no longer be revoked by `norca certificate revoke`. Revoke what has to
-> be revoked before deleting the object.
+> With the `Certificate` object its status goes, `earlier` included, and
+> `norca certificate revoke` finds its certificates no longer. That is why
+> [deleting the object](#deleting) revokes them first. With
+> `keep_certificates = true` it does not: revoke what has to be revoked
+> before deleting such an object.
 
 ## Deleting
 
-Deleting a `Certificate` leaves the secret in place, so nothing that reads
-it breaks. With `delete_secret = true` the operator deletes the secret
-first, if it is the certificate's own. It destroys only the secret as it
-read it: a secret changed in the meantime is read again first, and kept if
-it is no longer the certificate's.
+**Deleting a `Certificate` revokes its certificates first.** The current
+certificate and the [earlier certificates](#earlier-certificates) that are
+still valid and not revoked already are revoked with the reason
+`cessationOfOperation`, each by the issuer that signed it, as a
+[withdrawal](#when-a-namespace-loses-a-name) revokes them. The object
+carries the finalizer `norca.io/operators` from its first write, so a
+delete only marks it (`norca object delete` prints
+`... is marked for deletion (background); waiting for the finalizers norca.io/operators`),
+and **the object stays, being deleted, until every one of these
+certificates is revoked, has no issuer left to revoke it, or has expired**.
 
-**Deleting revokes nothing, and drops what a later revocation would need.**
-The current certificate and the
-[earlier certificates](#earlier-certificates) stay valid until they expire,
-and with the object gone `norca certificate revoke` no longer finds them.
-[Revoke](#revoking) them first if they must not stay valid.
+- **Built-in issuer:** the serial numbers are in the revocation list of the
+  CA at once, and the object goes in the same pass of the operator.
+- **External issuer:** every certificate gets a
+  [revocation order](#the-contract-of-an-external-issuer), and the object
+  waits until the controller of the issuer has done them. A revocation that
+  fails gives the event `RevocationFailed` and is asked for again after a
+  minute, then twice as long after every failure, up to an hour, each
+  certificate on its own (`failures` and `retryAt` of the status, or of the
+  entry of `earlier`). **It is never given up on its own:** as long as the
+  certificate is valid and its issuer exists, the object waits.
+- **No issuer left:** a certificate of an external issuer that is gone, or
+  that was recreated as a built-in one, can't be revoked and does not hold
+  the object. It stays valid until it expires; the event `RevokedOnDelete`
+  (a warning then) and a warning in the log of the servers name its serial
+  number.
+
+While the object waits, the condition `Failed` has the reason
+`RevocationPending` and a message that says what the deletion waits for
+(`Degraded` is true, `Ready` is false), the status shows what is revoked
+already, and the event `RevokedOnDelete` tells what a pass has revoked.
+
+**Three ways out for an object that waits for a revocation that does not
+come:**
+
+1. Apply the object with `keep_certificates = true`: it goes at once, and
+   what is not revoked yet stays valid.
+2. Delete the `CertificateIssuer` object of the external issuer: its
+   certificates have no issuer left then. A revocation order that is still
+   open is waited for first; one the controller does not answer is removed
+   24 hours after it was placed.
+3. Remove the finalizer `norca.io/operators` with a management token.
+
+**The secret stays**, unless `delete_secret` is set. Once the deletion has
+revoked the certificate, the secret holds a revoked certificate and its
+key, so **whatever still reads the secret breaks**: stop using the secret
+before deleting the object, or keep the certificate with
+`keep_certificates`. With `delete_secret = true` the operator destroys the
+secret in the first pass of the deletion, without waiting for the
+revocations, if it is the certificate's own. It destroys only the secret as
+it read it: a secret changed in the meantime is read again first, and kept
+if it is no longer the certificate's.
+
+**With `keep_certificates = true` nothing is revoked**, and the object goes
+at once, or with `delete_secret` as soon as its secret is destroyed. The
+current certificate and the earlier ones stay valid until they expire, and
+**those serial numbers can never be revoked afterwards**:
+`norca certificate revoke` no longer finds them, and an object created
+again under the same name can't reach them. [Revoke](#revoking) them first
+if they must not stay valid.
+
+**What waits for the object:** a namespace can't be deleted while it has a
+`Certificate` object, one that is being deleted included, and the deletion
+of a [tenant](/docs/features/tenants#deleting) waits until its namespace is
+empty. A revocation that does not come holds both up until one of the ways
+out above is taken.
 
 ## In the web UI
 
@@ -829,7 +898,8 @@ to the secrets of the namespaces.**
    `failed`. `reason`, if set, is why: the name of a CRLReason of RFC 5280
    (section 5.3.1), such as `cessationOfOperation`, which the servers give
    when a namespace [lost the names](#when-a-namespace-loses-a-name) of the
-   certificate, or the reason a user gave to
+   certificate or the `Certificate` object is [deleted](#deleting), or the
+   reason a user gave to
    [`norca certificate revoke`](/docs/commands/certificate/revoke): one of
    `keyCompromise`, `affiliationChanged`, `superseded` and
    `cessationOfOperation`. An order without `reason` gives none
@@ -840,7 +910,7 @@ to the secrets of the namespaces.**
    [revokes the certificate again](#revoking) for that reason. A
    revocation order that is neither `valid` nor `failed` 24 hours after it
    was written is removed: the revocation of a user ends as a failed one
-   then, and a withdrawal places a new order.
+   then, and a withdrawal or a deletion places a new order.
 
 **The servers check a chain before they trust it:** the certificate is for
 the key of the request and for exactly the names asked for, it is valid now,
