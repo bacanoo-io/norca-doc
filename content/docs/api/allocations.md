@@ -883,6 +883,12 @@ the WebSocket with the code 1009 (message too big) as soon as a longer one
 passes that size, without reading the rest. This limit is fixed too, and it
 does not apply to the frames of the session after the handshake, nor to a
 request without `ws_handshake`.
+**The request frames of the session (after the handshake, when there is one)
+are limited by the agent's
+[`exec_max_frame_bytes`](/docs/configuration#exec_max_frame_bytes)** (Norca),
+1 MiB by default: the server closes the WebSocket with the code 1009 (message
+too big) as soon as a frame passes that size, reads no more input, and the
+exec ends. With `0` there is no limit. The response frames are not limited.
 
 The following are valid formats:
 

@@ -233,6 +233,22 @@ consul {
     burst of 100), or for HTTPS more than 100 are on their way at a time,
     the connection is closed without an answer.
 
+  - `exec_max_frame_bytes` `(int: 1048576)` - (Norca) The largest input frame
+    of an [`alloc exec`](/docs/commands/alloc/exec) session that the agent
+    reads from the client, in bytes: one WebSocket message, a JSON object with
+    the input in base64, so about three quarters of it are input. A session
+    that sends a larger frame is closed with the WebSocket status `1009`
+    (message too big), and the exec ends. The frames are read while the exec
+    request is still checking the ACL token, so this is what a client without
+    a valid token can make the agent buffer. Default value is `1048576` (1
+    MiB). `0` disables the limit; a negative value or a value under `4096`
+    stops the agent at start with an error. The output of the task is not
+    limited by it.
+    - The `norca alloc exec` command sends its input in frames of at most
+      about 2.7 KiB, so it is never affected.
+    - The web UI sends a paste as one frame: under the default, a paste of up
+      to about 768 KiB goes through.
+
   - `rpc_handshake_timeout` `(string: "5s")` - Configures the limit for how
     long servers will wait after a client TCP connection is established before
     they complete the connection handshake. When TLS is used, the same timeout

@@ -37,6 +37,11 @@ read the task's workload identity. The client asks the servers for this check,
 and refuses the exec when it can't reach them unless the token is a management
 token. See [exec into a job with associated policies](/docs/concepts/workload-identity#exec-into-a-job-with-associated-policies).
 
+The command sends its input in frames of at most about 2.7 KiB. **An input
+frame larger than the agent's [`exec_max_frame_bytes`](/docs/configuration#exec_max_frame_bytes)
+ends the session** (WebSocket status `1009`, message too big); this can
+happen to a large paste in the web UI, which sends a paste as one frame.
+
 ## General Options
 
 - `-address=<addr>`: The address of the Norca server. Overrides the `NORCA_ADDR`
