@@ -503,6 +503,12 @@ conflict too (`--deploy-override` takes them over). Jobs of a release carry the 
 `pack.release_namespace` and the owner reference of the operator framework (`norca.owner`,
 `norca.owner.kind`); custom objects get an owner reference to the release. Releases delete their
 resources themselves, so the object garbage collector never deletes them, and `--orphan` keeps them.
+**The release marks are protected:** registering a job with new or changed `pack.release` /
+`pack.release_namespace` needs release `write` in the namespace they name, and a dispatch can't set
+them (see [Job.Register](/docs/api/jobs)), so a job submitted with `submit-job` alone can't pass for
+a hook or a job of a release. **One release has one manager:** a release Rigger applied is refused
+to `norca pack` and the other way round, unless taken over (see
+[one manager per release](/docs/api/releases#one-manager-per-release)).
 
 `--take-ownership` takes a resource from the release that owns it (after the operation has recorded
 its result; an operation interrupted by a [leader change](#install-upgrade-rollback-uninstall) by
