@@ -199,10 +199,12 @@ checked when the object is written:
 Deleting a schedule with `delete_snapshots = true` makes the servers delete
 snapshots, so it needs `csi-write-volume` in the namespace and read on
 plugins too. A schedule that keeps its snapshots is deleted with the object
-right alone. The same rights are asked of whoever deletes an
+right alone. The same rights, and `write` on
+`norca.io/VolumeSnapshotSchedule` in the namespace, are asked of whoever
+deletes an
 [owner](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection)
-of such a schedule (the volume request it belongs to, for example) in the
-background or foreground mode.
+of such a schedule in the background or foreground mode. This includes
+deleting the volume request the schedule belongs to.
 
 ```hcl
 namespace "prod" {

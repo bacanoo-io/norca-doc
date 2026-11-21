@@ -426,7 +426,8 @@ management token can remove it.
 tenant that has an
 [owner](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection)
 is deleted with it in the `background` and `foreground` modes only when the
-caller has the object capability `write` on the kind `norca.io/Tenant`;
+caller has the object capability `write` on the kind `norca.io/Tenant`
+(and is the manager of the tenant, if its `managed_by` names one);
 without it the deletion of the owner is refused with `403`. A tenant nobody
 was checked for (it was written after the deletion of the owner was asked
 for, or the servers deleted the owner themselves) is not deleted: it stays,

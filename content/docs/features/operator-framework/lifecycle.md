@@ -151,32 +151,38 @@ rights the dependents need, for everything that depends on the object
 directly or through other objects:
 
 - `submit-job` in the namespace of each running job;
-- `csi-write-volume` in the namespace and read on plugins for each
+- `write` on the kind, `csi-write-volume` in the namespace and read on
+  plugins for each
   [volume request](/docs/features/csi-volume-requests) that does not retain
   its volume and each
   [snapshot schedule](/docs/features/volume-snapshot-schedules) with
   `delete_snapshots`, also when the dependent has another owner that is
   alive;
-- the object capability `write` on the kind `norca.io/Tenant`
-  (cluster-scoped) for each dependent [tenant](/docs/features/tenants), and
-  on the kind `norca.io/Certificate` in its namespace for each dependent
-  [certificate](/docs/features/certificates), also when the dependent has
-  another owner that is alive: the servers take down what the tenant keeps,
-  and revoke the valid certificates of the certificate, so deleting an
-  owner takes the right that deleting the tenant or the certificate itself
-  takes. A `CertificateIssuer` and a `CertificateOrder` are ordinary
-  dependents;
-- to be the manager of each of those dependents that has a `managed_by`
-  identity (a tenant, a certificate, a volume request that does not retain
-  its volume, a snapshot schedule with `delete_snapshots`), as deleting
-  that dependent itself asks; a management token is not restricted. The
-  `norca.managed-by` of a dependent job is not asked.
+- `write` on the kind of each [tenant](/docs/features/tenants),
+  [certificate](/docs/features/certificates), certificate issuer and
+  [node group](/docs/features/node-scaling/nodegroup) (`norca.io/Tenant`,
+  `norca.io/CertificateIssuer` and `norca.io/NodeGroup` cluster-scoped,
+  `norca.io/Certificate` in its namespace), also when the dependent has
+  another owner that is alive: the deletion of such an object takes more
+  than the object with it (what the tenant keeps, the valid certificates,
+  the issuing for the certificates that name the issuer, the nodes of the
+  group), so deleting an owner takes the right that deleting the dependent
+  itself takes;
+- to be the manager of each dependent object that has a `managed_by`
+  identity, of any kind, as deleting that dependent itself asks; a
+  management token is not restricted. The `norca.managed-by` of a
+  dependent job is not asked.
 
 Without them the deletion is refused with `403` and nothing is marked, in a
-dry run too. The message names the dependent, and its manager, only to a
-caller with `read` on the dependent. An
+dry run too. The refusal names a dependent, and its manager, only to a
+caller who may read it. Load balancers, DNS records and certificate orders
+are ordinary dependents: they go with their owner. An
 `orphan` deletion takes no dependent and needs only the right to delete the
 object.
+
+**An owner whose controller marks its child objects `managed_by`** can so be
+deleted in the `background` or `foreground` mode only by that identity or
+a management token; anybody else uses `orphan`.
 
 - **A job marked `norca.managed-by`** is stopped this way by anyone who may
   delete its owner and has `submit-job` in its namespace: deleting the
@@ -186,16 +192,14 @@ object.
   servers deleted themselves, keeps running: the leader logs a warning, and
   an owner that is still being deleted in the foreground gets the event
   `DependentKept`.
-- **A volume request or snapshot schedule that would destroy storage** and
-  was written, or made destructive, after the deletion was asked for, or
-  whose owner the servers deleted themselves, is not deleted: it stays, its
-  reference to the deleted owner is removed, and it gets the warning event
-  `DependentKept`.
-- **A tenant or a certificate** that was written after the deletion was
-  asked for, or whose owner the servers deleted themselves, is kept the
-  same way: it stays, its reference to the deleted owner is removed, and it
-  gets the warning event `DependentKept`, which names what its deletion
-  would have taken.
+- **A volume request or snapshot schedule that would destroy storage, a
+  tenant, a certificate, a certificate issuer or a node group** that was
+  written (or, for the first two, made destructive) after the deletion was
+  asked for, or whose owner the servers deleted themselves, is not deleted:
+  it stays, its reference to the deleted owner is removed, and it gets the
+  warning event `DependentKept`, which says what its deletion would have
+  taken. A managed object of another kind written in that time is
+  collected like any dependent.
 
 **Letting go of the dependents.** Deleting an object again with
 `-propagation orphan` (`?propagation=orphan`), while it is marked for

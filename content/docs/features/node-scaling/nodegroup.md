@@ -572,6 +572,13 @@ makes no request again**: after the grace time the instances count as not there,
 with a warning in the log of the operator, and a machine that turns up later is an orphan. With
 `orphan` the deletion waits for nothing.
 
+**A group that is the dependent of another object**
+([owners](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection))
+is deleted with that owner only for a caller with `write` on `norca.io/NodeGroup` (and who is its
+manager, if `managed_by` names one); otherwise the deletion of the owner is refused with `403`.
+A group written as a dependent after its owner was deleted stays and gets the event
+`DependentKept`. This holds for every `deletion.policy` of the group, `orphan` too.
+
 An instance of a group that is gone (deleted with `orphan`, or whose finalizer was removed by force)
 is an **orphan**. The leader of the operator looks for them every `-orphan-sweep` (5 minutes; the
 variable `orphan_sweep` of the pack, since version 0.6.0) and deletes an orphan without a node once

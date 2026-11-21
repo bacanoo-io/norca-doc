@@ -119,6 +119,20 @@ into the status of the issuer. When the heartbeat is older than three
 minutes, its certificates get the condition `IssuerUnavailable`, nothing new
 is ordered, and **the certificates they have stay in place**.
 
+### Deleting an issuer
+
+Deleting an issuer stops the issuing for the certificates that name it:
+they show `IssuerNotFound`, nothing is issued or renewed for them, and what
+they have stays valid until it expires. The issuing CA of the region is not
+deleted with the last built-in issuer.
+
+An issuer that is the dependent of another object
+([owners](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection))
+is deleted with that owner only for a caller with `write` on
+`norca.io/CertificateIssuer`; otherwise the deletion of the owner is
+refused with `403`. One written as a dependent after the owner was deleted
+stays, and gets the warning event `DependentKept`.
+
 ## Certificates
 
 ```hcl
@@ -864,7 +878,10 @@ the certificate; without it the deletion of the owner is refused with
 deletion of the owner was asked for, or the servers deleted the owner
 themselves) is not deleted: it stays, its reference to the owner is
 removed, and it gets the warning event `DependentKept`. A
-`CertificateIssuer` has no such guard.
+`CertificateIssuer` is guarded the same way
+([deleting an issuer](#deleting-an-issuer)); a `CertificateOrder` is not.
+The caller must also be the manager of the certificate, if its `managed_by`
+names one.
 
 **What waits for the object:** a namespace can't be deleted while it has a
 `Certificate` object, one that is being deleted included, and the deletion

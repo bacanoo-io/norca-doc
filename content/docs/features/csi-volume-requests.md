@@ -213,7 +213,8 @@ request is checked when the object is written:
 Deleting a request whose `deletion_policy` is `deregister` or `delete` makes
 the servers act on the storage, so it needs `csi-write-volume` in the
 namespace and read on plugins too. A request that retains its volume is
-deleted with the object right alone. The same rights are asked of whoever
+deleted with the object right alone. The same rights, and `write` on
+`norca.io/CSIVolumeRequest` in the namespace, are asked of whoever
 deletes an [owner](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection)
 of such a request in the background or foreground mode.
 

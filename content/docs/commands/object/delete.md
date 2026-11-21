@@ -20,9 +20,12 @@ jobs the object owns are deleted according to the propagation mode. See
 If ACLs are enabled, this command requires a token with the `write` capability
 of an object rule matching the kind in the namespace. If the object's
 `managed_by` names an identity, only that identity or a management token may
-delete it. The same holds for an object whose deletion in the `background`
-or `foreground` mode would take a managed tenant, certificate, volume
-request or snapshot schedule with it.
+delete it. In the `background` and `foreground` modes the deletion also
+needs what deleting each dependent would: see
+[what the deleter needs](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection).
+In particular an object with a dependent whose `managed_by` names another
+identity is deleted only by that identity, a management token, or with
+`-propagation orphan`.
 
 ## General Options
 

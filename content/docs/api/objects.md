@@ -199,11 +199,18 @@ An object the request removes is returned as it was, with `DeletionTime` 0:
 object has no `DeletionTime`, `DeletionPropagation` or `DeletionApproved`.
 
 A `background` or `foreground` delete is refused with `403`, and nothing is
-marked, when the caller lacks a right that a dependent of the object needs,
-or is not the manager of a dependent tenant, certificate, volume request or
-snapshot schedule that has a `managed_by` identity
-(`... it is managed by "<identity>", and only that identity may delete it`;
-`managed by another identity` to a caller who may not read the dependent).
+marked, in two cases:
+
+- the caller lacks a right on a guarded dependent: a volume request that
+  does not retain its volume, a snapshot schedule with `delete_snapshots`,
+  a tenant, a certificate, a certificate issuer or a node group (or
+  `submit-job` for a running dependent job);
+- a dependent object, of any kind, has a `managed_by` identity that is not
+  the caller
+  (`... it is managed by "<identity>", and only that identity may delete it`).
+
+The message names the dependent, and its manager, only to a caller with
+`read` on it (`managed by another identity` otherwise).
 See [what the deleter needs](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection).
 
 | Method   | Path                            | Produces           |
