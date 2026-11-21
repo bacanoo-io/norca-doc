@@ -199,9 +199,8 @@ consul {
     [`drain_on_shutdown`][], the client will drain its workloads before shutting
     down.
 
-- `limits` - Available in Nomad 0.10.3 and later, this is a nested object that
-  configures limits that are enforced by the agent. The following parameters
-  are available:
+- `limits` - A nested object that configures limits that are enforced by the
+  agent. The following parameters are available:
 
   - `https_handshake_timeout` `(string: "5s")` - Configures the limit for how
     long the HTTPS server in both client and server agents will wait for a
@@ -277,7 +276,7 @@ consul {
     - A server needs at least 2 TCP connections (1 Raft, 1 RPC) per peer
       server locally and in any federated region. Servers also need a TCP connection
       per routed streaming endpoint concurrently in use. Only operators use streaming
-      endpoints; as of Nomad 0.10.3 the client code does not.
+      endpoints; the client code does not.
     - A reasonably low limit
       significantly reduces the ability of an unauthenticated attacker to consume
       unbounded resources by holding open many connections. You may need to
