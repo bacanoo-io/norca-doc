@@ -578,7 +578,9 @@ The status of a tenant is written by the servers only.
   authoritative region, the namespace is never deleted, and the event
   `DeleteFailed` says to set `replication_token` in the `acl` block of the
   servers of the region, naming the region that could not be asked. The
-  same message comes when another region refuses the token.
+  same message comes when another region refuses the token. **The
+  [deployer](/docs/deployer/multi-region) sets it**: the servers of the
+  authoritative region of a federation get its management token.
 - **Isolation matches allocations on the same node only**, see
   [Network isolation](#network-isolation).
 
