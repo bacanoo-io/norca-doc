@@ -145,9 +145,20 @@ directly or through other objects:
   its volume and each
   [snapshot schedule](/docs/features/volume-snapshot-schedules) with
   `delete_snapshots`, also when the dependent has another owner that is
-  alive.
+  alive;
+- the object capability `write` on the kind `norca.io/Tenant`
+  (cluster-scoped) for each dependent [tenant](/docs/features/tenants), and
+  on the kind `norca.io/Certificate` in its namespace for each dependent
+  [certificate](/docs/features/certificates), also when the dependent has
+  another owner that is alive: the servers take down what the tenant keeps,
+  and revoke the valid certificates of the certificate, so deleting an
+  owner takes the right that deleting the tenant or the certificate itself
+  takes. A `CertificateIssuer` and a `CertificateOrder` are ordinary
+  dependents.
 
-Without them the deletion is refused with `403` and nothing is marked. An
+Without them the deletion is refused with `403` and nothing is marked, in a
+dry run too. The message names the dependent only to a caller with `read`
+on it. An
 `orphan` deletion takes no dependent and needs only the right to delete the
 object.
 
@@ -164,6 +175,11 @@ object.
   whose owner the servers deleted themselves, is not deleted: it stays, its
   reference to the deleted owner is removed, and it gets the warning event
   `DependentKept`.
+- **A tenant or a certificate** that was written after the deletion was
+  asked for, or whose owner the servers deleted themselves, is kept the
+  same way: it stays, its reference to the deleted owner is removed, and it
+  gets the warning event `DependentKept`, which names what its deletion
+  would have taken.
 
 **Letting go of the dependents.** Deleting an object again with
 `-propagation orphan` (`?propagation=orphan`), while it is marked for

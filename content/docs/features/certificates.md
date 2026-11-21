@@ -282,7 +282,8 @@ for that), `RevokedOnDelete` (the object is being [deleted](#deleting):
 which of its certificates a pass revoked; a warning when it names one that
 nobody could revoke), `RevocationFailed` (a warning: an external issuer did
 not revoke a certificate, the current or an earlier one, also during a
-deletion), `EarlierCertificateDropped`
+deletion), `DependentKept` (a warning: the object stays although an owner
+of it was deleted, see [Deleting](#deleting)), `EarlierCertificateDropped`
 (an [earlier certificate](#earlier-certificates) is no longer kept in the
 status), and the failures. `Revoked`, `RevocationOrdered`,
 `RevocationReason` and `RevocationFailed` name the serial number, and say
@@ -815,6 +816,19 @@ current certificate and the earlier ones stay valid until they expire, and
 `norca certificate revoke` no longer finds them, and an object created
 again under the same name can't reach them. [Revoke](#revoking) them first
 if they must not stay valid.
+
+**Deleting an owner of a `Certificate` needs the right to delete the
+certificate.** A `Certificate` that has an
+[owner](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection)
+is deleted with it in the `background` and `foreground` modes, and its
+valid certificates are revoked as above. So the caller needs the object
+capability `write` on the kind `norca.io/Certificate` in the namespace of
+the certificate; without it the deletion of the owner is refused with
+`403`. A `Certificate` nobody was checked for (it was written after the
+deletion of the owner was asked for, or the servers deleted the owner
+themselves) is not deleted: it stays, its reference to the owner is
+removed, and it gets the warning event `DependentKept`. A
+`CertificateIssuer` has no such guard.
 
 **What waits for the object:** a namespace can't be deleted while it has a
 `Certificate` object, one that is being deleted included, and the deletion

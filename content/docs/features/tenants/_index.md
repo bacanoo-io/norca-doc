@@ -250,7 +250,9 @@ recorded ID; for the other types, no resource of the name has the recorded
 create index; also the list of what a deleted tenant gives back),
 `RestoreFailed` (giving a resource back failed; it is tried again) and the
 warning `NotDeleted` (a resource the tenant would delete belongs to a
-release; it is left, and the tenant no longer lists it).
+release; it is left, and the tenant no longer lists it), and the warning
+`DependentKept` when the tenant stays although an owner of it was deleted
+(see [Deleting](#deleting)).
 
 **What somebody else writes meanwhile is never overwritten.** Each write of
 the tenant is a check-and-set on what its pass read: a resource is created
@@ -290,7 +292,10 @@ its new name: the write is refused like any other.
   and a deleted tenant deletes it by that ID. This holds also with
   `acl-role` in `adopt`.
 - **While an adopted role is given back:** `RestoreFailed` shows, and the
-  next attempt gives the role back under its new name.
+  next attempt gives the role back under its new name, unless somebody else
+  has that name by then: the attempt is then refused, and the tenant keeps
+  the role (see "A role is not given back under a name somebody else has"
+  below).
 
 **A role of the tenant is the one of the ID it recorded**, not whatever role
 has its name now. The other four types have no ID: for an adopted
@@ -416,6 +421,17 @@ the tenant is deleted and the tenant waits again, so the namespace keeps its
 isolation and the people of the tenant can still empty it. The tenant holds
 the finalizer `norca.io/operators` until then; only the servers or a
 management token can remove it.
+
+**Deleting an owner of a tenant needs the right to delete the tenant.** A
+tenant that has an
+[owner](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection)
+is deleted with it in the `background` and `foreground` modes only when the
+caller has the object capability `write` on the kind `norca.io/Tenant`;
+without it the deletion of the owner is refused with `403`. A tenant nobody
+was checked for (it was written after the deletion of the owner was asked
+for, or the servers deleted the owner themselves) is not deleted: it stays,
+its reference to the owner is removed, and it gets the warning event
+`DependentKept`.
 
 **Only what the tenant created is deleted; what it adopted is given back.**
 Each adopted resource (`adopted: true` in `status.resources`) is set back to
