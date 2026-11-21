@@ -38,7 +38,7 @@ A create request:
 {
   "request_id": "eu/workers-dc2/7",
   "instances": [
-    { "name": "workers-dc2-7-1", "bootstrap": { "user_data": "#cloud-config\n..." } }
+    { "name": "eu-workers-dc2-7-1", "bootstrap": { "user_data": "#cloud-config\n..." } }
   ],
   "parameters": { "size": "cx32", "image": "norca-worker-4" },
   "labels": {
@@ -52,7 +52,7 @@ An instance:
 
 ```json
 {
-  "id": "hz-58213077", "name": "workers-dc2-7-1", "state": "running",
+  "id": "hz-58213077", "name": "eu-workers-dc2-7-1", "state": "running",
   "request_id": "eu/workers-dc2/7", "labels": { "norca.node_group": "workers-dc2", "...": "..." },
   "addresses": ["10.77.2.14"], "created_at": "2026-11-06T10:42:00Z"
 }
@@ -108,7 +108,11 @@ not shown yet. These rules are what make that safe.
   [instances the provider does not list yet](/docs/features/node-scaling/nodegroup#instances-the-provider-does-not-list-yet).
 - **Keep the name.** The machine is named after `name` (the platform's name of the machine, and the
   node name). The node registers with it in its meta (`norca.instance`), which is how the operator
-  matches a node with its instance.
+  matches a node with its instance. The name starts with the region and the group
+  (`eu-workers-dc2-7-1`), is a DNS label of at most 63 characters (lower case letters, digits,
+  dashes), and is unique across the groups and regions that use the provider; a platform that needs
+  unique machine names can use it as it is. See
+  [the names of the instances](/docs/features/node-scaling/nodegroup#the-names-of-the-instances).
 - **Keep the labels of the request on the instance.** The operator picks the instances of a group by
   `norca.node_group` and `norca.region`: an instance without them is not seen at all. The orphan
   sweep reads `norca.datacenter`, `norca.pool` and `norca.class` too.

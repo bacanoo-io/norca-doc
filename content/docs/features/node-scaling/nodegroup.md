@@ -160,17 +160,23 @@ rolling replacement `Replacing`, `InstanceDeleted`, `Replaced`, `ReplacementCanc
 
 ### The names of the instances
 
-The operator names every instance `<base>-<number>-<i>`: the base of the group, the number of the
-request and the place of the instance in it. The name is a host name of at most 63 characters, and
-the node registers with it in its meta (`norca.instance`). **Two groups never name an instance the
-same:**
+The operator names every instance `<base>-<number>-<i>`: the base, which says the region and the
+group, the number of the request and the place of the instance in it. The name is a host name of at
+most 63 characters, and the node registers with it in its meta (`norca.instance`). **Two groups,
+and two regions that share a group of a provider, never name a machine the same:**
 
-- **A group name that is a host name already** (lower case letters, digits and dashes, at most 39
-  characters, not ending in a dash and 8 hex digits) is the base as it is: the instances of
-  `workers-dc1` are `workers-dc1-1-1`, `workers-dc1-1-2`, and so on.
-- **Any other group name** is made a host name (lower case, a dash for every other character), cut
-  to 30 characters, and followed by `-` and the first 8 hex digits of the SHA-256 of the group
-  name: the first instance of `Edge_Pool` is `edge-pool-d68a2eab-1-1`.
+- **The plain base is `<region>-<group>`:** the instances of `workers-dc1` in the region `eu` are
+  `eu-workers-dc1-3-1`, `eu-workers-dc1-3-2`, and so on; in the default region `global` an
+  instance of `workers` is `global-workers-1-2`. It is used when the region is lower case letters
+  and digits without a dash, the group name is a host name (lower case letters, digits and
+  dashes), and the two with their dash have at most 39 characters and do not end in a dash and 8
+  hex digits.
+- **Any other pair gets a mark:** the region and the group are made host names (lower case, a dash
+  for every other character), joined with a dash, cut to 30 characters, and followed by `-` and
+  the first 8 hex digits of the SHA-256 of the region, a zero byte and the group name. The first
+  instance of `Edge_Pool` in `eu` is `eu-edge-pool-c26f0640-1-1`. **A region with a dash always
+  gets the mark**, because the plain base would not say where the region ends: `workers` in
+  `eu-west` gives `eu-west-workers-55cfcdb7-1-1`.
 
 A node with the marks of the group (`norca.node_group`, `norca.instance`) whose instance the provider
 does not have is reported once: down, it is what is left of a deleted instance; ready, it is
@@ -186,8 +192,8 @@ dropped from the status before the listing showed its instances) is kept in
 `status.madeIneligible`. **It is made eligible again once the listing shows its instance, the
 instance is live (`creating` or `running`) and was created before the node was made ineligible**:
 the listing was behind, and the node was the node of an instance all along. The event is
-`NodeEligible` (`node workers-dc2-7-1 is eligible again: the provider lists its instance
-workers-dc2-7-1, which it did not when the node was made ineligible`). While its instance is only
+`NodeEligible` (`node eu-workers-dc2-7-1 is eligible again: the provider lists its instance
+eu-workers-dc2-7-1, which it did not when the node was made ineligible`). While its instance is only
 that of a request in `status.pendingRequests`, the node waits. The operator never makes eligible
 again:
 
