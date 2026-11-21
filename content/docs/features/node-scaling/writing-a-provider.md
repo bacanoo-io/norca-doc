@@ -84,9 +84,11 @@ not shown yet. These rules are what make that safe.
   the provider has an instance with the `request_id` (in any state), a request with that ID is
   answered with the instances of the ID it has, and nothing is created from its entries, also when
   it has fewer of them than the request names: a create that failed part of the way, or instances
-  deleted since. **Do not bring a repeated request up to the number it names**: it can name
-  instances the operator deleted on purpose (a scale down, a join failure), and the operator asks
-  for what a group is still short of with a new `request_id`. A provider that has no instance left
+  deleted since. **Do not bring a repeated request up to the number it names.** The request the
+  operator makes again names only instances of the request no listing has shown it, and no more of
+  them than the group is short of, so its entries can be fewer than, and other than, the instances
+  the provider has of the ID; the answer is still the instances it has. What a group is short of
+  beyond that, the operator asks for with a new `request_id`. A provider that has no instance left
   with the `request_id` treats the request as a new one and creates its instances; it need not
   remember the IDs of requests whose instances are gone.
 - **List from the platform, not from memory.** A restarted provider lists the same instances as
@@ -98,13 +100,15 @@ not shown yet. These rules are what make that safe.
   that time, if the group is short, it makes the request again with the same `request_id`: by the
   first rule the answer is the instances of that request, and the listing must come to show each
   of them once. The request made again is not a copy of the first: the operator renders the
-  bootstraps anew each time (a new certificate and key, or a new join token), and with the
-  [join endpoint](/docs/features/node-scaling/nodegroup#nodes-that-make-their-own-keys) the entry
-  of an instance whose node has joined carries its `name` and no `bootstrap`. The operator relies
+  bootstraps anew each time (a new certificate and key, or a new join token), and an instance that
+  a listing has shown, or (with the
+  [join endpoint](/docs/features/node-scaling/nodegroup#nodes-that-make-their-own-keys)) whose
+  node has joined, is not named in the repeated request. The operator relies
   on the first rule here: a provider that has any instance of the `request_id` answers with them
   and creates nothing from the entries of the repeated request. If it has none left, the request is
-  new and every entry is created. A machine made from an entry
-  without a bootstrap could not join. See
+  new and every entry is created. The repeated request names only instances no listing has shown,
+  each with a bootstrap, and no more than the group is short of: a provider that has no instance
+  of the `request_id` left creates exactly those. See
   [instances the provider does not list yet](/docs/features/node-scaling/nodegroup#instances-the-provider-does-not-list-yet).
 - **Keep the name.** The machine is named after `name` (the platform's name of the machine, and the
   node name). The node registers with it in its meta (`norca.instance`), which is how the operator
@@ -123,7 +127,12 @@ not shown yet. These rules are what make that safe.
 - **Say why a create fails, and do not retry for ever.** `quota` for a limit of the platform or of
   the group, `no_capacity` when the zone has no machine of the kind now, `invalid` for a wrong
   request or parameter. The operator backs off, reports the reason in the conditions of the group,
-  and tries another group or a smaller step. A rolling replacement whose new node is refused keeps
+  and tries another group or a smaller step. **The answer of a create that fails is the error
+  alone, without instances.** A request refused before anything was made (`invalid`, `quota`)
+  leaves nothing. A create that fails part of the way may leave the instances it made, with the
+  `request_id`, in the listing, or remove them: the operator finds those that are left in the
+  listing and asks for the rest with a new `request_id`; the same `request_id` again makes nothing
+  more. A rolling replacement whose new node is refused keeps
   the old node; see [the rolling replacement](/docs/features/node-scaling/nodegroup#the-rolling-replacement-of-nodes).
 - **Report a machine that did not come up as `failed`,** with a message (the docker provider puts the
   last lines of the container's output there). The operator deletes it and asks for another; a row

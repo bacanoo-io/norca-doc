@@ -128,7 +128,7 @@ it once) and the others still hold. The reason of a `Scaled` event names the win
 | `status.decision` | autoscaler | What the last raise of the scale was made for, kept until the group has that many ready nodes (or its scale is set below it): `time`, `replicas`, `previous`, `check` (`blocked-demand` or `headroom`), `reason`, `evaluations` (the IDs of the blocked evaluations, at most 50) and `work` (`namespace`, `job`, `group` and `count` of the blocked work, at most 20). Not written for a dry run. |
 | `status.nodes` | operator | One entry per instance of the provider: `instance`, `state` (`creating`, `running`, `deleting`, `failed`), `request`, `created`, a `reason` when it failed, `node` and `ready` once its node joined, `slow` while it joins after `join.slow_after`, and `removing` (the phase) for the instance a scale down removes. |
 | `status.lastRequest` | operator | The number of the last request to the provider. A request ID is `<region>/<group>/<number>`; the provider creates nothing more for an ID it has seen. |
-| `status.pendingRequests` | operator | The requests the provider answered whose instances its listing has not all shown: `number`, `count` (the instances the request made), `at` (when it was made, the last time), `asks` (how many times it was made), `asked` (the largest number of instances it was made for or answered with: its instances have the [names](#the-names-of-the-instances) `<base>-<number>-1` to `<base>-<number>-<asked>`) and `listed` (the IDs of its instances a listing has shown). Gone when there is none. See [instances the provider does not list yet](#instances-the-provider-does-not-list-yet). |
+| `status.pendingRequests` | operator | The requests the provider answered whose instances its listing has not all shown: `number`, `count` (the instances the request made), `at` (when it was made, the last time), `asks` (how many times it was made), `asked` (the largest number of instances it was made for or answered with: its instances have the [names](#the-names-of-the-instances) `<base>-<number>-1` to `<base>-<number>-<asked>`), `listed` (the IDs of its instances a listing has shown) and `listedNames` (the names of those instances: a request made again does not name them). Gone when there is none. See [instances the provider does not list yet](#instances-the-provider-does-not-list-yet). |
 | `status.join` | operator | The join failures in a row: `failures`, `lastFailure`, and the template (`revision`) and resume generation (`resumed`) they count for. |
 | `status.strayNodes` | operator | Nodes of the group without an instance: `node`, `name`, `instance` and `kind`: `gone` (down, what is left of a deleted instance) or `foreign` (ready, without a machine the operator asked for; made ineligible). |
 | `status.madeIneligible` | operator | The nodes the operator made ineligible because their instance was not known: `node`, `name` and `at` (when). Only these are [made eligible again](#the-join-of-the-nodes), once the listing shows their instance. Gone when there is none. |
@@ -243,6 +243,18 @@ times, the last time at 2026-11-06T10:44:01Z`) until the listing shows them. Whe
 short by then (its scale was lowered meanwhile), the request is dropped from the status and not
 made again.
 
+**The request made again names only the instances no listing has shown, and no more of them than
+the group is short of.** An instance the operator saw listed and deleted since (a scale down, a
+join failure, a repair, a replacement) is not asked for again, also when the provider has no
+instance of the request left and would make everything the request names.
+
+- **A record that does not name every listed instance** (in `listedNames`) is not made again: it
+  is dropped, and what is missing is asked for in a new request.
+- **With the [join endpoint](#nodes-that-make-their-own-keys), an instance whose node has joined
+  is not named either.** When only such instances are left, no request is made: while their nodes
+  are ready the grace time starts again (`InstancesNotListed`, `Provisioned` `NotListed`),
+  otherwise the request is dropped.
+
 A group that is deleted meanwhile waits for these instances too, and makes no request again: see
 [the deletion of a group](#the-deletion-of-a-group).
 
@@ -296,7 +308,7 @@ issued for it before: **they stay valid beside the new one, each until its own e
 valid for `join.deadline` and 5 minutes, and a new token does not extend an earlier one; at most 16
 earlier tokens are kept, the oldest is dropped first). **Whichever of them a machine has, it joins
 once**: the join voids every token of the instance, and a used token is never valid again. An
-instance of the request that has joined gets no token and no bootstrap in the repeated request, and
+instance of the request that has joined gets no token and is not named in the repeated request, and
 its join record is not written, so its renewals go on. A token issued for the same instance name by
 another request voids every token issued for the name before. **A join record belongs to its
 group:** a token for the name asked for by another group is refused while the record is in use (its
