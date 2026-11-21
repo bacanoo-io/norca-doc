@@ -199,7 +199,9 @@ that runs:
   a scale up adds later are not part of it (the deployment records how many,
   as `ScaleAdded` of the task group): it does not wait for them, it is
   complete when its own allocations are, and it can not fail because one of
-  them finds no capacity.
+  them finds no capacity. **The replacement of such an allocation** (a
+  migration, a lost node, a rescheduling) **stays outside the deployment too**,
+  and none of them takes a place of `max_parallel`.
 - **A deployment that failed does not hold them.** No other new allocation is
   placed for a group whose deployment failed, but what scaling asks for is. A
   paused deployment holds them like every placement, until it is resumed.
@@ -213,6 +215,17 @@ length of every deployment.
 
 A scale by hand and a policy of the external engine are held during a
 deployment unless the policy says `up_only`.
+
+**A scaling holds for the job it was checked on.** If the job is registered or
+scaled again between the check and the write, the scaling is refused (`409`)
+and made again on what is stored then; the count, its evaluation and its
+scaling event are written together.
+
+**An automatic revert keeps the scaling too.** When a failed deployment is
+rolled back ([`auto_revert`](/docs/job-specification/update#auto_revert), or
+failing a deployment by hand), the count of a group that an enabled policy
+scales stays, brought within the bounds of the policy of the version rolled
+back to.
 
 ### A new version of the job
 

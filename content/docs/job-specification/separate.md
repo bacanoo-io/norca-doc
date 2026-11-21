@@ -59,7 +59,9 @@ The parameters are the same as those of [`colocate`](/docs/job-specification/col
 
 - `required` `(bool: false)` - Makes the rule a feasibility filter: only nodes
   whose domain contains no matching allocation are eligible. `system` and
-  `sysbatch` jobs may only use required rules.
+  `sysbatch` jobs may only use required rules. A required rule is checked again
+  when the plan is applied, so two jobs evaluated at the same time cannot both
+  be placed in one domain; one of them is planned again.
 
 ## `separate` Examples
 

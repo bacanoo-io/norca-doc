@@ -65,6 +65,11 @@ The block can be repeated. **A task group may have at most 8 `colocate` and
   - The first allocation of a group that its own required `colocate` rule selects may
     be placed anywhere when nothing matches yet.
   - `system` and `sysbatch` jobs may only use required rules.
+  - **A group blocked by its required rule is tried again when a plan places
+    allocations that the rule selects**, in the namespace of the rule; it does
+    not wait for a change of the nodes.
+  - Required rules are checked again when the plan is applied: two jobs
+    evaluated at the same time cannot break them, one of them is planned again.
 
 ## `colocate` Examples
 

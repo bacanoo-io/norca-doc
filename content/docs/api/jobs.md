@@ -2526,6 +2526,14 @@ is started, and a deployment of the version goes on without the allocations
 that are added (see
 [scaling and the versions of a job](/docs/features/autoscaler#scaling-and-the-versions-of-a-job)).
 
+(Norca) **A scaling holds for the job it was checked on.** The bounds of the
+policy, the active deployment and the previous count of the scaling event are
+read when the request arrives; if the job is registered or scaled again before
+the scaling is applied, the request fails with `409` ("changed while it was
+scaled; scale it again"), nothing is written, and it can be sent again. The
+count, its evaluation and its scaling event are written together, in one
+write.
+
 | Method | Path                    | Produces           |
 | ------ | ----------------------- | ------------------ |
 | `POST` | `/v1/job/:job_id/scale` | `application/json` |
@@ -2596,13 +2604,15 @@ $ curl \
 
 This is the same payload as returned by job update.
 `EvalCreateIndex` and `EvalID` will only be present if the scaling operation resulted in the creation of an evaluation.
+(Norca) The evaluation is written with the count, so `EvalCreateIndex` equals
+`JobModifyIndex`.
 
 ```json
 {
   "EvalCreateIndex": 45,
   "EvalID": "116f3ede-f6a5-f6e7-2d0e-1fda136390f0",
   "Index": 45,
-  "JobModifyIndex": 44,
+  "JobModifyIndex": 45,
   "KnownLeader": false,
   "LastContact": 0,
   "Warnings": ""

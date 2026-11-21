@@ -100,7 +100,10 @@ The following fields are only valid for volumes with `type = "csi"`:
   - `"single-node-single-writer"`: one allocation reads or writes the volume.
   - `"single-node-multi-writer"`: any number of allocations read and write it,
     all on one node; once it is claimed, more allocations are placed only on
-    the node of the claims.
+    the node of the claims. **Before any claim the allocations of the job are
+    kept on one node too:** those of the same plan and the live ones pin it. A
+    claim from another node is refused ("claimed on another node") and the
+    allocation fails at once, to be rescheduled, instead of trying again.
 
 - `attachment_mode` `(string: <required>)` - The storage API that will be used
   by the volume. The `access_mode` and `attachment_mode` together must exactly
