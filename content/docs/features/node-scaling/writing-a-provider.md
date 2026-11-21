@@ -80,6 +80,15 @@ not shown yet. These rules are what make that safe.
   one back, not new ones. The same request can also come from two instances of the operator around
   a change of leader: a deposed leader makes no new call, but one it made just before can still
   arrive. Keep the request ID on the platform (a tag or a label of the machine), not in memory.
+  **The rule is about the instances the provider has, not about the entries of the request.** While
+  the provider has an instance with the `request_id` (in any state), a request with that ID is
+  answered with the instances of the ID it has, and nothing is created from its entries, also when
+  it has fewer of them than the request names: a create that failed part of the way, or instances
+  deleted since. **Do not bring a repeated request up to the number it names**: it can name
+  instances the operator deleted on purpose (a scale down, a join failure), and the operator asks
+  for what a group is still short of with a new `request_id`. A provider that has no instance left
+  with the `request_id` treats the request as a new one and creates its instances; it need not
+  remember the IDs of requests whose instances are gone.
 - **List from the platform, not from memory.** A restarted provider lists the same instances as
   before. The lab restarts its provider to change its limits, and the docker provider finds its
   containers again by their labels.
@@ -92,8 +101,9 @@ not shown yet. These rules are what make that safe.
   bootstraps anew each time (a new certificate and key, or a new join token), and with the
   [join endpoint](/docs/features/node-scaling/nodegroup#nodes-that-make-their-own-keys) the entry
   of an instance whose node has joined carries its `name` and no `bootstrap`. The operator relies
-  on the first rule here: a provider that has the instances of the `request_id` answers with them
-  and creates nothing from the entries of the repeated request. A machine made from an entry
+  on the first rule here: a provider that has any instance of the `request_id` answers with them
+  and creates nothing from the entries of the repeated request. If it has none left, the request is
+  new and every entry is created. A machine made from an entry
   without a bootstrap could not join. See
   [instances the provider does not list yet](/docs/features/node-scaling/nodegroup#instances-the-provider-does-not-list-yet).
 - **Keep the name.** The machine is named after `name` (the platform's name of the machine, and the
@@ -181,7 +191,9 @@ func (c *cloud) Group(ctx context.Context, group string, params map[string]any) 
 
 func (c *cloud) Create(ctx context.Context, group string, req node.CreateRequest) ([]node.Instance, error) {
 	if done, err := c.api.ListByLabel(ctx, "norca.request", req.RequestID); err != nil || len(done) > 0 {
-		return toInstances(done), err // the same request again: what it created the first time
+		// The same request again: the instances of it the platform still has, nothing new, also
+		// when they are fewer than asked for. None left: a new request, created below.
+		return toInstances(done), err
 	}
 	// Check the request (node.ReasonInvalid), then the quota (node.ReasonQuota) before creating
 	// anything, and create one machine per instance with its name, the labels of the request and
@@ -257,6 +269,8 @@ provider with `node.NewHandler`, calls it with the operator's client over HTTP, 
 
 - the capacity of a group without instances,
 - the idempotent create (names, labels, request IDs),
+- a request made again: nothing is created while an instance of it is left, also after one was
+  deleted; once none is left it is a new request,
 - invalid requests and unknown groups,
 - the quota reason of a full group,
 - the delete,
