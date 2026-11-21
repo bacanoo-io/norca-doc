@@ -181,6 +181,11 @@ a management token can remove. When it is deleted:
   `SnapshotMayBeLeft` say that a snapshot of that name may be left in the
   storage, and the entry does not hold the object.
 
+**A schedule whose spec its kind no longer accepts can still be deleted.**
+If the spec can't be decoded, the schedule goes and its snapshots stay with
+the plugin even with `delete_snapshots = true`; the server log names them.
+A spec that can be read is followed.
+
 Snapshots that stay are managed by hand from then on:
 [`norca volume snapshot list`](/docs/commands/volume/snapshot-list) and
 [`norca volume snapshot delete`](/docs/commands/volume/snapshot-delete).

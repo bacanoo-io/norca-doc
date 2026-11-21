@@ -159,6 +159,11 @@ plugin is missing or unhealthy the deletion waits. If the volume can't be
 asked for at all, the request goes with the warning event `VolumeMayBeLeft`:
 look for a volume of its name in the storage.
 
+**A request whose spec its kind no longer accepts can still be deleted.** If
+the spec can't be decoded, the request goes and the volume is left as it is,
+registered and in the storage, whatever `deletion_policy` was; the server
+log says so. A spec that can be read is followed.
+
 ## Status
 
 ```shell-session

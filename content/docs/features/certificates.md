@@ -314,7 +314,13 @@ status), `CertificateRecovered` (a warning: the secret held a certificate
 the status did not record, and it is kept as an earlier one, see
 [the secret](#the-secret)), and the failures. `Revoked`, `RevocationOrdered`,
 `RevocationReason` and `RevocationFailed` name the serial number, and say
-"earlier certificate" when it was not the current one. **A message of an
+"earlier certificate" when it was not the current one. `Withdrawn` and
+`RevokedOnDelete` are recorded when the status that says the same is
+written, so a pass whose write is lost does not tell them twice. The events
+of a revocation of an earlier certificate end with
+`the object is being deleted, and no new certificate is issued` when the
+object is being deleted, instead of `the current certificate stays`.
+**A message of an
 event or of a condition that is longer than 1000 bytes is cut and ends
 with ` ... (truncated)`**; this holds for the events and conditions of
 every built-in operator.
@@ -859,7 +865,9 @@ if they must not stay valid.
 deleted.** If the spec can't be decoded, its certificates are revoked from
 what the status lists (unless `keep_certificates` can still be read as
 `true`), and the secret is left in place, also with `delete_secret`:
-nothing is destroyed on the word of a spec that can't be read.
+nothing is destroyed on the word of a spec that can't be read. The servers
+can finish the deletion of an object its kind refuses: only its status and
+finalizers are written.
 
 **A certificate of an object that is being deleted can still be revoked**
 with [`norca certificate revoke`](/docs/commands/certificate/revoke), for

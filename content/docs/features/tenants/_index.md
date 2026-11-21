@@ -218,7 +218,11 @@ where it can be.
   from the list with its `original` and treats it as any resource it finds:
   a `Conflict`, or with its type in `adopt` taken over again (a second
   `Adopted` event, and `original` is what it holds now). What the deleted
-  one held is never written onto it;
+  one held is never written onto it. A namespace, quota, ACL policy or
+  network policy that the tenant created is different: when somebody
+  deletes it and creates it again under the same name, it is the tenant's
+  own, the next pass sets it back to the spec, and a deleted tenant deletes
+  it;
 - `status.conflicts`: the resources it found and did not take;
 - the conditions:
 
@@ -433,6 +437,12 @@ was checked for (it was written after the deletion of the owner was asked
 for, or the servers deleted the owner themselves) is not deleted: it stays,
 its reference to the owner is removed, and it gets the warning event
 `DependentKept`.
+
+**A tenant whose spec its kind no longer accepts can still be deleted.**
+The deletion goes by the status: what the tenant created is deleted once
+the namespace is empty, what it took over is given back. If the spec can't
+be decoded, `release_without_restore` is honoured only if it can be read on
+its own as `true`.
 
 **Only what the tenant created is deleted; what it adopted is given back.**
 Each adopted resource (`adopted: true` in `status.resources`) is set back to
