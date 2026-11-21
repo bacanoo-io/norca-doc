@@ -36,6 +36,7 @@ default telemetry settings their names start with `nomad.nomad.autoscaler.`.
 | `nomad.nomad.autoscaler.apm.query` | Time taken by an APM query | Milliseconds | Timer | `plugin_name` (the check source) |
 | `nomad.nomad.autoscaler.strategy.run` | Time taken by a strategy | Milliseconds | Timer | `plugin_name` (the strategy) |
 | `nomad.nomad.autoscaler.plugin.exited` | External plugin processes that exited unexpectedly | Number of exits | Counter | `plugin_name` |
+| `nomad.nomad.autoscaler.plugin.hung` | External plugin processes stopped after three calls in a row ran out of the call timeout | Number of stops | Counter | `plugin_name` |
 
 ## Scaling action metrics
 

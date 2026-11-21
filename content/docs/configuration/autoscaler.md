@@ -139,7 +139,8 @@ does not need a block.
 - `driver` `(string: <label>)` - The plugin implementation. The built-in drivers
   are `nomad-apm` and [`prometheus`](/docs/features/autoscaler/reference/plugins/apm/prometheus).
   Any other value is the name of an executable in `plugin_dir`. Defaults to the
-  label of the block.
+  label of the block. On Windows the `.exe` extension of the name is ignored,
+  in any case; on other systems it is a part of the name of the file.
 
 - `args` `(array<string>: [])` - Command line arguments of an external plugin
   binary.
@@ -186,7 +187,9 @@ autoscaler {
   - or `weighted` (by the `weight` of the group).
 - `interval` `(string: "30s")` - How often the blocked work is looked at.
 - `pool` - Overrides `expander` for a pool and limits it with `max_nodes` and
-  `max_step` (0: no limit).
+  `max_step` (0: no limit). **The limits hold for the checks of a node group
+  too:** a check raises a group no further than the room and the step that the
+  pool has left. It may still lower it.
   - `max_nodes_counts` `(string: "ready")` - What counts against `max_nodes`.
     With `ready`, `spec.replicas` of every group, but **of a group that is not
     healthy only the nodes it has** (ready or joining): the nodes of a
@@ -211,7 +214,11 @@ group:
    node of the group (`status.allocatable` of the object, or `spec.node.capacity`
    less `spec.node.reserved`), the largest first. Four allocations of 6 GB on
    nodes of 8 GB need four nodes. **An allocation under `distinct_hosts`, or one
-   that asks for a port by number, needs a node of its own.**
+   that asks for a port by number, needs a node of its own.** An allocation that
+   reserves cores (`resources.cores`) is sized with the MHz of one core of the
+   group's nodes, read from a node of the group. A group without such a node
+   does not grow for it, and the event says that the MHz of a core of its nodes
+   is not known.
 2. Work that can go to several groups (the datacenters of the job) is split
    between them; **it is counted once, not once per datacenter.**
    - The datacenters of the job are taken as the job names them, patterns
@@ -239,6 +246,21 @@ group:
    `meta` key, an attribute) cannot be checked against a node that does not
    exist yet: **no node is added for it**, and the allocations are counted by
    `norca.cluster.blocked_unverifiable`.
+   - **The scheduler's own reasons decide this.** Work is demand for nodes when
+     its datacenter had no node to try, or when a node passed every check and
+     only its free resources were short. When every node was filtered out, each
+     reason must be one that a new node passes: `distinct_hosts`, a
+     `distinct_property`, a constraint on `${node.class}`. Any other reason (an
+     attribute or `meta`, a driver, a device, a volume, a network, a `colocate`
+     or `separate` rule) stops a new node the same way, and the work counts as
+     unverifiable.
+   - A group whose nodes are all of a class that the scheduler found ineligible
+     for the work does not get it: a new node would be of the same class.
+   - **Work that a group was raised for, and that is still blocked 2 minutes
+     after the nodes joined, is stuck.** A check that the new nodes fail as well
+     is likely, so no node is added for it until its job changes, and a
+     `ScalingNodeBlocked` event says so. It does not hold the scale down of the
+     group meanwhile.
 4. A job of a node pool grows the groups of that pool; a job of any pool
    (`node_pool = "all"`) grows only the groups with `spill = true`.
 5. The nodes that were asked for and have not joined yet (`status.joining`)
@@ -365,6 +387,13 @@ only needed for an [external strategy plugin](/docs/features/autoscaler/referenc
 or to register a built-in strategy under another name. The parameters are the
 same as those of the `apm` block.
 
+- **A built-in strategy registered under another name works as the built-in
+  one.** Its driver decides, not its name: a `fixed-value` under another name
+  needs no `source`, and a `pass-through` takes the value as the count.
+- **A built-in strategy takes no `config` block.** Its options are set in the
+  `strategy` block of each check. A `config` block on a `strategy` block whose
+  driver is built in fails the agent configuration.
+
 ## Examples
 
 ### External plugins
@@ -396,7 +425,9 @@ server {
 An external plugin runs in its own process. **A plugin that crashes, hangs or
 fails to start only fails the checks that use it;** it is started again on its
 next use, with an exponential backoff between attempts (1 second up to 2
-minutes).
+minutes). A process that does not answer three calls in a row, each within the
+call timeout of one minute, counts as hung: it is stopped and started again
+like one that exited (metric `nomad.nomad.autoscaler.plugin.hung`).
 
 ### Migrating from an external autoscaler
 

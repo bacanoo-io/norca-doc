@@ -110,9 +110,23 @@ it, **without waiting for the cooldown of the group**:
    work, filled first. The same work is therefore not asked for twice, however the expander
    splits it at the next look.
 6. A job of a node pool uses the groups of that pool. A job that may run in **any** pool (`node_pool = "all"`) grows no group by default; the groups with `spill = true` are the ones it may grow, in the datacenters it names. An event says so when no group allows it.
-7. A constraint on `${node.class}` leaves out the groups whose class fails it.
-8. `spec.replicas` is raised by what is left, within the `max` of the group and the `max_nodes` and
-   `max_step` of the pool.
+7. A constraint on `${node.class}` leaves out the groups whose class fails it, and so does the
+   scheduler: a group whose nodes are all of a class it found ineligible for the work gets none.
+8. **Only work that a new node can take is demand.** Its datacenter had no node to try, or a node
+   passed every check and only its free resources were short. When every node was filtered out
+   for a reason that a new node would have too (an attribute or `meta`, a driver, a device, a
+   volume, a network, a `colocate` or `separate` rule), no node is added: the work is unverifiable.
+9. An allocation that reserves cores (`resources.cores`) is sized with the MHz of one core of the
+   group's nodes; a group with no node to read it from does not grow for it.
+10. `spec.replicas` is raised by what is left, within the `max` of the group and the `max_nodes` and
+    `max_step` of the pool. The checks of a group keep to the limits of the pool too.
+
+**Work that a group was raised for and that is still blocked 2 minutes after the nodes joined is
+stuck:** a check that the new nodes fail as well is likely. No node is added for it until its job
+changes, and a `ScalingNodeBlocked` event says so.
+
+The scale of a group is written only when it is still the one the decision was made on; a
+decision made on an older scale is made again at the next look.
 
 When the nodes the group has are not known (an operator does not report them and the cluster gauges
 cannot be read), **the group is left alone**: without that number the nodes on their way cannot be told
@@ -176,9 +190,9 @@ Decisions and the reasons for not deciding are events of the `Scaling` topic of 
 | Event | Meaning |
 | --- | --- |
 | `ScalingDecision` | The scale of a group was changed (`Check` is `blocked-demand`, `headroom`, the name of a check, `scale-down`, or `scale-down-veto` when a vetoed scale down is set back). |
-| `ScalingNodeBlocked` | Work is not helped by more nodes: every group that could take it is at its maximum, a limit of the pool, the size of a node is unknown, or no group fits. `Reason` says which. |
+| `ScalingNodeBlocked` | Work is not helped by more nodes: every group that could take it is at its maximum, a limit of the pool, the size of a node is unknown, no group fits, or the work is stuck (a group was raised for it, the nodes joined, and it is still blocked 2 minutes later). `Reason` says which. |
 | `ScalingNodeAllocationTooLarge` | An allocation does not fit an empty node of a group; the job and the group are named. |
-| `ScalingNodeUnverifiable` | The work is blocked by a constraint that cannot be checked against a node that does not exist yet (a `distinct_property` on a `meta` key, for example). No node is added for it; the fix is in the job. |
+| `ScalingNodeUnverifiable` | The work is blocked by a check that cannot be shown to pass on a node that does not exist yet: a constraint on a `meta` key or an attribute, or a reason of the scheduler that a new node would have too (a driver, a device, a volume, a network, a `colocate` or `separate` rule). No node is added for it; the fix is in the job. |
 
 The last three are raised when the reason appears or changes, not at every look. The demand that
 cannot be placed is in the [cluster gauges](/docs/configuration/metrics_store) of the metrics store:
