@@ -113,8 +113,9 @@ dispatching parameterized jobs.
   allowed. The parameterized job must allow the key to be merged.** (Norca)
   The keys and values of a dispatch together are limited to 16384 bytes
   (16KiB), apart from the payload. The reserved keys `norca.owner`,
-  `norca.owner.kind` and `norca.managed-by` can't be set by a dispatch: the
-  dispatched job has them from the parameterized job.
+  `norca.owner.kind`, `norca.managed-by`, `pack.release` and
+  `pack.release_namespace` can't be set by a dispatch: the dispatched job has
+  them from the parameterized job.
 
 - `-detach`: Return immediately instead of monitoring. A new evaluation ID
   will be output, which can be used to examine the evaluation using the

@@ -62,6 +62,9 @@ This endpoint lists the releases of a namespace.
 
 - `prefix` `(string: "")` - Only releases whose name starts with the prefix.
 
+- `owner` `(string: "")` - Only releases of an owner, as `<kind>/<name>`: `stack/platform` lists
+  the releases the Rigger stack `platform` owns.
+
 ### Sample request
 
 ```shell
@@ -89,11 +92,16 @@ This endpoint reads a release.
 
 - `Spec.Pack` - The pack of the newest revision: `Name`, `Version`, `Registry`, `Path`, `Digest` (OCI
   manifest digest), `Signer` (key ID reported by the client), `Signatures`, `TrustedSigner` (key ID
-  the servers verified a signature with), `Requires` (`Norca`, `Features`).
+  the servers verified a signature with), `Requires` (`Norca`, `Features`), `Manager` (`pack` or
+  `rigger`: the package manager that applied the newest revision; see
+  [one manager](#one-manager-per-release)), `Commit`.
 
 - `Spec.Description`, `Spec.Revision` (newest revision), `Spec.MaxHistory`, `Spec.Atomic` (mode of
   the last operation), `Spec.Multiregion` (`Regions`, `GlobalRegion`; only for multi-region
   installs).
+
+- `Spec.Owner` - The owner of the newest revision, for a release a Rigger stack installed: `Kind`
+  (`stack`), `Name`, `Version`, `Source`, `Part`. Absent for a release no stack owns.
 
 - `Status.Phase` - `pending`, `applying`, `deployed`, `failed`, `rolling-back` or `uninstalling`.
 
@@ -156,12 +164,23 @@ and uninstall endpoints:
   URL or `oci://` location of its registry) and `Ref` (the tag or branch), `Digest`, `Signer`,
   `Signatures` (each `Payload` and `Signature`, the cosign simple signing format), `Requires`.
   `norca pack` fills `Source` and `Ref` for packs of git and OCI registries; the web UI upgrades the
-  release from a cluster registry of that source.
+  release from a cluster registry of that source. `Manager` is `pack` (also when empty) or `rigger`;
+  `Commit` the git commit a Rigger module was fetched at.
 
 - `Description` `(string: "")` - Description of the revision.
 
 - `Values` `(map: nil)` - The variable overrides, recorded in the revision (secret-looking values
   redacted); `ValuesHash` a hash of all overrides and var files.
+
+- `InputDigest` `(string: "")` - Rigger's digest of what it applies (the module digest, the values,
+  the settings), recorded in the revision as given; Rigger compares it to tell an unchanged release.
+
+- `Owner` `(object: nil)` - The owner of the release: `Kind` (only `stack`), `Name` (required),
+  `Version`, `Source`, `Part`. Whoever may apply the release may set it; an unknown kind or a missing
+  name is a `400`.
+
+- `Adopt` `(bool: false)` - Take over a release whose newest revision the other package manager
+  applied ([one manager](#one-manager-per-release)).
 
 - `Resources` `(array: <required>)` - The rendered resources. Each has
 
@@ -227,6 +246,20 @@ and uninstall endpoints:
 - `Regions` - With `Regions` in the request: one result per region (`Region`, `Release`, `Revision`,
   `Changes`, `Warnings`, `Error`), in the order the regions were applied.
 
+### One manager per release
+
+**A release has one package manager:** the pack manager (`norca pack`) or Rigger. The manager of a
+revision is `Pack.Manager`. An install, an upgrade or a dry run of one manager on a release whose
+newest revision the other applied fails with `409 Conflict`:
+
+```text
+release "web" is managed by pack: rigger takes it over only when asked to (adopt; the flag -adopt)
+```
+
+`Adopt` (`rigger stack apply -adopt`, `rigger install -adopt`) takes the release over; from then on
+the other manager is the one refused. A rollback to a revision of the other manager needs `Adopt`
+too. Uninstalls and tests are open to both.
+
 ## Plan release
 
 This endpoint runs the same checks as an install or upgrade and returns the changes, without writing
@@ -256,8 +289,8 @@ This endpoint lists the kept revisions of a release, newest first.
 | `YES`            | object `read` on `packs.norca.io/Release` |
 
 Each revision has `Namespace`, `Release`, `Revision`, `Spec` (`Action`, `RollbackOf`, `Pack`,
-`Description`, `Values`, `ValuesHash`, `VariablesSchemas`, `Multiregion`, `Resources`, `User`,
-`CreateTime`) and `Status` (`Phase`: `pending`, `deployed`, `superseded` or `failed`; `Message`,
+`Description`, `Values`, `ValuesHash`, `InputDigest`, `Owner`, `VariablesSchemas`, `Multiregion`,
+`Resources`, `User`, `CreateTime`) and `Status` (`Phase`: `pending`, `deployed`, `superseded` or `failed`; `Message`,
 `Hooks`).
 
 ## Read revision
@@ -297,7 +330,10 @@ change answers `503 Service Unavailable` as for an
 - `Atomic` `(bool: <optional>)`, `Wait` `(bool: false)`, `Timeout` `(duration: 5m)` - As for an
   install.
 - `DryRun` `(bool: false)` - Return the changes without rolling back.
+- `Adopt` `(bool: false)` - Restore a revision the other package manager applied than the one of
+  the newest revision ([one manager](#one-manager-per-release)).
 
+The rollback restores the pack, the values, the owner and the input digest of the revision.
 The response is that of [install or upgrade](#install-or-upgrade-release).
 
 ### Sample request

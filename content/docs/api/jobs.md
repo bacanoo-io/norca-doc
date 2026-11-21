@@ -135,6 +135,15 @@ is applied, the request fails with `409`, nothing is written, and it can be
 sent again. See
 [owners](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection).
 
+(Norca) **A job with release marks** (the meta `pack.release` and `pack.release_namespace`, which
+a release puts on its jobs and its hook jobs) needs object `write` on `packs.norca.io/Release` in
+the namespace `pack.release_namespace` names when the marks are new or changed, or when the stored
+job is stopped; otherwise the request fails with `403`. The release operations take a job with the
+marks as their own (a hook of the release, a job a failed apply left, a hook job an uninstall
+removes), so the right to submit jobs alone does not give them. The two keys go together, neither
+empty (`400` otherwise). Keeping the marks of the stored job, and removing them, needs no right on
+releases; a kept mark holds for the job as it was read, as for the owner mark (`409`).
+
 ### Parameters
 
 - `Job` `(Job: <required>)` - Specifies the JSON definition of the job.
@@ -1839,8 +1848,9 @@ jobs](/docs/concepts/workload-identity#children-of-parameterized-and-periodic-jo
 - `Meta` `(meta<string|string>: nil)` - Specifies arbitrary metadata to pass to
   the job. (Norca) Its keys and values together are limited to 16384 bytes
   (16KiB), apart from the payload; a larger meta fails with `400`. The
-  reserved keys `norca.owner`, `norca.owner.kind` and `norca.managed-by`
-  can't be set, whether the parameterized job lists them or not: the request
+  reserved keys `norca.owner`, `norca.owner.kind`, `norca.managed-by`,
+  `pack.release` and `pack.release_namespace` can't be set, whether the
+  parameterized job lists them or not: the request
   fails with `400` and
   `the meta key "<key>" is reserved: a dispatch can't set it`. The dispatched
   job has them from the parameterized job.
