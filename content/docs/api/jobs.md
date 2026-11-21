@@ -126,6 +126,15 @@ fails with `403` and an error that names the missing policies. Registering the
 job exactly as it is needs none of them. See [changing a job with associated
 policies](/docs/concepts/workload-identity#changing-a-job-with-associated-policies).
 
+(Norca) **A job with an owner mark** (the meta `norca.owner`) needs `write` or
+`manage-finalizers` on the owner when the mark is new or changed, or when the
+stored job is stopped; otherwise the request fails with `403`. A registration
+that keeps the mark of the stored job without that right holds for the job as
+it was read: if the job is stopped, changed or purged before the registration
+is applied, the request fails with `409`, nothing is written, and it can be
+sent again. See
+[owners](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection).
+
 ### Parameters
 
 - `Job` `(Job: <required>)` - Specifies the JSON definition of the job.

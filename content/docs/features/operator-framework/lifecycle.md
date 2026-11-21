@@ -90,7 +90,13 @@ ACLs are not restricted.
   stored job's (a revert to a version with another mark included). A
   registration that keeps the mark of the stored job is not checked again, so
   whoever may update the job still can, and removing the mark takes no right
-  on the owner. A `norca.owner` that is not of the form above, or a
+  on the owner. **A stopped job holds no mark to keep:** registering it
+  again with its `norca.owner` (a revert included) needs the right on the
+  owner, as a new mark does; a job that is dead without having been stopped
+  keeps its mark. **A registration that keeps the mark without that right
+  holds for the job as it was read:** if the job is stopped, changed or
+  purged meanwhile, it is refused with `409` and can be sent again. A
+  `norca.owner` that is not of the form above, or a
   `norca.owner.kind` that is not the kind the value names, is refused with
   `400`.
 - **A dispatch can't set the reserved meta keys** `norca.owner`,
@@ -129,8 +135,13 @@ flowchart TB
 - A record of each deleted owner (a tombstone) is kept for a retention period
   after the deletion (the server option
   [`object_tombstone_gc_threshold`](/docs/configuration/server#object_tombstone_gc_threshold),
-  5 minutes by default), and until its dependents are gone, so objects that a
+  5 minutes by default), and until its dependents are gone or marked for
+  deletion, so objects that a
   controller created while the owner was being deleted are collected too.
+  A dependent that a finalizer holds is marked for deletion and removed
+  when its finalizers are gone; the tombstone of the owner does not wait
+  for it. (An owner deleted in the `foreground` mode is itself removed only
+  after its dependents are gone.)
   Jobs attached in that time are not stopped, see below. The tombstone of an
   `orphan` deletion keeps only the event log; no dependent is collected for it.
 
@@ -154,11 +165,16 @@ directly or through other objects:
   and revoke the valid certificates of the certificate, so deleting an
   owner takes the right that deleting the tenant or the certificate itself
   takes. A `CertificateIssuer` and a `CertificateOrder` are ordinary
-  dependents.
+  dependents;
+- to be the manager of each of those dependents that has a `managed_by`
+  identity (a tenant, a certificate, a volume request that does not retain
+  its volume, a snapshot schedule with `delete_snapshots`), as deleting
+  that dependent itself asks; a management token is not restricted. The
+  `norca.managed-by` of a dependent job is not asked.
 
 Without them the deletion is refused with `403` and nothing is marked, in a
-dry run too. The message names the dependent only to a caller with `read`
-on it. An
+dry run too. The message names the dependent, and its manager, only to a
+caller with `read` on the dependent. An
 `orphan` deletion takes no dependent and needs only the right to delete the
 object.
 

@@ -198,6 +198,14 @@ An object the request removes is returned as it was, with `DeletionTime` 0:
 `orphan` delete that removes an object which is being deleted: the returned
 object has no `DeletionTime`, `DeletionPropagation` or `DeletionApproved`.
 
+A `background` or `foreground` delete is refused with `403`, and nothing is
+marked, when the caller lacks a right that a dependent of the object needs,
+or is not the manager of a dependent tenant, certificate, volume request or
+snapshot schedule that has a `managed_by` identity
+(`... it is managed by "<identity>", and only that identity may delete it`;
+`managed by another identity` to a caller who may not read the dependent).
+See [what the deleter needs](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection).
+
 | Method   | Path                            | Produces           |
 | -------- | ------------------------------- | ------------------ |
 | `DELETE` | `/v1/object/:group/:kind/:name` | `application/json` |

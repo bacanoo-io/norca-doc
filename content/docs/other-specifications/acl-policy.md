@@ -270,7 +270,8 @@ or `manage-finalizers` on the kind of the owner in the owner's namespace
 (`namespace "*"` for a cluster-scoped owner): a dependent holds back the
 foreground deletion of its owner. It holds for an owner in the namespace of
 the object too, of another kind or of the object's own. Registering a job
-with a new or changed owner mark (the meta `norca.owner`) needs the same on
+with a new or changed owner mark, or with the mark of a job that is
+stopped (the meta `norca.owner`), needs the same on
 the owner the mark names, besides `submit-job`; for the jobs of a controller
 that keeps its objects in Variables this is an `object` rule for a kind that
 is not registered, since the rule is matched by its `<group>/<Kind>` label
