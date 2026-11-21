@@ -197,7 +197,9 @@ migration {
 - After the write, the leader migrates the objects in the background, in batches
   of 200 with check-and-set; the generation increases when the spec changes.
   Writes to an object not yet migrated migrate it first. An object whose
-  migration fails gets a `MigrationFailed` warning event and is retried only
+  migration fails gets a `MigrationFailed` warning event (its error is cut at
+  512 bytes, at a character boundary, and then ends with ` ... (truncated)`)
+  and is retried only
   when it or the kind changes. The `nomad.custom_object.migrated` metric counts
   migrated objects.
 

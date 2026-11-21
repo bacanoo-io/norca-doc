@@ -113,8 +113,9 @@ of the newest `last`, or it is younger than `max_age`. Besides:
   take new ones does not delete its last good one;
 - a snapshot that is not finished is never deleted;
 - a deletion that fails is tried again, after one minute, doubling up to an
-  hour; the snapshot stays in the list with `deleteError` (the start of the
-  plugin's error), and the event `SnapshotDeleteFailed` is recorded once per
+  hour; the snapshot stays in the list with `deleteError` (the plugin's
+  error, at most 200 bytes: a longer one is cut at a character boundary and
+  ends with ` ... (truncated)`), and the event `SnapshotDeleteFailed` is recorded once per
   snapshot, not at every attempt;
 - a deletion is sent with the secrets of the volume and those of
   `secret_path` over them, as the creation is. **The secrets of the volume

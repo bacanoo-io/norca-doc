@@ -179,7 +179,7 @@ $ norca object get -namespace prod norca.io/CSIVolumeRequest db-data
 | `readAllocs`, `writeAllocs` | Allocations that use the volume. |
 | `controllersHealthy`, `nodesHealthy` | Of the plugin. |
 | `drifts`, `lastDrift` | How often the volume was set back, and when last. |
-| `failures`, `retryAt`, `lastFailure` | Failed attempts in a row, when the next one is made, and the error of the last one. |
+| `failures`, `retryAt`, `lastFailure` | Failed attempts in a row, when the next one is made, and the error of the last one (at most 1000 bytes: a longer one is cut at a character boundary and ends with ` ... (truncated)`). |
 | `creating` | The plugin was asked to create the volume and the volume is not registered yet. |
 | `appliedGeneration` | The generation of the request the volume was last in line with. |
 

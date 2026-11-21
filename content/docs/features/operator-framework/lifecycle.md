@@ -238,7 +238,7 @@ The listing shows, oldest first, when each event was last seen, its type,
 reason, count, reporter and message.
 
 - Each event has a `Type` (`Normal` or `Warning`), a CamelCase `Reason`, a
-  `Message` (at most 1024 characters) and optional `Meta`. The server sets the
+  `Message` (at most 1024 bytes) and optional `Meta`. The server sets the
   `Reporter` (the writer's identity) and the times.
 - A repetition of the newest event (same type, reason, message and reporter)
   increases its `Count` instead of adding a new entry. The SDK's
@@ -251,6 +251,10 @@ reason, count, reporter and message.
 - The server writes events itself, for example `Scaled` when the scale changes
   and `Migrated` or `MigrationFailed` during a
   [schema migration](/docs/features/operator-framework/ecosystem#schema-versions-and-migrations).
+- **A message the servers write that is too long is cut**, at a character
+  boundary, and ends with ` ... (truncated)`, within its limit: the message
+  of an event or a condition of a built-in operator at 1000 bytes, the error
+  in a `MigrationFailed` event at 512 bytes.
 - New entries are published on the event stream as `CustomObjectEventRecorded`.
 - **The event log of a deleted object stays with its tombstone**, for
   [`object_tombstone_gc_threshold`](/docs/configuration/server#object_tombstone_gc_threshold)
