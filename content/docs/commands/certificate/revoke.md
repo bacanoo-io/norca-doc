@@ -134,6 +134,11 @@ of such an object revokes nothing: once it is deleted, its certificates
 that are still valid can no longer be revoked. See
 [Deleting](/docs/features/certificates#deleting).
 
+**A `Certificate` object that is being deleted can be revoked too**, for
+example to give the reason `keyCompromise` while its deletion waits for an
+external issuer. No new certificate is issued for it, and the command says
+so.
+
 ## Examples
 
 ```shell-session
@@ -165,4 +170,12 @@ Asked the issuer to revoke the certificate with the serial 4f2a9c01d37be6a85c1f0
 
 $ norca certificate revoke -namespace team-a -serial 1d8e03b6a2c94f57e0b1c6a47f3d9e25 web-tls
 Asked the issuer to revoke the earlier certificate with the serial 1d8e03b6a2c94f57e0b1c6a47f3d9e25 of "web-tls"; it is revoked when the issuer has done so: the status of the object says revoking until then, and revoked after; the current certificate stays
+```
+
+Give the reason `keyCompromise` for a certificate of an object that is being
+deleted and waits for its external issuer:
+
+```shell-session
+$ norca certificate revoke -namespace team-a -reason keyCompromise web-tls
+Asked the issuer to revoke the certificate with the serial 4f2a9c01d37be6a85c1f0b2e9d44a7c3 of "web-tls"; it is revoked when the issuer has done so: the status of the object says revoking until then, and revoked after; the object is being deleted, and no new certificate is issued
 ```

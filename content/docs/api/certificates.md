@@ -194,7 +194,8 @@ $ curl -X PUT -H "X-Nomad-Token: $NORCA_TOKEN" \
 {
   "Serial": "4f2a9c01d37be6a85c1f0b2e9d44a7c3",
   "Earlier": false,
-  "Pending": false
+  "Pending": false,
+  "Deleting": false
 }
 ```
 
@@ -210,6 +211,9 @@ $ curl -X PUT -H "X-Nomad-Token: $NORCA_TOKEN" \
   issuer fails ends without either, with the event `RevocationFailed`, and
   can be asked for again. The built-in issuer revokes at once: `Pending`
   is `false`. See [Revoking](/docs/features/certificates#revoking).
+- `Deleting` is `true` when the `Certificate` object is being deleted: the
+  revocation is made, no new certificate is issued, and the current one
+  does not stay. See [Deleting](/docs/features/certificates#deleting).
 
 | Code | When |
 | --- | --- |

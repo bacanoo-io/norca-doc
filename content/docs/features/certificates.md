@@ -159,8 +159,11 @@ The certificate is a version of the secret at `secret_path`:
   certificate, so the secret watcher warns (`SecretExpiring`) if renewing
   ever stops.
 - The secret carries the label `norca.io/certificate` with the name of the
-  object. **A secret that was not written for the certificate is never
-  overwritten**: the certificate then has the reason `SecretConflict`.
+  object. The operator also labels the secret with
+  `norca.io/certificate-id`, the ID of the `Certificate` object it issued
+  the certificate for. **A secret that was not written for the certificate
+  is never overwritten**: the certificate then has the reason
+  `SecretConflict`.
   To hand an existing secret over to a certificate, label it; the next
   version is the certificate's:
 
@@ -172,6 +175,14 @@ The certificate is a version of the secret at `secret_path`:
   issued is not overwritten. That attempt is not counted as a failure; the
   next pass, soon after, reads the secret again and decides again, with
   `SecretConflict` if it is no longer the certificate's.
+- **A certificate the status did not record is not lost.** The secret is
+  written before the status. If the write of the status is lost after an
+  issuance, the next pass finds the certificate in the secret, lists it in
+  [`earlier`](#earlier-certificates) (warning event `CertificateRecovered`),
+  and only then issues again; it can be revoked by its serial number, and
+  the deletion of the object revokes it. This needs the
+  `norca.io/certificate-id` label of this object on the secret, and the
+  private key of the certificate in the secret.
 - While an order with an external issuer is open, the key that waits for its
   certificate is the item `next_key`; `cert` and `key` keep the current
   certificate until the new one is complete.
@@ -285,9 +296,14 @@ not revoke a certificate, the current or an earlier one, also during a
 deletion), `DependentKept` (a warning: the object stays although an owner
 of it was deleted, see [Deleting](#deleting)), `EarlierCertificateDropped`
 (an [earlier certificate](#earlier-certificates) is no longer kept in the
-status), and the failures. `Revoked`, `RevocationOrdered`,
+status), `CertificateRecovered` (a warning: the secret held a certificate
+the status did not record, and it is kept as an earlier one, see
+[the secret](#the-secret)), and the failures. `Revoked`, `RevocationOrdered`,
 `RevocationReason` and `RevocationFailed` name the serial number, and say
-"earlier certificate" when it was not the current one.
+"earlier certificate" when it was not the current one. **A message of an
+event or of a condition that is longer than 1000 bytes is cut and ends
+with ` ... (truncated)`**; this holds for the events and conditions of
+every built-in operator.
 
 `RevocationFailed` has two forms:
 
@@ -299,7 +315,11 @@ status), and the failures. `Revoked`, `RevocationOrdered`,
   again; see [Revoking](#revoking).
 - **A revocation of a [withdrawal](#when-a-namespace-loses-a-name) or of a
   [deletion](#deleting)** gives one event for every failed order, and is
-  asked for again: the text ends with `tried again at <time>`.
+  asked for again: the text ends with `tried again at <time>`. An order
+  that the controller does not answer within 24 hours counts as failed
+  too: `failures` and `retryAt` are set, the event reads
+  `... its controller did not answer within 24h0m0s; tried again at <time>`,
+  and the next order is placed after the wait.
 
 ### Earlier certificates
 
@@ -478,8 +498,9 @@ What holds for both the current and the earlier certificates:
   that the certificate waits for the issuer to revoke it; the secret is
   emptied meanwhile. A revocation that fails gives the event
   `RevocationFailed` and is asked for again after a minute, then twice as
-  long after every failure, up to an hour. **An earlier certificate waits
-  on its own:** its failed orders are counted in `failures` of its entry,
+  long after every failure, up to an hour. An order the controller does not
+  answer within 24 hours counts as failed the same way. **An earlier
+  certificate waits on its own:** its failed orders are counted in `failures` of its entry,
   the next order is placed at the `retryAt` of the entry, and the event and
   `Failed` say "earlier certificate" with its serial number.
 - **The lost right is found also when the issuer is gone.** The CA of the
@@ -498,7 +519,9 @@ What holds for both the current and the earlier certificates:
 - **Names given back bring a new certificate**, also while a revocation is
   still waited for: the certificate that was waited for is then listed in
   `earlier` without `revoked`, since an order that is placed has revoked
-  nothing. **The withdrawal ends there**, for the earlier
+  nothing. The failures and the wait of the withdrawal do not delay the new
+  certificate: `failures` and `retryAt` of the status are reset. **The
+  withdrawal ends there**, for the earlier
   certificates too: a revocation order that is placed runs its course, no
   new one is placed, a failed order of the withdrawal is not placed again
   and gives no event, and `failures`, `retryAt` and `notRevocable` are
@@ -772,7 +795,8 @@ certificates is revoked, has no issuer left to revoke it, or has expired**.
 - **External issuer:** every certificate gets a
   [revocation order](#the-contract-of-an-external-issuer), and the object
   waits until the controller of the issuer has done them. A revocation that
-  fails gives the event `RevocationFailed` and is asked for again after a
+  fails, or that the controller does not answer within 24 hours, gives the
+  event `RevocationFailed` and is asked for again after a
   minute, then twice as long after every failure, up to an hour, each
   certificate on its own (`failures` and `retryAt` of the status, or of the
   entry of `earlier`). **It is never given up on its own:** as long as the
@@ -795,8 +819,8 @@ come:**
    what is not revoked yet stays valid.
 2. Delete the `CertificateIssuer` object of the external issuer: its
    certificates have no issuer left then. A revocation order that is still
-   open is waited for first; one the controller does not answer is removed
-   24 hours after it was placed.
+   open is waited for first; one the controller does not answer counts as
+   failed 24 hours after it was placed, and is removed.
 3. Remove the finalizer `norca.io/operators` with a management token.
 
 **The secret stays**, unless `delete_secret` is set. Once the deletion has
@@ -816,6 +840,18 @@ current certificate and the earlier ones stay valid until they expire, and
 `norca certificate revoke` no longer finds them, and an object created
 again under the same name can't reach them. [Revoke](#revoking) them first
 if they must not stay valid.
+
+**A `Certificate` whose spec no longer passes its kind can still be
+deleted.** If the spec can't be decoded, its certificates are revoked from
+what the status lists (unless `keep_certificates` can still be read as
+`true`), and the secret is left in place, also with `delete_secret`:
+nothing is destroyed on the word of a spec that can't be read.
+
+**A certificate of an object that is being deleted can still be revoked**
+with [`norca certificate revoke`](/docs/commands/certificate/revoke), for
+example with `-reason keyCompromise` while the deletion waits for an
+external issuer: the open revocation order gets the reason. No new
+certificate is issued for such an object.
 
 **Deleting an owner of a `Certificate` needs the right to delete the
 certificate.** A `Certificate` that has an
@@ -923,8 +959,11 @@ to the secrets of the namespaces.**
    `valid` or `failed` yet to `keyCompromise`, when a user
    [revokes the certificate again](#revoking) for that reason. A
    revocation order that is neither `valid` nor `failed` 24 hours after it
-   was written is removed: the revocation of a user ends as a failed one
-   then, and a withdrawal or a deletion places a new order.
+   was written has failed and is removed: the revocation of a user ends as
+   a failed one then, and a withdrawal or a deletion counts the failure and
+   places a new order after its wait. **A finished revocation order is
+   removed only after the status of the certificate records its result**;
+   its event is recorded then.
 
 **The servers check a chain before they trust it:** the certificate is for
 the key of the request and for exactly the names asked for, it is valid now,
