@@ -24,6 +24,8 @@ server {
     max_connections = 10000
 
     consul_kv_max_bytes      = "256MiB"
+    rigger_logs_max_bytes    = "256MiB"
+    rigger_logs_max_age      = "720h"
     reader_compact_threshold = 2000
 
     events {
@@ -70,6 +72,14 @@ ports {
   eighth of `max_storage` when that is less. **A write beyond it fails**
   ("the Consul KV of the system bus is full"); no key is dropped. Raise the
   limit, or delete keys.
+
+- `rigger_logs_max_bytes` `(string: "256MiB")` - The size limit of the stream
+  of the logs of the [stack operations of Rigger](/docs/api/rigger-stacks); a
+  sixteenth of `max_storage` when that is less. The oldest logs go first.
+
+- `rigger_logs_max_age` `(string: "720h")` - How long the log of a stack
+  operation is kept. The log of an operation is also removed when the
+  operation is deleted (the servers keep the last 10 operations of a stack).
 
 - `reader_compact_threshold` `(int: 2000)` - How many retired
   [CDC reader accounts](/docs/features/change-data-capture#guarantees) a server
@@ -120,8 +130,9 @@ does not start and says what each part takes:
 | Pack push notices | `64MiB` |
 | Usage reports of the clients | a sixteenth of `max_storage` |
 | Consul KV | `consul_kv_max_bytes` |
+| Logs of the Rigger stack operations | `rigger_logs_max_bytes` |
 
-With the defaults that is about 1.6 GiB of the 4 GiB. The events and the push
+With the defaults that is about 1.9 GiB of the 4 GiB. The events and the push
 notices count only when `events.enabled` is set.
 
 ## Region names and subjects
@@ -129,11 +140,12 @@ notices count only when `events.enabled` is set.
 The streams of a region must not share subjects. The events use
 `<subject_prefix>.<region>.>`, the admin events
 `<subject_prefix>.admin.<region>.>`, the usage reports
-`norca.telemetry.<region>.*` and the push notices
+`norca.telemetry.<region>.*`, the logs of the Rigger stack operations
+`norca.rigger.oplog.<region>.*` and the push notices
 `<subject_prefix>.packs.pushed` (what a pipeline publishes) and
 `<subject_prefix>.packs.notices` (what the servers store). **With the default prefix a region can't be
-named `telemetry`, `packs` or `admin`**, and a subject prefix
-can't lie under `norca.telemetry`: the agent refuses to start its bus and
+named `telemetry`, `packs`, `admin` or `rigger`**, and a subject prefix
+can't lie under `norca.telemetry` or `norca.rigger.oplog`: the agent refuses to start its bus and
 names the subjects that collide.
 
 ## Ports and addresses
