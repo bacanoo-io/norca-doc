@@ -107,4 +107,57 @@ reads it past the right to read operations.
 ```
 
 To follow a running operation, read again with `after` set to the last `Seq` and a `wait`, until
-`Finished` is true and no records come.
+`Finished` is true: the operation has ended and the page holds the rest of its log. **A full page
+(`limit` records) is never `Finished`**; read on. A wait ends with the first records, or within a
+second of the end of the operation. Durations and times in the records are text (`"1.8ms"`).
+
+## Bundles for a cluster without a network
+
+A cluster that can't reach the git repositories of its modules installs them from a **bundle**: the
+archive `rigger bundle create` makes of the modules of a stack, as its lock file pins them. **A bundle
+imported into the cluster is kept in an object store of the [system bus](/docs/configuration/bus)**,
+replicated between the servers, within `bus.rigger_bundles_max_bytes`:
+
+- **The server checks a bundle when it is imported**: each module must have the digest its manifest
+  names. A bundle is at most 64 MiB and unpacks to at most 512 MiB.
+- **The leader unpacks the bundles its cache lacks before it plans or applies anything**, so a bundle
+  outlives a change of leader.
+- **A bundle serves a module only when its source can't be reached**, at the commit the lock file of the
+  stack names: the stack must be synced (`rigger stack sync`) before its bundle is made.
+
+| Method | Path | Answers | ACL Required |
+| --- | --- | --- | --- |
+| `PUT`, `POST` | `/v1/rigger/bundle` | the bundle, kept (the body is the archive) | object `write` on `rigger.norca.io/Registry` |
+| `GET` | `/v1/rigger/bundles` | the bundles: name, stack, modules, size, time of the import | object `read` on `rigger.norca.io/Registry` |
+| `DELETE` | `/v1/rigger/bundle/:name` | | object `write` on `rigger.norca.io/Registry` |
+
+```shell-session
+$ curl -X PUT -H "X-Nomad-Token: $TOKEN" --data-binary @shop.riggerbundle https://localhost:4646/v1/rigger/bundle
+{"Name": "bundle-87267ca88bfae93bc3fc1a665c12e614", "Stack": "shop", "Modules": ["git.example.com/acme/modules//modules/web 1.0.0"], "Size": 544, "Imported": "2026-11-22T14:04:19Z"}
+```
+
+The same bundle imported again keeps its name. A deleted bundle stays in the caches of the servers it
+was unpacked into until they are cleared.
+
+## From the command line
+
+The `rigger` program and `norca rigger` evaluate a stack on the machine they run on, unless they are
+given **`-server`** (or `RIGGER_SERVER=1`): then `stack plan`, `apply`, `status` and `destroy`,
+`install` and `bundle import` go to the servers of `NORCA_ADDR`, which fetch and evaluate.
+
+- A stack in a directory is sent as files, in its own namespace and region; a published stack names
+  its namespace with `-namespace`. The values of `-f` and `-var` are sent as a values file.
+- **An apply or a destroy follows the log of its operation** as it comes, then writes what it did.
+- **Ctrl-C cancels the operation** before its next release and waits for its end; **a second Ctrl-C
+  leaves it running**. `rigger operation follow <name>`, `cancel` and `status` reach it again.
+
+```shell-session
+$ rigger bundle import shop.riggerbundle -server
+$ rigger stack apply ./shop -server -var replicas=3
+operation shop-20261122-140938-a847 of the stack shop in default
+  install default/db
+  install default/web
+...
+install default/db: done (revision 1)
+install default/web: done (revision 1)
+```

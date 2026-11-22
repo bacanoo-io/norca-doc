@@ -26,6 +26,7 @@ server {
     consul_kv_max_bytes      = "256MiB"
     rigger_logs_max_bytes    = "256MiB"
     rigger_logs_max_age      = "720h"
+    rigger_bundles_max_bytes = "1GiB"
     reader_compact_threshold = 2000
 
     events {
@@ -81,6 +82,14 @@ ports {
   operation is kept. The log of an operation is also removed when the
   operation is deleted (the servers keep the last 10 operations of a stack).
 
+- `rigger_bundles_max_bytes` `(string: "1GiB")` - The size limit of the
+  object store of the [bundles of Rigger](/docs/api/rigger-stacks#bundles-for-a-cluster-without-a-network)
+  imported into the cluster; half of what the other streams leave of
+  `max_storage` when that is less. **An import beyond it fails**; no bundle
+  is dropped. Delete bundles, or raise the limit. When the other streams
+  leave less than 2 MiB and this is not set, there is no object store, and
+  an import says so.
+
 - `reader_compact_threshold` `(int: 2000)` - How many retired
   [CDC reader accounts](/docs/features/change-data-capture#guarantees) a server
   must have before it drops them; they must also be more than the live ones,
@@ -131,8 +140,9 @@ does not start and says what each part takes:
 | Usage reports of the clients | a sixteenth of `max_storage` |
 | Consul KV | `consul_kv_max_bytes` |
 | Logs of the Rigger stack operations | `rigger_logs_max_bytes` |
+| Bundles of Rigger | `rigger_bundles_max_bytes` |
 
-With the defaults that is about 1.9 GiB of the 4 GiB. The events and the push
+With the defaults that is about 2.8 GiB of the 4 GiB. The events and the push
 notices count only when `events.enabled` is set.
 
 ## Region names and subjects
