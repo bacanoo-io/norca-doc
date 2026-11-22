@@ -139,7 +139,7 @@ applied in this order as one release. The servers approve the webhooks of a kind
 management token; otherwise an administrator approves them with
 `norca object-kind webhook approve`. `loadbalancer-operator` of the
 [Norca pack registry](/docs/features/packages/registry#loadbalancer-operator) is the reference operator
-pack, and `norca operator init` scaffolds a controller project with one. See the
+pack; `rigger operator init` scaffolds a controller project with an operator module. See the
 [operator framework](/docs/features/operator-framework).
 
 Jobs without `namespace` or `region` belong to the namespace and region of the release. All resources

@@ -19,7 +19,7 @@ The SDK is the Go module in the `norca/controller` directory of the
 `github.com/bacanoo-io/norca/norca/controller`, MPL-2.0). It depends only on the API
 module (`norca/api`), never on the server code. It is not published as a
 separate module: projects use `replace` directives to a Norca checkout
-(`norca operator init -sdk` writes them).
+(`rigger operator init -sdk` writes them).
 
 | Building block | Purpose |
 | --- | --- |
@@ -390,13 +390,34 @@ func TestReconcile(t *testing.T) {
 
 ## Scaffolding an operator
 
-[`norca operator init`](/docs/commands/operator/init) writes a complete
-operator project without contacting the servers:
+`rigger operator init` writes a complete operator project without contacting
+the servers. It is a command of the `rigger` program, the package manager
+([Rigger](https://github.com/bacanoo-io/norca/tree/main/rigger)), not of
+`norca`:
 
 ```shell
-$ norca operator init -sdk ~/norca/norca db.example.com/PostgresCluster
+$ rigger operator init -sdk ~/norca/norca db.example.com/PostgresCluster
 $ cd postgres-cluster-operator && go mod tidy && go test ./...
 ```
+
+```plaintext
+rigger operator init [-name n] [-module path] [-cluster-scoped] [-sdk dir] [-force] <group>/<Kind> [dir]
+```
+
+The group is a lower case DNS name with at least one dot (`db.example.com`),
+the kind a CamelCase name that starts with an upper case letter
+(`PostgresCluster`). The project is written to the directory, by default the
+operator name.
+
+- `-name`: name of the operator: binary, controller, job and module (default:
+  `<kind in kebab case>-operator`, for example `postgres-cluster-operator`).
+- `-module`: Go module path (default: `example.com/<name>`).
+- `-cluster-scoped`: make the kind cluster-scoped instead of namespaced.
+- `-sdk`: the `norca` directory of a Norca checkout. `go.mod` then replaces the
+  SDK and API modules with its `controller` and `api` directories; without it
+  the replace directives are left for you to fill in, and the command prints a
+  warning.
+- `-force`: overwrite existing files.
 
 The project contains:
 
@@ -407,7 +428,11 @@ The project contains:
   the event log, leader election and metrics;
 - a validating webhook (`webhook.go`, the `webhook` subcommand);
 - tests against the fake backend and against a dev agent (`envtest`);
-- an operator pack in `pack/<name>/` and a `README.md` with the local workflow.
+- an operator module in `module/<name>/` that installs the kind, the ACL
+  policy of the controller (bound to its job) and the controller job as one
+  release (`rigger install ./module/<name> -name <name>`, or `norca rigger
+  install`), with `examples/dev.vars.hcl` for a dev agent;
+- a `README.md` with the local workflow.
 
 Check the generated kind with `norca object-kind lint` before you change it.
 
@@ -415,5 +440,4 @@ Check the generated kind with `norca object-kind lint` before you change it.
 
 - [Controller SDK source](https://github.com/bacanoo-io/norca/tree/main/norca/controller)
   and the [LoadBalancer operator](https://github.com/bacanoo-io/norca-platform/tree/main/loadbalancer/operator)
-- [`norca operator init`](/docs/commands/operator/init)
 - [Objects HTTP API](/docs/api/objects)

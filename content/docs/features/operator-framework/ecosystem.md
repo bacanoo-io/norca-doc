@@ -63,8 +63,8 @@ for admission policies. **A kind can only be deleted when it has no objects**, s
 delete the objects first (the controller removes their resources through the
 finalizer) and then uninstall the release.
 
-`norca operator init` generates such a pack for a new operator, in
-`pack/<name>/` of the project.
+`rigger operator init` generates the same release for a new operator as a
+Rigger module, in `module/<name>/` of the project.
 
 ## Type-bound webhooks
 

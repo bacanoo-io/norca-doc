@@ -202,7 +202,7 @@ name is registered.
 | Write, list, read, delete objects | [`norca object apply`](/docs/commands/object/apply), [`list`](/docs/commands/object/list), [`get`](/docs/commands/object/get), [`delete`](/docs/commands/object/delete) | [`/v1/objects/:group/:kind`, `/v1/object/:group/:kind/:name`](/docs/api/objects) |
 | Status, finalizers, event log | [`norca object events`](/docs/commands/object/events) | [`/v1/object/.../status`, `/finalizers`, `/events`](/docs/api/objects#update-the-status) |
 | Scale | [`norca object scale`](/docs/commands/object/scale) | [`/v1/object/.../scale`](/docs/api/objects#read-the-scale) |
-| Scaffold an operator | [`norca operator init`](/docs/commands/operator/init) | none |
+| Scaffold an operator | [`rigger operator init`](/docs/features/operator-framework/controllers#scaffolding-an-operator) | none |
 | Watch changes | none | `GET /v1/event/stream?topic=CustomObject:<group>/<Kind>` (see [event stream](/docs/features/event-stream)) |
 
 ## Limits and status
@@ -213,7 +213,7 @@ name is registered.
   the `background`, `foreground` and `orphan` deletion modes; protection of
   managed jobs and objects; type-bound webhooks with administrator approval;
   schema versions with CEL migrations; per-kind limits; the Go controller SDK
-  with `webhook`, `envtest` and `fake` packages; `norca operator init`;
+  with `webhook`, `envtest` and `fake` packages; `rigger operator init`;
   `norca object-kind lint`; the Objects and Type definitions pages of the
   [web UI](/docs/features/web-ui).
 - One stored version per kind. There are no multiple served versions and no

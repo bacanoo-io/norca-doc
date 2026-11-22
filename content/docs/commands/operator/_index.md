@@ -58,9 +58,6 @@ The following subcommands are available:
 
 - [`operator gossip keyring use`][gossip_keyring_use] - Sets a gossip encryption key as the active key
 
-- [`operator init`](/docs/commands/operator/init) - (Norca) Scaffold an
-  operator project for the controller SDK
-
 - [`operator keyring rewrap`](/docs/commands/operator/keyring-rewrap) - (Norca)
   Move the keyring to another seal
 
