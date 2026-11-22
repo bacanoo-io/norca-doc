@@ -62,8 +62,8 @@ This endpoint lists the releases of a namespace.
 
 - `prefix` `(string: "")` - Only releases whose name starts with the prefix.
 
-- `owner` `(string: "")` - Only releases of an owner, as `<kind>/<name>`: `stack/platform` lists
-  the releases the Rigger stack `platform` owns.
+- `owner` `(string: "")` - Only releases of an owner, as `<kind>/<namespace>/<name>`:
+  `stack/apps/platform` lists the releases the Rigger stack `platform` of the namespace `apps` owns.
 
 ### Sample request
 
@@ -101,7 +101,8 @@ This endpoint reads a release.
   installs).
 
 - `Spec.Owner` - The owner of the newest revision, for a release a Rigger stack installed: `Kind`
-  (`stack`), `Name`, `Version`, `Source`, `Part`. Absent for a release no stack owns.
+  (`stack`), `Namespace` and `Name` (those of the stack), `Version`, `Source`, `Part`. Absent for a
+  release no stack owns.
 
 - `Status.Phase` - `pending`, `applying`, `deployed`, `failed`, `rolling-back` or `uninstalling`.
 
@@ -175,12 +176,14 @@ and uninstall endpoints:
 - `InputDigest` `(string: "")` - Rigger's digest of what it applies (the module digest, the values,
   the settings), recorded in the revision as given; Rigger compares it to tell an unchanged release.
 
-- `Owner` `(object: nil)` - The owner of the release: `Kind` (only `stack`), `Name` (required),
-  `Version`, `Source`, `Part`. Whoever may apply the release may set it; an unknown kind or a missing
-  name is a `400`.
+- `Owner` `(object: nil)` - The owner of the release: `Kind` (only `stack`), `Namespace` and `Name`
+  of the stack (both required), `Version`, `Source`, `Part`. Whoever may apply the release may set it, but the release
+  of a stack goes to another owner only with `Adopt` (see [one owner](#one-owner-per-release)); an
+  unknown kind or a missing namespace or name is a `400`.
 
 - `Adopt` `(bool: false)` - Take over a release whose newest revision the other package manager
-  applied ([one manager](#one-manager-per-release)).
+  applied ([one manager](#one-manager-per-release)) or that another stack owns
+  ([one owner](#one-owner-per-release)).
 
 - `Resources` `(array: <required>)` - The rendered resources. Each has
 
@@ -259,6 +262,20 @@ release "web" is managed by pack: rigger takes it over only when asked to (adopt
 `Adopt` (`rigger stack apply -adopt`, `rigger install -adopt`) takes the release over; from then on
 the other manager is the one refused. A rollback to a revision of the other manager needs `Adopt`
 too. Uninstalls and tests are open to both.
+
+### One owner per release
+
+**The owner of a release is a stack, by its namespace and name.** A stack prunes and destroys what it
+owns, so an apply, a dry run or a rollback that would give the release of a stack to another owner
+(another stack, one of the same name in another namespace, or none) fails with `409 Conflict`:
+
+```text
+release "web" belongs to the stack apps/platform: it is taken over only when asked to (adopt; the flag -adopt)
+```
+
+`Adopt` takes the release over (`rigger stack apply -adopt`, `rigger install -adopt`,
+`rigger release rollback -adopt`). A release that no stack owns may become a stack's without it. A
+stack that changes its namespace is a new stack: its old releases need `Adopt`.
 
 ## Plan release
 

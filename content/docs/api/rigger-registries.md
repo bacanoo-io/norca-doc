@@ -41,9 +41,9 @@ spec {
 | Field | Meaning |
 | --- | --- |
 | `type` | `global` (only the registry named `global`) or `git` (a registry repository). |
-| `source` | The git address of the registry. |
+| `source` | The git address of the registry. `ssh://` and `user@host:path` are read over ssh, as that user unless the credentials name one; `host/path` and `user@host/path` over https. |
 | `trustedKeys` | Public keys that the signatures of its versions are checked with at an install. |
-| `authSecret` | The Variable with the credentials of a private source: `username` and `password` (or `token`) for https; `ssh_private_key` and `known_hosts` (and optionally `ssh_user`, `ssh_key_passphrase`) for ssh. **Whoever writes the registry must be able to read the Variable**, so that someone who may only write registries can't send the credentials of others to a source of their choosing. |
+| `authSecret` | The Variable with the credentials of a private source: `username` and `password` (or `token`) for https; `ssh_private_key` and `known_hosts` (and optionally `ssh_user`, `ssh_key_passphrase`) for ssh. **Whoever writes the registry, or uses what it serves, must be able to read the Variable**: a change of a registry that has an `authSecret`, and every sync, search, read and install from it. So nobody can send the credentials of others to a source of their choosing, or read with them. |
 | `display` | How the web UI shows the registry: `catalog` (default) shows every module and stack; `selected` shows only those in `selected`. |
 | `selected` | The modules and stacks shown with `display = "selected"`: `{ kind = "module" \| "stack", namespace, name }`. A module of the global registry has a namespace; one of a registry repository has none. |
 
@@ -76,7 +76,7 @@ it is not synced until someone asks for it. Point its `source` at a mirror for a
 
 | Blocking Queries | ACL Required |
 | --- | --- |
-| `NO` | object `write` on `rigger.norca.io/Registry` |
+| `NO` | object `write` on `rigger.norca.io/Registry`, and read on the Variable of its `authSecret` |
 
 The sync runs on the leader: it fetches the source now, checks the index (an invalid entry of the global
 registry fails the sync and names its file), resolves the selection and writes the status. A failed sync
@@ -111,7 +111,7 @@ $ curl -X PUT -H "X-Nomad-Token: $TOKEN" https://localhost:4646/v1/rigger/regist
 
 | Blocking Queries | ACL Required |
 | --- | --- |
-| `NO` | object `read` on `rigger.norca.io/Registry` |
+| `NO` | object `read` on `rigger.norca.io/Registry`, and read on the Variable of its `authSecret` |
 
 Returns a page of the modules and stacks of the registry at the commit of its last good sync, modules
 first, by namespace and name, the versions the newest first. The display of the registry does not
@@ -149,7 +149,8 @@ namespace "*" {
 ```
 
 `read` lists, reads and searches registries; `write` writes them, syncs them and changes their
-selection.
+selection. **A registry with an `authSecret` also needs read on that Variable** for everything but
+listing and reading the object.
 
 ## Command line
 

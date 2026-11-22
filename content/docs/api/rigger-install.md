@@ -18,10 +18,12 @@ release write holds (ACL, admission, the release lock). The Go client is `client
 
 | Blocking Queries | ACL Required |
 | --- | --- |
-| `NO` | object `write` on `packs.norca.io/Release` in the namespace; for a module of a registry also object `read` on `rigger.norca.io/Registry` |
+| `NO` | object `write` on `packs.norca.io/Release` in the namespace; for a module of a registry also object `read` on `rigger.norca.io/Registry`, and read on the Variable of its `authSecret` |
 
-The install runs on the leader. With the query parameter `plan=true` it returns what an apply would do
-and applies nothing.
+The install runs on the leader and **waits until the release is ready**, as an install of the `rigger`
+program does. With the query parameter `plan=true` it returns what an apply would do and applies
+nothing. An install of a module whose `requires { module }` no release installed in the namespace
+meets is refused.
 
 | Field | Meaning |
 | --- | --- |
@@ -29,7 +31,8 @@ and applies nothing.
 | `Registry`, `Module`, `Version` | A module of a synced registry: `<namespace>/<name>` in the global registry, `<name>` in a registry repository; `Version` is a version constraint (`~> 1.2`), the newest when empty. |
 | `Files` | A local module sent as files instead (base64 in JSON): the archive that `rigger` makes of a module directory (`Module.Archive` of the Go library). No registry then. |
 | `Values` | The values of the variables, as a values file (HCL). |
-| `Adopt` | Take over a release another manager applied. |
+| `Adopt` | Take over a release that another manager applied or a stack owns. Without it such an install is refused (409); a plan warns of it. |
+| `Timeout` | How long to wait for the release to be ready (nanoseconds in JSON); 0 leaves it to the servers. The whole install is bounded by 10 minutes. |
 
 **A module of a registry** is taken from the **last good sync** of the registry: the newest version
 that meets the constraint and that the sync found. A newer version is not offered until the next sync,
@@ -78,7 +81,7 @@ release.
 
 | Blocking Queries | ACL Required |
 | --- | --- |
-| `NO` | object `read` on `rigger.norca.io/Registry` |
+| `NO` | object `read` on `rigger.norca.io/Registry`, and read on the Variable of its `authSecret` |
 
 Returns what an install form needs of the newest version that meets the constraint: `Metadata` (name,
 version, description, url, license, category, keywords, requirements), `Readme`, `Variables`, `Tabs`,
@@ -95,6 +98,6 @@ verified as an install verifies it.
 
 | Blocking Queries | ACL Required |
 | --- | --- |
-| `NO` | object `read` on `rigger.norca.io/Registry` |
+| `NO` | object `read` on `rigger.norca.io/Registry`, and read on the Variable of its `authSecret` |
 
 The icon of the version, a PNG of 64x64 pixels; 404 when it has none.

@@ -11,8 +11,9 @@ answer at once; **an apply and a destroy run on the leader as an operation**, an
 `client.Rigger()` in `github.com/bacanoo-io/norca/norca/api`.
 
 Every request is in the namespace of the stack (the `namespace` query parameter or
-`X-Nomad-Namespace`); a stack of another namespace is refused. The releases are applied through the
-[release API](/docs/api/releases) with the caller's token.
+`X-Nomad-Namespace`); a stack of another namespace is refused. **A stack runs on the servers of its
+region**: a stack of another region is refused (400), and a stack without a region is of `global`. The
+releases are applied through the [release API](/docs/api/releases) with the caller's token.
 
 ## The request
 
@@ -22,10 +23,14 @@ Every request is in the namespace of the stack (the `namespace` query parameter 
 | `Files` | A local stack sent as files instead (base64 in JSON): the archive the `rigger` program makes of a stack directory (`Stack.Archive` of the Go library). |
 | `Values` | The values of the variables, as a values file (HCL). |
 | `Prune` | An apply uninstalls the releases the stack no longer has. |
-| `Adopt` | An apply takes over releases another manager applied. |
+| `Adopt` | An apply takes over releases that another manager applied or another stack owns. |
 
-The token needs object `write` on `packs.norca.io/Release` in the namespace, and for a published stack
-also object `read` on `rigger.norca.io/Registry`.
+The token needs object `write` on `packs.norca.io/Release` in the namespace. For a published stack, and
+for a stack sent as files that takes anything from a registry or a bundle, it also needs:
+
+- object `read` on `rigger.norca.io/Registry`;
+- **read on the Variable of `authSecret`** of each private registry the stack uses, also when the
+  content comes from the cache of the servers or from a bundle.
 
 | Method | Path | Answers |
 | --- | --- | --- |
@@ -38,6 +43,34 @@ also object `read` on `rigger.norca.io/Registry`.
 $ curl -X PUT -H "X-Nomad-Token: $TOKEN" "https://localhost:4646/v1/rigger/stack/apply?namespace=shop" \
     -d '{"Source": "acme/shop", "Version": "~> 1.2", "Values": "replicas = 3\n"}'
 ```
+
+## Where the servers fetch from
+
+**The servers fetch only from registered sources.** This holds for each module and part of a stack, also
+for a status and a destroy, which load the stack:
+
+| Source | What the servers read |
+| --- | --- |
+| `builtin/<name>` | The modules built into Rigger. |
+| `<namespace>/<name>` | The global registry at its last good sync. |
+| A git repository, also `<registry>/<name>` | A registry of the type `git` with that source, at the commit of its last good sync. Its `trustedKeys` hold beside the `trust` of the stack; a repository registered twice is under the keys of both. |
+| `./modules/...` of a stack sent as files | The files sent. |
+| A [bundle](#bundles-for-a-cluster-without-a-network) | Only the repository, commit and digest the lock file of the stack records. |
+
+Anything else is refused (400), and the error says how to register it. The servers read no `oci://` and
+no `dir://` source: the `rigger` program does, on the machine it runs on.
+
+**Hidden paths are no content.** A file or a directory whose name starts with a dot is outside the digest
+of a module, so a module can't read it and it can't be the source of a module.
+
+## What is checked before a plan
+
+- **`required_version`** of the stack and of its parts, against the Norca version of the cluster.
+- **`requires { module }`** of the modules of the stack: met by a release of the stack at a fitting
+  version, or by one installed in the namespace. A requirement with `when` counts only when that
+  variable turns it on.
+- **The owner of each release.** A stack is the owner by its namespace and name. A plan shows a release
+  it would take over (`takes_over`); an apply without `Adopt` is then refused (409) before it starts.
 
 ## Operations
 
@@ -60,8 +93,11 @@ runs it and records it:
 - **The token of the caller lives only in the memory of the leader**, never in the state of the
   cluster. When the leader changes, a running operation can't go on: the new leader marks it
   `Interrupted`. Apply the stack again; the releases already done come back unchanged.
-- **The last 10 operations of a stack are kept**; the leader deletes older finished ones with their
-  logs.
+- **The end is written until it is stored.** When that write fails, the leader tries again for up to a
+  minute and the stack stays busy meanwhile; after that the operation is marked `Interrupted`.
+- **The last 10 operations of a stack are kept**; the leader deletes older finished ones. **The log of
+  an operation goes with it**, also of one deleted through the object API: the leader purges it within
+  a minute, as it does the log of a start that failed at its plan.
 
 Operations are written by the servers only; they are read (and deleted) with the
 [Custom Objects HTTP API](/docs/api/objects): `/v1/objects/rigger.norca.io/Operation?namespace=shop`,
@@ -108,8 +144,13 @@ reads it past the right to read operations.
 
 To follow a running operation, read again with `after` set to the last `Seq` and a `wait`, until
 `Finished` is true: the operation has ended and the page holds the rest of its log. **A full page
-(`limit` records) is never `Finished`**; read on. A wait ends with the first records, or within a
-second of the end of the operation. Durations and times in the records are text (`"1.8ms"`).
+(`limit` records) is never `Finished`**, and neither is the page during which the operation ended when
+it has records; read on. A wait ends with the first records, or within a second of the end of the
+operation. Durations and times in the records are text (`"1.8ms"`).
+
+**When the log can't be read** (a server without the bus), the answer is still 200: it has no lines,
+the reason in `LogUnavailable`, and the phase, which a wait follows. `Finished` is then true once the
+operation has ended.
 
 ## Bundles for a cluster without a network
 
@@ -118,12 +159,22 @@ archive `rigger bundle create` makes of the modules of a stack, as its lock file
 imported into the cluster is kept in an object store of the [system bus](/docs/configuration/bus)**,
 replicated between the servers, within `bus.rigger_bundles_max_bytes`:
 
-- **The server checks a bundle when it is imported**: each module must have the digest its manifest
-  names. A bundle is at most 64 MiB and unpacks to at most 512 MiB.
+- **The server checks a bundle when it is imported**: each module and each stack of a part must have
+  the digest its manifest names. A bundle is at most 64 MiB, has at most 1000 modules, and unpacks to
+  at most 512 MiB, counted with a tree for each module.
 - **The leader unpacks the bundles its cache lacks before it plans or applies anything**, so a bundle
   outlives a change of leader.
-- **A bundle serves a module only when its source can't be reached**, at the commit the lock file of the
-  stack names: the stack must be synced (`rigger stack sync`) before its bundle is made.
+- **A bundle serves only what the lock file of the stack pins**: the repository, commit and digest. A
+  synced registry that offers the version comes first. The stack must be synced (`rigger stack sync`)
+  before its bundle is made.
+- **A bundle needs no registered source**, but its use needs object `read` on
+  `rigger.norca.io/Registry`, and read on the Variable when its repository is that of a private
+  registry.
+- **A module of the global registry installs from a bundle without the index.** The keys of its
+  namespace come with the index, so then the digest of the lock file and the `trust` of the stack are
+  what is checked.
+- **A release with content that only a bundle vouches for is admitted as a client's**
+  (`serverRendered` is false).
 
 | Method | Path | Answers | ACL Required |
 | --- | --- | --- | --- |
@@ -143,11 +194,14 @@ was unpacked into until they are cleared.
 
 The `rigger` program and `norca rigger` evaluate a stack on the machine they run on, unless they are
 given **`-server`** (or `RIGGER_SERVER=1`): then `stack plan`, `apply`, `status` and `destroy`,
-`install` and `bundle import` go to the servers of `NORCA_ADDR`, which fetch and evaluate.
+`install` and `bundle import` go to the servers of `NORCA_ADDR`, which fetch and evaluate. The other
+commands work locally: `RIGGER_SERVER` doesn't apply to them, and a `-server` given to them is an
+error.
 
 - A stack in a directory is sent as files, in its own namespace and region; a published stack names
   its namespace with `-namespace`. The values of `-f` and `-var` are sent as a values file.
 - **An apply or a destroy follows the log of its operation** as it comes, then writes what it did.
+  Where the log can't be read it says so and follows the phase.
 - **Ctrl-C cancels the operation** before its next release and waits for its end; **a second Ctrl-C
   leaves it running**. `rigger operation follow <name>`, `cancel` and `status` reach it again.
 
