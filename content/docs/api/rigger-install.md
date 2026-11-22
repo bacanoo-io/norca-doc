@@ -30,7 +30,7 @@ meets is refused.
 | `Release` | The name of the release. The namespace is the namespace of the request. |
 | `Registry`, `Module`, `Version` | A module of a synced registry: `<namespace>/<name>` in the global registry, `<name>` in a registry repository; `Version` is a version constraint (`~> 1.2`), the newest when empty. |
 | `Files` | A local module sent as files instead (base64 in JSON): the archive that `rigger` makes of a module directory (`Module.Archive` of the Go library). No registry then. |
-| `Values` | The values of the variables, as a values file (HCL). |
+| `Values`, `ValuesJSON` | The values of the variables: a values file (HCL), or the same as one JSON object, a member per variable, as a form sends them (`"ValuesJSON": {"count": 2}`). Both give the same values, so the same release. One of them at most. |
 | `Adopt` | Take over a release that another manager applied or a stack owns. Without it such an install is refused (409); a plan warns of it. |
 | `Timeout` | How long to wait for the release to be ready (nanoseconds in JSON); 0 leaves it to the servers. The whole install is bounded by 10 minutes. |
 

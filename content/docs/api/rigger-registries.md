@@ -121,7 +121,9 @@ command.
 | Parameter | Meaning |
 | --- | --- |
 | `kind` | `module` or `stack`; both when empty. |
-| `text` | Found in `<namespace>/<name>`, case-insensitively. |
+| `text` | Found in `<namespace>/<name>` or in the description, case-insensitively. |
+| `category` | One category: `application`, `database`, `messaging`, `observability`, `platform`, `networking`, `security`, `storage`, `developer-tools`, `ai` or `other`. Another is an error (400). |
+| `keyword` | The modules and stacks with the keyword. |
 | `offset`, `limit` | The page: `limit` 50 by default, at most 500. |
 
 ```shell-session
@@ -130,11 +132,18 @@ $ curl -H "X-Nomad-Token: $TOKEN" "https://localhost:4646/v1/rigger/registry/glo
 
 ```json
 {
-  "Items": [{"kind": "module", "namespace": "norca", "name": "nats", "versions": ["1.1.0", "1.0.0"]}],
+  "Items": [{
+    "kind": "module", "namespace": "norca", "name": "nats", "versions": ["1.1.0", "1.0.0"],
+    "description": "A NATS cluster per region", "category": "messaging", "keywords": ["nats", "jetstream"], "license": "Apache-2.0"
+  }],
   "Total": 1,
   "Commit": "0123456789abcdef0123456789abcdef01234567"
 }
 ```
+
+**An item says what its newest version says of itself**: the description, category, keywords and
+license of its `metadata.hcl`. The global registry lists them in each version of its index; a registry
+repository has them from `metadata.hcl` at the commit of its last good sync.
 
 ## ACL
 
