@@ -2,18 +2,19 @@
 title: "The catalog of Rigger in the web UI"
 linkTitle: "Rigger catalog"
 weight: 6
-description: "The Catalog and Registries tabs of the Packages page: the modules of a Rigger registry at its last sync, searched on the servers, and installed from a form built from their variables."
+description: "The Stacks, Catalog and Registries tabs of the Packages page: the modules and stacks of a Rigger registry at its last sync, searched on the servers, installed or applied from a form built from their variables, and the page of each stack with its operations."
 ---
 
 ## What and why
 
-The **Packages** page of the web UI shows **Rigger**, the package manager, on two tabs:
+The **Packages** page of the web UI shows **Rigger**, the package manager, on three tabs:
 
-- **Catalog**: the modules of one [registry](/docs/api/rigger-registries) at its last good sync, and the
-  install form of each.
+- **Stacks**: the stacks of the namespace, each with its releases and its last operation.
+- **Catalog**: the modules and the stacks of one [registry](/docs/api/rigger-registries) at its last
+  good sync, and the form of each.
 - **Registries**: the registries of the cluster, when each was last synced, and their settings.
 
-A registry may list very many modules, so the catalog is **searched on the servers** a page at a time.
+A registry may list very many modules and stacks, so the catalog is **searched on the servers** a page at a time.
 It is never loaded whole into the browser. Packs are no longer shown or installed in the UI; the
 [pack manager](/docs/features/packages/catalog) still works from the command line and the API.
 
@@ -21,6 +22,7 @@ It is never loaded whole into the browser. Packs are no longer shown or installe
 
 | Control | What it does |
 | --- | --- |
+| Kind | **Modules** or **Stacks**. |
 | Registry | The registry searched; `global` first when the cluster has it. |
 | Search | Found in `<namespace>/<name>` and in the description. |
 | Category | One of the fixed categories of a module: application, database, messaging, observability, platform, networking, security, storage, developer-tools, ai, other. |
@@ -51,6 +53,36 @@ It is never loaded whole into the browser. Packs are no longer shown or installe
 - The **CLI command** tab shows the same install as a call of the HTTP API. The `rigger` program
   installs a module of a directory, not one of a registry by name.
 
+## Applying a stack
+
+**Apply** on the card of a stack opens the form of its newest version, built from its `variables.hcl`
+(the tabs come from the `ui` block of its `metadata.hcl`, as for a module). A stack names its releases
+itself, so the form has no release name; the namespace is that of the stack.
+
+- **Plan** lists the release of each part of the stack and whether it is installed or upgraded, and
+  warns of a release that another manager applied or another stack owns (that needs **Take over the
+  release**).
+- **Apply** starts an apply on the servers as an operation (see the
+  [stack API](/docs/api/rigger-stacks#operations)) and opens the page of the stack on it.
+- The values are sent as JSON. A value left at its default is not sent; the stack gives it.
+- The **CLI command** tab shows the same apply as a call of the HTTP API.
+
+## The page of a stack
+
+**Packages → Stacks** lists each stack that owns a release or has an operation kept in the namespace;
+its page shows:
+
+- **Releases**: the releases the stack owns, with their part, module, status and the link to each.
+  **Check status** reads the revision and the drift of each from the servers.
+- **Operations**: the applies and destroys kept (the last 10). The newest is shown, or the one chosen,
+  with its phase, the outcome of each release, its error, and **its log, followed while it runs**.
+  When the servers can't read the log, the page says so and follows the phase.
+- **Cancel before the next release** stops a running operation between two releases.
+- **Apply again** opens the form of the version the stack runs, for a stack of a registry of the
+  cluster. A sensitive value is not kept: enter it again, or the stack takes its default.
+- **Destroy** uninstalls every release of the stack, as an operation; type the name of the stack to
+  confirm.
+
 ## The page of a release
 
 A release Rigger applied shows the module and its version, its source, the registry of the cluster it
@@ -60,7 +92,7 @@ was installed from, its digest and signature, and the stack that owns it.
   release installed from a registry of the cluster that no stack owns. A sensitive value is not kept
   with a release: enter it again, or the module takes its default.
 - **A release of a stack** says which stack (and part) owns it: the stack applies, upgrades and removes
-  it, so change the stack and apply it.
+  it, so change the stack and apply it on [its page](#the-page-of-a-stack).
 - A release of a module sent as files is upgraded with the `rigger` program.
 
 ## Registries

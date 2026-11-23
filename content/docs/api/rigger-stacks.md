@@ -72,6 +72,32 @@ of a module, so a module can't read it and it can't be the source of a module.
 - **The owner of each release.** A stack is the owner by its namespace and name. A plan shows a release
   it would take over (`takes_over`); an apply without `Adopt` is then refused (409) before it starts.
 
+## Read a version of a published stack
+
+| Method | Path | Produces |
+| --- | --- | --- |
+| `GET` | `/v1/rigger/registry/:name/stack?name=<stack>&version=<constraint>` | `application/json` |
+
+| Blocking Queries | ACL Required |
+| --- | --- |
+| `NO` | object `read` on `rigger.norca.io/Registry`, and read on the Variable of its `authSecret` |
+
+What a form needs of the newest version of a stack of a synced
+[registry](/docs/api/rigger-registries) that meets the constraint. `name` is `<namespace>/<name>` in
+the global registry and `<name>` in a registry repository. The version is fetched and verified as an
+apply verifies it, its modules included, so the rules of the sources of the request hold also for
+modules of other registries.
+
+| Field | Meaning |
+| --- | --- |
+| `Source` | The address to apply it by: the `Source` of a [request](#the-request), with `Version`. `<namespace>/<name>` of the global registry, `<repository>//stacks/<name>` of a registry repository. |
+| `Metadata` | The `stack` block of its `metadata.hcl`: name, version, description, license, category, keywords, requirements. |
+| `Readme` | Its `README.md`. |
+| `FormSchema` | The JSON Schema of the form of its `variables.hcl`, with the `x-ui-*` hints the web UI reads; the tabs come from the `ui` block of its `metadata.hcl`, as for a module. |
+| `Versions` | The versions of the stack at the last sync, the newest first. |
+| `Meets`, `Unmet` | Whether the cluster meets the requirements of the version, and what it lacks. |
+| `Warnings` | The advisories of the version. |
+
 ## Operations
 
 An operation is planned before it starts, so an invalid stack is an error of the call. Then the leader
