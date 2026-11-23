@@ -5,6 +5,11 @@ weight: 6
 description: "Pack registries kept by the cluster, the catalog of their packs in the web UI, and installs and upgrades from a form built from the pack's variables.hcl, rendered by the servers."
 ---
 
+**The web UI shows Rigger now.** The Catalog and Registries tabs of the Packages page show the modules
+and registries of Rigger ([the Rigger catalog](/docs/features/packages/rigger-catalog)). What this page
+describes works through the API and the command line; the upgrade of a release installed from a pack
+registry stays on its release page.
+
 ## What and why
 
 `norca pack registry add` caches a registry on one workstation, and `norca pack run` renders packs
