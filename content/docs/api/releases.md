@@ -166,7 +166,8 @@ and uninstall endpoints:
   `Signatures` (each `Payload` and `Signature`, the cosign simple signing format), `Requires`.
   `norca pack` fills `Source` and `Ref` for packs of git and OCI registries; the web UI upgrades the
   release from a cluster registry of that source. `Manager` is `pack` (also when empty) or `rigger`;
-  `Commit` the git commit a Rigger module was fetched at.
+  `Commit` the git commit a Rigger module was fetched at. A module that the servers installed from a
+  [registry of Rigger](/docs/api/rigger-registries) records the name of that registry in `Registry`.
 
 - `Description` `(string: "")` - Description of the revision.
 

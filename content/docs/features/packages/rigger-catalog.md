@@ -51,6 +51,18 @@ It is never loaded whole into the browser. Packs are no longer shown or installe
 - The **CLI command** tab shows the same install as a call of the HTTP API. The `rigger` program
   installs a module of a directory, not one of a registry by name.
 
+## The page of a release
+
+A release Rigger applied shows the module and its version, its source, the registry of the cluster it
+was installed from, its digest and signature, and the stack that owns it.
+
+- **Upgrade** opens the install form of the module with the values of the deployed revision, for a
+  release installed from a registry of the cluster that no stack owns. A sensitive value is not kept
+  with a release: enter it again, or the module takes its default.
+- **A release of a stack** says which stack (and part) owns it: the stack applies, upgrades and removes
+  it, so change the stack and apply it.
+- A release of a module sent as files is upgraded with the `rigger` program.
+
 ## Registries
 
 The **Registries** tab lists each registry with its status, what its last good sync found, when that
