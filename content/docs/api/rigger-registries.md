@@ -41,7 +41,7 @@ spec {
 | Field | Meaning |
 | --- | --- |
 | `type` | `global` (only the registry named `global`) or `git` (a registry repository). |
-| `source` | The git address of the registry. `ssh://` and `user@host:path` are read over ssh, as that user unless the credentials name one; `host/path` and `user@host/path` over https. |
+| `source` | The git address of the registry. `ssh://` and `user@host:path` are read over ssh, as that user unless the credentials name one; `host/path` over https. **An address carries no credentials**: a user or a password in an https address (`https://user:token@host/path`, `user@host/path`) and a password in an ssh address are refused, when the registry is written and when it is fetched. The address is stored in the object, in lock files and in release records, and is shown in errors; credentials go into the Variable of `authSecret`. |
 | `trustedKeys` | Public keys that the signatures of its versions are checked with at an install. |
 | `authSecret` | The Variable with the credentials of a private source: `username` and `password` (or `token`) for https; `ssh_private_key` and `known_hosts` (and optionally `ssh_user`, `ssh_key_passphrase`) for ssh. **Whoever writes the registry, or uses what it serves, must be able to read the Variable**: a change of a registry that has an `authSecret`, and every sync, search, read and install from it. So nobody can send the credentials of others to a source of their choosing, or read with them. |
 | `display` | How the web UI shows the registry: `catalog` (default) shows every module and stack; `selected` shows only those in `selected`. |

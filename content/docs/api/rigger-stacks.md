@@ -23,7 +23,7 @@ releases are applied through the [release API](/docs/api/releases) with the call
 | `Files` | A local stack sent as files instead (base64 in JSON): the archive the `rigger` program makes of a stack directory (`Stack.Archive` of the Go library). |
 | `Values`, `ValuesJSON` | The values of the variables: a values file (HCL), or the same as one JSON object, a member per variable, as a form sends them (`"ValuesJSON": {"count": 2}`). Both give the same values, so the same release. One of them at most. |
 | `Prune` | An apply uninstalls the releases the stack no longer has. |
-| `Adopt` | An apply takes over releases that another manager applied or another stack owns. |
+| `Adopt` | An apply takes over the releases that its plan shows as taken over: those another manager applied or another stack owns. A release that became another's after the plan is refused (409), not taken over. |
 
 The token needs object `write` on `packs.norca.io/Release` in the namespace. For a published stack, and
 for a stack sent as files that takes anything from a registry or a bundle, it also needs:
