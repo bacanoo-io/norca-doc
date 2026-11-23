@@ -70,6 +70,10 @@ server {
   See the
   [`metrics_store` block](/docs/configuration/metrics_store).
 
+- `rigger` - (Norca) Bounds what a server fetches for Rigger, the package
+  manager, of one commit of a git repository. See the
+  [`rigger` block](/docs/configuration/rigger).
+
 - `bootstrap_expect` `(int: required)` - Specifies the number of server nodes to
   wait for before bootstrapping. It is most common to use the odd-numbered
   integers `3` or `5` for this value, depending on the cluster size. **A value of

@@ -22,7 +22,7 @@ releases are applied through the [release API](/docs/api/releases) with the call
 | `Source`, `Version` | A published stack: `<namespace>/<name>` of the global registry, or a git address; `Version` is a version constraint. A stack of the global registry needs a [sync](/docs/api/rigger-registries#sync-a-registry) of the registry `global`. |
 | `Files` | A local stack sent as files instead (base64 in JSON): the archive the `rigger` program makes of a stack directory (`Stack.Archive` of the Go library). |
 | `Values`, `ValuesJSON` | The values of the variables: a values file (HCL), or the same as one JSON object, a member per variable, as a form sends them (`"ValuesJSON": {"count": 2}`). Both give the same values, so the same release. One of them at most. |
-| `Prune` | An apply uninstalls the releases the stack no longer has. |
+| `Prune` | An apply uninstalls the releases the stack no longer has: those it owns whose block is gone. A release that is written with `enabled = false` is still of the stack: if it was installed before, it **stays installed** and is not pruned. The plan shows it once, as `disabled` with the revision that stays, and warns when the stack has another version of its module than the one installed. |
 | `Adopt` | An apply takes over the releases that its plan shows as taken over: those another manager applied or another stack owns. A release that became another's after the plan is refused (409), not taken over. |
 
 The token needs object `write` on `packs.norca.io/Release` in the namespace. For a published stack, and
