@@ -49,6 +49,7 @@ An unknown key or a block repeated where only one is allowed is an error.
 | `node_scaling` | | The bootstrap and the network ranges for the node scaling operator |
 | `secrets` | | Secrets and Variables written after the cluster is up |
 | `packs` | | Pack registries and releases; `packs.gitops` holds GitOps bindings |
+| `rigger` | | A Rigger stack applied after the packs |
 | `gitops` | | GitOps bindings, the same as `packs.gitops` |
 | `inventory` | | Servers and clients |
 
@@ -290,6 +291,21 @@ See [Namespaces](/docs/deployer/secrets-and-policies#namespaces).
 | `deploy[].values` | | Pack variables |
 
 See [Packs](/docs/deployer/packs).
+
+## rigger
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `stack` | | Directory of the stack (`stack.hcl`, `rigger.lock.hcl`), relative to the plan |
+| `stack_hcl` | | The stack written in the plan; excludes `stack` |
+| `values` | | Values files (`-f`), relative to the plan; only with `stack` |
+| `vars` | | Variables (`-var name=value`) |
+| `prune` | `false` | Destroy the releases removed from the stack |
+| `run_on` | `server` | Where the program runs: `server`, `norca rigger` on the first server, on a copy of the stack; `local`, the `rigger` program on the operator machine |
+| `mode` | `embedded` | Who applies the stack: `embedded`, the servers, to which the program sends it (`-server`); `standalone`, the program |
+| `binary` | `rigger` | The rigger program of `run_on: local`; refused with `run_on: server` |
+
+**The stack is applied in the region its own `rigger` block names** (`global` when it names none), so a plan of another region needs it there. `stack` is a directory of its own, not the one of the plan. See [Rigger stacks](/docs/deployer/rigger).
 
 ## node_scaling
 
