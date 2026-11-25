@@ -127,7 +127,7 @@ the [deployment examples](/docs/getting-started/examples) use the modules of thi
 
 | Module | Version | What it deploys |
 | --- | --- | --- |
-| [consul](#consul) | 0.2.1 | The official HashiCorp Consul release (BSL 1.1, referenced, never shipped; accepted by the user at install): servers on host volumes over datacenters, client agents, gossip/TLS/ACL bootstrap from Variables, optional snapshots to S3, optional agent metrics |
+| [consul](#consul) | 0.2.2 | The official HashiCorp Consul release (BSL 1.1, referenced, never shipped; accepted by the user at install): servers on host volumes over datacenters, client agents, gossip/TLS/ACL bootstrap from Variables, optional snapshots to S3, optional agent metrics |
 | [forgejo](#forgejo) | 0.2.1 | Forgejo (GPL-3.0-or-later, referenced, never shipped) as the internal git server and container registry: SQLite and repositories on a host volume, packages and LFS in RustFS, secrets from the built-in secret store, optional HTTPS, SSH, initial admin and periodic dumps; optional `/metrics` |
 | [loadbalancer-operator](#loadbalancer-operator) | 0.5.1 | The LoadBalancer operator as an operator module: object kind (webhooks, limits), the LoadBalancerClass kind, ACL policy bound to the controller job, admission policy, controller job |
 | [mtls-gateway](#mtls-gateway) | 0.2.2 | The cross-region native mTLS gateway of a region (`mtls { mode = "gateway" }`): SNI passthrough Envoy on the gateway nodes, injected by the servers or defined by the module; optional Envoy statistics |
@@ -201,6 +201,10 @@ Consul-compatible read layer and external services do **not** need it; see
 The bootstrap needs no manual steps: a prestart task generates the gossip key, the CA, the server
 certificates and the ACL tokens on the first start and stores them in Norca Variables. ACLs
 (default deny) and gossip encryption are always on, TLS is on by default (`tls_enabled`).
+The DNS interface of every agent answers with a DNS token of its own (it reads nodes, services and
+prepared queries), so a host that forwards the `consul` domain to its agent resolves the names:
+[`consul.dns_forwarding`](/docs/deployer/networking-and-tuning#dns-of-the-hosts-the-consul-domain)
+of the deployer.
 
 | Variable | Default | |
 | --- | --- | --- |

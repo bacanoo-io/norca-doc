@@ -225,6 +225,30 @@ See [Multi-region](/docs/deployer/multi-region).
 | `address` | `127.0.0.1:8500` | HTTP API of the local Consul agent |
 | `auto_advertise` | `true` | Register the agents as Consul services |
 | `token_file` | | Local file (relative to the plan) with the Consul ACL token of the agents, for a Consul whose ACLs deny by default |
+| `dns_forwarding` | | The Linux nodes resolve the Consul domain through the local Consul agent (below) |
+
+### consul.dns_forwarding
+
+Conditional forwarding: the Consul domain is answered by the DNS interface of the local Consul agent, every other name keeps being answered by the resolver the host has (systemd-resolved asks Consul for them too, in parallel; Consul refuses them). The deployer configures systemd-resolved or dnsmasq that is already on the node; it never installs one. Linux nodes only; a Windows node is skipped with a warning.
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `enabled` | `false` | Write the configuration. `false`, or no block, removes the files an earlier `apply` wrote |
+| `address` | `127.0.0.1:8600` | DNS interface of the Consul agent, `host:port` with an IP address (`[::1]:8600` for IPv6) |
+| `domain` | `consul` | The domain that is forwarded |
+| `method` | `auto` | `auto`, `systemd-resolved` or `dnsmasq` |
+| `docker` | `false` | Containers on the docker bridge resolve the domain too (systemd-resolved only; restarts Docker when it changes `/etc/docker/daemon.json`) |
+
+```yaml
+consul:
+  address: 127.0.0.1:8500
+  dns_forwarding:
+    enabled: true
+    docker: true
+```
+
+See [DNS of the hosts: the consul domain](/docs/deployer/networking-and-tuning#dns-of-the-hosts-the-consul-domain).
+
 
 ## host_packages
 
@@ -363,8 +387,9 @@ The template is the configuration of a client of the plan without what belongs t
 name, datacenter, pool, class and meta come from the node group, and the agent takes its own
 private address (the address of a machine that does not exist yet is not known). The meta of
 `client_defaults` is not used: a scaled node gets its meta from its node group. Consul is not
-set up on a scaled node. It needs `security.tls_enabled` and `metadata.region`. Without a node
-CA the bootstrap is not written and `apply` says so:
+set up on a scaled node (its agent gets no `consul` block; `consul.dns_forwarding` is done by the
+install script of the machine). It needs `security.tls_enabled` and `metadata.region`. Without a
+node CA the bootstrap is not written and `apply` says so:
 
 ```shell
 norca-deployer pki issue-node-ca -c cluster.yaml --region eu
