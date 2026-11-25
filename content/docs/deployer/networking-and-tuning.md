@@ -156,8 +156,9 @@ Debian 12 has neither. Install one with [host packages](/docs/deployer/host-pack
 
 ```yaml
 host_packages:
-  install:
-    - name: systemd-resolved   # takes over /etc/resolv.conf (127.0.0.53)
+  apt:
+    install:
+      - name: systemd-resolved   # takes over /etc/resolv.conf (127.0.0.53)
 ```
 
 > [!WARNING]
