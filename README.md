@@ -40,7 +40,7 @@ Pages configuration (the repository's Pages source must be set to "GitHub Action
 | `content/docs/getting-started/` | Installation, development agent, the deployment examples |
 | `content/docs/features/` | One section per Norca feature: what and why, examples, configuration, diagrams |
 | `content/docs/concepts/`, `job-specification/`, `configuration/`, `commands/`, `api/`, ... | Reference, adapted from the Nomad v1.6.5 documentation and extended with the Norca additions |
-| `content/docs/operations/` | Backups, seal and unseal, upgrades, monitoring, the pack registry |
+| `content/docs/operations/` | Backups, seal and unseal, upgrades, monitoring |
 | `content/docs/design/` | The design documents of the Norca features (moved from the Norca repository's `docs/`) |
 | `layouts/` | Small overrides of the theme (attribution footer) |
 
