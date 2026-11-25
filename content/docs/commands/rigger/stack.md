@@ -17,7 +17,7 @@ norca rigger stack plan [dir] [-f values] [--var name=value] [--json]
 norca rigger stack apply [dir] [-f values] [--var name=value] [--prune] [--adopt]
 norca rigger stack status [dir] [--json]
 norca rigger stack destroy [dir]
-norca rigger stack publish [dir] [--key name.key]
+norca rigger stack publish [dir] [-f values] [--var name=value] [--key name.key]
 ```
 
 | Command | What it does |
@@ -28,7 +28,7 @@ norca rigger stack publish [dir] [--key name.key]
 | `stack apply` | Plans and applies, release after release. |
 | `stack status` | Shows the releases of the stack, their revision and their drift. |
 | `stack destroy` | Uninstalls the releases of the stack. |
-| `stack publish` | Validates a stack with `metadata.hcl` and its lock file, signs it, commits the signature and tags the version in its git repository. The tag is not pushed. |
+| `stack publish` | Validates a stack with `metadata.hcl` and its lock file (with the values of `-f` and `--var`, or each file of `values/`), signs it, commits the signature and tags the version in its git repository. The tag is not pushed. A stack with a variable without a default is published with `-f`. |
 
 Every command but `sync` and `publish` takes, instead of a directory, a **published stack**:
 `<namespace>/<name>` of the global registry or a git address, with `--version`.

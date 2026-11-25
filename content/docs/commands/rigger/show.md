@@ -26,7 +26,8 @@ Of the source, the newest version that meets `--version` is fetched and verified
 
 - **A version of the global registry** is taken only with the tree digest its index lists and signed
   by a key of its namespace. Its advisories are shown as warnings.
-- **An unsigned git or OCI version** is shown with a warning.
+- **An unsigned git or OCI version** is shown with a warning. A version with signatures that no key
+  trusted here verifies is shown with the warning that its signature is not verified.
 - **A built-in module** is of the version the program ships; `--version` is checked against it.
 
 A name of the global registry is a module, unless the registry lists only a stack of that name.
@@ -37,7 +38,8 @@ The output shows:
 - the name and version; the description, url, license, category, keywords and requirements;
 - the versions the source has, newest first;
 - the repository, tag, commit and tree digest;
-- the key IDs of the signatures, or `not signed`;
+- the key IDs of the signatures that verified it; `not verified` with the number of its signatures
+  when no trusted key verifies them; or `not signed`;
 - the variables: name, type, default, whether required, whether sensitive, description. **The
   default of a sensitive variable is never shown.**
 - the outputs;
