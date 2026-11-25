@@ -33,8 +33,7 @@ namespace "apps" {
 **Writing a release grants nothing else**: every resource of the release is applied with the caller's
 token through the normal endpoint of its type, so **the token also needs the permissions for those
 resources** (for example `submit-job` for a job, or a management token for an ACL policy). Resources the
-release adopts without writing them (all of them with `RecordOnly`, and the multiregion jobs another
-region of an [install in several regions](#several-regions-in-one-request) registers) need the same
+release adopts without writing them (all of them, with `RecordOnly`) need the same
 permissions, and `TakeOwnership` needs
 object `write` on `rigger.norca.io/Release` in the namespace of every release resources are taken
 from; see [permissions](/docs/features/packages/releases#permissions).
@@ -100,8 +99,7 @@ This endpoint reads a release.
   [one manager](#one-manager-per-release)), `Commit`.
 
 - `Spec.Description`, `Spec.Revision` (newest revision), `Spec.MaxHistory`, `Spec.Atomic` (mode of
-  the last operation), `Spec.Multiregion` (`Regions`, `GlobalRegion`; only for an
-  [install in several regions](#several-regions-in-one-request)).
+  the last operation).
 
 - `Spec.Owner` - The owner of the newest revision, for a release a Rigger stack installed: `Kind`
   (`stack`), `Namespace` and `Name` (those of the stack), `Version`, `Source`, `Part`. Absent for a
@@ -240,21 +238,15 @@ and uninstall endpoints:
 - `VariableValues` `(map: nil)` - The effective variable values per package path, validated against
   the schemas and never stored.
 
-- `Regions` `(array: nil)` - Install in these regions in one request, at most 32; see
-  [several regions in one request](#several-regions-in-one-request). Rigger does not send it.
-
 ### Response
 
 - `Release` - The release after the operation.
 - `Revision` - The number of the new revision.
 - `Changes` - Per resource: `Type`, `Namespace`, `Name`, `Action` (`create`, `update`, `delete`,
-  `unchanged`, `hook`, `adopt`, `remote`), `Hook`, `Owner`, `JobDiff` (plans), `Region` (for
-  `remote`), `Error` (the change failed). A resource the upgrade dropped and did not delete because
+  `unchanged`, `hook`, `adopt`), `Hook`, `Owner`, `JobDiff` (plans), `Error` (the change failed). A resource the upgrade dropped and did not delete because
   it is no longer the release's is a `delete` with `Error` `not deleted: <why>`
   ([install, upgrade, rollback, uninstall](/docs/features/packages/releases#install-upgrade-rollback-uninstall)).
 - `Warnings` - Warnings, for example of admission policies with `action = "warn"`.
-- `Regions` - With `Regions` in the request: one result per region (`Region`, `Release`, `Revision`,
-  `Changes`, `Warnings`, `Error`), in the order the regions were applied.
 
 ### One manager per release
 
@@ -271,25 +263,12 @@ release "web" is managed by pack: rigger takes it over only when asked to (adopt
 the other manager is the one refused. A rollback to a revision of the other manager needs `Adopt`
 too. Uninstalls and tests are open to both.
 
-### Several regions in one request
+### One region per release
 
-A release lives in a region, and **Rigger installs a release in one region**: for several regions it
-takes one install, or one stack, per region. The endpoint itself also takes `Regions`: the region
-that receives the request sends the release to the leader of every region in turn and answers with
-one result per region. Each region applies it as a release operation of its own, with its own
-release object, revisions, atomic mode, hooks and drift detection; `Spec.Multiregion` of every
-release records the regions and the global region.
-
-- **Global resources** (namespaces, quotas, ACL policies) are applied and owned only by the release
-  of the global region: the authoritative region if it is one of the regions, otherwise the first
-  one given. The other regions show them as `remote` in their changes and wait, up to a minute,
-  until the replicated copies match.
-- **A job with a `multiregion` block** is registered by the release of the first region of the
-  request that the job lists; the releases of the other listed regions adopt their copy.
-- **A failure in one region** does not affect the releases of the other regions. The request fails
-  only if every region failed.
-- `Regions` can't be combined with `RecordOnly`.
-- The token must be valid in every region.
+**A release lives in a region**, and an apply installs it in the region of the request. For several
+regions, install it once per region (one install, or one stack, per region). A job with a
+`multiregion` block in a release is registered through the job endpoint as any job is, and its
+deployment goes to the regions it lists.
 
 ### One owner per release
 
@@ -334,7 +313,7 @@ This endpoint lists the kept revisions of a release, newest first.
 | `YES`            | object `read` on `rigger.norca.io/Release` |
 
 Each revision has `Namespace`, `Release`, `Revision`, `Spec` (`Action`, `RollbackOf`, `Pack`,
-`Description`, `Values`, `ValuesHash`, `InputDigest`, `Owner`, `VariablesSchemas`, `Multiregion`,
+`Description`, `Values`, `ValuesHash`, `InputDigest`, `Owner`, `VariablesSchemas`,
 `Resources`, `User`, `CreateTime`) and `Status` (`Phase`: `pending`, `deployed`, `superseded` or `failed`; `Message`,
 `Hooks`).
 
