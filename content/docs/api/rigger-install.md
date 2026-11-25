@@ -1,11 +1,12 @@
 ---
 title: "Rigger Installs HTTP API"
 linkTitle: "Rigger Installs"
-description: "The servers install one module with Rigger: a module of a synced registry, fetched and verified by the servers, or a local module sent as files; and they answer what an install form needs of a version."
+description: "The servers install one module with Rigger: a module of a synced registry, fetched and verified by the servers, a module built into the servers, or a local module sent as files; and they answer what an install form needs of a version."
 ---
 
 The servers can **evaluate and install a module themselves** with Rigger, the package manager: a module
-of a [synced registry](/docs/api/rigger-registries), or a local module sent as files. The release is
+of a [synced registry](/docs/api/rigger-registries), a module built into the servers, or a local module
+sent as files. The release is
 applied through the [release API](/docs/api/releases) with the caller's token, so every check of a
 release write holds (ACL, admission, the release lock). The Go client is `client.Rigger()` in
 `github.com/bacanoo-io/norca/norca/api`.
@@ -18,7 +19,7 @@ release write holds (ACL, admission, the release lock). The Go client is `client
 
 | Blocking Queries | ACL Required |
 | --- | --- |
-| `NO` | object `write` on `rigger.norca.io/Release` in the namespace; for a module of a registry also object `read` on `rigger.norca.io/Registry`, and read on the Variable of its `authSecret` |
+| `NO` | object `write` on `rigger.norca.io/Release` in the namespace; for a module of a registry (not a built-in one) also object `read` on `rigger.norca.io/Registry`, and read on the Variable of its `authSecret` |
 
 The install runs on the leader and **waits until the release is ready**, as an install of the `rigger`
 program does. With the query parameter `plan=true` it returns what an apply would do and applies
@@ -28,7 +29,7 @@ meets is refused.
 | Field | Meaning |
 | --- | --- |
 | `Release` | The name of the release. The namespace is the namespace of the request. |
-| `Registry`, `Module`, `Version` | A module of a synced registry: `<namespace>/<name>` in the global registry, `<name>` in a registry repository; `Version` is a version constraint (`~> 1.2`), the newest when empty. |
+| `Registry`, `Module`, `Version` | A module of a synced registry: `<namespace>/<name>` in the global registry, `<name>` in a registry repository; `Version` is a version constraint (`~> 1.2`), the newest when empty. `Module` `builtin/<name>` with an empty `Registry` is a module built into the servers; `Version` is then checked against the one version they have. |
 | `Files` | A local module sent as files instead (base64 in JSON): the archive that `rigger` makes of a module directory (`Module.Archive` of the Go library). No registry then. |
 | `Values`, `ValuesJSON` | The values of the variables: a values file (HCL), or the same as one JSON object, a member per variable, as a form sends them (`"ValuesJSON": {"count": 2}`). Both give the same values, so the same release. One of them at most. |
 | `Adopt` | Take over a release that another manager applied or a stack owns. Without it such an install is refused (409); a plan warns of it. |
@@ -45,6 +46,14 @@ and a registry never synced offers nothing (409). The servers fetch the version 
   version installs, and the answer warns that it is unsigned.
 
 Its release is admitted as **rendered by the servers** (`serverRendered` in the admission input).
+
+**A built-in module** (`"Module": "builtin/redis"`, no `Registry`) is the one the servers ship, of its
+one version. A `Version` constraint it does not meet is refused (400), and a name the servers do not
+have gets 404. It needs no signature and no registry, so a release write is all the ACL it needs. Its
+release records the source `builtin/<name>` and no registry, and it is admitted as **rendered by the
+servers**.
+
+A `Module` that is not `builtin/<name>` and has no `Registry` is refused (400).
 
 **A local module** installs with nothing more than a release write: the `rigger` program can apply the
 same module with the same token in its standalone mode. Its release records the source `local`, and it
@@ -72,6 +81,15 @@ $ curl -X PUT -H "X-Nomad-Token: $TOKEN" "https://localhost:4646/v1/rigger/insta
 
 `Action` is `install`, `upgrade` or `unchanged`; after an apply `Revision` is the revision of the
 release.
+
+A built-in module, planned:
+
+```shell-session
+$ curl -X PUT -H "X-Nomad-Token: $TOKEN" "https://localhost:4646/v1/rigger/install?plan=true" \
+    -d '{"Release": "cache", "Module": "builtin/redis", "Version": ">= 0.4"}'
+```
+
+The [`rigger install`](/docs/commands/rigger/install) command sends these requests with `-server`.
 
 ## Read a version of a module
 

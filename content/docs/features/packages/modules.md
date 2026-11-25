@@ -232,4 +232,4 @@ as a part of another stack; see the [stacks API](/docs/api/rigger-stacks) and
 | Check, test and render a module | [`norca rigger module`](/docs/commands/rigger/module) |
 | Format the files | [`norca rigger fmt`](/docs/commands/rigger/fmt) |
 | Sync, plan and apply a stack | [`norca rigger stack`](/docs/commands/rigger/stack) |
-| Install one module of a directory | [`norca rigger install`](/docs/commands/rigger/install) |
+| Install one module, of a directory or by its source | [`norca rigger install`](/docs/commands/rigger/install) |

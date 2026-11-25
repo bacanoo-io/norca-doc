@@ -17,7 +17,7 @@ Usage: `norca rigger [flags] <command>`
 `norca rigger help` prints the commands with their arguments. The following commands are available:
 
 - [`rigger stack`](/docs/commands/rigger/stack) - Sync, validate, plan, apply, show, destroy and publish a stack
-- [`rigger install`](/docs/commands/rigger/install) - Install or upgrade one release of a module of a directory
+- [`rigger install`](/docs/commands/rigger/install) - Install or upgrade one release of a module: of a directory, or by its source
 - [`rigger release`](/docs/commands/rigger/release) - List, show, roll back and uninstall releases, without a stack
 - [`rigger operation`](/docs/commands/rigger/operation) - Follow, cancel and show an apply or a destroy the servers run
 - [`rigger registry`](/docs/commands/rigger/registry) - List, sync and search the registries of the cluster
@@ -88,6 +88,7 @@ A password in the environment without its `_HOST` is an error.
 
 ```shell
 $ norca rigger install ./my-module -name web
+$ norca rigger install builtin/redis -name cache
 $ norca rigger release status web
 $ norca rigger registry sync global
 $ norca rigger stack sync .

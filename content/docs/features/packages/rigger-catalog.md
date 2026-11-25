@@ -45,12 +45,17 @@ It is never loaded whole into the browser.
   never into a revision; the **CLI command** tab shows it as `<secret>`.
 - **A variable with a `secret { path, item }` block** is read by the job from the secret store at run
   time. The form takes no value for it and lists where the job reads it, so it can be put there first.
-- **Take over the release** is needed when the release name belongs to a release that the pack manager
+- **Take over the release** is needed when the release name belongs to a release that another manager
   applied or another stack owns. The plan says so; an install without it is refused.
 - **A version the cluster cannot run** (its `requires` names a Norca version or feature the cluster
   lacks) is shown with what is missing, and can't be installed.
+- **A conditional field** is shown only when its condition holds: `show_if` in the `ui` block of the
+  variable, a condition over the other variables written as a string (`show_if = "persistence_enabled"`,
+  `show_if = "job_type == \"service\""`). `rigger module validate` warns of a `show_if` that is not
+  such a condition, and the form then always shows the field.
 - The **CLI command** tab shows the same install as a call of the HTTP API. The `rigger` program
-  installs a module of a directory, not one of a registry by name.
+  installs the same module by its name: `norca rigger install <module> -registry <registry> -server`
+  (`norca rigger install <namespace>/<name> -server` for the global registry).
 
 ## Applying a stack
 

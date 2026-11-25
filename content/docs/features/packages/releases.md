@@ -476,7 +476,7 @@ in detail in the [Releases HTTP API](/docs/api/releases).
 
 | Command | Purpose |
 | --- | --- |
-| [`norca rigger install`](/docs/commands/rigger/install) | Install or upgrade one release of a module of a directory |
+| [`norca rigger install`](/docs/commands/rigger/install) | Install or upgrade one release of a module, of a directory or by its source |
 | [`norca rigger stack apply`](/docs/commands/rigger/stack) | Install, upgrade and prune the releases of a stack |
 | [`norca rigger stack plan`](/docs/commands/rigger/stack) | Show what an apply would change |
 | [`norca rigger stack status`](/docs/commands/rigger/stack) | Show the releases of a stack, their revision and drift |
