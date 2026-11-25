@@ -21,11 +21,11 @@ vulnerability").
 Please include:
 
 - the Norca version (`norca version`) and the platform,
-- the affected component (agent, CLI, HTTP API, web UI, a pack of the
-  [pack registry](https://github.com/bacanoo-io/norca-registry), ...),
+- the affected component (agent, CLI, HTTP API, web UI, a module of the
+  [Norca registry](https://github.com/bacanoo-io/norca-registry), ...),
 - the steps to reproduce, and the impact you expect.
 
-Issues of the pack registry can be reported the same way on
+Issues of the Norca registry can be reported the same way on
 [github.com/bacanoo-io/norca-registry](https://github.com/bacanoo-io/norca-registry/security).
 
 ## Scope

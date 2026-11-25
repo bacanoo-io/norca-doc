@@ -9,7 +9,7 @@ The `admission-policy` command is used to manage
 every job submitted with `norca job run` or checked with `norca job plan` in a
 matching namespace must satisfy. Policies that select the `variable` resource
 also apply to Variables writes, and policies that select the `release` resource
-to pack releases. See [dynamic admission control](/docs/features/admission-control).
+to releases. See [dynamic admission control](/docs/features/admission-control).
 
 ## Usage
 

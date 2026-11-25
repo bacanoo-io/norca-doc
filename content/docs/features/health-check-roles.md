@@ -82,7 +82,7 @@ stateDiagram-v2
 
 ## Example
 
-Checks in the style of the `test-app` pack of the [deployment examples](/docs/getting-started/examples):
+Checks in the style of the `test-app` module of the [deployment examples](/docs/getting-started/examples):
 
 ```hcl
 service {

@@ -189,7 +189,7 @@ $ nats --server tls://server1.eu:4649 --tlsca ca.pem --user "$TOKEN" \
 
 ## Through a leaf node
 
-A NATS server outside the cluster (the [`nats` pack](/docs/features/packages/registry#nats),
+A NATS server outside the cluster (the [`nats` module](/docs/features/packages/registry#nats),
 an edge site, the NATS of another system) attaches to the bus as a **leaf
 node** and receives the changes of its token's `cdc` rule. **Only the leaf
 holds a Norca token**; its applications connect to it with their own users.
@@ -237,7 +237,7 @@ fetches and acknowledgements of its own consumers.
    }
    ```
 
-   The `nats` pack does this with `norca_bus_leaf = true` and the secret
+   The `nats` module does this with `norca_bus_leaf = true` and the secret
    `norca/bus/leaf` (items `token` and `ca`).
 
 **What the leaf receives:**

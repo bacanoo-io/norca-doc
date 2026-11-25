@@ -1,11 +1,11 @@
 ---
 title: "Rigger stacks"
-description: "`apply` can apply one stack of Rigger modules after the packs, with norca rigger on the first server or a rigger program on the operator machine."
+description: "`apply` can apply one stack of Rigger modules after the cluster is up, with norca rigger on the first server or a rigger program on the operator machine."
 weight: 10
 origin: "norca-deployer/doc/rigger.md"
 ---
 
-[Rigger](https://github.com/bacanoo-io/norca/tree/main/rigger) is the package manager of Norca: modules written in HCL, deployed as a stack with a lock file of versions and digests. `apply` can apply one Rigger stack after the packs, so a new cluster comes with its base services from modules.
+[Rigger](https://github.com/bacanoo-io/norca/tree/main/rigger) is the package manager of Norca: modules written in HCL, deployed as a stack with a lock file of versions and digests. `apply` can apply one Rigger stack after the cluster is up, so a new cluster comes with its base services from modules.
 
 ```yaml
 rigger:
@@ -15,6 +15,7 @@ rigger:
   prune: true                                  # destroy releases removed from the stack
   run_on: server                               # server (default) | local
   mode: embedded                               # embedded (default) | standalone
+  sync_registries: [global]                    # registries the servers sync before the apply
 ```
 
 The same in HCL:
@@ -44,6 +45,8 @@ rigger:
     }
 ```
 
+The section also holds the GitOps bindings (`rigger.gitops`), which apply stacks of Git repositories; it may hold them alone, without a stack of the plan. See [GitOps](/docs/deployer/gitops).
+
 ## Where the program runs, and who applies
 
 The stack is applied with the command `stack apply` of Rigger. Two settings choose how:
@@ -60,9 +63,31 @@ The stack is applied with the command `stack apply` of Rigger. Two settings choo
 
 The four combinations work. The deployer always gives `-server` or `-server=false`, so `RIGGER_SERVER` of an environment never chooses.
 
+## Modules of a registry
+
+With `embedded` the servers fetch the modules of the stack, and they fetch only from a registry they have synced: its modules are what it offered at the commit of its last sync. A new cluster has synced none, so a stack with a module of the global registry (`source = "norca/nats"`) stops there:
+
+```text
+Unexpected response code: 409 (the registry "global" has not been synced: sync it first (rigger registry sync global))
+```
+
+`sync_registries` names the registries the servers sync before the stack is applied, in the order of the list:
+
+```yaml
+rigger:
+  stack: stacks/platform
+  sync_registries: [global]
+```
+
+- `global` is the global registry, which every cluster has. Another name is a registry of the cluster (an object of the kind `rigger.norca.io/Registry`), which must exist: the deployer does not create it.
+- The program runs `registry sync <name>` for each name where it runs (`run_on`), against the region of the first server. A sync that fails stops the apply, before the stack is sent.
+- The registries are synced at every apply, so the servers move to what a registry offers now. The versions of the stack do not move with it: its lock file names them.
+- A stack of `builtin/` modules and of modules of its own directory needs no registry.
+- With `standalone` the program fetches the modules itself, and the key is refused.
+
 ## What happens
 
-In the post-cluster stage, after the packs and before GitOps.
+In the post-cluster stage, after the secrets and the node scaling Variables and before GitOps.
 
 With `run_on: server`:
 
@@ -102,6 +127,7 @@ Without it the apply of a cluster of the region `eu` stops with `Unexpected resp
 
 ## Notes
 
+- **Secrets come first.** The secrets and Variables a module reads are written before the stack is applied: put them into `secrets.bootstrap` (generated or encrypted, see [Bootstrap secrets](/docs/deployer/secrets-and-policies)), not into the values of the stack as plain text. The namespace `norca-system` of the operator modules exists by then too.
 - **Modules are fetched where the program runs**, also with `embedded`: the program loads the stack with the modules its lock file names before it sends it. With `run_on: server` that is the first server, which must reach the Git and OCI sources of the stack; its cache is the cache directory of the user the commands of the deployer run as there (`~/.cache/rigger`). With `embedded` the servers fetch the modules too. `builtin/<name>` modules ship inside Norca and Rigger.
 - A stack in a directory (`stack`) uses its own `rigger.lock.hcl`; run `rigger stack sync` (or `norca rigger stack sync`) there and commit the lock before `apply`.
 - `vars` are arguments of the program, visible in the process list of the machine it runs on: no secrets in them. A value file is copied to the first server as a private file and removed with the copy.

@@ -1,7 +1,7 @@
 ---
 title: "Norca Deployer"
 linkTitle: "Deployer"
-description: "Install and maintain Norca clusters from a declarative plan: servers and clients over SSH, rolling restarts, TLS and ACLs, packages, packs and secrets."
+description: "Install and maintain Norca clusters from a declarative plan: servers and clients over SSH, rolling restarts, TLS and ACLs, packages, Rigger stacks and secrets."
 weight: 9
 origin: "norca-deployer/README.md"
 ---
@@ -20,10 +20,9 @@ A single-binary installer and lifecycle tool for [Norca](https://github.com/baca
 - **Tuning:** sysctl, kernel modules and log rotation.
 - **Node labels and resources:** meta labels and node class (with cluster-wide `client_defaults`), node pools, host networks, reserved resources, drain on shutdown, the dynamic port range (kept in step with the firewall), and `extra_hcl` for other agent settings.
 - **Node lifecycle:** new nodes are installed by adding them to the plan; `inventory.decommission` drains or removes nodes from Raft and uninstalls them. A list of installed nodes stops an apply when a node was only deleted from the plan.
-- **Bootstrap secrets and policies:** after the cluster is up, the namespaces (always `norca-system`, where the operator packs run and keep their tokens, and those of the plan), secrets of the built-in secret store and Variables (plain, encrypted, from files, or generated once: passwords, NATS NKeys) and ACL policies bound to jobs.
-- **Packs:** creates pack registries and installs packs with the server-side `deploy-pack`. A pack is deployed again only when its settings changed.
+- **Bootstrap secrets and policies:** after the cluster is up, the namespaces (always `norca-system`, where the operator modules run and keep their tokens, and those of the plan), secrets of the built-in secret store and Variables (plain, encrypted, from files, or generated once: passwords, NATS NKeys) and ACL policies bound to jobs.
 - **Rigger stacks:** applies a stack of Rigger modules with `norca rigger stack apply` on the first server, which sends it to the servers to apply; or with a `rigger` program on the operator machine, against the cluster API served on a local port through the first server.
-- **GitOps:** deploys packs straight from Forgejo, Gitea, GitHub and GitLab repositories, read into memory: once with `gitops run`, on every `apply`, and on every push with the `gitops daemon` webhook listener (HMAC-verified, debounced). Bindings can require a signed commit or tag.
+- **GitOps:** applies Rigger stacks straight from Forgejo, Gitea, GitHub and GitLab repositories, read into memory: once with `gitops run`, on every `apply`, and on every push with the `gitops daemon` webhook listener (HMAC-verified, debounced). The servers plan the stack and apply it as an operation that the deployer follows; a binding that applies requires a signed commit or tag, one that only plans does not.
 - **SSH host keys:** trust on first use (`tofu`), `strict` or `off`.
 
 ## Build
@@ -147,7 +146,6 @@ NORCA_E2E_SSH=127.0.0.1:2222 NORCA_E2E_USER=deploy NORCA_E2E_PASSWORD=... \
   {{< card link="node-labels-and-pools" title="Node labels and pools" icon="tag" >}}
   {{< card link="adding-and-removing-nodes" title="Adding and removing nodes" icon="switch-horizontal" >}}
   {{< card link="secrets-and-policies" title="Secrets and ACL policies" icon="key" >}}
-  {{< card link="packs" title="Packs" icon="archive" >}}
   {{< card link="rigger" title="Rigger stacks" icon="cube" >}}
   {{< card link="gitops" title="GitOps" icon="code" >}}
   {{< card link="multi-datacenter" title="Several datacenters" icon="server" >}}
@@ -169,10 +167,10 @@ flowchart LR
     end
     Engine -- "SSH / SFTP" --> S1["Server nodes"]
     Engine -- "SSH / SFTP" --> C1["Client nodes"]
-    Engine -- "norca CLI on the first server" --> API["Norca HTTP API<br/>ACL bootstrap, packs"]
+    Engine -- "norca CLI on the first server" --> API["Norca HTTP API<br/>ACL bootstrap, secrets, Rigger stack"]
 ```
 
 - **Plan:** one file per region. YAML and HCL use the same keys.
-- **Engine:** validates the plan, prepares every node in parallel, restarts what changed in a safe order and finishes with ACL bootstrap and packs.
+- **Engine:** validates the plan, prepares every node in parallel, restarts what changed in a safe order and finishes with the post-cluster tasks: ACL bootstrap, secrets, the Rigger stack and GitOps.
 - **Transport:** native Go SSH and SFTP. On Linux, `become` runs commands through `sudo`; on Windows, commands run as PowerShell.
 - **Local state:** the CA, the gossip key, the ACL management token, trusted host keys and downloaded artifacts live next to the plan file.

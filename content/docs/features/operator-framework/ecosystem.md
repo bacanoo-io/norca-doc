@@ -2,53 +2,54 @@
 title: "Operator ecosystem"
 linkTitle: "Ecosystem"
 weight: 4
-description: "Operator packs, admission webhooks bound to a kind, schema versions with CEL migrations, per-kind limits, and offline checks with norca object-kind lint."
+description: "Operator modules, admission webhooks bound to a kind, schema versions with CEL migrations, per-kind limits, and offline checks with norca object-kind lint."
 ---
 
 The tools on this page help when operators are written and installed by teams
 other than the cluster administrators: packaging, validation that needs code,
 evolving schemas, and protection of the servers from a misbehaving controller.
 
-## Operator packs
+## Operator modules
 
-There is no separate operator format: an operator is a pack of the
-[extended pack format](/docs/features/packages/releases). One release installs,
+There is no separate operator format: an operator is a
+[module](/docs/features/packages/modules) of Rigger. One release installs,
 upgrades, rolls back and uninstalls everything the operator needs, in a fixed
 order: the ACL policy, the object kind (with its webhooks, schema version,
 migration and limits), admission policies, custom objects, and the controller
 job. Uninstalling runs in the reverse order.
 
-The reference operator pack is `loadbalancer-operator` in the
-[Norca pack registry](https://github.com/bacanoo-io/norca-registry):
+The reference operator module is `loadbalancer-operator` in the
+[Norca registry](https://github.com/bacanoo-io/norca-registry):
 
-| Template | Resource |
+| File | Resource |
 | --- | --- |
-| `controller.acl.hcl.tpl` | ACL policy bound to the controller job (`job_acl`): jobs, the proxy jobs' Variables, the leases, the `norca.io/LoadBalancer` objects, and reading the `norca.io/LoadBalancerClass` objects and the token Variables of the providers |
-| `loadbalancer.kind.hcl.tpl` | The kind: JSON Schema with defaults, a CEL transition rule, display columns, optional webhooks, limits |
-| `loadbalancerclass.kind.hcl.tpl` | The LoadBalancerClass kind the providers register with (`class_kind_enabled`, on by default): endpoint, token Variable, capabilities, parameters, `status.heartbeat` |
-| `service-marks.admission.hcl.tpl` | Admission policy: services marked with `norca_lb_port` must name a valid port (optional) |
-| `controller.nomad.tpl` | The controller job (two instances with leader election) and the optional webhook task |
+| `controller.acl.hcl` | ACL policy bound to the controller job (`job_acl`): jobs, the proxy jobs' Variables, the leases, the `norca.io/LoadBalancer` objects, and reading the `norca.io/LoadBalancerClass` objects and the token Variables of the providers |
+| `load-balancer.kind.hcl` | The kind: JSON Schema with defaults, a CEL transition rule, display columns, optional webhooks, limits |
+| `load-balancer-class.kind.hcl` | The LoadBalancerClass kind the providers register with (`class_kind_enabled`, on by default): endpoint, token Variable, capabilities, parameters, `status.heartbeat` |
+| `service-marks.admission.hcl` | Admission policy: services marked with `norca_lb_port` must name a valid port (optional) |
+| `controller.norca.hcl` | The controller job (two instances with leader election) and the optional webhook task |
 
-The operator packs of the registry run their jobs in the namespace
-`norca-system` by default, which they expect and don't create, and keep off
-nodes with the `raw_exec` driver (see
-[operator packs](/docs/features/packages/registry#packs)):
+The operator modules of the registry run their jobs in the namespace of
+their release, `norca-system`, which they expect and don't create, and keep
+off nodes with the `raw_exec` driver (see
+[operator modules](/docs/features/packages/registry#operator-modules)). From a
+checkout of the registry:
 
 ```shell
 $ norca namespace apply -description "Norca operators" norca-system
-$ norca pack plan ./packs/loadbalancer-operator
-$ norca pack run ./packs/loadbalancer-operator --name=lb
-$ norca pack status lb
-$ norca pack uninstall lb
+$ norca rigger module validate ./modules/loadbalancer-operator
+$ norca rigger install ./modules/loadbalancer-operator -name lb -namespace norca-system
+$ norca rigger release status lb -namespace norca-system
+$ norca rigger release uninstall lb -namespace norca-system
 ```
 
-The pack states what it needs from the servers in `metadata.hcl`, and the
+The module states what it needs from the servers in `metadata.hcl`, and the
 servers reject the release if they can't provide it:
 
 ```hcl {filename="metadata.hcl"}
-pack {
+module {
   name    = "loadbalancer-operator"
-  version = "0.1.0"
+  version = "0.5.0"
 
   requires {
     norca    = ">= 0.1.0"
@@ -134,7 +135,7 @@ return webhook.ListenAndServeTLS(ctx, ":8443", "cert.pem", "key.pem", mux)
 ```
 
 - Webhooks are called over **https only**. The CA comes from the kind
-  (`ca_cert`, usually provided by the pack); without it the system roots are
+  (`ca_cert`, usually provided by the module); without it the system roots are
   used. No client certificate is sent.
 - **Failure policy:** with `fail` (the default), a write fails with `403` when
   the webhook can't be called, returns an invalid response, or is not approved.

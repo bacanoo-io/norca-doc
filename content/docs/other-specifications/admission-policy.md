@@ -1,11 +1,11 @@
 ---
 title: "Admission Policy Specification"
-description: "The HCL format of Norca admission policies: CEL rules that jobs, Variables writes and pack releases must satisfy."
+description: "The HCL format of Norca admission policies: CEL rules that jobs, Variables writes and releases must satisfy."
 ---
 
 Admission policies are cluster objects with CEL rules that are checked when a
 job is registered or planned, and optionally when Variables are written or a
-pack release is applied (see [dynamic admission control](/docs/features/admission-control)).
+release is applied (see [dynamic admission control](/docs/features/admission-control)).
 They are written as HCL files and submitted with
 [`norca admission-policy apply`](/docs/commands/admission-policy/apply). A file
 with the `.json` extension, or `-json`, is read in the JSON form of the
@@ -53,7 +53,7 @@ rule {
   namespace, if that Variable exists. Requires the `variable` resource.
 
 - `trusted_keys` `(array<string>: [])` - PEM encoded public keys (cosign format),
-  up to 32. A release is admitted only if its pack has a valid signature of its
+  up to 32. A release is admitted only if its module has a valid signature of its
   digest by one of the keys; the servers verify the signatures themselves.
   Requires the `release` resource. See
   [signatures in protected namespaces](/docs/features/packages/releases#signatures-in-protected-namespaces).
@@ -90,7 +90,7 @@ expression that does not compile, or does not return a boolean, is rejected.**
 | `job` | The job in its API JSON form (`job.ID`, `job.Namespace`, `job.Meta`, `job.TaskGroups[*].Tasks[*].Driver`, `.Config`, ...) | `null` | `null` |
 | `variable` | `null` | The written Variable: `namespace`, `path`, `items`, `create_index`, `modify_index` (no `items` for a delete) | `null` |
 | `oldVariable` | `null` | The Variable it replaces or deletes, or `null` | `null` |
-| `release` | `null` | `null` | The release with its pack (name, version, registry, digest, signer, signed) |
+| `release` | `null` | `null` | The release with its package, `release.pack` (name, version, registry, digest, signer, signed, serverRendered) |
 | `request` | `resource` (`job`), `operation` (`register` or `plan`), `namespace`, `user`, `secrets` | `resource` (`variable`), `operation` (`set` or `delete`), `cas`, `namespace`, `path`, `user` | see [releases](/docs/features/packages/releases) |
 
 `request.user` describes the submitter: `accessor_id`, `name`, `type`

@@ -26,7 +26,7 @@ identities, CSI and host volumes, federation of regions and the HTTP API. On top
 | Networking | [Service discovery without Consul](/docs/features/service-discovery) (catalog, DNS, Consul-compatible API), [native mTLS](/docs/features/native-mtls) |
 | Extensibility | [Operator framework](/docs/features/operator-framework) with custom object kinds, [event stream extensions](/docs/features/event-stream), [system bus](/docs/features/system-bus) |
 | Data | [Embedded secret store](/docs/features/secrets), [backup and restore](/docs/features/backup-restore) |
-| Delivery | [Package management](/docs/features/packages) with `norca pack`, releases and the pack registry |
+| Delivery | [Package management](/docs/features/packages) with Rigger (`norca rigger`): modules, stacks, releases and the Norca registry |
 | Interface | A new [web UI](/docs/features/web-ui) |
 
 Several of these features take their idea from Kubernetes; their design and implementation are Norca's

@@ -164,7 +164,7 @@ zoom and pan, a node search that drills down to the node, state filters and a li
 | --- | --- |
 | Region map | Where does work run, and where is there pressure or change right now? |
 | Activity | What happened? The event stream as a filterable table with names, pause and resume. |
-| Ownership tree | What did this pack or operator create, and is it healthy? Release → resources → custom objects → owned jobs and objects → allocations. |
+| Ownership tree | What did this release or operator create, and is it healthy? Release → resources → custom objects → owned jobs and objects → allocations. |
 | Node lifecycle | How did each node of a node group get here? One lane per instance: requested, joined, running, replaced, drained, deleted. |
 
 They update from the existing event stream connection; metrics are polled at the store's sample interval.

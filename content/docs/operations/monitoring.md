@@ -1,7 +1,7 @@
 ---
 title: "Monitoring and observability"
 linkTitle: "Monitoring and observability"
-description: "Agent telemetry and Prometheus metrics, the Norca metric families, and an OpenTelemetry Collector and OpenObserve stack from the Norca pack registry."
+description: "Agent telemetry and Prometheus metrics, the Norca metric families, and an OpenTelemetry Collector and OpenObserve stack from the Norca registry."
 weight: 3
 ---
 
@@ -9,8 +9,8 @@ Norca agents report the runtime metrics of Nomad v1.6.5 and the metrics of
 the Norca features through the agent's [`telemetry` block](/docs/configuration/telemetry).
 This page shows how to expose them to Prometheus, which Norca metrics to
 watch, and how to run a complete metrics, traces and logs pipeline with the
-`otel-collector` and `openobserve` packs of the
-[Norca pack registry](/docs/features/packages/registry). The metrics
+`otel-collector` and `openobserve` modules of the
+[Norca registry](/docs/features/packages/registry). The metrics
 themselves are described in [Monitoring Norca agents](/docs/operations/monitoring-nomad)
 and the [Metrics reference](/docs/operations/metrics-reference).
 
@@ -99,17 +99,17 @@ of the servers overflowed.
 
 ## A metrics, traces and logs stack from the registry
 
-The Norca pack registry has two packs for a self-hosted observability stack:
+The Norca registry has two modules for a self-hosted observability stack:
 
 - **otel-collector**: the OpenTelemetry Collector (Apache-2.0) as a system
   job, one collector per node. It scrapes the host, the local Norca agent and
-  the instances of other registry packs on the same node (NATS, Forgejo, the
+  the instances of other registry modules on the same node (NATS, Forgejo, the
   mTLS gateway, Consul, PostgreSQL), found through the native service catalog,
   and receives OTLP traces, metrics and logs from the applications of the node.
 - **openobserve**: [OpenObserve](https://openobserve.ai) as the backend for
   logs, metrics and traces, in single mode (one instance, SQLite, a host
   volume) or cluster mode (PostgreSQL, NATS and an S3 store). OpenObserve is
-  AGPL-3.0 software; the pack only references its official image, Norca does
+  AGPL-3.0 software; the module only references its official image, Norca does
   not ship it.
 
 ```mermaid
@@ -132,7 +132,7 @@ flowchart LR
 ```
 
 The collector authenticates to OpenObserve with ingest credentials that the
-openobserve pack's bootstrap task writes into the built-in secret store, and
+openobserve module's bootstrap task writes into the built-in secret store, and
 by default verifies OpenObserve's workload certificate against the trust
 bundle of the region (native mTLS app mode).
 
@@ -168,11 +168,17 @@ sudo install -d -m 700 /srv/openobserve
 
 ### Deploy OpenObserve
 
+The servers install both modules from the global registry, into the namespace
+of the request:
+
 ```shell
 norca namespace apply -description "Observability" observability
 norca secret put -namespace observability openobserve/root password=-   # 8+ chars: upper, lower, digit, special
-norca pack run openobserve --registry=norca --namespace=observability \
-  --var namespace=observability --var tls_mode=none
+norca rigger registry sync global
+norca operator api -namespace observability -X PUT /v1/rigger/install <<'EOF'
+{"Release": "openobserve", "Registry": "global", "Module": "norca/openobserve", "Version": "~> 0.2",
+ "ValuesJSON": {"tls_mode": "none"}}
+EOF
 norca alloc logs -namespace observability -task bootstrap <alloc ID>     # "ingest credentials ... stored"
 ```
 
@@ -183,24 +189,30 @@ certificates:
 
 ```shell
 norca secret put -namespace observability norca/agent-ca ca=@/etc/norca.d/tls/norca-agent-ca.pem
-norca pack run otel-collector --registry=norca --namespace=observability \
-  --var namespace=observability --var openobserve_tls=none \
-  --var nomad_address=https://127.0.0.1:4646 --var nomad_ca_secret_path=norca/agent-ca \
-  --var 'discovery_namespaces=["default","apps"]'
+norca operator api -namespace observability -X PUT /v1/rigger/install <<'EOF'
+{"Release": "otel-collector", "Registry": "global", "Module": "norca/otel-collector", "Version": "~> 0.1",
+ "ValuesJSON": {"openobserve_tls": "none", "nomad_address": "https://127.0.0.1:4646",
+                "nomad_ca_secret_path": "norca/agent-ca", "discovery_namespaces": ["default", "apps"]}}
+EOF
 ```
 
 `discovery_namespaces` lists the namespaces whose services the collectors
 look for.
 
-### Turn on the metrics of other packs
+### Turn on the metrics of other modules
 
-Packs that have no Prometheus endpoint of their own get an exporter or push
-OTLP when their `metrics_enabled` variable is set:
+Modules that have no Prometheus endpoint of their own get an exporter or push
+OTLP when their `metrics_enabled` variable is set. Installing a release again
+with the value added upgrades it. For releases installed from a checkout of
+the registry:
 
 ```shell
-norca pack upgrade nats --registry=norca --name=nats -f nats.hcl --var metrics_enabled=true
-norca pack upgrade rustfs --registry=norca --name=rustfs -f rustfs.hcl --var metrics_enabled=true
+norca rigger install <checkout>/modules/nats -name nats -f nats.hcl -var metrics_enabled=true
+norca rigger install <checkout>/modules/rustfs -name rustfs -f rustfs.hcl -var metrics_enabled=true
 ```
+
+For a release the servers installed from the global registry, send its
+request again with `"metrics_enabled": true` among the values of `ValuesJSON`.
 
 ### Open the UI
 
@@ -211,7 +223,7 @@ organization `default` within a minute.
 {{% /steps %}}
 
 With native mTLS (the [three-node example](/docs/getting-started/examples/03-three-node)),
-leave out `tls_mode=none` and `openobserve_tls=none`: OpenObserve then serves
+leave out `tls_mode` and `openobserve_tls`: OpenObserve then serves
 HTTPS with its workload certificate, and the collectors verify it.
 
 ### Applications
@@ -227,18 +239,18 @@ env {
 ```
 
 **The OTLP receiver has no authentication and no TLS: keep its ports on the
-private network** (`host_network` of the pack). Task logs written to stdout and
-stderr are not collected by the pack; send logs over OTLP, or read them with
+private network** (`host_network` of the module). Task logs written to stdout and
+stderr are not collected by the module; send logs over OTLP, or read them with
 `norca alloc logs`.
 
 ### Several regions
 
 Secrets, catalogs and workload certificates are regional. Deploy the stack in
-every region (`-region` with the CLI, `--region` with the packs), so the
+every region (`-region` with every command), so the
 collectors of a region export to the OpenObserve of that region; see the
 [multi-region example](/docs/getting-started/examples/04-multi-region).
 
-## Prometheus without the packs
+## Prometheus without the modules
 
 An existing Prometheus can scrape the agents directly at
 `/v1/metrics?format=prometheus`, and find the services of the cluster with its
@@ -252,6 +264,6 @@ of Norca.
 - [Monitoring Norca agents](/docs/operations/monitoring-nomad) and the
   [Metrics reference](/docs/operations/metrics-reference)
 - [Metrics HTTP API](/docs/api/metrics)
-- The [otel-collector](https://github.com/bacanoo-io/norca-registry/blob/main/packs/otel-collector/README.md)
-  and [openobserve](https://github.com/bacanoo-io/norca-registry/blob/main/packs/openobserve/README.md)
-  pack READMEs
+- The [otel-collector](https://github.com/bacanoo-io/norca-registry/blob/main/modules/otel-collector/README.md)
+  and [openobserve](https://github.com/bacanoo-io/norca-registry/blob/main/modules/openobserve/README.md)
+  module READMEs

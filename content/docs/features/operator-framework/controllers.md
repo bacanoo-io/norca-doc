@@ -323,7 +323,7 @@ $ norca acl policy apply -namespace default -job loadbalancer-controller \
 > blocking queries, which work the same way but with more requests. To use the
 > event stream, give the controller an ACL token of the same policy.
 
-The [operator pack](/docs/features/operator-framework/ecosystem#operator-packs)
+The [operator module](/docs/features/operator-framework/ecosystem#operator-modules)
 of an operator installs the kind, this policy and the job together.
 
 ## Where to run a controller
@@ -350,7 +350,7 @@ calls:
   objects belong to a region, and so does the controller.
 - **Give it the least privilege**: the policy bound to the job, as above.
 - **Keep it in a namespace of its own, off `raw_exec` nodes.** Put the job where only the
-  operators of the cluster write (the operator packs use `norca-system`), and
+  operators of the cluster write (the operator modules use `norca-system`), and
   keep it off nodes with the `raw_exec` driver with the constraint
   `${attr.driver.raw_exec}` `is_not_set`: a `raw_exec` task on the same node
   can read the workload identity token of the controller, and with it the

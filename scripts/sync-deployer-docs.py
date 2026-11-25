@@ -30,7 +30,7 @@ PAGES = [
     ('node-labels-and-pools.md', 'node-labels-and-pools', 7, 'Node labels and pools'),
     ('adding-and-removing-nodes.md', 'adding-and-removing-nodes', 8, 'Adding and removing nodes'),
     ('secrets-and-policies.md', 'secrets-and-policies', 9, 'Secrets and ACL policies'),
-    ('packs.md', 'packs', 10, 'Packs'),
+    ('rigger.md', 'rigger', 10, 'Rigger stacks'),
     ('gitops.md', 'gitops', 11, 'GitOps'),
     ('multi-datacenter.md', 'multi-datacenter', 12, 'Several datacenters'),
     ('multi-region.md', 'multi-region', 13, 'Multi-region'),
@@ -158,7 +158,7 @@ def main():
 
     cards = ['{{< cards >}}']
     icons = ['play', 'refresh', 'adjustments', 'shield-check', 'cube', 'globe-alt', 'tag', 'switch-horizontal',
-             'key', 'archive', 'code', 'server', 'globe', 'desktop-computer', 'cloud-upload']
+             'key', 'cube', 'code', 'server', 'globe', 'desktop-computer', 'cloud-upload']
     assert len(icons) == len(PAGES), 'one icon per page'
     descs = {}
     for src, slug, weight, link_title in PAGES:
@@ -171,7 +171,7 @@ def main():
 
     index = front_matter('Norca Deployer', 'Deployer', 9, 'norca-deployer/README.md',
                          'Install and maintain Norca clusters from a declarative plan: servers and clients over SSH, '
-                         'rolling restarts, TLS and ACLs, packages, packs and secrets.')
+                         'rolling restarts, TLS and ACLs, packages, Rigger stacks and secrets.')
     index += rewrite_links(readme).rstrip() + '\n\n## Documentation\n\n' + '\n'.join(cards) + '\n\n'
     index += '## Architecture in one picture\n' + rewrite_links(arch)
     write('_index.md', index)

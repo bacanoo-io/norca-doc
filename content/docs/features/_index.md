@@ -26,8 +26,8 @@ supports them ([version gate](/docs/introduction/compatibility#version-gate-of-t
 | Disruption budget | Available | [Disruption budget](/docs/features/disruption-budget) |
 | Health check roles (startup, readiness, liveness) | Available | [Health check roles](/docs/features/health-check-roles) |
 | Network rules, levels A and B (`NetworkPolicy`, cluster-level `AdminNetworkPolicy` with explicit deny, nftables in the allocation's network namespace) | Available | [Network rules](/docs/features/network-rules) |
-| Operator framework: custom object kinds and objects, controller SDK, lifecycle (finalizers, deletion modes, garbage collection), ecosystem (operator packs, webhooks, schema migrations, limits, `rigger operator init`, `norca object-kind lint`) | Available (phases 1–4, with the web UI pages) | [Operator framework](/docs/features/operator-framework) |
-| System bus: NATS with JetStream embedded in the servers; the event stream of each region and pack push notices on it | Available | [System bus](/docs/features/system-bus) |
+| Operator framework: custom object kinds and objects, controller SDK, lifecycle (finalizers, deletion modes, garbage collection), ecosystem (operator modules, webhooks, schema migrations, limits, `rigger operator init`, `norca object-kind lint`) | Available (phases 1–4, with the web UI pages) | [Operator framework](/docs/features/operator-framework) |
+| System bus: NATS with JetStream embedded in the servers; the event stream of each region on it | Available | [System bus](/docs/features/system-bus) |
 | Change data capture (CDC): the changes of a region delivered one way to outside systems through the system bus; namespace events with Job events without secrets, admin events by right, Consul KV changes without values; tokens and workload identities | Available | [Change data capture](/docs/features/change-data-capture) |
 | Certificates: TLS certificates for DNS names as objects (`Certificate`, `CertificateIssuer`), kept issued and renewed in the secret store by the servers; the issuing CA of the region or an external issuer; names allowed per namespace; revocation | Available | [Certificates](/docs/features/certificates) |
 | Certificates from ACME: public certificates from an ACME certificate authority such as Let's Encrypt through the operator `norca-acme`; HTTP-01 through the edge router, DNS-01 (wildcards) through the DNS zones of `norca-provider`; the operator never sees a private key | Available | [Certificates from ACME](/docs/features/certificates-acme) |
@@ -42,18 +42,18 @@ supports them ([version gate](/docs/introduction/compatibility#version-gate-of-t
 | Backup and restore: web UI | Available | [Web UI](/docs/features/web-ui) |
 | Service discovery without Consul: health-based catalog, built-in DNS, Consul-compatible read layer | Available (DNS and the compatibility layer are off by default) | [Service discovery](/docs/features/service-discovery) |
 | Service discovery without Consul: external services, Consul agent write endpoints | Available | [External services](/docs/features/service-discovery/external-services) |
-| Full Consul as an option (`consul` pack; Consul itself is BSL 1.1 and installed from its official release) | Available | [Consul pack](/docs/features/service-discovery/consul-pack) |
+| Full Consul as an option (`consul` module; Consul itself is BSL 1.1 and installed from its official release) | Available | [Consul module](/docs/features/service-discovery/consul-module) |
 | Native mTLS: per-region CA, SPIFFE workload certificates, `ServiceIntention` objects, Go library `api/mtls` | Available | [Native mTLS](/docs/features/native-mtls) |
 | Native mTLS: Envoy sidecar, upstreams, cross-region gateway | Available (tested against Envoy 1.39 and 1.40) | [Sidecar and gateway](/docs/features/native-mtls/sidecar-and-gateway) |
-| Package management: Norca Pack (`norca pack`), built on Nomad Pack v0.4.2 | Available | [Packages](/docs/features/packages) |
-| Norca pack registry (`nats`, `mtls-gateway`, `rustfs`, `consul`, `loadbalancer-operator`, `openobserve`, `otel-collector`, `postgres`, `forgejo`) | Available | [Pack registry](/docs/features/packages/registry) |
-| Package management: OCI registries, signing and trust policies, offline bundles, `pack.lock` | Available | [Supply chain](/docs/features/packages/supply-chain) |
-| Package management: server-side releases, signature enforcement in admission, variable constraints, rules and schemas, multi-region installs | Available | [Releases](/docs/features/packages/releases) |
-| Package management: cluster pack registries, catalog and install form in the web UI, server-side render, private git and OCI sources, pack uploads, upgrades of CLI installs | Available | [Catalog and install form](/docs/features/packages/catalog) |
+| Package management: Rigger (`norca rigger`), modules written in typed HCL and stacks of modules | Available | [Packages](/docs/features/packages), [Modules and stacks](/docs/features/packages/modules) |
+| Norca registry of modules (`nats`, `mtls-gateway`, `rustfs`, `consul`, `traefik`, `forgejo`, `postgres`, `openobserve`, `otel-collector`, `seaweedfs`, `seaweedfs-csi`, and the operator modules `loadbalancer-operator`, `nodescaler-operator`, `norca-provider`, `norca-acme`, `norca-dns`), listed in the global registry of Rigger | Available | [Norca registry](/docs/features/packages/registry) |
+| Package management: the global registry, git and OCI sources, lock files, signing and trust, bundles | Available | [Supply chain](/docs/features/packages/supply-chain) |
+| Package management: server-side releases, signature enforcement in admission, hooks and tests, drift detection | Available | [Releases](/docs/features/packages/releases) |
+| Package management: registries of the cluster, catalog and install form in the web UI, installs and stacks evaluated by the servers, private git sources | Available | [Rigger catalog](/docs/features/packages/rigger-catalog) |
 | Embedded secret store: sealed keyring, versioned and audited secrets, `secret` block, Vault compatibility without a Vault | In progress (phases 0–4 available) | [Secret store](/docs/features/secrets) |
 | New web UI | Available (phases 1–4) | [Web UI](/docs/features/web-ui) |
 | Deployer: clusters on your own machines from a declarative plan (`norca-deployer`, a separate tool) | Available | [Deployer](/docs/features/deployer) |
-| Deployer GitOps: packs deployed from Forgejo, Gitea, GitHub and GitLab repositories, on demand, on `apply` and on webhooks, with optional signed commits and tags | Available | [GitOps](/docs/deployer/gitops) |
+| Deployer GitOps: Rigger stacks applied from Forgejo, Gitea, GitHub and GitLab repositories, on demand, on `apply` and on webhooks, from signed commits and tags | Available | [GitOps](/docs/deployer/gitops) |
 
 ## Kubernetes-inspired features
 

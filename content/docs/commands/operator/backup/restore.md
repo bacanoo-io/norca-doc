@@ -181,9 +181,10 @@ A full restore requires a management token, and ACLs must be enabled.
 
 - `-custom-object=<group>/<kind>/<name>`: Restore a custom object of the
   namespace: its spec, labels and owners; the status is left to its controller.
-  Its type definition must exist. The objects of `packs.norca.io` (pack
-  releases, cluster registries) can't be restored one by one, because they own
-  other resources; use a full restore. Can be given several times.
+  Its type definition must exist. The objects of the kinds
+  `rigger.norca.io/Release` and `rigger.norca.io/ReleaseRevision` (releases and
+  their revisions) can't be restored one by one, because they own other
+  resources; use a full restore. Can be given several times.
 
 - `-dry-run`: Only show what would be restored.
 

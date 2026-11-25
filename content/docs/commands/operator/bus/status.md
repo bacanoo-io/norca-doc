@@ -52,16 +52,15 @@ Started        = 2026-10-30T19:02:11Z
 JetStream
 Meta Leader  = norca-2.global
 Cluster Size = 3
-Streams      = 2
-Consumers    = 1
-Messages     = 4127
+Streams      = 1
+Consumers    = 0
+Messages     = 4125
 Memory       = 0 B of 256 MiB
 Storage      = 2.1 MiB of 4.0 GiB
 
 Streams
 Name                 Replicas  Leader          Messages  Size     Max Age  Max Bytes
 NORCA_EVENTS_global  3         norca-2.global  4125      2.1 MiB  72h0m0s  1.0 GiB
-NORCA_PACK_PUSHES    3         norca-2.global  2         412 B    24h0m0s  64 MiB
 
 Routes
 Server          Address         Direction  RTT

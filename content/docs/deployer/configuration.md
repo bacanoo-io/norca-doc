@@ -48,9 +48,8 @@ An unknown key or a block repeated where only one is allowed is an error.
 | `namespaces` | | Namespaces created after the cluster is up; `norca-system` is always created |
 | `node_scaling` | | The bootstrap and the network ranges for the node scaling operator |
 | `secrets` | | Secrets and Variables written after the cluster is up |
-| `packs` | | Pack registries and releases; `packs.gitops` holds GitOps bindings |
-| `rigger` | | A Rigger stack applied after the packs |
-| `gitops` | | GitOps bindings, the same as `packs.gitops` |
+| `rigger` | | A Rigger stack applied after the cluster is up; `rigger.gitops` holds GitOps bindings |
+| `gitops` | | GitOps bindings, the same as `rigger.gitops` |
 | `inventory` | | Servers and clients |
 
 ## metadata
@@ -199,7 +198,7 @@ Settings of the system bus of the servers (the embedded NATS). The deployer writ
 | `consul_kv_max_bytes` | `256MiB` | Size limit of the bucket of the Consul KV of the Consul-compatible API on the bus (`512MiB`, `1GiB`). A write beyond it fails; no key is dropped |
 | `leafnodes` | `false` | Turn on the leaf node listener of the servers (`ports.bus_leafnode`, 4652): NATS servers outside the cluster attach with an ACL token whose `cdc` rule has `leaf = true` and read the changes of the region, one way ([change data capture](/docs/features/change-data-capture#through-a-leaf-node)). With `apply_firewall_rules` the servers open the port to `firewall.leafnode_cidrs` (default `api_cidrs`) |
 
-The plan checks that the value is a size. Whether it fits into the storage of the bus (4 GiB by default) together with the events, the pack push notices and the usage reports is checked by Norca at start, which names what each takes. **Do not set a `bus` block in `server_settings.extra_hcl` as well**: the server block would have two. A changed value is a changed configuration: `apply` restarts the servers one by one ([How apply works](/docs/deployer/how-apply-works)). See the [`bus` block](/docs/configuration/bus) of Norca.
+The plan checks that the value is a size. Whether it fits into the storage of the bus (4 GiB by default) together with the events and the usage reports is checked by Norca at start, which names what each takes. **Do not set a `bus` block in `server_settings.extra_hcl` as well**: the server block would have two. A changed value is a changed configuration: `apply` restarts the servers one by one ([How apply works](/docs/deployer/how-apply-works)). See the [`bus` block](/docs/configuration/bus) of Norca.
 
 ```yaml
 bus:
@@ -219,7 +218,7 @@ See [Multi-region](/docs/deployer/multi-region).
 
 ## consul
 
-**Norca does not need Consul.** Without this section every agent gets `auto_advertise = false`, so it does not try to register itself in a Consul agent on `127.0.0.1:8500`. With it, the agents register in the Consul agent of their node, for example the one of the `consul` pack. The servers are always joined by the plan, never through Consul (`server_auto_join` and `client_auto_join` are always `false`).
+**Norca does not need Consul.** Without this section every agent gets `auto_advertise = false`, so it does not try to register itself in a Consul agent on `127.0.0.1:8500`. With it, the agents register in the Consul agent of their node, for example the one of the `consul` module. The servers are always joined by the plan, never through Consul (`server_auto_join` and `client_auto_join` are always `false`).
 
 | Key | Default | Description |
 | --- | --- | --- |
@@ -260,8 +259,8 @@ See [Host packages and scripts](/docs/deployer/host-packages-and-scripts).
 
 ## namespaces[]
 
-Namespaces `apply` creates after the cluster is up, before the secrets and the packs. The namespace
-`norca-system` of the operator packs is always created (description `Norca operators`); this list
+Namespaces `apply` creates after the cluster is up, before the secrets and the Rigger stack. The namespace
+`norca-system` of the operator modules is always created (description `Norca operators`); this list
 adds more, or lists `norca-system` to manage its description and meta. An existing namespace gets
 the description and meta of the plan and keeps its other settings; a namespace is never deleted.
 See [Namespaces](/docs/deployer/secrets-and-policies#namespaces).
@@ -271,26 +270,6 @@ See [Namespaces](/docs/deployer/secrets-and-policies#namespaces).
 | `name` | | Letters, digits and `-`, up to 128 characters; each name once |
 | `description` | | Up to 256 characters |
 | `meta` | | Key/value pairs |
-
-## packs
-
-`registry` (one) or `registries` (several) take the keys below.
-
-| Key | Default | Description |
-| --- | --- | --- |
-| `registry.name` | | Registry name in the cluster |
-| `registry.type` | `git` | `git`, `oci` or `dir` |
-| `registry.url` | | Source; `builtin` with `type: dir` for the packs of Norca |
-| `registry.ref` | | Tag or branch |
-| `registry.sync_interval` | | Periodic sync, e.g. `1h` |
-| `deploy[].name` | | Release name |
-| `deploy[].registry` | the only registry | Registry of the pack; required with several registries |
-| `deploy[].pack` | | Pack name |
-| `deploy[].version` | | Pack version |
-| `deploy[].enabled` | `false` | Deploy this entry |
-| `deploy[].values` | | Pack variables |
-
-See [Packs](/docs/deployer/packs).
 
 ## rigger
 
@@ -304,8 +283,35 @@ See [Packs](/docs/deployer/packs).
 | `run_on` | `server` | Where the program runs: `server`, `norca rigger` on the first server, on a copy of the stack; `local`, the `rigger` program on the operator machine |
 | `mode` | `embedded` | Who applies the stack: `embedded`, the servers, to which the program sends it (`-server`); `standalone`, the program |
 | `binary` | `rigger` | The rigger program of `run_on: local`; refused with `run_on: server` |
+| `sync_registries` | | Rigger registries of the cluster that the servers sync before the stack is applied (`global` is the global registry); only with `mode: embedded` |
+| `gitops` | | GitOps bindings: stacks of repositories, see [gitops](#gitops). The section may hold them alone, without `stack` or `stack_hcl` |
 
 **The stack is applied in the region its own `rigger` block names** (`global` when it names none), so a plan of another region needs it there. `stack` is a directory of its own, not the one of the plan. See [Rigger stacks](/docs/deployer/rigger).
+
+## gitops
+
+Under `rigger.gitops` or the top-level `gitops`. A binding is an entry of `bindings` with a `name`, or in HCL a `binding "<name>"` block.
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `enabled` | `false` | Run the bindings |
+| `debounce_duration` | `5s` | Pushes within it become one run of the daemon |
+| `log_buffer_size` | `200` | Entries of the log of the daemon |
+| `bindings[].name` | | Name of the binding; each name once |
+| `bindings[].namespace` | `default` | Namespace the stack is sent to: the one of its `rigger` block |
+| `bindings[].region` | the region of the server asked | Region the stack is sent to: the one of its `rigger` block |
+| `bindings[].values` | | Values of the variables of the stack |
+| `bindings[].forgejo`, `gitea`, `github`, `gitlab` | | The repository, exactly one: `url`, `branch` or `ref`, `subpath` (the directory with the `stack.hcl`), `auth_secret`, `ssh_private_key`, `known_hosts`, `ca_cert_pem`, `insecure_skip_verify`; `api_url` (`github`), `project_path` (`gitlab`) |
+| `bindings[].verify.public_keys` | | Armored PGP public keys: the stack needs a commit or tag signed with one of them |
+| `bindings[].verify.enabled` | `true` | `false` turns the check off and keeps the keys |
+| `bindings[].webhook.secret_key` | | Secret of the webhook of the provider; required with `webhook` |
+| `bindings[].webhook.events` | `push` | `push`, `release` |
+| `bindings[].webhook.filter_branches` | the `branch` of the binding, else `main` | Patterns of the branches whose pushes run the binding |
+| `bindings[].webhook.filter_tags` | | Patterns of the tags that run the binding; without it no tag does |
+| `bindings[].policy.mode` | `apply` | `apply`: the servers apply the stack, which needs `verify`; `plan-only`: they plan it, and the plan is logged |
+| `bindings[].policy.prune` | `false` | Uninstall the releases the stack owns and no longer has |
+
+A binding and its `policy` take no other key. See [GitOps](/docs/deployer/gitops).
 
 ## node_scaling
 
@@ -324,7 +330,7 @@ deployer writes, after `apply`, what the operator needs:
 | Key | Default | Description |
 | --- | --- | --- |
 | `enabled` | `false` | Write the Variables |
-| `namespace` | `norca-system` | Namespace of the Variables, the one the `nodescaler-operator` pack reads them from (its `variables_namespace`, by default the namespace of its job). The bootstrap holds the key of the node CA: give read access to the operator only |
+| `namespace` | `norca-system` | Namespace of the Variables, the one the `nodescaler-operator` module reads them from (its `variables_namespace`, by default the namespace of its job). The bootstrap holds the key of the node CA: give read access to the operator only |
 | `validity` | `60d` | Validity of a node certificate, in days (`60d`) or hours (`720h`); the node CA ends it at the latest |
 | `client` | | Client settings of a scaled node (drivers, `enable_raw_exec`, `extra_hcl`, reserved resources, host networks), over `client_defaults` |
 | `machine` | | What a scaled machine needs on its disk, see below |

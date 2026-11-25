@@ -42,8 +42,8 @@ This command accepts the general options of the Norca CLI (`-address`,
 $ norca object events norca.io/LoadBalancer web
 ```
 
-The log of a pack release, which is itself a custom object:
+The log of a release, which is itself a custom object:
 
 ```shell
-$ norca object events packs.norca.io/Release lb
+$ norca object events rigger.norca.io/Release lb
 ```

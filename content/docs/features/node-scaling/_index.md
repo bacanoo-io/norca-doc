@@ -26,7 +26,7 @@ Node scaling is built from three parts:
 > [!NOTE]
 > **What is available today.** The decisions (the kinds, the policy derived from the objects, the
 > trigger on blocked work, the headroom, the expanders, the dry run) and the operator,
-> `norca-nodescaler` (the `nodescaler-operator` pack), with its provider contract. There is no
+> `norca-nodescaler` (the `nodescaler-operator` module), with its provider contract. There is no
 > provider for a cloud yet: the node providers that exist are the `mock` and `docker` types of
 > `norca-provider`, for tests.
 > **Without a provider for your platform the scale is a recommendation**: use it with
@@ -271,12 +271,12 @@ autoscaler {
 ## How the operator runs
 
 The operator is a [controller](/docs/features/operator-framework/controllers) of the operator
-framework, run as a job (the `nodescaler-operator` pack), and it follows the
+framework, run as a job (the `nodescaler-operator` module), and it follows the
 [rules for where a controller runs](/docs/features/operator-framework/controllers#where-to-run-a-controller):
 
 - **One operator per region.** Node groups belong to a region, and so does the operator that
   serves them (`-region`). Another region has an operator of its own.
-- **Two instances, one at work.** The pack runs 2 instances on different nodes
+- **Two instances, one at work.** The module runs 2 instances on different nodes
   (`count`, with `distinct_hosts`) and, where there are several, in different datacenters (a
   `spread`): when a datacenter is lost, nodes are needed in the others, and an operator that went
   with it would add none until it is placed again. With leader election (`-leader-election`, on by default) only
@@ -302,10 +302,10 @@ framework, run as a job (the `nodescaler-operator` pack), and it follows the
   node reaches.
 - **More work on the leader:** `-workers` (2 by default) is how many groups the leader reconciles at
   the same time. One group is never reconciled by two workers at once, so raise it when there are
-  many groups. The pack does not set it: add the flag to the arguments of the job to change it.
+  many groups. The module does not set it: add the flag to the arguments of the job to change it.
 - **Its own namespace, no `raw_exec` nodes.** Like the other
-  [operator packs](/docs/features/packages/registry#packs), the job runs in the namespace
-  `norca-system` by default (`namespace`, which must exist) and keeps off nodes with the `raw_exec`
+  [operator modules](/docs/features/packages/registry#operator-modules), the job runs in the
+  namespace of its release (`norca-system`, which must exist) and keeps off nodes with the `raw_exec`
   driver. It reads the Variables under `nodescaler/` (the bootstrap with the key of the node CA,
   the network ranges, the provider tokens) in the namespace of its job unless `variables_namespace`
   names another one, so the deployer must write them there too
@@ -314,7 +314,7 @@ framework, run as a job (the `nodescaler-operator` pack), and it follows the
 - **The provider is one instance.** A second one would not be a standby: a registration has one
   endpoint, and the heartbeat of the other instance would hide that the endpoint is dead. What makes
   a provider survive the loss of its node or its datacenter is being placed again, so its job must
-  be allowed in at least two datacenters (the `norca-provider` pack refuses a single named
+  be allowed in at least two datacenters (the `norca-provider` module refuses a single named
   datacenter unless `allow_single_datacenter = true`). Until it runs again, the groups of the
   provider get no blocked work: no machine could be made for them.
 

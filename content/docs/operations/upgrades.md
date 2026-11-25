@@ -51,7 +51,7 @@ all servers must be running Norca 0.1.0 or later to upsert quotas
 The gate applies, among others, to quotas, admission policies, network
 policies, cross-job affinity, disruption budgets and evictions, `mtls` blocks
 and certificate issuing, service intentions, the `secret` block and the seal
-rewrap, custom objects and object kinds, pack releases, backups, and the
+rewrap, custom objects and object kinds, releases, backups, and the
 built-in autoscaler. A [multiregion job](/docs/features/multiregion) needs the
 gate in every region it lists.
 

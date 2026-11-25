@@ -41,7 +41,7 @@ families and subcommands:
 | [`norca operator backup`](/docs/commands/operator/backup/) | List, browse and restore the scheduled backups of a region |
 | [`norca operator unseal`](/docs/commands/operator/unseal/) | Enter an unseal share on a server |
 | [`norca deployment run`](/docs/commands/deployment/run/) | Run a pending multiregion deployment |
-| [`norca pack`](/docs/commands/pack/) | Render, plan, run and manage packs and pack releases |
+| [`norca rigger`](/docs/commands/rigger/) | Install modules and stacks with Rigger, the package manager |
 
 ## Autocomplete
 

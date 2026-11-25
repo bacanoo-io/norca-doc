@@ -18,7 +18,7 @@ release write holds (ACL, admission, the release lock). The Go client is `client
 
 | Blocking Queries | ACL Required |
 | --- | --- |
-| `NO` | object `write` on `packs.norca.io/Release` in the namespace; for a module of a registry also object `read` on `rigger.norca.io/Registry`, and read on the Variable of its `authSecret` |
+| `NO` | object `write` on `rigger.norca.io/Release` in the namespace; for a module of a registry also object `read` on `rigger.norca.io/Registry`, and read on the Variable of its `authSecret` |
 
 The install runs on the leader and **waits until the release is ready**, as an install of the `rigger`
 program does. With the query parameter `plan=true` it returns what an apply would do and applies

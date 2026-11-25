@@ -10,7 +10,7 @@ The `bus` block configures the system bus of a server: a NATS server with
 JetStream that runs inside the Norca server process. The servers of a region
 form one NATS cluster. The bus carries Norca's own traffic. **It is not a
 message broker for applications:** applications use their own NATS, for
-example the `nats` pack.
+example the `nats` module.
 
 **The bus is enabled by default on servers.**
 
@@ -99,14 +99,12 @@ ports {
   20 kB per retired account). Must be positive.
 
 - `events` - The [event stream](/docs/features/system-bus#the-event-stream)
-  of the region and the handling of
-  [pack push notices](/docs/features/system-bus#pack-push-notices):
+  of the region:
 
   - `enabled` `(bool: true)` - The leader publishes the events into the
-    stream `NORCA_EVENTS_<region>` and handles the push notices.
+    stream `NORCA_EVENTS_<region>`.
   - `subject_prefix` `(string: "norca")` - The first part of the subjects
-    `<prefix>.<region>.<namespace>.<topic>`, `<prefix>.packs.pushed` and
-    `<prefix>.packs.notices`. One or more
+    `<prefix>.<region>.<namespace>.<topic>`. One or more
     tokens separated by dots.
   - `max_age` `(string: "72h")` - How long events are kept.
   - `max_bytes` `(string: "1GiB")` - The size limit of the event streams
@@ -136,25 +134,22 @@ does not start and says what each part takes:
 | Stream | Size |
 | --- | --- |
 | Events | `events.max_bytes` |
-| Pack push notices | `64MiB` |
 | Usage reports of the clients | a sixteenth of `max_storage` |
 | Consul KV | `consul_kv_max_bytes` |
 | Logs of the Rigger stack operations | `rigger_logs_max_bytes` |
 | Bundles of Rigger | `rigger_bundles_max_bytes` |
 
-With the defaults that is about 2.8 GiB of the 4 GiB. The events and the push
-notices count only when `events.enabled` is set.
+With the defaults that is about 2.75 GiB of the 4 GiB. The events count only
+when `events.enabled` is set.
 
 ## Region names and subjects
 
 The streams of a region must not share subjects. The events use
 `<subject_prefix>.<region>.>`, the admin events
 `<subject_prefix>.admin.<region>.>`, the usage reports
-`norca.telemetry.<region>.*`, the logs of the Rigger stack operations
-`norca.rigger.oplog.<region>.*` and the push notices
-`<subject_prefix>.packs.pushed` (what a pipeline publishes) and
-`<subject_prefix>.packs.notices` (what the servers store). **With the default prefix a region can't be
-named `telemetry`, `packs`, `admin` or `rigger`**, and a subject prefix
+`norca.telemetry.<region>.*` and the logs of the Rigger stack operations
+`norca.rigger.oplog.<region>.*`. **With the default prefix a region can't be
+named `telemetry`, `admin` or `rigger`**, and a subject prefix
 can't lie under `norca.telemetry` or `norca.rigger.oplog`: the agent refuses to start its bus and
 names the subjects that collide.
 
@@ -177,7 +172,7 @@ block:
   same address that Raft uses.
 
 The defaults differ from the NATS defaults
-(4222, 6222), so **a `nats` pack on a server node does not collide with the bus.**
+(4222, 6222), so **a `nats` module on a server node does not collide with the bus.**
 
 ## Leaf nodes
 

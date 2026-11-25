@@ -69,7 +69,7 @@ The parameters are the same as those of [`colocate`](/docs/job-specification/col
 
 With a selector that matches the job itself, `separate` spreads the job's own
 instances. A preference still places the instances when there are more of them
-than datacenters (from `example/packs/test-app` with
+than datacenters (from `example/modules/test-app` with
 `separate_scope = "$${node.datacenter}"`):
 
 ```hcl

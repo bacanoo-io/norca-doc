@@ -35,8 +35,8 @@ reference, and every command under
 
 ## Set up the store
 
-Any S3-compatible store works. The `rustfs` pack of the
-[Norca pack registry](/docs/features/packages/registry) runs
+Any S3-compatible store works. The `rustfs` module of the
+[Norca registry](/docs/features/packages/registry) runs
 [RustFS](https://rustfs.com) (Apache-2.0) as a Norca job, with its root
 credentials in the built-in secret store and its data on a host volume.
 
@@ -67,17 +67,24 @@ norca secret put rustfs/root access_key=norca-backup secret_key=-   # type the s
 
 ### Deploy RustFS with the backup bucket
 
+The servers read the global registry when asked, then install the module
+from it:
+
 ```shell
-norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.5.0
-norca pack run rustfs --registry=norca --name=rustfs --var='buckets=["norca-backup"]'
+norca rigger registry sync global
+norca operator api -X PUT /v1/rigger/install <<'EOF'
+{"Release": "rustfs", "Registry": "global", "Module": "norca/rustfs", "Version": "~> 0.2",
+ "ValuesJSON": {"buckets": ["norca-backup"]}}
+EOF
+norca rigger release status rustfs
 norca service info -verbose rustfs
 norca alloc logs -task create-buckets <alloc ID>     # "bucket norca-backup created"
 ```
 
-**Norca never creates the backup bucket**; `buckets` makes the pack create it
+**Norca never creates the backup bucket**; `buckets` makes the module create it
 once the store is ready. With another store, create the bucket there. For
 RustFS on several nodes (`mode = "distributed"`) and the other variables, see
-the [rustfs pack README](https://github.com/bacanoo-io/norca-registry/blob/main/packs/rustfs/README.md).
+the [rustfs module README](https://github.com/bacanoo-io/norca-registry/blob/main/modules/rustfs/README.md).
 
 ### Give the servers the credentials
 
@@ -100,7 +107,7 @@ instead; the servers then read their credentials from the environment.
 {{% /steps %}}
 
 > [!WARNING]
-> The rustfs pack serves plain HTTP. The backups are encrypted before they
+> The rustfs module serves plain HTTP. The backups are encrypted before they
 > leave the servers, and S3 requests are signed, but keep the store on a
 > private network or the VPN.
 
@@ -214,7 +221,7 @@ server {
       endpoint         = "http://10.0.0.10:9000"
       bucket           = "norca-backup"
       prefix           = "norca/${region}"
-      region           = "us-east-1" # s3_region of the rustfs pack
+      region           = "us-east-1" # s3_region of the rustfs module
       force_path_style = true
       credentials_file = "/etc/norca.d/backup-credentials"
     }

@@ -2,7 +2,7 @@
 title: "Package management"
 linkTitle: "Packages"
 weight: 55
-description: "Nomad Pack v0.4.2 built into the norca binary as norca pack, with an extended package format, server-side releases, OCI registries, signing, cluster pack registries with a catalog and install form in the web UI, and the Norca pack registry."
+description: "Rigger, the package manager of Norca: modules written in typed HCL and stacks of modules, installed as server-side releases, with registries, a lock file, signatures, a catalog and install form in the web UI, and the Norca registry of operations modules."
 ---
 
 ## What and why
@@ -13,48 +13,46 @@ belong to an application are applied with separate commands, and nobody can say 
 version of what was installed, or roll it back. Norca solves this with a package manager that is
 part of the `norca` binary.
 
-The package manager is **Norca Pack**, the `norca pack` command tree. It is built on HashiCorp Nomad Pack v0.4.2 (MPL 2.0).
-There is no separate `nomad-pack` binary. **The pack format stays the same** (a directory with
-`metadata.hcl`, `variables.hcl`, `templates/` and `outputs.tpl`, rendered with `[[ ]]` Go templates),
-**so existing packs keep working.** Norca adds five things on top of it:
+The package manager is **Rigger**, the `norca rigger` command tree; the standalone `rigger` program
+has the same commands. It installs:
 
-- **An extended package format.** Besides jobs, a pack can contain namespaces, quotas, ACL policies,
-  Variables entries, object kinds, admission policies and custom objects, identified by the extension
-  of the template file, and constraints, rules and an install form for its variables in
-  `variables.hcl`. One pack can therefore install an application with its namespace and policies, or
-  an operator with its object kind and controller.
-- **Server-side releases.** `norca pack run` renders the pack on the client and sends the rendered
-  resources to the servers, which apply them in a fixed order and record an immutable revision of a
-  `packs.norca.io/Release` object. Releases can be upgraded atomically, rolled back, tested with hook
-  jobs, checked for drift and uninstalled.
-- **Registries and supply chain.** Packs come from git registries, from OCI registries (Harbor, Zot,
-  GitHub Container Registry, ...) or from local directories. Packs in OCI registries can be signed
-  with cosign compatible keys and verified against a per-registry trust policy, carried into
-  air-gapped environments as offline bundles, and pinned with a `pack.lock` file. Admission policies
-  can require signed packs in protected namespaces.
-- **Cluster pack registries and the catalog.** The servers can keep pack registries too. The web UI
-  lists their packs and installs or upgrades them from a form built from the pack's `variables.hcl`;
-  the leader renders the pack and applies it as a release revision
-  ([catalog and install form](/docs/features/packages/catalog)).
-- **The Norca pack registry.** The public registry
-  [`bacanoo-io/norca-registry`](https://github.com/bacanoo-io/norca-registry) holds the operations packs
-  of a Norca cluster: NATS, the cross-region mTLS gateway, RustFS, PostgreSQL, Forgejo, OpenObserve,
-  the OpenTelemetry Collector, an optional Consul and the reference operator pack.
+- **Modules.** A module is a package written in typed HCL: a directory with its variables, its jobs
+  and other resources (namespaces, quotas, ACL policies, Variables, object kinds, admission policies,
+  external services and custom objects), and its tests. One module can therefore install an
+  application with its namespace and policies, or an operator with its object kind and controller.
+- **Stacks.** A stack names the modules of a region with their values, wires them through their
+  outputs, and pins their versions in a lock file.
+- **Releases.** Every install of a module is a release: the servers apply its resources in a fixed
+  order and record an immutable revision of a `rigger.norca.io/Release` object. Releases can be
+  upgraded atomically, rolled back, tested with hook jobs, checked for drift and uninstalled.
+- **Registries and supply chain.** Modules come from the global registry, from git registries, from
+  OCI registries or from directories. They are versioned by tags, signed with keys that a stack
+  trusts, and carried into a cluster without a network as bundles. Admission policies can require
+  signed releases in protected namespaces.
+- **Registries of the cluster and the catalog.** The servers keep registries too. The web UI lists
+  their modules and stacks and installs them from a form built from their variables; the servers
+  fetch, verify and evaluate the module themselves
+  ([Rigger catalog](/docs/features/packages/rigger-catalog)).
+- **The Norca registry.** The public repository
+  [`bacanoo-io/norca-registry`](https://github.com/bacanoo-io/norca-registry) holds the operations
+  modules of a Norca cluster: NATS, the cross-region mTLS gateway, RustFS, PostgreSQL, Forgejo,
+  OpenObserve, the OpenTelemetry Collector, Traefik, an optional Consul and the operator modules. The
+  global registry lists them as `norca/<name>`.
 
 ## How it works
 
-**`norca pack` renders on the client**: what the servers receive is the list of rendered resources
-together with the pack's metadata (name, version, registry, OCI digest, signatures, requirements,
-variables schemas). Packs of [cluster pack registries](/docs/features/packages/catalog) are rendered
-by the leader instead, from its cache, for the installs of the web UI and the API.
+Somebody evaluates the module: **the `rigger` program on the machine it runs on, or the servers.**
+Either way the result is a list of resources with the metadata of the module (name, version, source,
+commit, digest, signatures, requirements), applied through the
+[release API](/docs/api/releases) with the caller's token.
 
 ```mermaid
 flowchart LR
-    subgraph C["Client: norca pack"]
-        REG["git or OCI registry,<br/>bundle, directory"] --> VER["verify signature<br/>and pack.lock"]
-        VER --> REN["render with<br/>variables and schema"]
+    subgraph C["Rigger: the program, or the servers"]
+        REG["global registry, git or OCI source,<br/>bundle, directory"] --> VER["verify the digest,<br/>the signature and the lock"]
+        VER --> REN["evaluate with<br/>the values"]
     end
-    REN -- "rendered resources<br/>+ pack metadata" --> APP
+    REN -- "resources<br/>+ module metadata" --> APP
     subgraph S["Servers: leader of the region"]
         APP["Release apply<br/>admission, quota, ACL"] --> RES["namespaces, policies,<br/>kinds, objects, jobs"]
         APP --> REV[("Release object<br/>+ revisions")]
@@ -62,93 +60,108 @@ flowchart LR
     REV -- "rollback: content<br/>of an old revision" --> APP
 ```
 
-1. The client resolves the pack: from the local cache of a git registry, from an OCI registry
-   (downloaded on first use and verified against the trust policy), from an offline bundle imported
-   into the cache, or from a directory.
-2. It checks `pack.lock` (if present), checks the variable values against the pack's constraints
-   and rules (and its JSON Schema, if it has one) and renders the templates.
-3. The servers check the pack's requirements and the admission policies (including signature checks
-   for releases), apply every resource through its normal endpoint with the caller's token, wait for
-   the deployments, run the hooks and record a new revision of the release.
-4. `norca pack rollback` applies the content of a kept revision as a new revision; `norca pack diff
-   --live` compares the live resources with the deployed revision; `norca pack uninstall` deletes
-   the resources in reverse order.
+1. Rigger resolves the module: from a directory, from a git or OCI source, from the global registry
+   (which lists the commit, the tree digest and the signatures of each version), or from a bundle.
+2. It checks the lock file of the stack (if there is one) and the signatures the stack trusts, checks
+   the values against the `validation` and `rule` blocks of the module, and evaluates it.
+3. The servers check the requirements of the module and the admission policies (including signature
+   checks for releases), apply every resource through its normal endpoint with the caller's token,
+   wait for the deployments, run the hooks and record a new revision of the release.
+4. `norca rigger release rollback` applies the content of a kept revision as a new revision;
+   `norca rigger release status` shows what drifted from the deployed revision;
+   `norca rigger release uninstall` deletes the resources in reverse order.
 
-Against servers without the release API, or with `--client-side`, `norca pack` deploys the jobs from
-the client exactly as Nomad Pack does.
+With `-server` (or `RIGGER_SERVER=1`) the commands send the module or the stack to the servers, which
+fetch and evaluate; an apply of a stack then runs on the leader as an operation with its own log. The
+install form of the web UI and the [install API](/docs/api/rigger-install) work the same way. **The
+servers fetch only from registries they have synced, and nothing syncs on its own.**
 
 ## Example
 
+One module of a directory:
+
 ```shell
-# Add the Norca pack registry, pinned to a release tag.
-norca pack registry add norca https://github.com/bacanoo-io/norca-registry --ref=v0.5.0
-
-# Inspect, render and plan a pack (at the pinned tag), then install it as the release "rustfs".
-norca pack info   rustfs --registry=norca
-norca pack render rustfs --registry=norca --var='buckets=["norca-backup"]'
-norca pack plan   rustfs --registry=norca --var='buckets=["norca-backup"]'
-norca pack run    rustfs --registry=norca --var='buckets=["norca-backup"]'
-
-# Revisions, rollback and removal.
-norca pack history rustfs
-norca pack rollback rustfs 1
-norca pack uninstall rustfs
+norca rigger install ./example/modules/test-app -name test-app -f test-app.hcl
+norca rigger release status test-app
 ```
 
-Without `--ref` the pack commands use the ref the registry was added with, and without `--name` the
-release is named after the pack (see [refs and deployment names](/docs/commands/pack#refs-and-deployment-names)).
+A module of the Norca registry, installed by the servers from the global registry:
+
+```shell
+norca rigger registry sync global
+norca operator api -X PUT /v1/rigger/install <<'EOF'
+{"Release": "rustfs", "Registry": "global", "Module": "norca/rustfs", "Version": "~> 0.2",
+ "ValuesJSON": {"buckets": ["norca-backup"], "console_enabled": true}}
+EOF
+```
+
+Several modules as a stack:
+
+```hcl {filename="stack.hcl"}
+rigger {
+  name = "platform"
+}
+
+module "bus" {
+  source  = "norca/nats"
+  version = "~> 2.0"
+}
+```
+
+```shell
+norca rigger stack sync .       # resolve the versions, fetch and verify the modules, write rigger.lock.hcl
+norca rigger stack plan .       # what an apply would change
+norca rigger stack apply .      # install the releases of the stack
+
+# Revisions, rollback and removal of one release.
+norca rigger release history bus
+norca rigger release rollback bus 1
+norca rigger release uninstall bus
+```
+
+The [deployment examples](/docs/getting-started/examples#the-module-registry) show each of these
+against a real cluster.
 
 ## Pages in this section
 
 {{< cards >}}
-  {{< card link="/docs/features/packages/pack" title="Using norca pack" subtitle="Registries, render, plan, run, status, destroy, variables." >}}
-  {{< card link="/docs/features/packages/writing-packs" title="Writing packs" subtitle="Pack layout, metadata, variables, templates, dependencies." >}}
-  {{< card link="/docs/features/packages/functions" title="Template functions" subtitle="Functions available in pack templates." >}}
-  {{< card link="/docs/features/packages/releases" title="Releases" subtitle="Server-side apply, revisions, hooks, drift, multi-region installs." >}}
-  {{< card link="/docs/features/packages/supply-chain" title="Supply chain" subtitle="OCI registries, signing, offline bundles, pack.lock." >}}
-  {{< card link="/docs/features/packages/catalog" title="Catalog and install form" subtitle="Cluster pack registries, the catalog in the web UI, server-side installs." >}}
-  {{< card link="/docs/features/packages/registry" title="Norca pack registry" subtitle="The operations packs of a Norca cluster." >}}
+  {{< card link="/docs/features/packages/modules" title="Modules and stacks" subtitle="The files of a module, variables, values, tests, the stack file." >}}
+  {{< card link="/docs/features/packages/supply-chain" title="Supply chain" subtitle="Versions, the lock file, the global registry, signatures, trust, bundles." >}}
+  {{< card link="/docs/features/packages/releases" title="Releases" subtitle="Server-side apply, revisions, hooks, drift, permissions." >}}
+  {{< card link="/docs/features/packages/rigger-catalog" title="Catalog and install form" subtitle="The registries of the cluster, the catalog in the web UI, stacks and their operations." >}}
+  {{< card link="/docs/features/packages/registry" title="Norca registry" subtitle="The operations modules of a Norca cluster." >}}
 {{< /cards >}}
 
 ## CLI and API
 
 | Task | Command or endpoint |
 | --- | --- |
-| Manage registries | [`norca pack registry add`](/docs/commands/pack/registry/add), [`list`](/docs/commands/pack/registry/list), [`update`](/docs/commands/pack/registry/update), [`delete`](/docs/commands/pack/registry/delete) |
-| Inspect and render packs | [`norca pack list`](/docs/commands/pack/list), [`info`](/docs/commands/pack/info), [`render`](/docs/commands/pack/render), [`generate var-file`](/docs/commands/pack/generate/var-file) |
-| Install and change releases | [`norca pack plan`](/docs/commands/pack/plan), [`run`](/docs/commands/pack/run), [`upgrade`](/docs/commands/pack/upgrade), [`rollback`](/docs/commands/pack/rollback) |
-| Observe releases | [`norca pack status`](/docs/commands/pack/status), [`history`](/docs/commands/pack/history), [`diff`](/docs/commands/pack/diff), [`test`](/docs/commands/pack/test) |
-| Remove | [`norca pack uninstall`](/docs/commands/pack/uninstall), [`destroy`](/docs/commands/pack/destroy), [`stop`](/docs/commands/pack/stop) |
-| Supply chain | [`norca pack push`](/docs/commands/pack/push), [`sign`](/docs/commands/pack/sign), [`verify`](/docs/commands/pack/verify), [`key generate`](/docs/commands/pack/key/generate), [`bundle`](/docs/commands/pack/bundle), [`deps vendor`](/docs/commands/pack/deps/vendor) |
-| Authoring | [`norca pack generate`](/docs/commands/pack/generate), [`fmt`](/docs/commands/pack/fmt) |
-| Cluster registries, catalog, server-side installs | Web UI **Packages**; [Pack registries HTTP API](/docs/api/pack-registries) (`/v1/pack-registries`, `/v1/packs`, `/v1/release/:name/deploy-pack`) |
-| HTTP API | [Releases HTTP API](/docs/api/releases) (`/v1/releases`, `/v1/release/:name`) |
+| Install one module, manage releases | [`norca rigger install`](/docs/commands/rigger/install), [`norca rigger release`](/docs/commands/rigger/release) (`list`, `status`, `history`, `rollback`, `uninstall`) |
+| Stacks | [`norca rigger stack`](/docs/commands/rigger/stack) (`sync`, `validate`, `plan`, `apply`, `status`, `destroy`, `publish`), [`norca rigger operation`](/docs/commands/rigger/operation) |
+| Registries of the cluster | [`norca rigger registry`](/docs/commands/rigger/registry) (`list`, `status`, `sync`, `search`, `select`, `unselect`) |
+| Authoring | [`norca rigger module`](/docs/commands/rigger/module) (`validate`, `test`, `render`, `publish`), [`norca rigger fmt`](/docs/commands/rigger/fmt) |
+| Supply chain | [`norca rigger key`](/docs/commands/rigger/key), [`norca rigger bundle`](/docs/commands/rigger/bundle), [`norca rigger login`](/docs/commands/rigger/login), [`norca rigger index`](/docs/commands/rigger/registry-index) |
+| Installs, stacks and registries on the servers | Web UI **Packages**; [Rigger Installs](/docs/api/rigger-install), [Rigger Stacks](/docs/api/rigger-stacks) and [Rigger Registries](/docs/api/rigger-registries) HTTP APIs |
+| Releases | [Releases HTTP API](/docs/api/releases) (`/v1/releases`, `/v1/release/:name`) |
+| Server settings | [`rigger` block](/docs/configuration/rigger) of the server |
 
-The complete command list is in the [`norca pack` reference](/docs/commands/pack).
+The complete command list is in the [`norca rigger` reference](/docs/commands/rigger).
 
 ## Limits and status
 
-- Available: Norca Pack, the extended package format, server-side releases with hooks,
-  tests, drift detection and multi-region installs, OCI registries, signing, offline bundles,
-  `pack.lock`, variable constraints, rules and schemas, signature enforcement in admission policies,
-  cluster pack registries with the catalog and install form of the web UI.
-- `norca pack` renders on the client; the servers render only the packs of cluster pack registries.
-- Releases installed with the CLI are upgraded in the web UI once the cluster has a registry of their
-  source, or, for packs from a local directory or a bundle, once the pack is uploaded.
-- `*.netpol.hcl.tpl` (network rules) is reserved and rejected by the release apply for now.
-- Signatures are key-based cosign signatures; transparency log (Rekor) entries and keyless
-  (Sigstore identity) signing are not supported.
-- The [web UI](/docs/features/web-ui) lists the releases under **Packages** (pack, revision, phase,
-  drift, signature), shows resources, revisions and events, and can roll back, run the tests, check
-  drift and uninstall. Its **Catalog** and **Registries** tabs install packs of cluster registries,
-  and their releases get **Upgrade**, as do releases installed with the CLI from a registry of the
-  cluster (**Add its registry to upgrade** adds a missing one, **Upload the pack to upgrade** uploads a
-  pack from a local directory).
-
-## Design
-
-The design and its rationale are in the
-[package management plan](/docs/design/package-management-plan), in particular
-[target architecture](/docs/design/package-management-plan#target-architecture),
-[extended package format](/docs/design/package-management-plan#extended-package-format) and
-[registries and supply chain](/docs/design/package-management-plan#registries-and-supply-chain).
+- **A registry is synced only when someone asks for it** (`norca rigger registry sync`, **Sync** in
+  the web UI). A newer version is not offered until the next sync.
+- **`norca rigger install` takes a directory.** A module of a registry is installed by the servers
+  (the install API, the catalog of the web UI) or as a module of a stack.
+- **A release is installed in one region.** For several regions, sync the registry and install in
+  each.
+- The servers fetch only from registered sources and bundles, and read no `oci://` and no directory
+  source; the `rigger` program does, on the machine it runs on.
+- Signatures are key-based; keyless signing is not supported.
+- A release that the pack manager made before it was removed is still shown, rolled back and
+  uninstalled. Nothing upgrades it; an install under the same name with `-adopt` (**Take over the
+  release** in the web UI) takes it over.
+- The [web UI](/docs/features/web-ui) shows Rigger under **Packages**: the releases (module,
+  revision, phase, drift, signature) with their resources, revisions, values and events, where a
+  release is rolled back, tested, checked for drift and uninstalled, and the **Stacks**, **Catalog**
+  and **Registries** tabs ([Rigger catalog](/docs/features/packages/rigger-catalog)).

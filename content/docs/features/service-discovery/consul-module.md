@@ -1,8 +1,8 @@
 ---
 title: "Full Consul as an option"
-linkTitle: "Full Consul (consul pack)"
+linkTitle: "Full Consul (consul module)"
 weight: 6
-description: "For what Norca's native discovery and mTLS don't cover, the consul pack installs the official Consul release as Norca jobs."
+description: "For what Norca's native discovery and mTLS don't cover, the consul module installs the official Consul release as Norca jobs."
 ---
 
 ## What and why
@@ -11,7 +11,7 @@ Norca's native discovery, DNS, Consul-compatible API and [native mTLS](/docs/fea
 replace Consul for most installations. A few things still need a real Consul: Consul Connect with L7
 traffic management, sessions and locks, the full Consul KV, prepared queries and config entries.
 
-For those, the `consul` pack of the [Norca pack registry](https://github.com/bacanoo-io/norca-registry)
+For those, the `consul` module of the [Norca registry](/docs/features/packages/registry)
 installs and runs the **official, current Consul release** as Norca jobs: the servers as a service job,
 a client agent on every other node as a system job, and optionally a periodic snapshot job. It
 bootstraps the gossip key, TLS and ACLs without manual steps and applies a security baseline to every
@@ -20,24 +20,24 @@ install.
 > [!WARNING]
 > **Consul is not part of Norca and is not open source.** HashiCorp licenses Consul under the Business
 > Source License 1.1 (BSL 1.1). Norca does not distribute, include, vendor or modify Consul and ships no
-> Consul binary or image; the pack only references the official release (the `hashicorp/consul` image,
+> Consul binary or image; the module only references the official release (the `hashicorp/consul` image,
 > or the release archive by URL and checksum), which the nodes download from HashiCorp or from your
-> mirror of the unmodified artifacts. **You accept the Consul license when you install it**: the pack
+> mirror of the unmodified artifacts. **You accept the Consul license when you install it**: the module
 > does not render until you set `consul_license_accepted = true`. BSL 1.1 allows internal production
 > use; the restriction concerns products competing with HashiCorp. Confirm this legally for your own
 > use case.
 
 Why not the last MPL release of Consul (v1.16.4)? It misses years of security fixes that were released
-only under the BSL, and supports only Envoy versions that no longer receive fixes. **The pack therefore
+only under the BSL, and supports only Envoy versions that no longer receive fixes. **The module therefore
 installs a current release.**
 
 ## How it works
 
 ```mermaid
 flowchart TB
-  pack["norca pack run consul"] --> sj["Job consul: 3 or 5 servers, one per node with meta consul_server=true"]
-  pack --> cj["Job consul-clients: system job, a client agent on every other node"]
-  pack -.-> snap["Job consul-snapshot (optional): consul snapshot save, upload to S3"]
+  mod["Release consul of the consul module"] --> sj["Job consul: 3 or 5 servers, one per node with meta consul_server=true"]
+  mod --> cj["Job consul-clients: system job, a client agent on every other node"]
+  mod -.-> snap["Job consul-snapshot (optional): consul snapshot save, upload to S3"]
   sj --> boot["Prestart task bootstrap: gossip key, CA, server certificate, ACL tokens"]
   boot --> vars["Norca Variables (encrypted)"]
   vars --> sj
@@ -55,7 +55,7 @@ flowchart TB
   stores them with check-and-set in a Variable, and derives the Variables of the server, client and
   snapshot jobs from it. The servers bootstrap ACLs with `acl.tokens.initial_management`; a poststart
   task creates the agent policy and token. With Norca ACLs enabled, one ACL policy for the bootstrap
-  task is the only manual step; the pack prints it.
+  task is the only manual step; the output `notes` of the module holds it.
 - **Security baseline on every install:** Consul ACLs on with `default_policy = "deny"` and no
   anonymous access, gossip encryption, TLS with verified server names and `auto_encrypt` for the
   clients, plain HTTP and gRPC on localhost only, DNS on localhost, no update check.
@@ -67,7 +67,7 @@ flowchart TB
   registry can be pinned by digest.
 
 > [!IMPORTANT]
-> Norca's own `consul {}` agent block is not changed by the pack. While Consul runs on a node, Norca's
+> Norca's own `consul {}` agent block is not changed by the module. While Consul runs on a node, Norca's
 > default Consul address (`127.0.0.1:8500`) reaches it, so **either wire Norca to it with a token or turn the
 > integration off on every node:**
 
@@ -97,18 +97,22 @@ client {
 }
 ```
 
-Then, with the registry added as `norca`:
+Then the servers install the module from the global registry, as the release `consul`:
 
 ```shell
-norca pack run consul --registry=norca --var consul_license_accepted=true
+norca rigger registry sync global
+norca operator api -X PUT /v1/rigger/install <<'EOF'
+{"Release": "consul", "Registry": "global", "Module": "norca/consul", "Version": "~> 0.2",
+ "ValuesJSON": {"consul_license_accepted": true}}
+EOF
 norca job status consul
 norca var get -item=management_token nomad/jobs/consul/servers/bootstrap   # the Consul management token
 ```
 
 ## Configuration reference
 
-The pack's variables (the most important ones; the
-[pack README](https://github.com/bacanoo-io/norca-registry/blob/main/packs/consul/README.md) lists all):
+The module's variables (the most important ones; the
+[module README](https://github.com/bacanoo-io/norca-registry/blob/main/modules/consul/README.md) lists all):
 
 | Variable | Default | Description |
 | --- | --- | --- |
@@ -126,13 +130,22 @@ The pack's variables (the most important ones; the
 
 ## CLI and API
 
-The pack is installed and managed with the `norca pack` commands (see
-[packages](/docs/features/packages)): `norca pack run`, `norca pack render`, `norca pack plan`,
-`norca pack uninstall`. Consul itself is used with its own CLI and API.
+The servers install the module from the global registry
+([`PUT /v1/rigger/install`](/docs/api/rigger-install)). From a checkout of the registry,
+[`norca rigger install`](/docs/commands/rigger/install) installs it:
+
+```shell
+norca rigger install <checkout>/modules/consul -name consul -var consul_license_accepted=true
+```
+
+The release is managed with the [`norca rigger release`](/docs/commands/rigger/release) commands
+(`status`, `history`, `rollback`, `uninstall`), and `norca rigger module render` evaluates the module
+without a cluster (see [packages](/docs/features/packages)). Consul itself is used with its own CLI
+and API.
 
 ## Limits and status
 
-- The pack cannot create Norca ACL policies: with Norca ACLs, the bootstrap task's policy is applied once
+- The module installs no Norca ACL policy: with Norca ACLs, the bootstrap task's policy is applied once
   by hand.
 - No automatic certificate renewal or gossip key rotation.
 - One Consul datacenter per install; WAN federation between Norca regions is not configured.

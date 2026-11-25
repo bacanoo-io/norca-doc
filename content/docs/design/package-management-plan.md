@@ -4,7 +4,11 @@ weight: 5
 status: "In progress"
 ---
 
-**Status:** In progress · 2026-10-29 (phases 1–3 implemented, the UI with the cluster registries, catalog and install form ([catalog and install form](/docs/features/packages/catalog)); phase 4 implemented: OCI registries, signing, admission check, `pack.lock`, variable schemas, multi-region install) · Starting point: Nomad v1.6.5 (MPL 2.0), Nomad Pack v0.4.2 (MPL 2.0) · Related documents: [development plan](/docs/design/development-plan), [kubernetes-features-spec.md](/docs/design/kubernetes-features-spec), [backup-restore-plan.md](/docs/design/backup-restore-plan)
+> [!NOTE]
+> The pack manager this plan describes (`norca pack`, packs and pack registries) was removed. Rigger
+> replaced it: see [Package management](/docs/features/packages). The releases the plan describes remain.
+
+**Status:** In progress · 2026-10-29 (phases 1–3 implemented, the UI with the cluster registries, catalog and install form (catalog and install form); phase 4 implemented: OCI registries, signing, admission check, `pack.lock`, variable schemas, multi-region install) · Starting point: Nomad v1.6.5 (MPL 2.0), Nomad Pack v0.4.2 (MPL 2.0) · Related documents: [development plan](/docs/design/development-plan), [kubernetes-features-spec.md](/docs/design/kubernetes-features-spec), [backup-restore-plan.md](/docs/design/backup-restore-plan)
 
 Norca's package manager will be Nomad Pack: the package format and the command-line tool remain, while the capabilities missing compared to Helm (a release object with revisions, rollback, non-job resources, atomic install, hooks, tests, OCI registry, signing) are provided by Norca's server side, building on the features already planned. The same format also serves as the operator package for Kubernetes item 8, so there is a single package format.
 
@@ -84,7 +88,7 @@ flowchart LR
 > [!NOTE]
 > Update 2026-10-29: packs of **cluster pack registries** are rendered by the leader for the installs and
 > upgrades of the web UI and the `plan-pack` / `deploy-pack` endpoints; the CLI still renders on the
-> client. See [catalog and install form](/docs/features/packages/catalog).
+> client. See catalog and install form.
 
 ## Extended package format
 
@@ -230,7 +234,7 @@ Phases 2 and 3 (release objects, server-side apply, hooks, drift) and the supply
 
 ### Variables schema
 
-- **Update 2026-10-29:** the constraints are now written in `variables.hcl` (`validation` blocks, `ui` options and `rule` blocks), from which the schema is synthesized; `variables_schema` stays supported but the built-in packs and the Norca pack registry no longer use it ([form and constraints](/docs/features/packages/writing-packs#form-and-constraints)).
+- **Update 2026-10-29:** the constraints are now written in `variables.hcl` (`validation` blocks, `ui` options and `rule` blocks), from which the schema is synthesized; `variables_schema` stays supported but the built-in packs and the Norca pack registry no longer use it (form and constraints).
 - **Format:** `variables_schema` is a top-level attribute of `metadata.hcl` (as in the example above). `metadata.hcl` is now decoded with an evaluation context whose only function is `file(path)`, which reads a file of the loaded pack (cleaned path, never outside the pack directory; `pack.DecodeMetadata` in `pack/sdk/pack`, also used by `deps vendor`). The schema is compiled when the pack is loaded, so a broken schema fails early.
 - **One validator:** the JSON Schema library of the object kinds (`santhosh-tekuri/jsonschema/v6`, wrapped by `norca/objectschema`) is reused: `objectschema.CompileDocument` compiles a self-contained document that is not an object kind schema, `Schema.ValidateValue` validates any Go value through its JSON encoding. Errors keep the `at /<path>: <message>` form of object validation, so they name the variable path (`at /resources/cpu: maximum: got 9000, want 4000`).
 - **Client:** the pack manager validates, after variable parsing and before rendering (`render`, `plan`, `run`, `upgrade`), the effective values of every pack of the dependency tree that has a schema against its own schema; null (unset) variables are left out so that `required` reports them.

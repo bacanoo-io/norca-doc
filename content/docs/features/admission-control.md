@@ -16,7 +16,7 @@ Norca makes the chain configurable in two ways:
 
 - **Admission policies** are cluster objects stored in Raft. Each holds rules
   written as [CEL](https://cel.dev/) expressions over the submitted job (or a
-  Variables write, or a pack release). A violated rule rejects the submission
+  Variables write, or a release). A violated rule rejects the submission
   (`action = "deny"`) or only adds a warning (`action = "warn"`). Policies are
   managed with `norca admission-policy` and need no external service.
 - **Admission webhooks** are HTTP services configured in the server
@@ -109,20 +109,20 @@ flowchart TB
   `crd-schema/*` paths with a rule of their own. The server's own
   re-encryption of the Variables after a full rotation of the root key
   changes no content and is not sent through the policies and webhooks.
-- **Releases.** Policies that select the `release` resource run when a pack
+- **Releases.** Policies that select the `release` resource run when a
   release is installed, upgraded or rolled back, with the variable `release`;
-  their `trusted_keys` require a signed pack (see
+  their `trusted_keys` require a signed module (see
   [signatures in protected namespaces](/docs/features/packages/releases#signatures-in-protected-namespaces)).
-  **A signature covers what is applied only when the server rendered the pack**
-  from its own catalog (a deploy from a pack registry). For a release that a
-  client rendered, the digest and the signatures are what the client sends.
-  The rule `release.pack.serverRendered` admits only the first; it also holds
-  for a rollback to such a revision. In a multi-region install it holds in the
-  region of the server that rendered the pack, and in the other regions when
-  the servers verify each other's names (`verify_server_hostname` with TLS for
-  RPC): a region takes the word of a server of its federation for the
-  rendering, and of nobody else. Without verified server names the pack counts
-  as rendered by the client in the other regions.
+  **A signature covers what is applied only when the servers evaluated the
+  module themselves**, from a registry they synced (an
+  [install](/docs/api/rigger-install) or a [stack](/docs/api/rigger-stacks)
+  that the servers run). For a release that a client evaluated, the digest
+  and the signatures are what the client sends. The rule
+  `release.pack.serverRendered` admits only the first; it also holds for a
+  rollback to such a revision. When a server passes the request on to another
+  server, the mark holds only when the servers verify each other's names
+  (`verify_server_hostname` with TLS for RPC): a server takes the word of a
+  server of its federation for the rendering, and of nobody else.
 - **Denials.** A rejection publishes a `JobAdmissionDenied` (or
   `VariableAdmissionDenied`) event on the `AdmissionPolicy` topic of the
   [event stream](/docs/features/event-stream): namespace, job, operation, the
@@ -258,7 +258,7 @@ Admission policy (full reference: [admission policy specification](/docs/other-s
 | `match.resources` | list | `["job"]` | `job`, `variable`, `release`. |
 | `match.variable_paths` | list | all | Variable paths (glob patterns), with the `variable` resource. |
 | `schema_from` | string | `""` | `crd-schema` to validate CRD-style Variables. |
-| `trusted_keys` | list | `[]` | PEM public keys that must have signed a released pack. |
+| `trusted_keys` | list | `[]` | PEM public keys that must have signed the module of a release. |
 | `rule.expression`, `rule.message` | string | required, `""` | A CEL rule (up to 64 rules, 8192 characters each). |
 
 Webhooks, `server { admission { webhook "<name>" { ... } } }` (full reference:
@@ -295,7 +295,7 @@ Telemetry: `nomad.nomad.admission.denied`, `nomad.nomad.admission.webhook.calls`
 
 ## Limits and status
 
-- Available: CEL policies for jobs, Variables writes and pack releases,
+- Available: CEL policies for jobs, Variables writes and releases,
   `deny` and `warn` actions, validating and mutating webhooks for jobs,
   validating webhooks for Variables writes, JSON Schema validation of
   CRD-style Variables, denial events.

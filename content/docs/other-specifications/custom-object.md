@@ -6,8 +6,8 @@ description: "The HCL format of custom objects, applied with norca object apply.
 
 Custom objects are instances of an [object kind](/docs/other-specifications/object-kind).
 They are written in HCL and applied with
-[`norca object apply`](/docs/commands/object/apply), or rendered from
-`*.object.hcl.tpl` templates of a pack. The JSON form is the one of the
+[`norca object apply`](/docs/commands/object/apply), or installed from the
+`<name>.object.hcl` files of a [module](/docs/features/packages/modules). The JSON form is the one of the
 [objects API](/docs/api/objects).
 
 The file may call `file("<path>")` (relative to the file), `jsonencode()` and

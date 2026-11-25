@@ -24,8 +24,9 @@ releases are applied through the [release API](/docs/api/releases) with the call
 | `Values`, `ValuesJSON` | The values of the variables: a values file (HCL), or the same as one JSON object, a member per variable, as a form sends them (`"ValuesJSON": {"count": 2}`). Both give the same values, so the same release. One of them at most. |
 | `Prune` | An apply uninstalls the releases the stack no longer has: those it owns whose block is gone. A release that is written with `enabled = false` is still of the stack: if it was installed before, it **stays installed** and is not pruned. The plan shows it once, as `disabled` with the revision that stays, and warns when the stack has another version of its module than the one installed. |
 | `Adopt` | An apply takes over the releases that its plan shows as taken over: those another manager applied or another stack owns. A release that became another's after the plan is refused (409), not taken over. |
+| `Origin` | Where a stack sent as files came from; only with `Files`. See [the origin](#the-origin-of-a-stack-sent-as-files). |
 
-The token needs object `write` on `packs.norca.io/Release` in the namespace. For a published stack, and
+The token needs object `write` on `rigger.norca.io/Release` in the namespace. For a published stack, and
 for a stack sent as files that takes anything from a registry or a bundle, it also needs:
 
 - object `read` on `rigger.norca.io/Registry`;
@@ -43,6 +44,49 @@ for a stack sent as files that takes anything from a registry or a bundle, it al
 $ curl -X PUT -H "X-Nomad-Token: $TOKEN" "https://localhost:4646/v1/rigger/stack/apply?namespace=shop" \
     -d '{"Source": "acme/shop", "Version": "~> 1.2", "Values": "replicas = 3\n"}'
 ```
+
+## The origin of a stack sent as files
+
+Whoever sends a stack as files may say where the files came from. A GitOps controller, such as the
+one of the [deployer](/docs/deployer/gitops), fetches a stack directory from a repository and knows
+the commit it applies; the servers can't know it.
+
+```json
+{
+  "Files": "...",
+  "Origin": {
+    "repository": "https://git.example.com/acme/platform-env.git",
+    "ref": "main",
+    "commit": "fedcba9876543210fedcba9876543210fedcba98",
+    "signer": "ops@example.com"
+  }
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `repository` | The address of the repository, **without credentials**. At most 2048 bytes. |
+| `ref` | The branch or the tag. At most 255 bytes. |
+| `commit` | The commit: 7 to 64 hexadecimal digits. |
+| `signer` | Who signed the commit or the tag, when the sender verified a signature. At most 255 bytes. |
+
+- **The operation records the origin** (`spec.origin` of the `rigger.norca.io/Operation` object of an
+  apply or a destroy).
+- **The releases of the stack's own modules record the commit** (`spec.pack.commit`): the modules
+  of `./modules/...` came with the files of the stack. A module of a git source or of the global
+  registry records the commit it was fetched at.
+- **The commit is no part of the digest of a release.** The same stack at a later commit changes
+  nothing: the plan shows its releases as unchanged, and a release keeps the commit that last
+  changed it.
+- **The servers verify nothing of it.** It is what the sender says, like the files themselves.
+
+An origin is taken with a plan, a status, an apply and a destroy. These are refused (400):
+
+- an origin with a published stack (`Source`), which has its own source;
+- a commit that is not 7 to 64 hexadecimal digits;
+- a field that is too long or has a control character, and a space in the repository or the ref;
+- a repository with credentials in its address (a password, or any user part of an http or https
+  address): the operation is read by everyone who may read operations.
 
 ## Where the servers fetch from
 
@@ -133,7 +177,7 @@ Operations are written by the servers only; they are read (and deleted) with the
 
 | Method | Path | ACL Required |
 | --- | --- | --- |
-| `PUT`, `POST` | `/v1/rigger/operation/:name/cancel` | object `write` on `packs.norca.io/Release` in the namespace |
+| `PUT`, `POST` | `/v1/rigger/operation/:name/cancel` | object `write` on `rigger.norca.io/Release` in the namespace |
 
 An operation that has ended can't be cancelled (409).
 

@@ -161,10 +161,10 @@ current. The operator takes a provider whose heartbeat is older than `-provider-
 unavailable, so **a heartbeat every 10–30 seconds is right.**
 
 - The operator calls only `https://` endpoints, unless it runs with `-provider-allow-http` (the
-  `provider_allow_http` variable of the pack, for a lab).
+  `provider_allow_http` variable of the module, for a lab).
 - The token is the item `token` of the Variable `token_variable` names. The operator reads it with
-  its own policy: the `nodescaler-operator` pack grants read on `nodescaler/*` in the namespace of
-  the bootstrap (`norca-system` by default), so put it there (for example
+  its own policy: the `nodescaler-operator` module grants read on `nodescaler/*` in the namespace of
+  the bootstrap (the namespace of its job by default), so put it there (for example
   `nodescaler/providers/<name>`).
 - The provider writes its object and its status with a token of its own, which needs write and
   write-status on the kind `norca.io/NodeProvider`.
@@ -266,7 +266,7 @@ The `NodeProvider` object `mycloud-eu` then has the endpoint
 `https://norca-provider.service.eu.norca:8443/providers/mycloud-eu`, its groups with `max` and the
 parameters that are not secret, and the heartbeat of the process. A type without a node section in
 its code fails at start when the file asks for one. `norca-provider types` lists the linked types
-and their parameters; the `norca-provider` pack of the pack registry runs it as a job.
+and their parameters; the `norca-provider` module of the Norca registry runs it as a job.
 
 An application of its own can use the packages directly: `node.NewHandler` for the server and
 `registrar.Registrar` with `registrar.NodeProvider(name, endpoint, tokenVariable, groups, parameters)`

@@ -26,5 +26,5 @@ description: Norca is an open source workload scheduler and orchestrator built o
   {{< hextra/feature-card title="Operators and custom objects" subtitle="Native object kinds with schemas, controllers, finalizers and garbage collection." link="docs/features/operator-framework/" >}}
   {{< hextra/feature-card title="Embedded secret store" subtitle="A sealed keyring, versioned and audited secrets, delivery to tasks and Vault compatibility." link="docs/features/secrets/" >}}
   {{< hextra/feature-card title="Backup and restore" subtitle="Scheduled, age-encrypted backups to S3-compatible stores with browsing and selective restore." link="docs/features/backup-restore/" >}}
-  {{< hextra/feature-card title="Packages" subtitle="`norca pack` built in: registries, signatures, server-side releases with rollback." link="docs/features/packages/" >}}
+  {{< hextra/feature-card title="Packages" subtitle="Rigger built in: modules and stacks, registries, signatures, server-side releases with rollback." link="docs/features/packages/" >}}
 {{< /hextra/feature-grid >}}

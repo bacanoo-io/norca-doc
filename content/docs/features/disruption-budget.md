@@ -105,7 +105,7 @@ job "api" {
 }
 ```
 
-The test-app pack of the repository renders `max_unavailable` from a variable;
+The test-app module of the repository (`example/modules/test-app`) renders `max_unavailable` from a variable;
 the three-node example (`example/03-three-node/test-app.hcl`) sets
 `disruption_max_unavailable = "1"`, so a drain never takes more than one
 instance down:

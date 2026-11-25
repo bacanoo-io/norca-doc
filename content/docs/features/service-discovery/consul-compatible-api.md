@@ -67,7 +67,7 @@ the `ModifyIndex`, no `flags`), with the ACL rules checked by the servers, which
 | | `variables` | `nats` |
 | --- | --- | --- |
 | Storage | Raft of the region, encrypted, in the Norca backups | The JetStream bucket (`consul-kv`), with its replicas |
-| Needs | Nothing | A NATS server with JetStream, e.g. of the `nats` pack |
+| Needs | Nothing | A NATS server with JetStream, e.g. of the `nats` module |
 | `ModifyIndex`, blocking queries | Raft index of the Variable | Revision of the key; a NATS watch wakes the query. A query for a missing key may return unchanged after writes of other keys, as Consul allows |
 | Keys and values | Variables path at most 128 characters (`~XX` for other characters), values up to 64 KB | Any key, values up to 512 KB (the bucket's message size) |
 | `flags` | Kept | Rejected (`400`) |

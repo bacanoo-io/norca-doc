@@ -386,13 +386,13 @@ type in `adopt` it is taken over and later given back, not deleted.
 > (event `Restored`). The tenant never deletes it.
 
 A resource that a release manages is never taken over, and a release can't
-take over what a tenant created: `norca pack` refuses it, also with
-`-take-ownership`.
+take over what a tenant created: the servers refuse the install, also with
+`TakeOwnership` of the [release API](/docs/api/releases).
 
 **One resource has one owner.** Each pass claims, on the leader, the
 resources the tenant wants before it looks at who owns them, and holds the
 claims until its status is written; a release operation claims the
-resources of its pack the same way (see
+resources of its module the same way (see
 [releases](/docs/features/packages/releases#install-upgrade-rollback-uninstall)).
 A resource that a release operation is writing while the pass runs is a
 `Conflict` for that pass (`... is being written by release "apps/web"`): the

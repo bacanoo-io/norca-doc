@@ -259,7 +259,7 @@ server {
 ```
 
 Scale a task group between 3 and 6 instances, keeping the average CPU usage near
-70% of the reserved CPU (this is the policy of the `test-app` pack of the
+70% of the reserved CPU (this is the policy of the `test-app` module of the
 [deployment examples](/docs/getting-started/examples)):
 
 ```hcl

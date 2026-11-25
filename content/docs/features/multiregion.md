@@ -145,8 +145,8 @@ keeps its deployment events for observation.
 ## Example
 
 The [multi-region example](/docs/getting-started/examples/04-multi-region)
-deploys the test application to two regions, `eu-1` first. The variables of
-the test-app pack:
+deploys the test application to two regions, `eu-1` first. The values of
+the [test-app module](https://github.com/bacanoo-io/norca/blob/main/example/modules/test-app/README.md):
 
 ```hcl {filename="test-app-multiregion.hcl"}
 multiregion = [
@@ -161,7 +161,7 @@ multiregion_on_failure   = "fail_all"
 scaling_enabled = false
 ```
 
-The pack renders them into this part of the job:
+The module renders them into this part of the job:
 
 ```hcl
 job "test-app" {
@@ -196,9 +196,13 @@ job "test-app" {
 }
 ```
 
+Rigger installs a release in one region, here `eu-1`. The `multiregion` block
+of the job registers it in both regions:
+
 ```shell
-norca pack run ../packs/test-app --name=test-app --namespace=apps \
-  --regions=eu-1,eu-2 -f test-app-multiregion.hcl
+norca rigger install ../modules/test-app -name test-app -namespace apps \
+  -region eu-1 -f test-app-multiregion.hcl
+norca rigger release status test-app -namespace apps -region eu-1
 
 norca deployment list -region eu-1 -namespace apps
 norca deployment list -region eu-2 -namespace apps          # pending or blocked until eu-1 is done
@@ -208,9 +212,8 @@ norca deployment status -region eu-2 -namespace apps <deployment ID>
 norca deployment run -region eu-2 -namespace apps <deployment ID>
 ```
 
-The same job without the pack: `norca pack render ../packs/test-app -f
-test-app-multiregion.hcl` and `norca job run -namespace apps <rendered file>`
-from any region.
+Without a cluster, `norca rigger module render ../modules/test-app -f
+test-app-multiregion.hcl` prints the job as JSON.
 
 ## Configuration reference
 
@@ -241,9 +244,9 @@ ACLs, an [`authoritative_region`](/docs/configuration/server#authoritative_regio
 | Stop in all regions | `norca job stop -global` | `DELETE /v1/job/:job_id?global=true` |
 
 The **Deployments** page of the [web UI](/docs/features/web-ui) shows a
-multiregion deployment with the state of each region. Pack releases can be
-installed in several regions at once (`--regions`); a multiregion job of a
-pack is registered by the release of its first region; see
+multiregion deployment with the state of each region. The release of a
+module that holds a multiregion job is in one region and does not own the
+copies of the job in the other regions; see
 [Releases](/docs/features/packages/releases).
 
 ## Limits and status

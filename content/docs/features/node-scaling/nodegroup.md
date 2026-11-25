@@ -262,14 +262,14 @@ A group that is deleted meanwhile waits for these instances too, and makes no re
 [the deletion of a group](#the-deletion-of-a-group).
 
 **Set `-list-grace` above the lag of the listing of the slowest provider.** The
-`nodescaler-operator` pack does not set it: add the flag to the arguments of the job to change it.
+`nodescaler-operator` module does not set it: add the flag to the arguments of the job to change it.
 
 ## Nodes that make their own keys
 
 By default the bootstrap of a node carries its key and its certificate (60 days), signed by the
 node CA of the region: the key travels through the provider and the user data of the machine, and
 the node is replaced before the certificate expires. When the operator serves its **join endpoint**
-(`join_enabled` of the `nodescaler-operator` pack, or `-join-listen`), **the key never leaves the
+(`join_enabled` of the `nodescaler-operator` module, or `-join-listen`), **the key never leaves the
 node**:
 
 1. The bootstrap carries the cluster CA, the agent configuration, the join endpoints and a
@@ -339,7 +339,7 @@ see [the deletion of a group](#the-deletion-of-a-group).
 ### Keys in the TPM
 
 A node can keep its key in the TPM 2.0 of its machine instead of a file. The operator sets it for
-all groups with `join_key_store` of the pack (`-join-key-store`), a group for its nodes with
+all groups with `join_key_store` of the module (`-join-key-store`), a group for its nodes with
 `join.key_store`, which wins:
 
 | Value | The key of the node |
@@ -377,7 +377,7 @@ a rolling replacement are unchanged. **Without a known endpoint the operator ask
 (`Provisioned` is `False` with `NoBootstrap`). The endpoints are the stable URLs of `join_urls`
 (a DNS name or a load balancer), or the instances of the service `<job>-join`; a node learns the
 endpoints of the moment at each renewal, so give stable URLs where the operator moves often. The
-nodes must reach the port of the endpoint (`join_port`, 8490). The pack checks the service with
+nodes must reach the port of the endpoint (`join_port`, 8490). The module checks the service with
 `GET /v1/health` over https: `200` while the endpoint can issue certificates (the node CA is
 readable), `503` with the reason otherwise. The node CA issued the certificate of the endpoint, so
 the check does not verify it (`tls_skip_verify`).
@@ -409,7 +409,7 @@ unless it was [drained by hand](#a-node-drained-by-hand) before (`DrainStuck`), 
 scale before the instance is deleted keeps the node (`ScaleDownCanceled`).
 
 The operator reads the jobs of the allocations on a node, so its ACL policy needs `read-job` in
-every namespace (the `nodescaler-operator` pack has it). A node behind a load balancer leaves it
+every namespace (the `nodescaler-operator` module has it). A node behind a load balancer leaves it
 before its drain: see [edge nodes](#edge-nodes).
 
 ### A node drained by hand
@@ -461,7 +461,7 @@ A node that stays after all (a scale down cancelled by a raise of the scale, a s
 cancelled replacement) loses the mark and gets the traffic back. An instance behind a load balancer
 whose `shutdown_delay` is below `edge.min_shutdown_delay` raises `ShortShutdownDelay`: its proxy
 may stop before the platform stops sending to it. The operator needs read on `norca.io/LoadBalancer`
-in every namespace (the `nodescaler-operator` pack has it since version 0.4.0); without the kind, or
+in every namespace (the `nodescaler-operator` module has it); without the kind, or
 without the right to read it, nodes are drained without waiting.
 
 ## The repair of nodes
@@ -599,14 +599,14 @@ A group written as a dependent after its owner was deleted stays and gets the ev
 
 An instance of a group that is gone (deleted with `orphan`, or whose finalizer was removed by force)
 is an **orphan**. The leader of the operator looks for them every `-orphan-sweep` (5 minutes; the
-variable `orphan_sweep` of the pack, since version 0.6.0) and deletes an orphan without a node once
+variable `orphan_sweep` of the module) and deletes an orphan without a node once
 it is older than `-orphan-after` (15 minutes; `orphan_after`). **An orphan that runs a node is left as it is** and reported with an
 `OrphanedInstance` event in the log of its `NodeProvider`; it is deleted only when the operator runs
-with `-delete-orphans` (the variable `delete_orphans` of the pack). The metrics endpoint of the
+with `-delete-orphans` (the variable `delete_orphans` of the module). The metrics endpoint of the
 operator counts them by provider: `norca_nodescaler_orphaned_instances` (the orphans the last sweep
 left) and `norca_nodescaler_orphans_deleted_total`. Adding the finalizer and
 writing the events of a provider need `manage-finalizers` on `NodeGroup` and `write-events` on
-`NodeProvider`; the `nodescaler-operator` pack grants both since version 0.3.0.
+`NodeProvider`; the `nodescaler-operator` module grants both.
 
 ## A group of a fixed size
 

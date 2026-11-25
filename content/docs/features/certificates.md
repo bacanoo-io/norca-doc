@@ -10,7 +10,7 @@ weight: 48
 **A `Certificate` object is a TLS certificate for DNS names that the servers
 keep issued and renewed.** You write the object once; the leader makes the
 key, has the certificate signed and writes both to the
-[secret store](/docs/features/secrets), from where jobs, the Traefik pack and
+[secret store](/docs/features/secrets), from where jobs, the Traefik module and
 anything else that reads secrets take them.
 
 - **Built in.** The operator runs in the servers, on the leader. Nothing has
@@ -211,7 +211,7 @@ template {
 }
 ```
 
-The [Traefik pack](/docs/features/packages/registry#traefik) takes the path
+The [Traefik module](/docs/features/packages/registry#traefik) takes the path
 in `tls_certificates`.
 
 ### When a certificate is issued again

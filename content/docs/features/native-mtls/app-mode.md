@@ -257,7 +257,7 @@ client that renders them (the task itself sees its own paths, `/secrets/mtls/...
 certificate is issued before the templates are rendered. The client renders the template again when it
 renews the certificate, after the template's `wait`, and its `change_mode` applies. This writes the
 certificate into the configuration of an application that takes it as content, for example the
-dynamic configuration of Traefik (the [traefik pack](/docs/features/packages/registry#traefik) does so
+dynamic configuration of Traefik (the [traefik module](/docs/features/packages/registry#traefik) does so
 with `mtls_backends`):
 
 ```hcl

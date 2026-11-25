@@ -547,14 +547,14 @@ The `policy` field for the backup rule can have one of the following values:
 
 (Norca) The `bus` rule allows a token to connect to the
 [system bus](/docs/configuration/bus) of the servers and lists the NATS
-subjects it may use **outside the change streams and outside JetStream**, for
-example to publish a pack push notice. **The changes of the region are read
+subjects it may use **outside the change streams and outside JetStream**.
+**The changes of the region are read
 with the [`cdc` rule](#cdc-rules)**, not with this one. Without a `bus` or
 `cdc` rule a token can't connect; management tokens may use every subject.
 
 ```hcl
 bus {
-  publish = ["norca.packs.pushed", "norca.packs.pushed.>"]
+  publish = ["app.orders", "app.orders.>"]
 }
 ```
 
@@ -569,9 +569,9 @@ tokens, last only). The lists of all policies of a token are combined. **A
 to subscribe or to publish, that reaches the change streams, JetStream and
 its buckets (`$JS.>`, `$JSC.>`, `$KV.>`, `$NRG.>`), the deliveries to the
 leaf nodes (`_R_.>`), the telemetry of the nodes (`norca.telemetry.>`), the
-NATS system account (`$SYS.>`), the subjects of the servers themselves
-(`$NORCA.>`, their inboxes `_NORCA_INBOX.>`) or the subject the servers store
-the pack push notices on (`<prefix>.packs.notices`) is left out, with a
+logs of the Rigger operations (`norca.rigger.oplog.>`), the
+NATS system account (`$SYS.>`) or the subjects of the servers themselves
+(`$NORCA.>`, their inboxes `_NORCA_INBOX.>`) is left out, with a
 warning in the server log. **Unknown keys are refused**,
 also the former `leafnode`. **When the token or its policies change, its
 connections are closed and reconnect with the new rights.** No token may
@@ -645,7 +645,8 @@ cdc {
 - `receive` `(array<string>: <required>)` - The subjects of the change
   streams the reader may receive, live and through its consumer. A subject
   outside the change streams is left out; the telemetry of the nodes and the
-  pack push notices are never received, so `norca.>` gives the changes only.
+  logs of the Rigger operations are never received, so `norca.>` gives the
+  changes only.
 - `leaf` `(bool: false)` - Whether a NATS server may attach to the bus as a
   leaf node with the token, the way the changes leave the cluster
   ([through a leaf node](/docs/features/change-data-capture#through-a-leaf-node)).

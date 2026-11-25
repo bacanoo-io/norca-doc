@@ -14,7 +14,7 @@ norca object-kind webhook approve [options] <group>/<Kind> <webhook>
 ```
 
 Admission webhooks bound to an object kind review the writes of its objects.
-They are declared in the kind (usually by the pack of the operator), but the
+They are declared in the kind (usually by the module of the operator), but the
 servers call them only after an administrator approved them: kinds applied with
 a management token approve their webhooks at once, others wait for an approval.
 The approval covers the current configuration of the webhook (URL, CA, mode,

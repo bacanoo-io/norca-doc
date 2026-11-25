@@ -17,8 +17,8 @@ server, outside Raft.
 
 Norca backs up every region on a schedule, from its leader, into one or more
 destinations: S3-compatible stores (AWS S3, or a store with the S3 API such as
-RustFS, the `rustfs` pack of the
-[Norca pack registry](/docs/features/packages/registry)), and directories of
+RustFS, the `rustfs` module of the
+[Norca registry](/docs/features/packages/registry)), and directories of
 the servers' filesystem, such as a file server mounted on every server. A
 backup holds the Raft snapshot, the keyring and the key of the built-in secret
 store. **Every object is encrypted with
@@ -181,7 +181,8 @@ caller's token:
 | ACL policy, ACL role, quota, admission policy, network policy, admin network policy, service intention | Upserted. |
 | Custom object | Its spec, labels and owners are applied; the status is left to its controller. Its type definition must exist. |
 
-The objects of `packs.norca.io` (pack releases, cluster registries), secret
+Releases and their revisions (the kinds `rigger.norca.io/Release` and
+`rigger.norca.io/ReleaseRevision`), secret
 engines, leases, ACL tokens, auth methods and binding rules can be browsed and
 compared, but not restored one by one: use a full restore.
 
@@ -232,7 +233,7 @@ It is guarded:
   with the active key. Without the keys nothing of the KV is restored.
 - **Every object in the preview.** Besides jobs and Variables the preview lists
   the quotas, admission and network policies, intentions, type definitions and
-  custom objects (pack releases and cluster registries among them), secret
+  custom objects (releases and the registries of Rigger among them), secret
   engines and leases, ACL tokens, auth methods, binding rules and node pools
   that the restore removes, restores or reverts, a page at a time. A request
   keeps the first 250 objects for its approver; `-dry-run` lists them all.
@@ -327,7 +328,7 @@ server {
 ```
 
 The [single node example](/docs/getting-started/examples/02-single-node)
-backs up hourly into a RustFS store deployed with the `rustfs` pack:
+backs up hourly into a RustFS store deployed with the `rustfs` module:
 
 ```hcl {filename="norca.hcl"}
 server {

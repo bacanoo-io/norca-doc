@@ -1,7 +1,7 @@
 ---
 title: "System bus"
 linkTitle: "System bus"
-description: "The Norca servers embed a NATS server with JetStream: the system bus carries the event stream of the region and the pack push notices, without a separate NATS."
+description: "The Norca servers embed a NATS server with JetStream: the system bus carries the event stream of the region and Norca's other internal traffic, without a separate NATS."
 weight: 46
 ---
 
@@ -23,9 +23,9 @@ Norca's own traffic:
   region gets its second server, the bus restarts clustered and the server carries the keys of
   its standalone store over; keys kept in Variables move with
   [`norca operator consul-kv migrate`](/docs/commands/operator/consul-kv/migrate).
-- **Pack push notices.** A release pipeline announces that it pushed packs.
-  The leader syncs the matching [cluster registries](/docs/features/packages/registry)
-  at once, without waiting for their sync interval.
+- **The logs and the bundles of Rigger.** The full log of an apply or a destroy of a stack that the
+  servers run is kept in a stream, a subject per operation, and the bundles imported into the cluster
+  in an object store; see the [stacks API](/docs/api/rigger-stacks#read-the-log-of-an-operation).
 - **Task group usage.** The clients publish the CPU and memory usage of their
   task groups and the statistics of their host for the
   [built-in autoscaler](/docs/features/autoscaler) and the
@@ -37,7 +37,7 @@ Norca's own traffic:
 carry, how to connect, the guarantees. This page is the technical layer.
 
 **The bus is not a message broker for applications.** Applications keep their own
-NATS, for example the `nats` pack. The bus is configured in the server's
+NATS, for example the `nats` module. The bus is configured in the server's
 [`bus` block](/docs/configuration/bus) and **is enabled by default.**
 
 **One NATS account.** Every connection of the bus (the servers, the nodes, the
@@ -247,44 +247,3 @@ re-encryption of a full keyring rotation send nothing; a recursive delete
 sends one notice per key. A `cdc` rule
 `receive = ["norca.eu.default.ConsulKV.>"]` receives the notices of the
 namespace `default`.
-
-## Pack push notices
-
-A push notice names the source of a registry, or a cluster registry by name.
-The leader of the region syncs every registry whose `source` matches. Sources
-are compared without the scheme case, a trailing `/` and `.git`.
-
-```shell-session
-$ curl -X POST -H "X-Nomad-Token: $TOKEN" \
-    -d '{"Source": "oci://ghcr.io/acme/packs", "Pack": "web", "Version": "1.4.0"}' \
-    https://server1:4646/v1/pack-registries/notify-push
-```
-
-The request needs a token that may write the cluster registries. The server
-stores the notice on `<prefix>.packs.notices`, a subject only the servers
-publish, in the stream `NORCA_PACK_PUSHES`, which keeps notices for 24
-hours. The leader reads the
-stream with the durable consumer `norca-sync-<region>`, so a notice sent
-during a leader change is handled by the next leader. **A registry is synced at
-most once a minute on push notices:** a notice that comes within that minute
-waits for its end and is synced then, unless a sync that started after the
-push has it already. Without the bus the server syncs the
-matching registries of its region directly.
-
-A pipeline with NATS tooling can also publish the notice itself, on
-`<prefix>.packs.pushed`, with a token that has `bus { publish =
-["norca.packs.pushed"] }`. A server takes it over and stores it. **Such a
-notice is not acknowledged**: the publisher gets no answer. It is lost when:
-
-- no server listens when it is published;
-- it is empty, or larger than 64 KiB;
-- the server that took it stops before it could store it.
-
-A notice the server can't store at once (JetStream is not available, the bus
-restarts, the stream does not take it) is kept in the memory of that server
-and stored when the server tries again. **At most 256 notices are kept;
-beyond that the oldest is dropped**, with a warning in the log of the server.
-**The HTTP API above is the way that confirms a notice.**
-
-Registry syncs on the events of other regions need the buses of the regions
-connected to each other; that comes with the gateways between regions.

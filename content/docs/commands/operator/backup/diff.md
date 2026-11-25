@@ -85,8 +85,8 @@ If ACLs are enabled, this command requires the `read` capability of the [`backup
   `job-versions`, `variables`, `secrets`, `acl-policies`, `acl-roles`,
   `deployments`, `allocations`, `acl-tokens`, `acl-auth-methods`, `acl-binding-rules`, `quotas`,
   `admission-policies`, `network-policies`, `admin-network-policies`,
-  `service-intentions`, `external-services`, `object-kinds`, `custom-objects` (pack releases and
-  cluster registries among them), `secret-engines`, `secret-leases`,
+  `service-intentions`, `external-services`, `object-kinds`, `custom-objects` (releases and
+  the registries of Rigger among them), `secret-engines`, `secret-leases`,
   `node-pools` or `consul-kv` (keys compared by the hash of
   their value; a key kept under another Variables path than `consul/kv`
   shows as `<path>:<key>`).

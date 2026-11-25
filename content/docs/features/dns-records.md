@@ -25,7 +25,7 @@ address, a new spec) the operator writes the zone again.
 - **Set back.** A record set changed in the zone by hand is written again.
 
 The kind `norca.io/DNSRecord` is namespaced; the
-[norca-dns pack](/docs/features/packages/registry) registers it with the
+[norca-dns module](/docs/features/packages/registry#norca-dns) registers it with the
 operator. It is a [custom object](/docs/features/operator-framework): written
 with [`norca object apply`](/docs/commands/object/apply), read with
 `norca object get`, listed in the web UI.
@@ -50,18 +50,21 @@ with [`norca object apply`](/docs/commands/object/apply), read with
    The `norca.io/DNSZone` object of the zone then says `spec.records =
    true`. A zone without it serves only the challenge records of
    [norca-acme](/docs/features/certificates-acme): its token can't change
-   anything else the zone serves. The norca-provider pack 0.4.0 or later
-   is needed (its `DNSZone` kind knows the field).
+   anything else the zone serves.
 
-2. **The operator.** Run the norca-dns pack. Like the other
-   [operator packs](/docs/features/packages/registry#packs), its job runs in
-   the namespace `norca-system` by default, which must exist, reads the
-   token Variables of the zones there, and keeps off nodes with the
-   `raw_exec` driver:
+2. **The operator.** Install the norca-dns module. Like the other
+   [operator modules](/docs/features/packages/registry#operator-modules), its
+   job runs in the namespace of its release, `norca-system` here, which must
+   exist, reads the token Variables of the zones there, and keeps off nodes
+   with the `raw_exec` driver. The servers install it from the global
+   registry:
 
    ```shell-session
    $ norca namespace apply -description "Norca operators" norca-system
-   $ norca pack run norca-dns --registry=norca
+   $ norca rigger registry sync global
+   $ norca operator api -namespace norca-system -X PUT /v1/rigger/install <<'EOF'
+   {"Release": "norca-dns", "Registry": "global", "Module": "norca/norca-dns", "Version": "~> 0.3"}
+   EOF
    ```
 
 3. **The allow list of a namespace.** The namespace metadata
@@ -186,7 +189,7 @@ record with its load balancer.
   full.
 - **Changes made in the zone by hand** are set back when the operator
   compares the record with the zone, every 5 minutes (`requeue` of the
-  pack) and at every change of the record: event `DriftCorrected`,
+  module) and at every change of the record: event `DriftCorrected`,
   `status.drifts`.
 - **A record set that changes while norca-dns writes it is not written
   over.** The operator writes a set only if the zone still holds it as the
@@ -266,7 +269,7 @@ stays in the zone when its record gives it up), `DeleteFailed`,
 ## Rights
 
 The operator writes the zones with its own rights (the ACL policy of the
-pack). What a writer of a record may cause is bounded by the allow list of
+module). What a writer of a record may cause is bounded by the allow list of
 its namespace, which only a management token or a tenant writes, and by the
 object right `write` on `norca.io/DNSRecord` in the namespace:
 
@@ -277,7 +280,7 @@ namespace "team-a" {
 ```
 
 **A name is one for the whole cluster**, so the operator looks for the
-record that holds a name in every namespace. The pack runs it for every
+record that holds a name in every namespace. The module runs it for every
 namespace. An operator started with `-namespace` for one namespace writes
 there only, but **its policy still needs to read the `DNSRecord` objects and
 the metadata of every namespace**: in a namespace it can't read, it does not

@@ -22,7 +22,7 @@ flowchart LR
   adm -.-> obj
   anp["Admin network policy (cluster-wide)"] -.-> np
   job --> group["Task group: disruption budget, affinity rules, scaling policy, mtls services, secret blocks"]
-  rel["Pack release"] --> job
+  rel["Release"] --> job
   rel --> obj
   backup["Backup (per region)"] -.->|"contains"| ns
 ```
@@ -43,5 +43,5 @@ flowchart LR
 | Secret | A versioned, audited value of the built-in secret store | Namespace, per region | [Secret store](/docs/features/secrets) |
 | Seal | The protection of the keyring (for example `shares`); a sealed server cannot decrypt | Server | [Seal](/docs/features/secrets/seal) |
 | Backup | An encrypted snapshot of a region's state in an S3-compatible store | Region | [Backup and restore](/docs/features/backup-restore) |
-| Pack release | An installed pack with its revision history, applied by the servers | Namespace | [Releases](/docs/features/packages/releases) |
+| Release | An installed module with its revision history, applied by the servers | Namespace | [Releases](/docs/features/packages/releases) |
 | Multiregion deployment | One job version rolled out region by region | Federation | [Multiregion deployments](/docs/features/multiregion) |

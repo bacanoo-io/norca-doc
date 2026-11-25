@@ -443,7 +443,7 @@ paths (`<mount>/creds/<role>`) keep failing with a message that they need a Vaul
 - Available: operator engines, leases with renewal and revocation, the fallback, the `secret` block with
   `engine`, `role`, `params` and `fallback`, the operator SDK, CLI and API.
 - Not available: ready-made operators beyond the [PostgreSQL operator](#the-postgresql-operator), which has no
-  published image or pack; a private key that stays on the client (a CSR in the request); credentials for ACL tokens (only
+  published image or module; a private key that stays on the client (a CSR in the request); credentials for ACL tokens (only
   tasks get credentials); a web UI page for engines and leases; Vault-style dynamic paths (see above).
 
 ## Design

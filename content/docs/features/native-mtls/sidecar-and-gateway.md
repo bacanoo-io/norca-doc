@@ -200,9 +200,16 @@ job "mtls-gateway" {
 }
 ```
 
-The `mtls-gateway` pack of the [Norca pack registry](https://github.com/bacanoo-io/norca-registry/blob/main/packs/mtls-gateway/README.md)
-renders this job with its options (system or service job, port, host network, placement, an Envoy task of its own):
-`norca pack run mtls-gateway --registry=norca --region=<region>`.
+The `mtls-gateway` module of the [Norca registry](https://github.com/bacanoo-io/norca-registry/blob/main/modules/mtls-gateway/README.md)
+renders this job with its options (system or service job, port, host network, placement, an Envoy task of its own).
+A release is installed in one region, so each region syncs the registry and gets its own release:
+
+```shell
+norca rigger registry sync global -region <region>
+norca operator api -region <region> -X PUT /v1/rigger/install <<'EOF'
+{"Release": "mtls-gateway", "Registry": "global", "Module": "norca/mtls-gateway", "Version": "~> 0.2"}
+EOF
+```
 
 **Run it in the `default` namespace.** The servers inject the Envoy task `mtls-gateway-<service>` (host networking
 is supported as well). The gateway listens on the service port, reads the SNI name of each TLS connection and

@@ -136,7 +136,7 @@ sent again. See
 [owners](/docs/features/operator-framework/lifecycle#owners-and-garbage-collection).
 
 (Norca) **A job with release marks** (the meta `pack.release` and `pack.release_namespace`, which
-a release puts on its jobs and its hook jobs) needs object `write` on `packs.norca.io/Release` in
+a release puts on its jobs and its hook jobs) needs object `write` on `rigger.norca.io/Release` in
 the namespace `pack.release_namespace` names when the marks are new or changed, or when the stored
 job is stopped; otherwise the request fails with `403`. The release operations take a job with the
 marks as their own (a hook of the release, a job a failed apply left, a hook job an uninstall

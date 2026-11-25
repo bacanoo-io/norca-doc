@@ -15,7 +15,7 @@ health-based discovery, DNS names and the service mesh.
 Norca closes these gaps in the native provider. The catalog records the health of every instance, the
 clients can answer DNS queries and serve a read API in Consul's format, services outside the cluster can
 be registered, and lookups can prefer instances close to the caller. Consul stays available as an
-option for what Norca does not cover, installed from HashiCorp's official release by a pack. The
+option for what Norca does not cover, installed from HashiCorp's official release by a module. The
 service mesh part, mutual TLS between services, is covered by [native mTLS](/docs/features/native-mtls).
 
 ## How it works
@@ -28,7 +28,7 @@ Discovery has four tiers. Each one builds on the native catalog stored in the se
 | [Native catalog](/docs/features/service-discovery/catalog) | Service registrations with health, check states and datacenter; the HTTP API, `nomadService` in templates, the Task API | Applications, Traefik's `nomad` provider, Prometheus `nomad_sd_configs` | Always on; health filtering is opt-in for the HTTP API and templates |
 | [Built-in DNS](/docs/features/service-discovery/dns) | A DNS server on every client that answers `*.service.norca` (and optionally `*.service.consul`) names with healthy instances | Applications and hosts that resolve names | Off |
 | [Consul-compatible API](/docs/features/service-discovery/consul-compatible-api) | An HTTP API on every client with the catalog, health, status and agent service endpoints of Consul | Traefik `consulcatalog`, Prometheus `consul_sd_configs`, consul-template, self-registering frameworks | Off |
-| [Full Consul](/docs/features/service-discovery/consul-pack) | The official Consul release, installed and run as Norca jobs by the `consul` pack | Consul Connect with L7 features, Consul KV, sessions, prepared queries | Not installed |
+| [Full Consul](/docs/features/service-discovery/consul-module) | The official Consul release, installed and run as Norca jobs by the `consul` module | Consul Connect with L7 features, Consul KV, sessions, prepared queries | Not installed |
 
 ```mermaid
 flowchart LR
@@ -52,7 +52,7 @@ flowchart LR
   prom["Prometheus"] -->|"nomad_sd_configs"| catalog
   prom -.->|"consul_sd_configs"| compat
   ct["consul-template"] -.-> compat
-  consul["Consul (consul pack, optional)"]
+  consul["Consul (consul module, optional)"]
 ```
 
 Solid arrows are native integrations; dashed arrows are tools that only know Consul and read the
@@ -75,7 +75,7 @@ On top of the tiers:
   {{< card link="/docs/features/service-discovery/consul-compatible-api" title="Consul-compatible API" >}}
   {{< card link="/docs/features/service-discovery/topology" title="Topology-aware routing" >}}
   {{< card link="/docs/features/service-discovery/external-services" title="External services" >}}
-  {{< card link="/docs/features/service-discovery/consul-pack" title="Full Consul (consul pack)" >}}
+  {{< card link="/docs/features/service-discovery/consul-module" title="Full Consul (consul module)" >}}
 {{< /cards >}}
 
 ## Example
@@ -139,7 +139,7 @@ curl 'http://127.0.0.1:8500/v1/health/service/test-app?passing'
 
 - All four phases of the design that concern discovery (health-based catalog, DNS with topology-aware
   routing, the Consul-compatible read layer, external services with the Consul agent write endpoints)
-  are implemented, as is the `consul` pack.
+  are implemented, as is the `consul` module.
 - The DNS server listens on the host. **Workloads in `bridge` networking do not get it as their
   nameserver automatically**; they find services through templates, the Task API or an address of the
   host that they can reach.

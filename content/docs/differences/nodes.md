@@ -21,7 +21,7 @@ name-constrained intermediate that the deployer issues.
 | Installing servers and clients | By hand or with external tools: binary, configuration, service unit | [`norca-deployer`](/docs/deployer): a plan (YAML or HCL), installed over SSH or locally, idempotent `apply`, nothing preinstalled on the nodes | New |
 | Restarts after a change | By hand | Only changed nodes restart: servers one at a time with health, leader and peer checks, clients in batches | New |
 | TLS, gossip and ACL bootstrap | Set up by the operator | Done by `apply`: mTLS certificates, gossip key, `acl bootstrap` with the token stored locally | New |
-| Packages, scripts and packs | External tools | In the plan: APT packages, scripts by phase, packs, secrets and policies | New |
+| Packages, scripts and base services | External tools | In the plan: APT packages, scripts by phase, a stack of Rigger modules, secrets and policies | New |
 | Removing a node | Drain, stop, purge or remove the Raft peer by hand | [`inventory.decommission`](/docs/deployer/adding-and-removing-nodes): drain, uninstall, purge or remove from Raft | New |
 | Certificates of servers and clients | Made by the operator: `nomad tls ca create`, `tls cert create`, or an own CA | Issued by the deployer's [cluster CA](/docs/deployer/security) (or your own CA), copied over SSH | Changed |
 | Renewal of those certificates | By hand | Valid 3 years; `apply` re-issues one with less than 30 days left and restarts the agent | New |

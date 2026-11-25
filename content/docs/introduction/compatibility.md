@@ -72,12 +72,15 @@ The CLI and the API client read their settings from `NORCA_*` environment variab
 | `NORCA_TLS_SERVER_NAME` | SNI server name |
 | `NORCA_SKIP_VERIFY` | Skip TLS verification |
 | `NORCA_CLI_NO_COLOR`, `NORCA_CLI_FORCE_COLOR` | Disable or force colored output |
-| `NORCA_PACK_ALLOW_UNSET_VARS`, `NORCA_PACK_PLAN_EXIT_CODE_*` | `norca pack` settings |
-| `NORCA_PACK_CONFIG`, `NORCA_PACK_CACHE_DIR`, `NORCA_PACK_REGISTRY_USERNAME`, `NORCA_PACK_REGISTRY_PASSWORD`, `NORCA_PACK_KEY_PASSWORD`, `NORCA_PACK_LOCK` | `norca pack` OCI registries, signing and lock files ([supply chain](/docs/features/packages/supply-chain)) |
 
 The variables injected into workloads (`NORCA_ALLOC_ID`, `NORCA_TASK_DIR`, ...; see
-[Environment variables](/docs/runtime/environment)), the jobspec variable prefix `NORCA_VAR_` and the
-pack variable prefix `NORCA_PACK_VAR_` use the same `NORCA_` prefix.
+[Environment variables](/docs/runtime/environment)) and the jobspec variable prefix `NORCA_VAR_`
+use the same `NORCA_` prefix.
+
+`norca rigger` talks to the cluster of `NORCA_ADDR` and `NORCA_TOKEN` and reads its own settings from
+`RIGGER_*` variables: `RIGGER_VAR_<name>` (the value of a variable), `RIGGER_SERVER` (the servers
+evaluate), and `RIGGER_GIT_*` and `RIGGER_OCI_*` (the credentials of git and OCI sources). See
+[`norca rigger`](/docs/commands/rigger#environment).
 
 ## Names that stay Nomad
 

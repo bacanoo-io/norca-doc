@@ -1,7 +1,7 @@
 ---
 title: "Security"
 weight: 18
-description: "An overview of the security mechanisms of Norca: transport encryption, access control, workload identities, native mTLS, the sealed secret store, network rules, admission control, backup encryption and the pack supply chain."
+description: "An overview of the security mechanisms of Norca: transport encryption, access control, workload identities, native mTLS, the sealed secret store, network rules, admission control, backup encryption and the supply chain of packages."
 ---
 
 Norca is **not secure by default**: a development agent runs without TLS, ACLs or encryption. This page
@@ -60,12 +60,13 @@ security modules, disabling unused drivers) apply unchanged.
   gateway of its client, with per-task tokens. See
   [Vault compatibility](/docs/features/secrets/vault-compatibility).
 
-## Supply chain of packs
+## Supply chain of packages
 
-Packs installed with `norca pack` can come from OCI registries, signed with cosign-compatible keys. The
-servers verify the signatures themselves, admission policies can require a trusted signature in protected
-namespaces, and the release records the pack, version, digest and signer. See
-[supply chain](/docs/features/packages/supply-chain).
+The modules that Rigger installs are pinned by a lock file (version, commit and tree digest) and can be
+signed with cosign-compatible keys. A stack trusts the keys of a registry, and the global registry lists
+only versions signed by a key of their namespace. The servers verify the signatures themselves, admission
+policies can require a trusted signature in protected namespaces, and the release records the module,
+version, digest and signer. See [supply chain](/docs/features/packages/supply-chain).
 
 ## Checklist
 

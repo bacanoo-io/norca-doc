@@ -1,28 +1,30 @@
 ---
 title: "Releases HTTP API"
 linkTitle: "Releases"
-description: "The /release endpoints install, upgrade, plan, roll back, test, check and uninstall pack releases, and read their revisions."
+description: "The /release endpoints install, upgrade, plan, roll back, test, check and uninstall releases, and read their revisions."
 ---
 
-The `/release` endpoints manage [pack releases](/docs/features/packages/releases): installs and
-upgrades of rendered pack resources applied by the servers, with a revision history. `norca pack` uses
-them; the Go client is `client.Releases()` in `github.com/bacanoo-io/norca/norca/api`.
+The `/release` endpoints manage [releases](/docs/features/packages/releases): installs and
+upgrades of rendered resources applied by the servers, with a revision history. **Rigger applies its
+releases through them**: the `rigger` program and `norca rigger`, and the servers themselves for an
+[install](/docs/api/rigger-install) or a [stack](/docs/api/rigger-stacks). The Go client is
+`client.Releases()` in `github.com/bacanoo-io/norca/norca/api`.
 
-Packs of [cluster pack registries](/docs/features/packages/catalog) are rendered by the servers and
-installed with `plan-pack` and `deploy-pack`, described in the
-[Pack registries HTTP API](/docs/api/pack-registries#plan-or-install-a-pack).
-
-Releases are custom objects of the built-in kind `packs.norca.io/Release` in a namespace, with
-revisions of the kind `packs.norca.io/ReleaseRevision`. They can be read with the object API too, but
+Releases are custom objects of the built-in kind `rigger.norca.io/Release` in a namespace, with
+revisions of the kind `rigger.norca.io/ReleaseRevision`. They can be read with the object API too, but
 **only these endpoints write them**. All endpoints are bound to a namespace (`namespace` query parameter
 or `X-Nomad-Namespace`, default `default`) and a region (`region`).
 
+Several names inside a release keep the word pack: `Spec.Pack` (the package of the release), the
+manager `pack`, the job meta `pack.release` and the admission input `release.pack`.
+
 The table below shows the ACL capabilities each endpoint needs. They are object capabilities of the
-kind, granted in an ACL policy:
+kind, granted in an ACL policy. The registries and the operations of Rigger are kinds of the same
+group, so **a rule for `rigger.norca.io/*` covers the releases with them**:
 
 ```hcl
 namespace "apps" {
-  object "packs.norca.io/Release" {
+  object "rigger.norca.io/Release" {
     capabilities = ["read", "write"]
   }
 }
@@ -32,8 +34,9 @@ namespace "apps" {
 token through the normal endpoint of its type, so **the token also needs the permissions for those
 resources** (for example `submit-job` for a job, or a management token for an ACL policy). Resources the
 release adopts without writing them (all of them with `RecordOnly`, and the multiregion jobs another
-region of a multi-region install registers) need the same permissions, and `TakeOwnership` needs
-object `write` on `packs.norca.io/Release` in the namespace of every release resources are taken
+region of an [install in several regions](#several-regions-in-one-request) registers) need the same
+permissions, and `TakeOwnership` needs
+object `write` on `rigger.norca.io/Release` in the namespace of every release resources are taken
 from; see [permissions](/docs/features/packages/releases#permissions).
 
 > [!NOTE]
@@ -53,7 +56,7 @@ This endpoint lists the releases of a namespace.
 
 | Blocking Queries | ACL Required |
 | ---------------- | ------------ |
-| `YES`            | object `read` on `packs.norca.io/Release` |
+| `YES`            | object `read` on `rigger.norca.io/Release` |
 
 ### Parameters
 
@@ -84,21 +87,21 @@ This endpoint reads a release.
 
 | Blocking Queries | ACL Required |
 | ---------------- | ------------ |
-| `YES`            | object `read` on `packs.norca.io/Release` |
+| `YES`            | object `read` on `rigger.norca.io/Release` |
 
 ### Response fields
 
 - `ID`, `Namespace`, `Name`, `CreateTime`, `ModifyTime`, `CreateIndex`, `ModifyIndex`
 
-- `Spec.Pack` - The pack of the newest revision: `Name`, `Version`, `Registry`, `Path`, `Digest` (OCI
-  manifest digest), `Signer` (key ID reported by the client), `Signatures`, `TrustedSigner` (key ID
+- `Spec.Pack` - The package of the newest revision: `Name`, `Version`, `Registry`, `Path`, `Source`,
+  `Ref`, `Digest`, `Signer` (key ID reported by the client), `Signatures`, `TrustedSigner` (key ID
   the servers verified a signature with), `Requires` (`Norca`, `Features`), `Manager` (`pack` or
   `rigger`: the package manager that applied the newest revision; see
   [one manager](#one-manager-per-release)), `Commit`.
 
 - `Spec.Description`, `Spec.Revision` (newest revision), `Spec.MaxHistory`, `Spec.Atomic` (mode of
-  the last operation), `Spec.Multiregion` (`Regions`, `GlobalRegion`; only for multi-region
-  installs).
+  the last operation), `Spec.Multiregion` (`Regions`, `GlobalRegion`; only for an
+  [install in several regions](#several-regions-in-one-request)).
 
 - `Spec.Owner` - The owner of the newest revision, for a release a Rigger stack installed: `Kind`
   (`stack`), `Namespace` and `Name` (those of the stack), `Version`, `Source`, `Part`. Absent for a
@@ -133,7 +136,7 @@ This endpoint installs a release, or upgrades it with a new revision. The leader
 per release at a time; **a concurrent operation gets `409 Conflict`, as does a resource owned by
 another release without `TakeOwnership`, and a resource another release operation or a tenant pass
 is writing at that moment** (`being written by another operation`; the other operation is named only
-to a caller who may write the resource). The operation claims the resources of its pack before it
+to a caller who may write the resource). The operation claims its resources before it
 writes anything, so nothing is written then; see
 [install, upgrade, rollback, uninstall](/docs/features/packages/releases#install-upgrade-rollback-uninstall).
 
@@ -155,24 +158,26 @@ and uninstall endpoints:
 
 | Blocking Queries | ACL Required |
 | ---------------- | ------------ |
-| `NO`             | object `write` on `packs.norca.io/Release`, plus the permissions for every resource |
+| `NO`             | object `write` on `rigger.norca.io/Release`, plus the permissions for every resource |
 
 ### Parameters
 
 - `:name` `(string: <required>)` - The release name, in the path.
 
-- `Pack` `(object: <required>)` - The pack: `Name`, `Version`, `Registry`, `Path`, `Source` (the git
-  URL or `oci://` location of its registry) and `Ref` (the tag or branch), `Digest`, `Signer`,
+- `Pack` `(object: <required>)` - The package of the release, for Rigger a module: `Name`, `Version`,
+  `Registry`, `Path`, `Source` (where it came from) and `Ref` (the tag or branch), `Digest`, `Signer`,
   `Signatures` (each `Payload` and `Signature`, the cosign simple signing format), `Requires`.
-  `norca pack` fills `Source` and `Ref` for packs of git and OCI registries; the web UI upgrades the
-  release from a cluster registry of that source. `Manager` is `pack` (also when empty) or `rigger`;
-  `Commit` the git commit a Rigger module was fetched at. A module that the servers installed from a
-  [registry of Rigger](/docs/api/rigger-registries) records the name of that registry in `Registry`.
+  `Manager` is `rigger` for a release of Rigger; `pack` (also when empty) is the manager of the
+  releases that the pack manager made, which no longer exists. `Commit` is the git commit a Rigger
+  module was fetched at; for a module of a stack's own directory, the commit of the
+  [origin](/docs/api/rigger-stacks#the-origin-of-a-stack-sent-as-files) of the stack. A module that
+  the servers installed from a [registry of Rigger](/docs/api/rigger-registries) records the name of
+  that registry in `Registry`.
 
 - `Description` `(string: "")` - Description of the revision.
 
 - `Values` `(map: nil)` - The variable overrides, recorded in the revision (secret-looking values
-  redacted); `ValuesHash` a hash of all overrides and var files.
+  redacted); `ValuesHash` a hash of all overrides and value files.
 
 - `InputDigest` `(string: "")` - Rigger's digest of what it applies (the module digest, the values,
   the settings), recorded in the revision as given; Rigger compares it to tell an unchanged release.
@@ -190,7 +195,7 @@ and uninstall endpoints:
 
   - `Type` (`namespace`, `quota`, `acl-policy`, `variable`, `object-kind`, `admission-policy`,
     `object` or `job`),
-  - `Source` (the template file), and
+  - `Source` (the file of the package it came from), and
   - the resource in the field of its type: `Namespace`, `Quota`, `ACLPolicy`, `Variable`,
     `ObjectKind`, `AdmissionPolicy`, `Object`, or `Job` (API form) with an optional `Submission`.
 
@@ -215,7 +220,7 @@ and uninstall endpoints:
 - `Timeout` `(duration: 5m)` - How long to wait for deployments and hooks, in nanoseconds (at most 2h).
 
 - `TakeOwnership` `(bool: false)` - Take over resources that belong to another release. With ACLs
-  enabled, the token needs object `write` on `packs.norca.io/Release` in the namespace of every
+  enabled, the token needs object `write` on `rigger.norca.io/Release` in the namespace of every
   release resources are taken from. A resource another operation is writing at that moment is not
   taken: it is a `409 Conflict` with `TakeOwnership` too. The resources are removed from the releases
   they are taken from after the operation has recorded its result; an operation a leader change has
@@ -224,18 +229,19 @@ and uninstall endpoints:
 
 - `MaxHistory` `(int: 10)` - Number of revisions to keep (at most 100).
 
-- `RecordOnly` `(bool: false)` - Only record the revision of resources deployed by the client
-  (`norca pack run --client-side`). With ACLs enabled, the token needs the permissions to write every
-  resource it records, as for a real apply.
+- `RecordOnly` `(bool: false)` - Only record the revision of resources that the client deployed
+  itself. With ACLs enabled, the token needs the permissions to write every resource it records, as
+  for a real apply.
 
-- `VariablesSchemas` `(array: nil)` - The JSON Schemas of the packs (`Pack`: the pack path such as
-  `app.redis`, `Schema`), validated again by the servers and stored in the revision (64 KiB in total).
+- `VariablesSchemas` `(array: nil)` - JSON Schemas of the variables (`Pack`: the path of the package
+  a schema belongs to, such as `app.redis`; `Schema`), validated by the servers and stored in the
+  revision (64 KiB in total).
 
-- `VariableValues` `(map: nil)` - The effective variable values per pack path, validated against the
-  schemas and never stored.
+- `VariableValues` `(map: nil)` - The effective variable values per package path, validated against
+  the schemas and never stored.
 
-- `Regions` `(array: nil)` - Install in these regions in one operation
-  ([multi-region installs](/docs/features/packages/releases#multi-region-installs), at most 32).
+- `Regions` `(array: nil)` - Install in these regions in one request, at most 32; see
+  [several regions in one request](#several-regions-in-one-request). Rigger does not send it.
 
 ### Response
 
@@ -252,7 +258,8 @@ and uninstall endpoints:
 
 ### One manager per release
 
-**A release has one package manager:** the pack manager (`norca pack`) or Rigger. The manager of a
+**A release has one package manager:** Rigger, or `pack` for a release that the pack manager made
+before it was removed. Such a release is still listed, rolled back and uninstalled. The manager of a
 revision is `Pack.Manager`. An install, an upgrade or a dry run of one manager on a release whose
 newest revision the other applied fails with `409 Conflict`:
 
@@ -263,6 +270,26 @@ release "web" is managed by pack: rigger takes it over only when asked to (adopt
 `Adopt` (`rigger stack apply -adopt`, `rigger install -adopt`) takes the release over; from then on
 the other manager is the one refused. A rollback to a revision of the other manager needs `Adopt`
 too. Uninstalls and tests are open to both.
+
+### Several regions in one request
+
+A release lives in a region, and **Rigger installs a release in one region**: for several regions it
+takes one install, or one stack, per region. The endpoint itself also takes `Regions`: the region
+that receives the request sends the release to the leader of every region in turn and answers with
+one result per region. Each region applies it as a release operation of its own, with its own
+release object, revisions, atomic mode, hooks and drift detection; `Spec.Multiregion` of every
+release records the regions and the global region.
+
+- **Global resources** (namespaces, quotas, ACL policies) are applied and owned only by the release
+  of the global region: the authoritative region if it is one of the regions, otherwise the first
+  one given. The other regions show them as `remote` in their changes and wait, up to a minute,
+  until the replicated copies match.
+- **A job with a `multiregion` block** is registered by the release of the first region of the
+  request that the job lists; the releases of the other listed regions adopt their copy.
+- **A failure in one region** does not affect the releases of the other regions. The request fails
+  only if every region failed.
+- `Regions` can't be combined with `RecordOnly`.
+- The token must be valid in every region.
 
 ### One owner per release
 
@@ -289,7 +316,7 @@ anything.
 
 | Blocking Queries | ACL Required |
 | ---------------- | ------------ |
-| `NO`             | object `write` on `packs.norca.io/Release` |
+| `NO`             | object `write` on `rigger.norca.io/Release` |
 
 The body and the response are those of [install or upgrade](#install-or-upgrade-release); the
 `Changes` carry the job diffs.
@@ -304,7 +331,7 @@ This endpoint lists the kept revisions of a release, newest first.
 
 | Blocking Queries | ACL Required |
 | ---------------- | ------------ |
-| `YES`            | object `read` on `packs.norca.io/Release` |
+| `YES`            | object `read` on `rigger.norca.io/Release` |
 
 Each revision has `Namespace`, `Release`, `Revision`, `Spec` (`Action`, `RollbackOf`, `Pack`,
 `Description`, `Values`, `ValuesHash`, `InputDigest`, `Owner`, `VariablesSchemas`, `Multiregion`,
@@ -321,7 +348,7 @@ This endpoint reads one revision with its rendered resources.
 
 | Blocking Queries | ACL Required |
 | ---------------- | ------------ |
-| `YES`            | object `read` on `packs.norca.io/Release` and `namespace:read-job` |
+| `YES`            | object `read` on `rigger.norca.io/Release` and `namespace:read-job` |
 
 The response is a revision as in [list revisions](#list-revisions), with `Resources`: the rendered
 resources in the form of the install request.
@@ -339,7 +366,7 @@ change answers `503 Service Unavailable` as for an
 
 | Blocking Queries | ACL Required |
 | ---------------- | ------------ |
-| `NO`             | object `write` on `packs.norca.io/Release`, plus the permissions for every resource |
+| `NO`             | object `write` on `rigger.norca.io/Release`, plus the permissions for every resource |
 
 ### Parameters
 
@@ -351,7 +378,7 @@ change answers `503 Service Unavailable` as for an
 - `Adopt` `(bool: false)` - Restore a revision the other package manager applied than the one of
   the newest revision ([one manager](#one-manager-per-release)).
 
-The rollback restores the pack, the values, the owner and the input digest of the revision.
+The rollback restores the package (`Pack`), the values, the owner and the input digest of the revision.
 The response is that of [install or upgrade](#install-or-upgrade-release).
 
 ### Sample request
@@ -379,7 +406,7 @@ the release stays as it was.
 
 | Blocking Queries | ACL Required |
 | ---------------- | ------------ |
-| `NO`             | object `write` on `packs.norca.io/Release` |
+| `NO`             | object `write` on `rigger.norca.io/Release` |
 
 ### Parameters
 
@@ -399,7 +426,7 @@ condition.
 
 | Blocking Queries | ACL Required |
 | ---------------- | ------------ |
-| `NO`             | object `read` on `packs.norca.io/Release` |
+| `NO`             | object `read` on `rigger.norca.io/Release` |
 
 ### Sample response
 
@@ -429,7 +456,7 @@ it again.
 
 | Blocking Queries | ACL Required |
 | ---------------- | ------------ |
-| `NO`             | object `write` on `packs.norca.io/Release`, plus the permissions to delete every resource |
+| `NO`             | object `write` on `rigger.norca.io/Release`, plus the permissions to delete every resource |
 
 ### Parameters
 

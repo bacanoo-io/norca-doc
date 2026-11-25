@@ -32,7 +32,7 @@ changes are delivered on the [event stream](/docs/features/event-stream).
   {{< card link="/docs/features/operator-framework/object-kinds" title="Object kinds and objects" subtitle="Schema, defaults, CEL rules, columns, spec and status, concurrency." >}}
   {{< card link="/docs/features/operator-framework/controllers" title="Controllers" subtitle="The Go controller SDK, leader election, permissions, norca operator init." >}}
   {{< card link="/docs/features/operator-framework/lifecycle" title="Lifecycle" subtitle="Finalizers, deletion modes, garbage collection, event log, scale." >}}
-  {{< card link="/docs/features/operator-framework/ecosystem" title="Ecosystem" subtitle="Operator packs, type-bound webhooks, schema migrations, limits, lint." >}}
+  {{< card link="/docs/features/operator-framework/ecosystem" title="Ecosystem" subtitle="Operator modules, type-bound webhooks, schema migrations, limits, lint." >}}
 {{< /cards >}}
 
 ## How it works
@@ -109,15 +109,16 @@ Successfully applied object kind "norca.io/LoadBalancer"!
 
 ### Run the controller
 
-Install the operator as a pack, which applies the kind, the ACL policy of the
+Install the operator as a module, which applies the kind, the ACL policy of the
 controller and the controller job as one release (see
-[Ecosystem](/docs/features/operator-framework/ecosystem#operator-packs)). The
-controller job runs in the namespace `norca-system`, which must exist, and
-keeps the `LoadBalancer` objects of `default` (`watch_namespace`):
+[Ecosystem](/docs/features/operator-framework/ecosystem#operator-modules)). The
+controller job runs in the namespace of the release, `norca-system`, which must
+exist, and keeps the `LoadBalancer` objects of `default` (`watch_namespace`).
+From a checkout of the Norca registry:
 
 ```shell
 $ norca namespace apply -description "Norca operators" norca-system
-$ norca pack run ./packs/loadbalancer-operator --name=lb
+$ norca rigger install ./modules/loadbalancer-operator -name lb -namespace norca-system
 ```
 
 ### Create an object

@@ -1,7 +1,7 @@
 ---
 title: "Deployer"
 linkTitle: "Deployer"
-description: "norca-deployer installs and maintains Norca clusters on your own machines from a declarative plan: servers and clients over SSH, rolling restarts, TLS and ACLs, firewall, packages, secrets and packs."
+description: "norca-deployer installs and maintains Norca clusters on your own machines from a declarative plan: servers and clients over SSH, rolling restarts, TLS and ACLs, firewall, packages, secrets and Rigger stacks."
 weight: 65
 ---
 
@@ -32,8 +32,8 @@ norca-deployer apply -c cluster-deploy.yaml   # install or update, safe to run a
   healthy, has a leader and sees all Raft peers;
 - clients restart in batches.
 
-After the cluster is up it writes the bootstrap secrets, ACL policies and pack
-registries, and deploys the packs of the plan.
+After the cluster is up it writes the bootstrap secrets and ACL policies, and
+applies the Rigger stack of the plan.
 
 ## What it covers
 
@@ -46,8 +46,8 @@ registries, and deploys the packs of the plan.
 | Network | Agents listen on the cluster address only; firewall rules (ufw, firewalld, iptables) for the API, cluster and allocation ports |
 | Scheduling labels | Node meta and class, node pools, host networks, reserved resources, drain on shutdown |
 | Lifecycle | Adding nodes, decommissioning (drain, Raft removal, uninstall), a record of the installed nodes |
-| After the bootstrap | Secrets and Variables (also generated passwords and NATS NKeys), ACL policies bound to jobs, pack registries and packs |
-| GitOps | Packs deployed from Forgejo, Gitea, GitHub and GitLab repositories, read into memory: on demand, on `apply` and on webhooks; signed commits and tags can be required |
+| After the bootstrap | Secrets and Variables (also generated passwords and NATS NKeys), ACL policies bound to jobs, a stack of Rigger modules |
+| GitOps | Rigger stacks applied from Forgejo, Gitea, GitHub and GitLab repositories, read into memory: on demand, on `apply` and on webhooks; a binding that applies needs signed commits or tags |
 
 ## Learn more
 

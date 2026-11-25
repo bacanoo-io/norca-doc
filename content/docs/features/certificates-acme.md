@@ -17,9 +17,9 @@ authority.
 | Part | Who | What |
 | --- | --- | --- |
 | Key, signing request, secret, renewal, allowed names | the servers | As for every `Certificate`. |
-| Account, order, proof of the names, chain | `norca-acme` | A job of the norca-acme pack. |
+| Account, order, proof of the names, chain | `norca-acme` | A job of the norca-acme module. |
 | TXT records for DNS-01 | `norca-provider` | A provider with a `dns` section, which has the credentials of the DNS service. |
-| Port 80 for HTTP-01 | the edge router | The Traefik pack with `acme_challenge = true`. |
+| Port 80 for HTTP-01 | the edge router | The Traefik module with `acme_challenge = true`. |
 
 - **The operator never sees a private key of a certificate** and reads no
   secret of a namespace. It gets the signing request and returns the chain.
@@ -30,16 +30,26 @@ authority.
 
 ## Install
 
-Three packs of the [pack registry](/docs/features/packages/registry). norca-acme and
-norca-provider are [operator packs](/docs/features/packages/registry#packs): their jobs run in the
-namespace `norca-system` by default, which must exist, and keep off nodes with the `raw_exec`
-driver.
+Three modules of the [Norca registry](/docs/features/packages/registry). norca-acme and
+norca-provider are [operator modules](/docs/features/packages/registry#operator-modules): their jobs
+run in the namespace of their release, `norca-system` here, which must exist, and keep off nodes with
+the `raw_exec` driver.
+
+The servers install traefik and norca-acme from the global registry; the other values of Traefik go
+into its `ValuesJSON` too. norca-provider takes a file of values, so it is installed from a checkout
+of the registry.
 
 ```shell-session
 $ norca namespace apply -description "Norca operators" norca-system
-$ norca pack run traefik --registry=norca --name=traefik --var acme_challenge=true ...
-$ norca pack run norca-provider --registry=norca --name=dns -f dns.hcl     # for DNS-01
-$ norca pack run norca-acme --registry=norca --name=acme
+$ norca rigger registry sync global
+$ norca operator api -X PUT /v1/rigger/install <<'EOF'
+{"Release": "traefik", "Registry": "global", "Module": "norca/traefik", "Version": "~> 0.3",
+ "ValuesJSON": {"acme_challenge": true}}
+EOF
+$ norca rigger install <checkout>/modules/norca-provider -name dns -namespace norca-system -f dns.hcl     # for DNS-01
+$ norca operator api -namespace norca-system -X PUT /v1/rigger/install <<'EOF'
+{"Release": "acme", "Registry": "global", "Module": "norca/norca-acme", "Version": "~> 0.3"}
+EOF
 ```
 
 - **norca-acme** installs the job and an ACL policy bound to it: `read` and
@@ -60,10 +70,12 @@ $ norca pack run norca-acme --registry=norca --name=acme
 ### Leader election
 
 **With `-leader-election`** (a flag of `norca-acme`, off by default; the
-pack runs one instance without it) **several instances are safe**: they
+module runs one instance without it, and sets it with `leader_election = true`
+or a `count` above 1) **several instances are safe**: they
 share a lease, the Variable `controller-lease/<controller>`
 (`controller-lease/norca-acme` by default) in the namespace of
-`-lease-namespace` (`norca-system` by default), and only the instance that
+`-lease-namespace` (`norca-system` by default; the module passes the namespace
+of the job, or its `lease_namespace`), and only the instance that
 holds it works. An allocation that was lost but still runs while its
 replacement starts then places no second order.
 
@@ -75,8 +87,8 @@ replacement starts then places no second order.
   [fence](/docs/features/operator-framework/controllers#fencing-side-effects)
   of the controller SDK). A refused call changes nothing and counts no
   attempt of the order.
-- **The ACL policy needs the lease.** The policy the pack installs does not
-  grant it; add to the policy bound to the job:
+- **The ACL policy needs the lease.** The policy the module installs grants
+  it when leader election is on. A policy written by hand needs:
 
   ```hcl
   namespace "norca-system" {
@@ -184,16 +196,16 @@ The certificate authority asks `http://<name>/.well-known/acme-challenge/<token>
 on port 80. The operator answers it itself.
 
 1. **The name must point at the edge router**, and port 80 must reach it.
-2. **The Traefik pack with `acme_challenge = true`**: its redirect to https
+2. **The Traefik module with `acme_challenge = true`**: its redirect to https
    leaves the path of the challenge out. The redirect becomes a router of
    the dynamic configuration instead of the redirection of the entrypoint;
    everything else is redirected as before.
-3. **The namespace of `norca-acme` (`norca-system` by default) in
+3. **The namespace of `norca-acme` (`norca-system` above) in
    `catalog_namespaces` of Traefik**: the service of the operator carries the
    router of the path as catalog tags (`http01_entrypoints` of the norca-acme
-   pack, `["web"]`). Traefik reads the services of another namespace than its
-   own only with an ACL policy bound to its job that allows it; the output of
-   the traefik pack prints one.
+   module, `["web"]`). Traefik reads the services of another namespace than its
+   own only with an ACL policy bound to its job that allows it; the output
+   `notes` of the traefik module holds one.
 
 With another edge router, route that path of every host on port 80 to the
 service `norca-acme`.
@@ -325,12 +337,12 @@ keeps the credentials of the DNS service:
 
 ## Serving the certificate with Traefik
 
-The Traefik pack reads the secrets of `tls_certificates` when it starts, and
+The Traefik module reads the secrets of `tls_certificates` when it starts, and
 the HTTP-01 challenge needs Traefik before the certificate exists. **Start
 with a placeholder and hand it over**:
 
 1. Write the secret with any certificate, for example a self-signed one,
-   and name it in `tls_certificates` of the Traefik pack:
+   and name it in `tls_certificates` of the Traefik module:
 
    ```shell-session
    $ norca secret put certs/web cert=@placeholder.crt key=@placeholder.key
@@ -428,11 +440,13 @@ or with one the operator does not know, is revoked as `unspecified`. **A
 certificate authority that refuses the reason** (`badRevocationReason`) is
 asked once more without it: the revocation matters more than its reason.
 
-## Settings of the norca-acme pack
+## Settings of the norca-acme module
+
+The operator job and its secrets are in the namespace of the release, which must exist.
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `namespace` | `norca-system` | The namespace of the operator job and its secrets; it must exist. |
+| `count`, `leader_election`, `lease_namespace` | `1`, `false`, `""` (the namespace of the job) | The instances and their [leader election](#leader-election). |
 | `driver`, `allow_raw_exec_nodes` | `exec`, `false` | The task driver; the job keeps off nodes with `raw_exec` unless `allow_raw_exec_nodes` is set. |
 | `controller` | `norca-acme` | The name issuers name the operator by. |
 | `secret_prefix` | `norca-acme/` | Where the operator keeps its secrets in its namespace. |
@@ -460,5 +474,5 @@ asked once more without it: the revocation matters more than its reason.
 
 - [Certificates](/docs/features/certificates): the objects, the secret, the
   allowed names, the contract of an external issuer
-- [Pack registry](/docs/features/packages/registry): the packs `norca-acme`,
+- [Norca registry](/docs/features/packages/registry): the modules `norca-acme`,
   `norca-provider` and `traefik`

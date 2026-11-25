@@ -210,8 +210,8 @@ their paths, metadata and value hashes.
   `namespaces`, `jobs`, `job-versions`, `variables`, `secrets`,
   `acl-policies`, `acl-roles`, `deployments`, `allocations`, `acl-tokens`, `acl-auth-methods`, `acl-binding-rules`, `quotas`,
   `admission-policies`, `network-policies`, `admin-network-policies`,
-  `service-intentions`, `external-services`, `object-kinds`, `custom-objects` (pack releases and
-  cluster registries among them), `secret-engines`, `secret-leases`,
+  `service-intentions`, `external-services`, `object-kinds`, `custom-objects` (releases and
+  the registries of Rigger among them), `secret-engines`, `secret-leases`,
   `node-pools` or
   `consul-kv`.
   - The types from `acl-tokens` on are returned in `Objects`
@@ -299,7 +299,8 @@ previews and requests a full restore of the region.
   - `Type` `(string: <required>)` - `job`, `variable`, `secret`, `namespace`,
     `acl-policy`, `acl-role`, `quota`, `admission-policy`, `network-policy`,
     `admin-network-policy`, `service-intention`, `external-service`, `custom-object`
-    (`<group>/<kind>/<name>`; not those of `packs.norca.io`) or `consul-kv` (a key of the Consul KV of the
+    (`<group>/<kind>/<name>`; not those of the kinds `rigger.norca.io/Release` and
+    `rigger.norca.io/ReleaseRevision`) or `consul-kv` (a key of the Consul KV of the
     system bus, written back into its bucket; an existing key needs its
     current revision as `CheckIndex`).
   - `Namespace` `(string: "")` - The namespace of a job, Variables entry or

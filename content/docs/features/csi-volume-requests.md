@@ -17,7 +17,7 @@ by hand, and deletes it with the request if you want that.
 - **Built in.** The operator runs in the servers, on the leader. Nothing has
   to be installed, and it upgrades with the servers.
 - **Declared, not run once.** The request is the record of the volume: a
-  pack, a stack or a GitOps tool writes it like any other object.
+  module, a stack or a GitOps tool writes it like any other object.
 - **Only its own volume.** A volume of the same ID that the request did not
   make is left alone unless the request says `adopt = true`.
 - **The secrets stay in the secret store.** The CSI secrets come from a

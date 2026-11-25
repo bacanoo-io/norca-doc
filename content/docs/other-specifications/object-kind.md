@@ -7,8 +7,8 @@ description: "The HCL format of object kinds, the types of custom objects, appli
 Object kinds are the types of the custom objects of the
 [operator framework](/docs/features/operator-framework). They are written in HCL
 and applied with [`norca object-kind apply`](/docs/commands/object-kind/apply),
-or rendered from `*.kind.hcl.tpl` templates of an
-[operator pack](/docs/features/operator-framework/ecosystem#operator-packs).
+or installed from the `<name>.kind.hcl` files of an
+[operator module](/docs/features/operator-framework/ecosystem#operator-modules).
 The JSON form is the one of the [object kinds API](/docs/api/object-kinds).
 
 The file may call `file("<path>")` (relative to the file), `jsonencode()` and

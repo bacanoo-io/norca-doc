@@ -15,8 +15,7 @@ The **Packages** page of the web UI shows **Rigger**, the package manager, on th
 - **Registries**: the registries of the cluster, when each was last synced, and their settings.
 
 A registry may list very many modules and stacks, so the catalog is **searched on the servers** a page at a time.
-It is never loaded whole into the browser. Packs are no longer shown or installed in the UI; the
-[pack manager](/docs/features/packages/catalog) still works from the command line and the API.
+It is never loaded whole into the browser.
 
 ## The catalog
 
@@ -86,7 +85,8 @@ its page shows:
 ## The page of a release
 
 A release Rigger applied shows the module and its version, its source, the registry of the cluster it
-was installed from, its digest and signature, and the stack that owns it.
+was installed from, its digest and signature, and the stack that owns it. **Values** shows the
+variable values of the deployed revision, read-only.
 
 - **Upgrade** opens the install form of the module with the values of the deployed revision, for a
   release installed from a registry of the cluster that no stack owns. A sensitive value is not kept
@@ -94,6 +94,9 @@ was installed from, its digest and signature, and the stack that owns it.
 - **A release of a stack** says which stack (and part) owns it: the stack applies, upgrades and removes
   it, so change the stack and apply it on [its page](#the-page-of-a-stack).
 - A release of a module sent as files is upgraded with the `rigger` program.
+- **A release that the pack manager made** before it was removed is shown with a note that nothing
+  upgrades it. It can be rolled back and uninstalled, and a module installed from the Catalog under
+  the same name takes it over.
 
 ## Registries
 
