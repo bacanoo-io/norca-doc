@@ -21,6 +21,8 @@ Usage: `norca rigger [flags] <command>`
 - [`rigger release`](/docs/commands/rigger/release) - List, show, roll back and uninstall releases, without a stack
 - [`rigger operation`](/docs/commands/rigger/operation) - Follow, cancel and show an apply or a destroy the servers run
 - [`rigger registry`](/docs/commands/rigger/registry) - List, sync and search the registries of the cluster
+- [`rigger search`](/docs/commands/rigger/search) - List the modules and stacks of a registry, without a cluster
+- [`rigger show`](/docs/commands/rigger/show) - Show one module or stack of a registry, without a cluster
 - [`rigger module`](/docs/commands/rigger/module) - Validate, test, render and publish a module
 - [`rigger fmt`](/docs/commands/rigger/fmt) - Format `.hcl` files
 - [`rigger key`](/docs/commands/rigger/key) - Generate signing keys, sign and verify
@@ -90,6 +92,8 @@ A password in the environment without its `_HOST` is an error.
 $ norca rigger install ./my-module -name web
 $ norca rigger install builtin/redis -name cache
 $ norca rigger release status web
+$ norca rigger search redis
+$ norca rigger show norca/redis
 $ norca rigger registry sync global
 $ norca rigger stack sync .
 $ norca rigger stack plan . -f values/dev.vars.hcl

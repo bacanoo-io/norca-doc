@@ -58,6 +58,10 @@ program fetches and verifies it itself:
 norca rigger install norca/rustfs -version "~> 0.2" -name rustfs -f rustfs.hcl -server
 ```
 
+[`norca rigger search`](/docs/commands/rigger/search) lists the modules of the global registry and
+[`norca rigger show`](/docs/commands/rigger/show) the versions, signers and variables of one, without a
+cluster: `norca rigger search -category database`, `norca rigger show norca/rustfs`.
+
 **From a checkout** of the registry, a module installs by its path, without the global registry:
 
 ```shell

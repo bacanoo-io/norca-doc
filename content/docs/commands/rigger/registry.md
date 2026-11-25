@@ -27,7 +27,7 @@ norca rigger registry unselect <name> module|stack <namespace>/<name>
 | `registry list` | Lists the registries of the cluster. |
 | `registry status` | Shows one registry and its last sync. |
 | `registry sync` | Fetches the index of the registry now. |
-| `registry search` | Lists the modules and stacks of a registry at its last sync. |
+| `registry search` | Lists the modules and stacks of a registry at its last sync. Without a cluster, [`rigger search`](/docs/commands/rigger/search) reads a registry itself. |
 | `registry select`, `registry unselect` | Change what a registry with `display = "selected"` shows in the web UI. The UI changes with the next sync. |
 
 ## Registry Options
