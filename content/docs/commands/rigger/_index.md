@@ -37,8 +37,7 @@ The following commands are available:
 - `rigger version` - Print the version and the build: commit, date, Go version and platform (`--json`;
   also `rigger --version`). Under norca the version is `(built into Norca <version>)`.
 - `rigger help` - Print the commands; `rigger help <command>` prints the help of one command, with its
-  flags and examples (also `rigger <command> --help`). Under norca use `norca rigger help <command>`:
-  norca takes `-h` and `--help` itself.
+  flags and examples (also `rigger <command> --help` or `-h`, and the same under `norca rigger`).
 - `rigger help environment` - Print the variables of the environment the commands read
 - `rigger completion` - Write the shell completion script (the `rigger` program only; see below)
 
