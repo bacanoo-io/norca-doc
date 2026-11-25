@@ -41,9 +41,18 @@ The following commands are available:
 - `rigger help environment` - Print the variables of the environment the commands read
 - `rigger completion` - Write the shell completion script (the `rigger` program only; see below)
 
-The `rigger` program also has `rigger operator init`, which writes the project of an operator; see
-[scaffolding an operator](/docs/features/operator-framework/controllers#scaffolding-an-operator).
-`norca rigger` does not have it.
+The `rigger` program also has two generators, which `norca rigger` does not have:
+
+- `rigger operator init` writes the project of an operator; see
+  [scaffolding an operator](/docs/features/operator-framework/controllers#scaffolding-an-operator).
+- `rigger generate examples [dir]` writes a local example project (default directory
+  `rigger-examples`, `--owner` names the owner, `--force` overwrites): a registry repository of your
+  own with two modules, a library module and a published stack; a stack of your own that installs
+  from that registry by its path on disk, with values per environment, trust and a module of its
+  own; an index of the shape of the global registry; and the Registry object that registers the
+  registry in a cluster. Every file is commented, and the `README.md` of the project lists every
+  command in its order, from `git init` and `rigger key generate` to `rigger stack apply`. The
+  generator only writes files: it runs no git, signs nothing and needs no network or cluster.
 
 ## Flags
 
