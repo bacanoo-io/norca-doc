@@ -102,7 +102,7 @@ Then the servers install the module from the global registry, as the release `co
 ```shell
 norca rigger registry sync global
 norca operator api -X PUT /v1/rigger/install <<'EOF'
-{"Release": "consul", "Registry": "global", "Module": "norca/consul", "Version": "~> 0.2",
+{"Release": "consul", "Registry": "global", "Module": "norca/consul", "Version": "~> 0.3",
  "ValuesJSON": {"consul_license_accepted": true}}
 EOF
 norca job status consul
@@ -127,6 +127,7 @@ The module's variables (the most important ones; the
 | `tls_enabled` | `true` | TLS for RPC, HTTPS and gRPC |
 | `clients_enabled` | `true` | The client system job |
 | `snapshot_enabled` | `false` | The snapshot job |
+| `server_extra_config`, `client_extra_config` | `{}` | Consul configuration of your own, as an object (for example `{ log_json = true }`): written as `consul.d/extra.json` next to the configuration of the module |
 
 ## CLI and API
 
