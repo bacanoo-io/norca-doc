@@ -13,7 +13,7 @@ sync one, and searches what it read. To search a registry the servers of a clust
 
 ```plaintext
 norca rigger search [text] [-registry global|builtin|<repository>] [-kind module|stack]
-    [-category c] [-keyword k] [-offset n] [-limit n] [-json]
+    [-category c] [-keyword k] [-offset n] [-limit n] [-max-width n] [-json]
 ```
 
 **The text** is found in `<namespace>/<name>` or in the description, regardless of case; without
@@ -33,7 +33,8 @@ A git repository is fetched into the cache now, so a second search is quick. The
 logged.
 
 The table shows the kind, the name (`<namespace>/<name>` in the global registry, `builtin/<name>`,
-the name in a repository), the newest version and the description. When the matches fill more
+the name in a repository), the newest version and the description, cut to 60 characters at a word
+(`-max-width`) so that a row fits a line of a terminal. When the matches fill more
 than one page, a last line says which (`51-100 of 230`). With `-json` each item also has its
 `source`, the address [`rigger show`](/docs/commands/rigger/show) and
 [`rigger install`](/docs/commands/rigger/install) take: `<repository>//modules/<name>` for a module
@@ -56,6 +57,9 @@ of a repository.
 - `-offset`: The first match to show. Defaults to 0.
 
 - `-limit`: How many matches to show. Defaults to 50, at most 500.
+
+- `-max-width`: How many characters of a description the table shows; a longer one is cut at a
+  word and ends with `...`. Defaults to 60; 0 shows the descriptions whole. `-json` is always whole.
 
 - `-json`: Write the matches as JSON: the registry, the commit, the total, the offset and the items.
 

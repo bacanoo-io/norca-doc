@@ -11,7 +11,7 @@ would take, fetched and verified the same way.
 ## Usage
 
 ```plaintext
-norca rigger show <source> [-version constraint] [-kind module|stack] [-readme] [-json]
+norca rigger show <source> [-version constraint] [-kind module|stack] [-readme] [-max-width n] [-json]
 ```
 
 **The source** is that of an install:
@@ -53,6 +53,10 @@ Warnings are written to standard error.
 - `-kind`: `module` or `stack`, for a name of the global registry that is both.
 
 - `-readme`: Also print the `README.md` of the module or stack.
+
+- `-max-width`: How many characters of a description, and of a default, the tables of the variables
+  and outputs show; a longer one is cut at a word and ends with `...`. Defaults to 60; 0 shows them
+  whole. `-json` is always whole.
 
 - `-json`: Write the details as JSON.
 
