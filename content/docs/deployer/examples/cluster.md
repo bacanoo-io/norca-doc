@@ -73,7 +73,7 @@ paths:
 
 tuning:
   apply_sysctl: true                # Kernel parameters and bridge modules for container networking.
-  apply_firewall_rules: true        # Open 4646-4648 in ufw/firewalld/iptables (Windows Firewall on Windows).
+  apply_firewall_rules: true        # Open 4646-4648 in ufw/firewalld/nftables/iptables (not on Windows).
   open_ephemeral_ports: true        # Open 20000-32000 on the clients for the allocations.
   setup_logrotate: true             # Agent log file with size-based rotation.
   windows_long_paths: true          # Enable LongPathsEnabled on Windows nodes.
@@ -91,9 +91,10 @@ tuning:
       - port: "4222"                # NATS clients (nats module); 6222 routes and 8222 monitoring
         cidrs: [10.8.0.0/24]        # only matter between the NATS servers / for operators.
         roles: [client]             # Default: the nodes that run a client; proto tcp (udp, both).
-    default_deny: true              # Enable ufw and deny all other incoming traffic. The SSH
-                                    # port the deployer uses (and every port sshd listens on)
-                                    # stays open. Needs ufw (installed below) or firewalld.
+    default_deny: true              # Deny all other incoming traffic (the nftables table of the
+                                    # deployer, or ufw). The SSH port the deployer uses (and
+                                    # every port sshd listens on) stays open. Needs nft
+                                    # (nftables, installed below), ufw or firewalld.
 
 network:
   bind_address: 0.0.0.0             # Listen on all addresses.
@@ -171,9 +172,9 @@ bus:                                # The same bus block on every server (the sy
                                     # a write beyond it fails. Its values are encrypted with the keyring.
 
 host_packages:
-  update_cache: true                # apt-get update before installing (skipped on offline nodes).
-  lock_timeout: 300                 # Seconds to wait for the dpkg lock.
-  apt:                              # Nodes whose package manager is apt (Debian, Ubuntu); dnf and apk follow.
+  update_cache: true                # apt-get update / dnf --refresh before installing (skipped on offline nodes).
+  lock_timeout: 300                 # Seconds to wait for the dpkg lock / for other dnf and rpm processes.
+  apt:                              # Nodes whose package manager is apt (Debian, Ubuntu); apk follows.
     repositories:
       - name: docker                  # -> /etc/apt/sources.list.d/norca-docker.sources
         uri: https://download.docker.com/linux/debian
@@ -209,11 +210,30 @@ host_packages:
       - name: containerd.io
         roles: [client]
       - name: chrony                  # Time sync on every node (Raft and TLS need correct clocks).
-      - name: ufw                     # Firewall for tuning.firewall.default_deny.
+      - name: nftables                # nft, for the firewall of tuning.firewall.default_deny.
       # - name: mycorp-agent
       #   version: "2.4.1-1"          # Exact Debian version; empty = candidate version.
       #   hold: true
       #   hosts: [norca-worker-01]    # Only on these nodes (host or hostname).
+  dnf:                              # Nodes whose package manager is dnf (RHEL, Rocky Linux, AlmaLinux 9+).
+    repositories:
+      - name: docker                  # -> /etc/yum.repos.d/norca-docker.repo (gpgcheck=1)
+        baseurl: https://download.docker.com/linux/rhel/$releasever/$basearch/stable
+        key_file: keys/docker.asc     # Uploaded as /etc/pki/rpm-gpg/norca-docker.asc (ASCII-armored).
+        priority: 10                  # Lower wins; dnf's default is 99.
+        include: [containerd.io, docker-ce, docker-ce-cli]   # includepkgs
+        roles: [client]
+    install:
+      - name: docker-ce
+        roles: [client]
+      - name: docker-ce-cli
+        roles: [client]
+      - name: containerd.io
+        version: "1.7.27-3.1.el9"     # [epoch:]version-release; without a version a package is
+        hold: true                    # installed once (dnf install does not upgrade). versionlock.
+        roles: [client]
+      - name: chrony
+      # The firewall of RHEL is firewalld, which runs by default.
 
 scripts:
   - name: prepare-data-disk
@@ -271,10 +291,10 @@ rigger:                             # A Rigger stack, applied after the secrets:
   sync_registries: [global]         # The servers sync the global registry before the stack: they
                                     # fetch modules only from a registry they have synced.
   # prune: true                     # Uninstall the releases that were removed from the stack.
-  # The stack.hcl, written in the plan (or stack: <directory> for a stack with
-  # files of its own). Its lock file is kept in .norca-deployer/rigger-stack/,
+  # The stack.hcl, written in the plan (or stack_dir: <directory> for a stack
+  # with files of its own). Its lock file is kept in .norca-deployer/rigger-stack/,
   # so the versions stay from one apply to the next.
-  stack_hcl: |
+  stack: |
     rigger {
       name   = "base"                  # Recorded in every release as its owner.
       region = "eu-central"            # The region of this plan (metadata.region).
@@ -451,7 +471,7 @@ inventory:
         node_class: windows
         native_app_volumes:
           enable_defaults: true     # C:\norca\apps\bin, work, config, data
-        # extra_hcl: |              # Settings the deployer does not model, inside the client block.
+        # extra: |                  # Settings the deployer does not model, inside the client block.
         #   max_kill_timeout = "60s"
 
 # Multi-region: a plan per region. A replica region adds this block; ACLs are
@@ -542,7 +562,7 @@ tuning {
       cidrs = ["10.8.0.0/24"]
       roles = ["client"]
     }
-    default_deny  = true               # ufw on, everything else denied; SSH stays open.
+    default_deny  = true               # Everything else denied (nftables or ufw); SSH stays open.
   }
 }
 
@@ -668,7 +688,35 @@ host_packages {
       name = "chrony"                    # Time sync on every node.
     }
     install {
-      name = "ufw"                       # Firewall for default_deny.
+      name = "nftables"                  # nft, for the firewall of default_deny.
+    }
+  }
+
+  dnf {                                # Nodes whose package manager is dnf (RHEL, Rocky Linux, AlmaLinux 9+).
+    repositories {
+      name     = "docker"                # -> /etc/yum.repos.d/norca-docker.repo (gpgcheck=1)
+      baseurl  = "https://download.docker.com/linux/rhel/$releasever/$basearch/stable"
+      key_file = "keys/docker.asc"       # ASCII-armored.
+      priority = 10                      # Lower wins; dnf's default is 99.
+      include  = ["containerd.io", "docker-ce", "docker-ce-cli"]
+      roles    = ["client"]
+    }
+    install {
+      name  = "docker-ce"
+      roles = ["client"]
+    }
+    install {
+      name  = "docker-ce-cli"
+      roles = ["client"]
+    }
+    install {
+      name    = "containerd.io"
+      version = "1.7.27-3.1.el9"         # [epoch:]version-release; held with versionlock.
+      hold    = true
+      roles   = ["client"]
+    }
+    install {
+      name = "chrony"
     }
   }
 }
@@ -727,58 +775,60 @@ secrets {                              # Written after the cluster is up, before
 }
 
 # A Rigger stack, applied after the secrets: the base services of the cluster
-# as modules. The stack.hcl is written in the plan, as a heredoc (or
-# stack = "<directory>" for a stack with files of its own).
+# as modules. The stack.hcl is written in the plan, as the body of the stack
+# block (or stack_dir = "<directory>" for a stack with files of its own). Its
+# lock file is kept in .norca-deployer/rigger-stack/, so the versions stay from
+# one apply to the next.
 rigger {
   sync_registries = ["global"]         # The servers sync the global registry before the stack.
   # prune         = true               # Uninstall the releases that were removed from the stack.
 
-  stack_hcl = <<EOT
-rigger {
-  name   = "base"                  # Recorded in every release as its owner.
-  region = "eu-central"            # The region of this plan (metadata.region).
-}
+  stack {
+    rigger {
+      name   = "base"                  # Recorded in every release as its owner.
+      region = "eu-central"            # The region of this plan (metadata.region).
+    }
 
-module "cache" {                   # The release "cache": one Redis server.
-  source  = "norca/redis"          # A module of the global registry, by a version constraint.
-  version = "~> 0.4"
+    module "cache" {                   # The release "cache": one Redis server.
+      source  = "norca/redis"          # A module of the global registry, by a version constraint.
+      version = "~> 0.4"
 
-  values = {                       # Variables of the module.
-    datacenters = ["dc1", "dc2"]
-    node_pool   = "apps"           # The clients are in the pool "apps" (client_defaults); jobs
-                                   # without node_pool only run in the pool "default".
-    memory      = 256
+      values = {                       # Variables of the module.
+        datacenters = ["dc1", "dc2"]
+        node_pool   = "apps"           # The clients are in the pool "apps" (client_defaults); jobs
+                                       # without node_pool only run in the pool "default".
+        memory      = 256
+      }
+    }
+
+    # NATS cluster (JetStream) for the applications.
+    module "nats" {
+      source  = "norca/nats"
+      version = "~> 2.0"
+
+      values = {
+        datacenters       = ["dc1", "dc2"]
+        node_pool         = "apps"
+        count             = 1          # One server per client node (distinct_hosts): use 3 for HA
+                                       # on 3 or more Linux clients with Docker.
+        jetstream_enabled = true
+        auth_mode         = "userpass" # Users in accounts, passwords from the secrets above.
+        users = [
+          {
+            name            = "app"
+            publish_allow   = ["app.>", "$JS.API.>"]
+            subscribe_allow = ["app.>", "_INBOX.>"]
+          },
+          {
+            name    = "ops"
+            account = "SYS"            # nats server report, raft peer-remove.
+          },
+        ]
+        # tls_enabled = true           # TLS: put tls_ca/tls_cert/tls_key into the Variable
+                                       # nomad/jobs/nats (a secrets entry of type variable).
+      }
+    }
   }
-}
-
-# NATS cluster (JetStream) for the applications.
-module "nats" {
-  source  = "norca/nats"
-  version = "~> 2.0"
-
-  values = {
-    datacenters       = ["dc1", "dc2"]
-    node_pool         = "apps"
-    count             = 1          # One server per client node (distinct_hosts): use 3 for HA
-                                   # on 3 or more Linux clients with Docker.
-    jetstream_enabled = true
-    auth_mode         = "userpass" # Users in accounts, passwords from the secrets above.
-    users = [
-      {
-        name            = "app"
-        publish_allow   = ["app.>", "$JS.API.>"]
-        subscribe_allow = ["app.>", "_INBOX.>"]
-      },
-      {
-        name    = "ops"
-        account = "SYS"            # nats server report, raft peer-remove.
-      },
-    ]
-    # tls_enabled = true           # TLS: put tls_ca/tls_cert/tls_key into the Variable
-                                   # nomad/jobs/nats (a secrets entry of type variable).
-  }
-}
-EOT
 }
 
 # Defaults for every node that runs a client; the node's own settings win.
@@ -966,6 +1016,10 @@ inventory {
       native_app_volumes {
         enable_defaults = true
       }
+
+      # extra {                        # Settings the deployer does not model, inside the client block.
+      #   max_kill_timeout = "60s"
+      # }
     }
   }
 }

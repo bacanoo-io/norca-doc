@@ -56,7 +56,7 @@ tuning:
     extra_ports:
       - port: "4222"                # NATS clients.
       - port: "6222"                # NATS routes between the servers in the three datacenters.
-    default_deny: true              # ufw on; SSH stays open.
+    default_deny: true              # Deny the rest (nftables or ufw); SSH stays open.
 
 network:
   interface_prefix: wg              # Agents listen on and advertise the VPN address (wg0).
@@ -93,7 +93,7 @@ host_packages:
       - {name: docker-ce-cli, roles: [client]}
       - {name: containerd.io, roles: [client]}
       - name: chrony                  # Correct clocks for Raft, TLS and JetStream.
-      - name: ufw
+      - name: nftables                # nft, for the firewall of default_deny.
 
 # Every client: Docker and exec, the VPN interface for allocation addresses,
 # resources kept for the OS. The datacenter is a node attribute of its own
@@ -122,7 +122,7 @@ secrets:
 # The NATS cluster is a Rigger stack with one module, written in the plan.
 rigger:
   sync_registries: [global]         # The servers sync the global registry before they fetch the module.
-  stack_hcl: |
+  stack: |
     rigger {
       name   = "base"                  # Recorded in every release as its owner.
       region = "eu"                    # The region of this plan (metadata.region).
@@ -174,7 +174,7 @@ inventory:
         # to another one. The grace keeps these healthy nodes from being
         # marked down, which would replace their allocations (NATS servers).
         # A failed node is noticed this much later.
-        extra_hcl: |
+        extra: |
           heartbeat_grace = "60s"
     - host: 198.51.100.21
       hostname: eu-b-server
