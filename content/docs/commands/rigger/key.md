@@ -10,9 +10,9 @@ See [supply chain](/docs/features/packages/supply-chain) for how a stack trusts 
 ## Usage
 
 ```plaintext
-norca rigger key generate [-out name]
-norca rigger key sign [dir] -key name.key
-norca rigger key verify [dir] -key name.pub
+norca rigger key generate [--out name]
+norca rigger key sign [dir] --key name.key
+norca rigger key verify [dir] --key name.pub
 ```
 
 | Command | What it does |
@@ -23,14 +23,14 @@ norca rigger key verify [dir] -key name.pub
 
 ## Key Options
 
-- `-out`: `generate`: the files to write, `<out>.key` and `<out>.pub`. Defaults to `rigger`.
+- `--out`: `generate`: the files to write, `<out>.key` and `<out>.pub`. Defaults to `rigger`.
 
-- `-key`: `sign`: the private key. `verify`: the public key.
+- `--key`: `sign`: the private key. `verify`: the public key.
 
 ## Examples
 
 ```shell
-$ norca rigger key generate -out acme
-$ norca rigger key sign modules/redis -key acme.key
-$ norca rigger key verify modules/redis -key acme.pub
+$ norca rigger key generate --out acme
+$ norca rigger key sign modules/redis --key acme.key
+$ norca rigger key verify modules/redis --key acme.pub
 ```

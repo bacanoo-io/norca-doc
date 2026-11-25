@@ -11,7 +11,7 @@ would take, fetched and verified the same way.
 ## Usage
 
 ```plaintext
-norca rigger show <source> [-version constraint] [-kind module|stack] [-readme] [-max-width n] [-json]
+norca rigger show <source> [--version constraint] [--kind module|stack] [--readme] [--max-width n] [--json]
 ```
 
 **The source** is that of an install:
@@ -22,15 +22,15 @@ norca rigger show <source> [-version constraint] [-kind module|stack] [-readme] 
   repository;
 - `oci://<host>/<repository>`.
 
-Of the source, the newest version that meets `-version` is fetched and verified:
+Of the source, the newest version that meets `--version` is fetched and verified:
 
 - **A version of the global registry** is taken only with the tree digest its index lists and signed
   by a key of its namespace. Its advisories are shown as warnings.
 - **An unsigned git or OCI version** is shown with a warning.
-- **A built-in module** is of the version the program ships; `-version` is checked against it.
+- **A built-in module** is of the version the program ships; `--version` is checked against it.
 
 A name of the global registry is a module, unless the registry lists only a stack of that name.
-The directory `stacks/<name>` of a git address is a stack. `-kind` decides when needed.
+The directory `stacks/<name>` of a git address is a stack. `--kind` decides when needed.
 
 The output shows:
 
@@ -48,24 +48,24 @@ Warnings are written to standard error.
 
 ## Show Options
 
-- `-version`: A version constraint (`"~> 1.2"`). Defaults to the newest version.
+- `--version`: A version constraint (`"~> 1.2"`). Defaults to the newest version.
 
-- `-kind`: `module` or `stack`, for a name of the global registry that is both.
+- `--kind`: `module` or `stack`, for a name of the global registry that is both.
 
-- `-readme`: Also print the `README.md` of the module or stack.
+- `--readme`: Also print the `README.md` of the module or stack.
 
-- `-max-width`: How many characters of a description, and of a default, the tables of the variables
+- `--max-width`: How many characters of a description, and of a default, the tables of the variables
   and outputs show; a longer one is cut at a word and ends with `...`. Defaults to 60; 0 shows them
-  whole. `-json` is always whole.
+  whole. `--json` is always whole.
 
-- `-json`: Write the details as JSON.
+- `--json`: Write the details as JSON.
 
 ## Examples
 
 ```shell
 $ norca rigger show norca/redis
-$ norca rigger show norca/nats -version "~> 2.0" -readme
-$ norca rigger show builtin/redis -json
-$ norca rigger show acme/data-platform -kind stack
+$ norca rigger show norca/nats --version "~> 2.0" --readme
+$ norca rigger show builtin/redis --json
+$ norca rigger show acme/data-platform --kind stack
 $ norca rigger show github.com/acme/rigger-modules//modules/web
 ```

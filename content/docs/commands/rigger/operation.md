@@ -5,15 +5,15 @@ description: "The rigger operation command follows, cancels and shows an apply o
 ---
 
 The `rigger operation` command reaches an **operation**: an apply or a destroy of a stack that the
-servers run (`stack apply -server`, `stack destroy -server`, or a request of the
+servers run (`stack apply --server`, `stack destroy --server`, or a request of the
 [stacks API](/docs/api/rigger-stacks#operations)).
 
 ## Usage
 
 ```plaintext
-norca rigger operation follow <name> [-namespace ns]
-norca rigger operation cancel <name> [-namespace ns]
-norca rigger operation status <name> [-namespace ns] [-json]
+norca rigger operation follow <name> [--namespace ns]
+norca rigger operation cancel <name> [--namespace ns]
+norca rigger operation status <name> [--namespace ns] [--json]
 ```
 
 | Command | What it does |
@@ -24,11 +24,11 @@ norca rigger operation status <name> [-namespace ns] [-json]
 
 ## Operation Options
 
-- `-namespace`: The namespace of the stack of the operation. Defaults to `default`.
+- `--namespace`: The namespace of the stack of the operation. Defaults to `default`.
 
-- `-region`: The region of the operation. Defaults to the region of the cluster.
+- `--region`: The region of the operation. Defaults to the region of the cluster.
 
-- `-json`: `status`: write the operation as JSON.
+- `--json`: `status`: write the operation as JSON.
 
 ## Examples
 

@@ -11,13 +11,13 @@ their versions in the lock file `rigger.lock.hcl`. See [modules and stacks](/doc
 ## Usage
 
 ```plaintext
-norca rigger stack sync [dir] [-upgrade]
-norca rigger stack validate [dir] [-f values] [-var name=value]
-norca rigger stack plan [dir] [-f values] [-var name=value] [-json]
-norca rigger stack apply [dir] [-f values] [-var name=value] [-prune] [-adopt]
-norca rigger stack status [dir] [-json]
+norca rigger stack sync [dir] [--upgrade]
+norca rigger stack validate [dir] [-f values] [--var name=value]
+norca rigger stack plan [dir] [-f values] [--var name=value] [--json]
+norca rigger stack apply [dir] [-f values] [--var name=value] [--prune] [--adopt]
+norca rigger stack status [dir] [--json]
 norca rigger stack destroy [dir]
-norca rigger stack publish [dir] [-key name.key]
+norca rigger stack publish [dir] [--key name.key]
 ```
 
 | Command | What it does |
@@ -31,9 +31,9 @@ norca rigger stack publish [dir] [-key name.key]
 | `stack publish` | Validates a stack with `metadata.hcl` and its lock file, signs it, commits the signature and tags the version in its git repository. The tag is not pushed. |
 
 Every command but `sync` and `publish` takes, instead of a directory, a **published stack**:
-`<namespace>/<name>` of the global registry or a git address, with `-version`.
+`<namespace>/<name>` of the global registry or a git address, with `--version`.
 
-With `-server` (or `RIGGER_SERVER=1`), `plan`, `apply`, `status` and `destroy` go to the servers of the
+With `--server` (or `RIGGER_SERVER=1`), `plan`, `apply`, `status` and `destroy` go to the servers of the
 cluster, which fetch and evaluate. An apply or a destroy runs there as an operation whose log the
 command follows. **Ctrl-C cancels the operation before its next release; a second Ctrl-C leaves it
 running.** See [`rigger operation`](/docs/commands/rigger/operation) and
@@ -41,35 +41,35 @@ running.** See [`rigger operation`](/docs/commands/rigger/operation) and
 
 ## Stack Options
 
-- `-f`: A file of values of the stack (`values/dev.vars.hcl`). May be given more than once.
+- `-f`, `--values`: A file of values of the stack (`values/dev.vars.hcl`). May be given more than once.
 
-- `-var`: A value of the stack, `name=value`. May be given more than once. The value of a string,
+- `--var`: A value of the stack, `name=value`. May be given more than once. The value of a string,
   number or bool variable is the text as it is; the value of a list or an object is HCL:
   `'tags=["a", "b"]'`. An environment variable `RIGGER_VAR_<name>` gives a value the same way; a
-  `-var` wins over it.
+  `--var` wins over it.
 
-- `-json`: `plan` and `status`: write the plan or the status as JSON.
+- `--json`: `plan` and `status`: write the plan or the status as JSON.
 
-- `-prune`: `apply`: uninstall the releases the stack owns and no longer has.
+- `--prune`: `apply`: uninstall the releases the stack owns and no longer has.
 
-- `-adopt`: `apply`: take over releases that another manager applied or another stack owns. Without
+- `--adopt`: `apply`: take over releases that another manager applied or another stack owns. Without
   it such an apply is refused.
 
-- `-upgrade`: `sync`: take the newest version that meets each constraint, not the locked one.
+- `--upgrade`: `sync`: take the newest version that meets each constraint, not the locked one.
 
-- `-version`: A published stack: the version constraint (`"~> 1.2"`). Without it the newest version
+- `--version`: A published stack: the version constraint (`"~> 1.2"`). Without it the newest version
   is taken.
 
-- `-key`: `publish`: the private key the version is signed with. Its password is read from
+- `--key`: `publish`: the private key the version is signed with. Its password is read from
   `RIGGER_KEY_PASSWORD`.
 
-- `-server`: Send the command to the servers of the cluster, which evaluate it. Defaults to
+- `--server`: Send the command to the servers of the cluster, which evaluate it. Defaults to
   `RIGGER_SERVER`.
 
-- `-namespace`: With `-server`, or for a published stack: the namespace of the stack. Defaults to
+- `--namespace`: With `--server`, or for a published stack: the namespace of the stack. Defaults to
   `NORCA_NAMESPACE`.
 
-- `-region`: The region to talk to. Defaults to the region of the stack.
+- `--region`: The region to talk to. Defaults to the region of the stack.
 
 ## Examples
 
@@ -83,11 +83,11 @@ $ norca rigger stack status my-stack
 A published stack of the global registry:
 
 ```shell
-$ norca rigger stack plan acme/data-platform -version "~> 1.2" -f my.vars.hcl
+$ norca rigger stack plan acme/data-platform --version "~> 1.2" -f my.vars.hcl
 ```
 
 An apply that the servers run:
 
 ```shell
-$ norca rigger stack apply ./shop -server -var replicas=3
+$ norca rigger stack apply ./shop --server --var replicas=3
 ```

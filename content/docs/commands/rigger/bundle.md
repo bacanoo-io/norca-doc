@@ -13,25 +13,25 @@ file pins them, in one archive. Sync the stack (`rigger stack sync`) before its 
 ```plaintext
 norca rigger bundle create [stack] -o file.riggerbundle
 norca rigger bundle inspect <file>
-norca rigger bundle import <file> [-server]
+norca rigger bundle import <file> [--server]
 ```
 
 | Command | What it does |
 | --- | --- |
 | `bundle create` | Writes the bundle of a stack. |
 | `bundle inspect` | Shows what a bundle holds. |
-| `bundle import` | Puts a bundle into the cache of the machine, for an install without a network. With `-server`, puts it into the cluster, for its servers; see [bundles for a cluster without a network](/docs/api/rigger-stacks#bundles-for-a-cluster-without-a-network). |
+| `bundle import` | Puts a bundle into the cache of the machine, for an install without a network. With `--server`, puts it into the cluster, for its servers; see [bundles for a cluster without a network](/docs/api/rigger-stacks#bundles-for-a-cluster-without-a-network). |
 
 ## Bundle Options
 
-- `-o`: `create`: the bundle to write (`platform.riggerbundle`).
+- `-o`, `--output`: `create`: the bundle to write (`platform.riggerbundle`).
 
-- `-server`: `import`: send the bundle to the servers of the cluster. Defaults to `RIGGER_SERVER`.
+- `--server`: `import`: send the bundle to the servers of the cluster. Defaults to `RIGGER_SERVER`.
 
 ## Examples
 
 ```shell
 $ norca rigger bundle create ./shop -o shop.riggerbundle
 $ norca rigger bundle inspect shop.riggerbundle
-$ norca rigger bundle import shop.riggerbundle -server
+$ norca rigger bundle import shop.riggerbundle --server
 ```

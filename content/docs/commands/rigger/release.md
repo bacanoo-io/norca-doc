@@ -10,11 +10,11 @@ stack, through the [release API](/docs/api/releases).
 ## Usage
 
 ```plaintext
-norca rigger release list [-namespace ns]
-norca rigger release status <name> [-namespace ns]
-norca rigger release history <name> [-namespace ns]
-norca rigger release rollback <name> [revision] [-namespace ns] [-adopt]
-norca rigger release uninstall <name> [-namespace ns]
+norca rigger release list [--namespace ns]
+norca rigger release status <name> [--namespace ns]
+norca rigger release history <name> [--namespace ns]
+norca rigger release rollback <name> [revision] [--namespace ns] [--adopt]
+norca rigger release uninstall <name> [--namespace ns]
 ```
 
 | Command | What it does |
@@ -30,19 +30,19 @@ stack that owns the release).
 
 ## Release Options
 
-- `-namespace`: The namespace of the release. Defaults to `default`. `list` takes `*` for all
+- `--namespace`: The namespace of the release. Defaults to `default`. `list` takes `*` for all
   namespaces.
 
-- `-region`: The region to talk to.
+- `--region`: The region to talk to.
 
-- `-adopt`: `rollback`: restore a revision of another manager or stack.
+- `--adopt`: `rollback`: restore a revision of another manager or stack.
 
 ## Examples
 
 ```shell
-$ norca rigger release list -namespace apps
-$ norca rigger release status test-app -namespace apps
-$ norca rigger release history test-app -namespace apps
-$ norca rigger release rollback test-app 1 -namespace apps
-$ norca rigger release uninstall test-app -namespace apps
+$ norca rigger release list --namespace apps
+$ norca rigger release status test-app --namespace apps
+$ norca rigger release history test-app --namespace apps
+$ norca rigger release rollback test-app 1 --namespace apps
+$ norca rigger release uninstall test-app --namespace apps
 ```

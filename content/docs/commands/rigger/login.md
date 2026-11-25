@@ -11,7 +11,7 @@ file or an entry of an index names hosts that others chose.
 ## Usage
 
 ```plaintext
-norca rigger login <host> [-username name]
+norca rigger login <host> [--username name]
 norca rigger logout <host>
 ```
 
@@ -24,11 +24,11 @@ credentials of the environment (`RIGGER_GIT_*`, `RIGGER_OCI_*`; see
 
 ## Login Options
 
-- `-username`: The user name. None for a token.
+- `--username`: The user name. None for a token.
 
 ## Examples
 
 ```shell
-$ echo "$TOKEN" | norca rigger login git.example.com -username robot
+$ echo "$TOKEN" | norca rigger login git.example.com --username robot
 $ norca rigger logout git.example.com
 ```

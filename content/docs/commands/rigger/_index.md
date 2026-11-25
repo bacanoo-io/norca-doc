@@ -12,9 +12,14 @@ written in typed HCL) and stacks (several modules with their values) as
 
 ## Usage
 
-Usage: `norca rigger [flags] <command>`
+Usage: `norca rigger <command> [arguments] [flags]`
 
-`norca rigger help` prints the commands with their arguments. The following commands are available:
+**A flag is written `--name`; the one-dash form `-name` is read the same**, and flags may come before or
+after the arguments of a command. The short flags are `-f` (`--values`, a file of values) and `-o`
+(`--output`).
+
+`norca rigger help` prints the commands, grouped by what they are for, under a header with the version.
+The following commands are available:
 
 - [`rigger stack`](/docs/commands/rigger/stack) - Sync, validate, plan, apply, show, destroy and publish a stack
 - [`rigger install`](/docs/commands/rigger/install) - Install or upgrade one release of a module: of a directory, or by its source
@@ -29,8 +34,13 @@ Usage: `norca rigger [flags] <command>`
 - [`rigger bundle`](/docs/commands/rigger/bundle) - Carry the modules of a stack to a cluster without a network
 - [`rigger login`](/docs/commands/rigger/login) - Keep or forget the credentials of a host of git or OCI sources
 - [`rigger index`](/docs/commands/rigger/registry-index) - Keep a registry of the shape of the global registry
-- `rigger version` - Print the version of Rigger
-- `rigger help` - Print the usage
+- `rigger version` - Print the version and the build: commit, date, Go version and platform (`--json`;
+  also `rigger --version`). Under norca the version is `(built into Norca <version>)`.
+- `rigger help` - Print the commands; `rigger help <command>` prints the help of one command, with its
+  flags and examples (also `rigger <command> --help`). Under norca use `norca rigger help <command>`:
+  norca takes `-h` and `--help` itself.
+- `rigger help environment` - Print the variables of the environment the commands read
+- `rigger completion` - Write the shell completion script (the `rigger` program only; see below)
 
 The `rigger` program also has `rigger operator init`, which writes the project of an operator; see
 [scaffolding an operator](/docs/features/operator-framework/controllers#scaffolding-an-operator).
@@ -38,20 +48,34 @@ The `rigger` program also has `rigger operator init`, which writes the project o
 
 ## Flags
 
-These flags come before the command:
+These flags may be given anywhere:
 
-- `-log-format`: The format of the log on standard error: `text` (a tree of operations) or `json`.
+- `--log-format`: The format of the log on standard error: `text` (a tree of operations) or `json`.
   Defaults to `text`.
 
-- `-log-level`: The lowest level logged: `debug`, `info`, `warn` or `error`. Defaults to `info`.
+- `--log-level`: The lowest level logged: `debug`, `info`, `warn` or `error`. Defaults to `info`.
+
+## Shell completion
+
+The standalone `rigger` program writes a completion script for bash, zsh, fish and PowerShell. It
+completes the commands and the flags, and the values of `--kind` (`module`, `stack`), of `--registry`
+of `search` (`global`, `builtin`), of `--category`, `--log-level` and `--log-format`, and the
+`module|stack` word of `registry select` and `registry unselect`. `norca rigger` has no completion.
+
+```shell
+$ source <(rigger completion bash)                                # bash, this shell
+$ rigger completion zsh > "${fpath[1]}/_rigger"                    # zsh
+$ rigger completion fish > ~/.config/fish/completions/rigger.fish  # fish
+PS> rigger completion powershell | Out-String | Invoke-Expression  # PowerShell
+```
 
 ## The cluster
 
 **The cluster is that of `NORCA_ADDR` and `NORCA_TOKEN`.** The commands that talk to a cluster take
-`-region`, and those that work on releases take `-namespace`.
+`--region`, and those that work on releases take `--namespace`.
 
 By default Rigger fetches and evaluates modules on the machine it runs on and sends the resources of
-each release to the cluster. With `-server` (or `RIGGER_SERVER=1`), `stack plan`, `stack apply`,
+each release to the cluster. With `--server` (or `RIGGER_SERVER=1`), `stack plan`, `stack apply`,
 `stack status`, `stack destroy`, `install` and `bundle import` go to the servers of the cluster, which
 fetch and evaluate; see [the stacks API](/docs/api/rigger-stacks#from-the-command-line).
 
@@ -74,9 +98,9 @@ A stack names the source of each module:
 | Variable | Meaning |
 | --- | --- |
 | `NORCA_ADDR`, `NORCA_TOKEN` | The cluster and the ACL token. |
-| `NORCA_NAMESPACE` | The default of `-namespace` of the stack commands. |
-| `RIGGER_SERVER` | `1` sends the commands that have `-server` to the servers. |
-| `RIGGER_VAR_<name>` | The value of a variable, as `-var name=value` gives it; a `-var` wins over it. A name that is no variable is a warning. |
+| `NORCA_NAMESPACE` | The default of `--namespace` of the stack commands. |
+| `RIGGER_SERVER` | `1` sends the commands that have `--server` to the servers. |
+| `RIGGER_VAR_<name>` | The value of a variable, as `--var name=value` gives it; a `--var` wins over it. A name that is no variable is a warning. |
 | `RIGGER_GIT_HOST`, `RIGGER_GIT_USERNAME`, `RIGGER_GIT_PASSWORD` | The credentials of the git sources of one host. |
 | `RIGGER_OCI_HOST`, `RIGGER_OCI_USERNAME`, `RIGGER_OCI_PASSWORD` | The credentials of the OCI sources of one host. |
 | `RIGGER_KEY_PASSWORD` | The password of a private signing key. |
@@ -89,8 +113,8 @@ A password in the environment without its `_HOST` is an error.
 ## Examples
 
 ```shell
-$ norca rigger install ./my-module -name web
-$ norca rigger install builtin/redis -name cache
+$ norca rigger install ./my-module --name web
+$ norca rigger install builtin/redis --name cache
 $ norca rigger release status web
 $ norca rigger search redis
 $ norca rigger show norca/redis

@@ -12,14 +12,14 @@ sync one, and searches what it read. To search a registry the servers of a clust
 ## Usage
 
 ```plaintext
-norca rigger search [text] [-registry global|builtin|<repository>] [-kind module|stack]
-    [-category c] [-keyword k] [-offset n] [-limit n] [-max-width n] [-json]
+norca rigger search [text] [--registry global|builtin|<repository>] [--kind module|stack]
+    [--category c] [--keyword k] [--offset n] [--limit n] [--max-width n] [--json]
 ```
 
 **The text** is found in `<namespace>/<name>` or in the description, regardless of case; without
 it every module and stack matches. Words are joined with a space.
 
-**What is searched** is set by `-registry`:
+**What is searched** is set by `--registry`:
 
 - `global` (the default): the global registry, `github.com/bacanoo-io/norca-global-registry`, or
   `RIGGER_GLOBAL_REGISTRY`. A git address is read at the newest commit of its default branch; a
@@ -34,41 +34,41 @@ logged.
 
 The table shows the kind, the name (`<namespace>/<name>` in the global registry, `builtin/<name>`,
 the name in a repository), the newest version and the description, cut to 60 characters at a word
-(`-max-width`) so that a row fits a line of a terminal. When the matches fill more
-than one page, a last line says which (`51-100 of 230`). With `-json` each item also has its
+(`--max-width`) so that a row fits a line of a terminal. When the matches fill more
+than one page, a last line says which (`51-100 of 230`). With `--json` each item also has its
 `source`, the address [`rigger show`](/docs/commands/rigger/show) and
 [`rigger install`](/docs/commands/rigger/install) take: `<repository>//modules/<name>` for a module
 of a repository.
 
 ## Search Options
 
-- `-registry`: What is searched: `global`, `builtin` or the address of a registry repository.
+- `--registry`: What is searched: `global`, `builtin` or the address of a registry repository.
   Defaults to `global`. A repository in a directory named `global` or `builtin` is given as
   `./global` or `./builtin`.
 
-- `-kind`: `module` or `stack`. Defaults to both.
+- `--kind`: `module` or `stack`. Defaults to both.
 
-- `-category`: The modules and stacks of one category: application, database, messaging,
+- `--category`: The modules and stacks of one category: application, database, messaging,
   observability, platform, networking, security, storage, developer-tools, ai or other. The category
   is that of the newest version.
 
-- `-keyword`: The modules and stacks with the keyword.
+- `--keyword`: The modules and stacks with the keyword.
 
-- `-offset`: The first match to show. Defaults to 0.
+- `--offset`: The first match to show. Defaults to 0.
 
-- `-limit`: How many matches to show. Defaults to 50, at most 500.
+- `--limit`: How many matches to show. Defaults to 50, at most 500.
 
-- `-max-width`: How many characters of a description the table shows; a longer one is cut at a
-  word and ends with `...`. Defaults to 60; 0 shows the descriptions whole. `-json` is always whole.
+- `--max-width`: How many characters of a description the table shows; a longer one is cut at a
+  word and ends with `...`. Defaults to 60; 0 shows the descriptions whole. `--json` is always whole.
 
-- `-json`: Write the matches as JSON: the registry, the commit, the total, the offset and the items.
+- `--json`: Write the matches as JSON: the registry, the commit, the total, the offset and the items.
 
 ## Examples
 
 ```shell
 $ norca rigger search
-$ norca rigger search nats -kind module
-$ norca rigger search -category database -json
-$ norca rigger search -registry builtin
-$ norca rigger search -registry github.com/acme/rigger-modules
+$ norca rigger search nats --kind module
+$ norca rigger search --category database --json
+$ norca rigger search --registry builtin
+$ norca rigger search --registry github.com/acme/rigger-modules
 ```

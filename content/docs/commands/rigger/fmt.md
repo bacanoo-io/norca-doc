@@ -10,16 +10,16 @@ directory.
 ## Usage
 
 ```plaintext
-norca rigger fmt [-check] [path ...]
+norca rigger fmt [--check] [path ...]
 ```
 
 ## Fmt Options
 
-- `-check`: Write nothing; list the files that are not formatted, and fail if there are any.
+- `--check`: Write nothing; list the files that are not formatted, and fail if there are any.
 
 ## Examples
 
 ```shell
 $ norca rigger fmt modules/redis
-$ norca rigger fmt -check .
+$ norca rigger fmt --check .
 ```

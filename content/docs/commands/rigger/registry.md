@@ -17,7 +17,7 @@ read the registry at its last sync.
 norca rigger registry list
 norca rigger registry status <name>
 norca rigger registry sync <name>
-norca rigger registry search <name> [text] [-kind module|stack] [-category c] [-keyword k] [-offset n] [-limit n]
+norca rigger registry search <name> [text] [--kind module|stack] [--category c] [--keyword k] [--offset n] [--limit n]
 norca rigger registry select <name> module|stack <namespace>/<name>
 norca rigger registry unselect <name> module|stack <namespace>/<name>
 ```
@@ -32,18 +32,18 @@ norca rigger registry unselect <name> module|stack <namespace>/<name>
 
 ## Registry Options
 
-- `-region`: The region to talk to.
+- `--region`: The region to talk to.
 
-- `-kind`: `search`: `module` or `stack`.
+- `--kind`: `search`: `module` or `stack`.
 
-- `-category`: `search`: one category: `application`, `database`, `messaging`, `observability`,
+- `--category`: `search`: one category: `application`, `database`, `messaging`, `observability`,
   `platform`, `networking`, `security`, `storage`, `developer-tools`, `ai` or `other`.
 
-- `-keyword`: `search`: the modules and stacks with the keyword.
+- `--keyword`: `search`: the modules and stacks with the keyword.
 
-- `-offset`: `search`: the first match to show.
+- `--offset`: `search`: the first match to show.
 
-- `-limit`: `search`: how many matches to show. Defaults to 50, at most 500.
+- `--limit`: `search`: how many matches to show. Defaults to 50, at most 500.
 
 ## Examples
 
@@ -51,7 +51,7 @@ norca rigger registry unselect <name> module|stack <namespace>/<name>
 $ norca rigger registry list
 $ norca rigger registry sync global
 $ norca rigger registry status global
-$ norca rigger registry search global nats -kind module
+$ norca rigger registry search global nats --kind module
 $ norca rigger registry select global module norca/nats
 $ norca rigger registry unselect global module norca/nats
 ```
