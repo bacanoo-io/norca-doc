@@ -1,7 +1,7 @@
 ---
 title: "Host Packages and Scripts"
 linkTitle: "Host packages and scripts"
-description: "Before Norca is configured, `apply` can install Debian packages and run bash scripts on Linux nodes."
+description: "Before Norca is configured, `apply` can install packages with apt, dnf or apk and run scripts: sh or bash on Linux nodes, PowerShell on Windows nodes."
 weight: 5
 origin: "norca-deployer/doc/host-packages-and-scripts.md"
 ---
@@ -143,7 +143,7 @@ Each repository becomes:
 
 - **Location:** exactly one of `baseurl` or `metalink`, an `http`/`https` URL; the dnf variables `$releasever` and `$basearch` may be used.
 - **Keys:** exactly one of `key` or `key_file`, an ASCII-armored OpenPGP public key (rpm imports no binary key). Every repository is checked with its key (`gpgcheck=1`); unsigned repositories are not supported.
-- **Credentials:** only in `auth` (the password may be an `!enc:` secret and must be one line). dnf reads them from the repository file, which is then readable by root only. Credentials in the URL are rejected. A repository with credentials cannot be used by the install script of a scaled machine at boot (see [node scaling machines](node-scaling-machines.md)).
+- **Credentials:** only in `auth` (the password may be an `!enc:` secret and must be one line). dnf reads them from the repository file, which is then readable by root only. Credentials in the URL are rejected. A repository with credentials cannot be used by the install script of a scaled machine at boot (see [node scaling machines](/docs/deployer/node-scaling-machines)).
 - When the key or the file of a repository changed, `dnf makecache --repo=norca-<name>` reads its metadata, so a wrong URL or key fails at that step.
 - The files of the deployer's repositories that the plan no longer gives a node (`norca-*.repo` and their keys) are removed from it, so a dropped repository does not stay enabled.
 

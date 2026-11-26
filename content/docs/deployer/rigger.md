@@ -29,7 +29,7 @@ rigger {
 }
 ```
 
-A short stack can be written in the plan with `stack` instead of `stack_dir`: its value is the text of the `stack.hcl` (see [content and reference keys](configuration.md#content-and-reference-keys)).
+A short stack can be written in the plan with `stack` instead of `stack_dir`: its value is the text of the `stack.hcl` (see [content and reference keys](/docs/deployer/configuration#content-and-reference-keys)).
 
 ```yaml
 rigger:
