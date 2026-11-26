@@ -12,11 +12,19 @@ Order on each node:
 
 1. `pre_install` scripts
 2. Repositories and package installation (one install transaction)
-3. `post_packages` scripts
-4. Tuning, directories, Norca binary, CNI, certificates, `norca.hcl`, firewall, service
-5. `post_install` scripts (after the agent was restarted and is healthy, or was unchanged)
+3. On OpenRC (Alpine): the init system is made ready to start the services of the packages (below)
+4. `post_packages` scripts
+5. Tuning, directories, Norca binary, CNI, certificates, `norca.hcl`, firewall, service
+6. `post_install` scripts (after the agent was restarted and is healthy, or was unchanged)
 
 **An error in any step stops that node.**
+
+**A `post_packages` script can start a service that the packages installed**, such as Docker. On an Alpine node the deployer prepares OpenRC for that before the scripts run, on every apply and whatever `tuning.apply_sysctl` says:
+
+- it reads the dependencies of the services again (`rc-update -u`, while OpenRC runs). OpenRC keeps them in a cache that it renews only when `/etc/init.d` or `/etc/conf.d` is newer than the cache; a cache written while the clock was ahead (a virtual machine whose clock starts on local time and is then set back by NTP) would hide a service apk just installed, and `rc-service docker start` would start dockerd without the services it needs. The cache is a file of `/run`: renewing it changes nothing else and restarts nothing;
+- it mounts the cgroups: the `cgroups` service of OpenRC goes into the `sysinit` runlevel when no cgroup file system is mounted (the cloud images of Alpine do not mount one), and is started while OpenRC runs. Docker needs them (`failed to start daemon: Devices cgroup isn't mounted`), and so do the task drivers of the agent. Cgroups that something else mounted (a container) are left alone.
+
+A `pre_install` script runs before the packages and before this step. On systemd nodes there is no such step: the packages reload the units of systemd themselves, and systemd mounts the cgroups.
 
 ## Which block a node takes
 
@@ -30,6 +38,7 @@ Before it changes anything, the deployer finds out what every node is (see [`hos
 
 - A node whose own block selects nothing for it gets nothing.
 - **A forgotten block is an error.** When a block of another manager selects packages for a node and the node's own manager has no block, `apply` fails before any node is changed: `node [10.0.0.5]: the node uses dnf, but host_packages has packages for its roles only in apt`.
+- **`validate` warns, `apply` decides.** `validate` does not connect to the nodes, so it cannot know their package managers. When every Linux node of the inventory takes packages or repositories of a block (entries without `roles` or `hosts` that narrow them to some nodes) and another manager has no block, it prints a warning and the plan stays valid: `[WARN] host_packages: every Linux node of the inventory takes packages or repositories of host_packages.apt, and the plan has no block for dnf or apk: it works only if every Linux node uses apt. apply checks this against the package manager it finds on each node, before it changes anything`. With `-o json` the warning is in `warnings`. A plan whose nodes all use that manager needs nothing more; otherwise add the block of the other manager, or narrow the entries with `roles` or `hosts`.
 - A node with `host_facts.package_manager: none` (a system without a package manager) must not get any package.
 - `update_cache` and `lock_timeout` are common to all blocks.
 - Each block has the keys of its own format. A key of another block's repositories (`suite` in `dnf`, `baseurl` in `apt`, `tagged` in `apt`) or an unknown key is an error of the plan, with its line.
@@ -266,6 +275,8 @@ How a script runs on a Windows node (the environment file, the exit code, the ti
 ## Validation
 
 `validate` and `plan` check package names and versions (Debian rules in `apt`, RPM rules in `dnf`, apk rules in `apk`), repository names, URIs and base URLs (`http`/`https` only), suites, components, architectures, pin expressions, dnf priorities and package filters, apk keys and their names, the tagged repositories of apk packages, script names, interpreters, families and environment variable names. Because of these checks, no plan value can inject shell commands or repository options. The values of script environments are not restricted: they are quoted for the shell, or as PowerShell literals on Windows, and reach the script as they are.
+
+Which block each node takes is decided by `apply` from the facts of the nodes; `validate` only warns of a plan that works only if every Linux node uses the package managers it has blocks of (see [Which block a node takes](#which-block-a-node-takes)).
 
 ## Privileges
 
