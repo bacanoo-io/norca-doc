@@ -268,6 +268,17 @@ scripts:
       {"log-driver": "json-file", "log-opts": {"max-size": "50m", "max-file": "3"}}
       EOF
       systemctl restart docker
+  - name: windows-firewall
+    phase: pre_install
+    interpreter: powershell         # Windows PowerShell 5.1: runs on the Windows client only.
+                                    # (Without interpreter a script runs with bash on Linux and
+                                    # with powershell on Windows, so a plan with both platforms
+                                    # names it, or families.)
+    path: scripts/windows-firewall.ps1
+    env:
+      CLUSTER_CIDRS: 10.8.0.0/24
+      AGENT_PORTS: "4646,4647"
+      ALLOCATION_PORTS: 20000-32000
 
 secrets:                            # Written after the cluster is up, before the Rigger stack.
   store: builtin                    # builtin: Norca's built-in secret store. external: the jobs
@@ -475,7 +486,7 @@ inventory:
         data_dir: /data/norca
     - host: 203.0.113.30
       hostname: norca-win-01
-      platform: windows             # Commands run through PowerShell; packages and scripts are skipped.
+      platform: windows             # Commands and scripts run in PowerShell; host packages are skipped.
       cluster_address: 10.8.0.30
       connection:
         mode: ssh
@@ -775,6 +786,18 @@ systemctl restart docker
 EOT
 }
 
+scripts {
+  name        = "windows-firewall"
+  phase       = "pre_install"
+  interpreter = "powershell"           # Windows PowerShell 5.1: the Windows client only.
+  path        = "scripts/windows-firewall.ps1"
+  env {
+    CLUSTER_CIDRS    = "10.8.0.0/24"
+    AGENT_PORTS      = "4646,4647"
+    ALLOCATION_PORTS = "20000-32000"
+  }
+}
+
 secrets {                              # Written after the cluster is up, before the Rigger stack.
   store = "builtin"                    # external: secrets come from an external store (skipped here).
 
@@ -1029,7 +1052,7 @@ inventory {
   clients {
     host            = "203.0.113.30"
     hostname        = "norca-win-01"
-    platform        = "windows"        # PowerShell; packages and scripts are skipped.
+    platform        = "windows"        # PowerShell, for scripts too; host packages are skipped.
     cluster_address = "10.8.0.30"
 
     connection {
@@ -1102,4 +1125,28 @@ fi
 mkdir -p /var/lib/norca
 grep -q 'LABEL=norca-data' /etc/fstab || echo 'LABEL=norca-data /var/lib/norca ext4 defaults,noatime 0 2' >> /etc/fstab
 mount /var/lib/norca
+```
+
+## scripts/windows-firewall.ps1
+
+```powershell
+# Example script of a Windows node: opens the ports of the Norca client in
+# Windows Firewall, which the deployer does not configure, for the cluster
+# network only. It runs with Windows PowerShell 5.1 (interpreter
+# powershell). Safe to run again.
+$ErrorActionPreference = 'Stop'
+
+$sources = $env:CLUSTER_CIDRS -split ','
+$rules = [ordered]@{
+  'norca-agent'       = $env:AGENT_PORTS        # HTTP and RPC of the agent
+  'norca-allocations' = $env:ALLOCATION_PORTS   # the ports of the allocations
+}
+foreach ($name in $rules.Keys) {
+  if (Get-NetFirewallRule -Name $name -ErrorAction SilentlyContinue) {
+    Remove-NetFirewallRule -Name $name
+  }
+  New-NetFirewallRule -Name $name -DisplayName "Norca ($name)" -Direction Inbound -Action Allow `
+    -Protocol TCP -LocalPort ($rules[$name] -split ',') -RemoteAddress $sources | Out-Null
+  Write-Output "firewall rule ${name}: TCP $($rules[$name]) from $($sources -join ', ')"
+}
 ```
