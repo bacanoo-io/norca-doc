@@ -15,6 +15,17 @@ and cleaning up after containers.
 > [!NOTE]
 > Docker Desktop for Windows or macOS runs Docker in a virtual machine, so the
 > containers do not share the network of the host that runs the Norca client.
+> By default the tasks cannot reach endpoints of the host network, such as a
+> service listening on the loopback address. To connect them, bind the Norca
+> client to a network interface that is not the loopback, and make everything
+> else the tasks must reach listen on that interface too. For example, with the
+> interface `en0`:
+>
+> ```shell-session
+> $ sudo norca agent -dev -bind=0.0.0.0 -network-interface=en0
+> ```
+>
+> On Windows, the WSL 2 backend of Docker Desktop is the easiest place to start.
 
 ## Task Configuration
 

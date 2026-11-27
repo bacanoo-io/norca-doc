@@ -155,6 +155,33 @@ only for data in their region.** When a request is received for a remote region,
 the request is forwarded to the correct leader. This design allows for lower latency
 transactions and higher availability without sacrificing consistency.
 
+Norca uses both this consensus protocol and a [gossip protocol](/docs/concepts/gossip).
+**The state of the cluster is replicated and scheduled through Raft, so it is
+strongly consistent;** the gossip protocol only carries the membership and the
+addresses of the servers, for automatic clustering and for the requests between
+regions.
+
+### Bootstrapping {#bootstrapping}
+
+Bootstrapping is the moment a region elects its first leader and writes the
+initial cluster state to that leader's state store. It does not happen until
+the number of servers set by [`bootstrap_expect`](/docs/configuration/server#bootstrap_expect)
+(counting only the servers with the `voter` role) have connected to each other.
+After that the region is bootstrapped and ready to use.
+
+Some options are only read while the initial cluster state is created and are
+not consulted again as long as that state is intact. They are typically values
+that must be the same on all servers. For example,
+[`default_scheduler_config`](/docs/configuration/server#configuring-scheduler-config)
+sets the scheduler configuration of a new cluster, so it does not have to be
+changed through the API right after the cluster comes up; later changes are made
+with the [scheduler configuration API](/docs/api/operator/scheduler).
+
+**If the state is destroyed on all servers of a region in the same outage,
+intentionally or not, the region bootstraps again** from the defaults and from
+the configuration that affects bootstrapping. A [backup](/docs/operations/backup-restore)
+restores the earlier state.
+
 ## Consistency Modes
 
 Although all writes to the replicated log go through Raft, reads are more

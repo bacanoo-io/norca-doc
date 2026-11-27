@@ -48,6 +48,12 @@ accepting jobs from users, managing clients, and [computing task placements](/do
 Each region may have clients from multiple datacenters, allowing a small number of servers
 to handle very large clusters.
 
+> [!NOTE]
+> A Norca `datacenter` is not the same as a Consul datacenter. A Norca datacenter
+> groups clients that are located together, under the servers of one region; a
+> Consul datacenter has its own servers, so it corresponds more closely to a
+> Norca region.
+
 ### Multiple regions
 
 In some cases, for either availability or scalability, you may need to run multiple

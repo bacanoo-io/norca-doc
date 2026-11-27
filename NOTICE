@@ -11,17 +11,20 @@ published under the Mozilla Public License 2.0:
   commit a7cfff372cd52b02232a02bd3ffb5e5d35f88a0f)
   Copyright (c) HashiCorp, Inc.
 
-The text is also kept unchanged, as a reference, in the Norca repository
-(https://github.com/bacanoo-io/norca, norca/website/content/). The adapted
-pages were modified by Norca contributors: product names, commands and links
-were changed to Norca, components of the HashiCorp website were converted to
-Hugo shortcodes, images were removed or redrawn, Enterprise-only and
-HashiCorp-specific content was removed, and Norca extensions were added.
+The Norca repository (https://github.com/bacanoo-io/norca) kept that text as
+a reference in norca/website/content/ until 2026-11-27; it remains in the
+history of that repository. The adapted pages were modified by Norca
+contributors: product names, commands and links were changed to Norca,
+components of the HashiCorp website were converted to Hugo shortcodes, images
+were removed or redrawn, Enterprise-only and HashiCorp-specific content was
+removed, and Norca extensions were added.
 Nothing was taken from Nomad v1.6.6 or later or from the current HashiCorp
 websites.
 
 Each adapted page names its source file in the `upstream.path` key of its
-front matter and shows this notice at the bottom of the rendered page.
+front matter and shows this notice at the bottom of the rendered page. Three
+pages also adapt a few paragraphs of website/content/docs/faq.mdx; the list
+below names that file as their second source.
 
 This project is not a product of HashiCorp, Inc. or IBM Corp. and is not
 affiliated with them. "Nomad", "Consul", "Vault" and "HashiCorp" are
@@ -260,7 +263,9 @@ Adapted pages of the Nomad v1.6.5 documentation (site file <- upstream file):
   content/docs/concepts/_index.md <- website/content/docs/concepts/index.mdx
   content/docs/concepts/acl.md <- website/content/docs/concepts/acl.mdx
   content/docs/concepts/architecture.md <- website/content/docs/concepts/architecture.mdx
+  content/docs/concepts/architecture.md <- website/content/docs/faq.mdx
   content/docs/concepts/consensus.md <- website/content/docs/concepts/consensus.mdx
+  content/docs/concepts/consensus.md <- website/content/docs/faq.mdx
   content/docs/concepts/filesystem.md <- website/content/docs/concepts/filesystem.mdx
   content/docs/concepts/gossip.md <- website/content/docs/concepts/gossip.mdx
   content/docs/concepts/node-pools.md <- website/content/docs/concepts/node-pools.mdx
@@ -294,6 +299,7 @@ Adapted pages of the Nomad v1.6.5 documentation (site file <- upstream file):
   content/docs/devices/_index.md <- website/content/docs/devices/index.mdx
   content/docs/drivers/_index.md <- website/content/docs/drivers/index.mdx
   content/docs/drivers/docker.md <- website/content/docs/drivers/docker.mdx
+  content/docs/drivers/docker.md <- website/content/docs/faq.mdx
   content/docs/drivers/exec.md <- website/content/docs/drivers/exec.mdx
   content/docs/drivers/java.md <- website/content/docs/drivers/java.mdx
   content/docs/drivers/qemu.md <- website/content/docs/drivers/qemu.mdx
