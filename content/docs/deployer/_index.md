@@ -141,6 +141,7 @@ NORCA_E2E_SSH=127.0.0.1:2222 NORCA_E2E_USER=deploy NORCA_E2E_PASSWORD=... \
   {{< card link="how-apply-works" title="How apply works" icon="refresh" >}}
   {{< card link="configuration" title="Configuration reference" icon="adjustments" >}}
   {{< card link="security" title="Security" icon="shield-check" >}}
+  {{< card link="supported-platforms" title="Supported systems" icon="server" >}}
   {{< card link="host-packages-and-scripts" title="Host packages and scripts" icon="cube" >}}
   {{< card link="networking-and-tuning" title="Networking and tuning" icon="globe-alt" >}}
   {{< card link="node-labels-and-pools" title="Node labels and pools" icon="tag" >}}

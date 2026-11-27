@@ -35,7 +35,7 @@ Older systems are refused before anything is changed, with the reason: RHEL 8 an
 
 **Firewall:** `apply_firewall_rules` uses an active ufw, a running firewalld (the default on RHEL), else nftables (a table of the deployer), else iptables; see [Networking and tuning](/docs/deployer/networking-and-tuning#firewall).
 
-When the detection is wrong, set the right values in [`host_facts`](/docs/deployer/configuration#host_facts) of the node.
+When the detection is wrong, set the right values in [`host_facts`](/docs/deployer/configuration#host_facts) of the node. A one-page summary of the systems and package managers: [Supported systems](/docs/deployer/supported-platforms).
 
 ## Build
 
