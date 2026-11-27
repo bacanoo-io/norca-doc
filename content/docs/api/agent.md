@@ -146,6 +146,12 @@ The table below shows this endpoint's support for
 | ---------------- | ------------ |
 | `NO`             | `agent:read` |
 
+The configuration in the response leaves out its secrets (tokens, passwords,
+credentials in addresses). In the `otlp` block of `telemetry` the values of
+the `headers`, those of the `metrics`, `traces` and `logs` blocks included,
+are `<redacted>`; the header names stay visible. A `headers_file` is shown by
+its path only.
+
 ### Sample Request
 
 ```shell
@@ -259,27 +265,34 @@ $ curl \
       "VerifyServerHostname": false
     },
     "Telemetry": {
-      "CirconusAPIApp": "",
-      "CirconusAPIToken": "",
-      "CirconusAPIURL": "",
-      "CirconusBrokerID": "",
-      "CirconusBrokerSelectTag": "",
-      "CirconusCheckDisplayName": "",
-      "CirconusCheckForceMetricActivation": "",
-      "CirconusCheckID": "",
-      "CirconusCheckInstanceID": "",
-      "CirconusCheckSearchTag": "",
-      "CirconusCheckSubmissionURL": "",
-      "CirconusCheckTags": "",
-      "CirconusSubmissionInterval": "",
       "CollectionInterval": "1s",
-      "DataDogAddr": "",
-      "DataDogTags": [],
+      "DisableDispatchedJobSummaryMetrics": false,
       "DisableHostname": false,
+      "DisableRPCRateMetricsLabels": false,
+      "FilterDefault": null,
+      "OTLP": {
+        "Compression": "",
+        "Endpoint": "otlp.example.com:4317",
+        "Headers": {
+          "authorization": "<redacted>"
+        },
+        "HeadersFile": "",
+        "Insecure": null,
+        "Logs": null,
+        "Metrics": null,
+        "ResourceAttributes": null,
+        "Retry": null,
+        "TLS": null,
+        "Timeout": "",
+        "Traces": null
+      },
+      "PrefixFilter": null,
+      "Prometheus": {
+        "Enabled": true,
+        "Expiration": ""
+      },
       "PublishAllocationMetrics": false,
       "PublishNodeMetrics": false,
-      "StatsdAddr": "",
-      "StatsiteAddr": "",
       "UseNodeName": false
     },
     "Vault": {

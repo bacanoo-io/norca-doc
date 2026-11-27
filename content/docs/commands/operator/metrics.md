@@ -61,7 +61,8 @@ norca operator metrics [options]
 ## Metrics Specific Options
 
 - `-pretty`: Pretty prints the JSON output
-- `-format <format>`: Specify output format (`prometheus`)
+- `-format <format>`: Specify output format (`prometheus`; needs the
+  [`prometheus` block](/docs/configuration/telemetry#prometheus) on the agent)
 - `-json`: Output the metrics in their JSON format.
 - `-t`: Format and display the metrics using a Go template.
 
