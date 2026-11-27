@@ -73,6 +73,12 @@ task "redis" {
 }
 ```
 
+**A `scaling` block without a check only bounds the count:** without a `check`
+(and without a `target` block) in its `policy`, no engine evaluates it, whatever
+its `engine`. Its `min` and `max` still bound `norca job scale` and job updates,
+and it needs neither the built-in autoscaler nor the validation of the `builtin`
+engine.
+
 ## `scaling` Parameters
 
 - `min` - <code>(int: nil)</code> - The minimum acceptable count for the task group.
@@ -91,10 +97,10 @@ task "redis" {
   (an external autoscaler agent). When empty, the
   [`default_engine`](/docs/configuration/autoscaler#autoscaler-parameters) of the servers
   applies, which is **`builtin` unless configured otherwise.** A policy of the
-  `builtin` engine is validated when the job is planned or submitted: it needs
-  at least one check, and an enabled one is rejected while the built-in
-  autoscaler is not enabled on the servers. **A `scaling` block for an external
-  autoscaler, or one without a check, sets `engine = "external"`.**
+  `builtin` engine is validated when the job is planned or submitted, and an
+  enabled one is rejected while the built-in autoscaler is not enabled on the
+  servers. A `scaling` block for an external autoscaler sets
+  `engine = "external"`.
 
 - `policy` - <code>(block: nil)</code> - The autoscaling policy. For the
   `builtin` engine it is a typed policy, described below and in
@@ -140,7 +146,8 @@ next to the original document. The attributes of the `policy` block are:
   scales a custom object instead of the group. See
   [targets](/docs/features/autoscaler/reference/plugins/target).
 
-- `check "<name>"` <code>(block: &lt;required&gt;)</code> - One or more checks.
+- `check "<name>"` <code>(block: nil)</code> - One or more checks. A policy
+  without a check only bounds the count and is not evaluated.
 
 ### `check` Parameters
 
@@ -200,9 +207,10 @@ check "latency" {
 
 The validation at submission checks, among others: `min <= max`, a known
 strategy and source, the required parameters of the built-in strategies (for
-example `target` for `target-value`), at least one check, unique check names,
-the lower bounds of the intervals, valid schedules, and that a `threshold` check
-with `query_window = "instant"` sets `within_bounds_trigger = 1`.
+example `target` for `target-value`), at least one check when the policy has a
+`target` block, unique check names, the lower bounds of the intervals, valid
+schedules, and that a `threshold` check with `query_window = "instant"` sets
+`within_bounds_trigger = 1`.
 
 [autoscaling_policy]: /docs/features/autoscaler/reference/policy/
 [`count`]: /docs/job-specification/group#count 'Task Group specification'

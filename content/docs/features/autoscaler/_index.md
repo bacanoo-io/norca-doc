@@ -64,8 +64,10 @@ flowchart LR
 1. **Policies.** The policy manager watches the scaling policies in the state
    store. A policy is evaluated by the built-in autoscaler if its engine is
    `builtin` (set in the `scaling` block, or inherited from the server's
-   `default_engine`), it is enabled, and it belongs to a task group. Task level
-   scaling policies (`scaling "cpu"`, `scaling "mem"`) are not evaluated.
+   `default_engine`), it is enabled, it has at least one check, and it belongs
+   to a task group. A policy without a check only bounds the count of its
+   group. Task level scaling policies (`scaling "cpu"`, `scaling "mem"`) are
+   not evaluated.
 2. **Metrics.** Clients aggregate the CPU and memory usage of their allocations
    per task group and publish it on the
    [system bus](/docs/features/system-bus#task-group-usage); the servers switch
@@ -336,7 +338,7 @@ Job specification, `group -> scaling` (full reference:
 | `policy.evaluation_interval`, `policy.cooldown`, `policy.cooldown_on_scale_up` | duration | server defaults | Timing of the evaluation. |
 | `policy.on_check_error` | string | `"ignore"` | `fail` or `ignore` errors of checks. |
 | `policy.scale_during_deployment` | string | `"up_only"` for the built-in engine | `never` or `up_only`. |
-| `policy.check "<name>"` | block | required | Metric (`metric`, or `source` and `query`) and strategy of a check. |
+| `policy.check "<name>"` | block | none | Metric (`metric`, or `source` and `query`) and strategy of a check. Without a check the policy only bounds the count. |
 
 ## CLI and API
 

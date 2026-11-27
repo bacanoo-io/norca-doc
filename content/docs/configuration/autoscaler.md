@@ -47,9 +47,9 @@ server {
   do not set [`engine`](/docs/job-specification/scaling#scaling-parameters): `builtin` (the
   built-in autoscaler) or `external` (an external autoscaler agent). **A policy
   goes to an external autoscaler only when it, or this setting, says
-  `external`.** Policies of the `builtin` engine are validated at submission: an
-  enabled one needs `enabled = true` here, and every one needs at least one
-  check.
+  `external`.** Policies of the `builtin` engine are validated at submission,
+  and an enabled one needs `enabled = true` here. A policy without a check
+  only bounds the count and belongs to no engine.
 
 - `min_eval_interval` `(string: "10s")` - The lower bound of a policy's
   `evaluation_interval`. A policy with a shorter interval is rejected at

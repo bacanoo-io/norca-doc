@@ -69,8 +69,9 @@ and **reject invalid policies, so errors show up in `norca job plan` and
   information can be found on the [Targets][target_plugin_docs] page.
 
 - `check` - Specifies one or more checks to be executed when determining if a
-  scaling action is required. At least one check is required and check names
-  must be unique.
+  scaling action is required. Check names must be unique. **A policy without a
+  check only bounds the count:** no engine evaluates it (a policy with a
+  `target` block needs at least one check).
 
 ## `check` Options
 
