@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1000" width="1200" height="1000" role="img" aria-labelledby="t1 d1">
+  <title id="t1">How the parts of Rigger build on each other</title>
+  <desc id="d1">Four layers: the sources of modules and stacks (the global registry, the Norca registry, git registries, OCI, directories, built-in modules and bundles); who fetches and evaluates them (the rigger program or norca rigger, and Rigger on the servers); what is installed (modules, stacks, releases through the release API); and the objects a release applies in a fixed order.</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8a887f"/>
+    </marker>
+    <style>
+      text { font-family: Inter, "Segoe UI", Helvetica, Arial, sans-serif; fill: #1b1b1b; font-size: 17px; }
+      .h { font-size: 24px; font-weight: 600; }
+      .band { font-size: 19px; font-weight: 600; fill: #3d3c37; }
+      .b { font-size: 18px; font-weight: 600; }
+      .s { fill: #4f4e48; }
+      .m { font-family: "JetBrains Mono", Consolas, Menlo, monospace; font-size: 15px; fill: #2d2c28; }
+      .sm { font-size: 15px; fill: #5c5b55; }
+      .panel { fill: #f4f3ef; stroke: #d6d4cc; stroke-width: 2; }
+      .box { fill: #ffffff; stroke: #c9c7bd; stroke-width: 2; }
+      .src { fill: #fdf3e6; stroke: #c98a3e; stroke-width: 2; }
+      .hi { fill: #e3ecf7; stroke: #2f78d4; stroke-width: 2.5; }
+      .obj { fill: #e6f2e7; stroke: #4a9157; stroke-width: 2; }
+      .ln { stroke: #8a887f; stroke-width: 2; fill: none; }
+      .dl { stroke: #8a887f; stroke-width: 2; fill: none; stroke-dasharray: 6 5; }
+    </style>
+  </defs>
+  <rect width="1200" height="1000" rx="16" fill="#ffffff"/>
+  <text class="h" x="40" y="50">Rigger: where modules come from, who evaluates them, what they become</text>
+
+  <!-- 1 Sources -->
+  <rect class="panel" x="20" y="76" width="1160" height="240" rx="14"/>
+  <text class="band" x="40" y="104">1  Sources of modules and stacks</text>
+  <path class="dl" d="M 171 124 L 171 114 L 739 114 L 739 120" marker-end="url(#a)"/>
+  <path class="dl" d="M 455 114 L 455 120" marker-end="url(#a)"/>
+
+  <rect class="src" x="40" y="126" width="262" height="172" rx="12"/>
+  <text class="b" x="56" y="154">Global registry (index)</text>
+  <text class="m" x="56" y="180">norca-global-registry</text>
+  <text class="s" x="56" y="206">an entry per version:</text>
+  <text class="s" x="56" y="230">repository, tag, commit,</text>
+  <text class="s" x="56" y="254">tree digest, signatures</text>
+  <text class="s" x="56" y="278">namespaces, keys, advisories</text>
+
+  <rect class="src" x="324" y="126" width="262" height="172" rx="12"/>
+  <text class="b" x="340" y="154">Norca registry</text>
+  <text class="m" x="340" y="180">bacanoo-io/norca-registry</text>
+  <text class="s" x="340" y="206">a git registry repository:</text>
+  <text class="s" x="340" y="230"><tspan class="m">modules/&lt;name&gt;</tspan>, signed tags</text>
+  <text class="m" x="340" y="254">&lt;name&gt;/v&lt;version&gt;</text>
+  <text class="s" x="340" y="278">listed as <tspan class="m">norca/&lt;name&gt;</tspan></text>
+
+  <rect class="src" x="608" y="126" width="262" height="172" rx="12"/>
+  <text class="b" x="624" y="154">Your git registries</text>
+  <text class="m" x="624" y="180">modules/, stacks/</text>
+  <text class="s" x="624" y="206">versions are tags:</text>
+  <text class="m" x="624" y="230">&lt;name&gt;/v&lt;version&gt;</text>
+  <text class="s" x="624" y="254">or <tspan class="m">v&lt;version&gt;</tspan> for one module</text>
+  <text class="s" x="624" y="278">listed or not, signed or not</text>
+
+  <rect class="src" x="892" y="126" width="268" height="172" rx="12"/>
+  <text class="b" x="908" y="154">Other sources</text>
+  <text class="m" x="908" y="180">oci://host/repository</text>
+  <text class="s" x="908" y="206">directories, <tspan class="m">./modules/x</tspan></text>
+  <text class="m" x="908" y="230">builtin/&lt;name&gt;</text>
+  <text class="s" x="908" y="254">bundles <tspan class="m">.riggerbundle</tspan></text>
+  <text class="s" x="908" y="278">for a closed network</text>
+
+  <!-- 2 Evaluators -->
+  <rect class="panel" x="20" y="352" width="1160" height="252" rx="14"/>
+  <text class="band" x="40" y="380">2  Who fetches, verifies and evaluates</text>
+
+  <rect class="hi" x="40" y="398" width="500" height="190" rx="12"/>
+  <text class="b" x="58" y="428">The <tspan class="m">rigger</tspan> program, <tspan class="m">norca rigger</tspan></text>
+  <text class="s" x="58" y="456">on the machine it runs on (the default)</text>
+  <text class="s" x="58" y="482">verifies digests, signatures, the lock file</text>
+  <text class="s" x="58" y="508">cache <tspan class="m">RIGGER_CACHE_DIR</tspan>, credentials of</text>
+  <text class="m" x="58" y="532">rigger login, RIGGER_GIT_*, RIGGER_OCI_*</text>
+  <text class="s" x="58" y="562">sends the resources of each release</text>
+
+  <path class="ln" d="M 542 488 L 656 488" marker-end="url(#a)"/>
+  <text class="m" x="558" y="476">--server</text>
+  <text class="sm" x="552" y="512">module or</text>
+  <text class="sm" x="552" y="532">stack</text>
+
+  <rect class="hi" x="660" y="398" width="500" height="190" rx="12"/>
+  <text class="b" x="678" y="428">Rigger on the servers (the leader)</text>
+  <text class="s" x="678" y="456">--server, the install API, the web UI catalog</text>
+  <text class="s" x="678" y="482">registries of the cluster, synced on request:</text>
+  <text class="m" x="678" y="506">rigger.norca.io/Registry, global</text>
+  <text class="s" x="678" y="532">built-in modules, imported bundles, files sent</text>
+  <text class="s" x="678" y="562">a stack apply runs as an Operation</text>
+
+  <!-- 3 Installed -->
+  <rect class="panel" x="20" y="630" width="1160" height="172" rx="14"/>
+  <text class="band" x="40" y="658">3  What is installed</text>
+
+  <rect class="box" x="40" y="674" width="262" height="112" rx="12"/>
+  <text class="b" x="56" y="702">Module</text>
+  <text class="s" x="56" y="728">a directory: variables,</text>
+  <text class="s" x="56" y="752">resources, outputs, tests;</text>
+  <text class="s" x="56" y="776">a version is a tag</text>
+
+  <path class="ln" d="M 304 730 L 322 730" marker-end="url(#a)"/>
+
+  <rect class="box" x="324" y="674" width="262" height="112" rx="12"/>
+  <text class="b" x="340" y="702">Stack</text>
+  <text class="s" x="340" y="728">modules with their values,</text>
+  <text class="s" x="340" y="752">wired by outputs, one region;</text>
+  <text class="m" x="340" y="776">rigger.lock.hcl</text>
+
+  <path class="ln" d="M 588 730 L 606 730" marker-end="url(#a)"/>
+
+  <rect class="hi" x="608" y="674" width="262" height="112" rx="12"/>
+  <text class="b" x="624" y="702">Release API</text>
+  <text class="m" x="624" y="728">/v1/release/:name</text>
+  <text class="s" x="624" y="752">admission, quotas, ACL,</text>
+  <text class="s" x="624" y="776">with the caller's token</text>
+
+  <path class="ln" d="M 872 730 L 890 730" marker-end="url(#a)"/>
+
+  <rect class="box" x="892" y="674" width="268" height="112" rx="12"/>
+  <text class="b" x="908" y="702">Release</text>
+  <text class="m" x="908" y="728">rigger.norca.io/Release</text>
+  <text class="s" x="908" y="752">revisions, history, rollback,</text>
+  <text class="s" x="908" y="776">drift, hooks, uninstall</text>
+
+  <!-- 4 Objects -->
+  <rect class="panel" x="20" y="828" width="1160" height="152" rx="14"/>
+  <text class="band" x="40" y="856">4  The objects of a release, applied in this order, deleted in reverse</text>
+
+  <g>
+    <rect class="obj" x="40" y="874" width="116" height="86" rx="10"/>
+    <text class="b" x="54" y="902">1</text><text class="s" x="54" y="930">Quota</text>
+    <rect class="obj" x="164" y="874" width="116" height="86" rx="10"/>
+    <text class="b" x="178" y="902">2</text><text class="s" x="178" y="930">Namespace</text>
+    <rect class="obj" x="288" y="874" width="116" height="86" rx="10"/>
+    <text class="b" x="302" y="902">3</text><text class="s" x="302" y="930">ACL policy</text>
+    <rect class="obj" x="412" y="874" width="116" height="86" rx="10"/>
+    <text class="b" x="426" y="902">4</text><text class="s" x="426" y="930">Variable</text>
+    <rect class="obj" x="536" y="874" width="116" height="86" rx="10"/>
+    <text class="b" x="550" y="902">5</text><text class="s" x="550" y="930">Object kind</text>
+    <rect class="obj" x="660" y="874" width="116" height="86" rx="10"/>
+    <text class="b" x="674" y="902">6</text><text class="s" x="674" y="930">Admission</text><text class="s" x="674" y="950">policy</text>
+    <rect class="obj" x="784" y="874" width="116" height="86" rx="10"/>
+    <text class="b" x="798" y="902">7</text><text class="s" x="798" y="930">External</text><text class="s" x="798" y="950">service</text>
+    <rect class="obj" x="908" y="874" width="116" height="86" rx="10"/>
+    <text class="b" x="922" y="902">8</text><text class="s" x="922" y="930">Custom</text><text class="s" x="922" y="950">object</text>
+    <rect class="obj" x="1032" y="874" width="128" height="86" rx="10"/>
+    <text class="b" x="1046" y="902">9</text><text class="s" x="1046" y="930">Job</text><text class="s" x="1046" y="950">(hooks too)</text>
+  </g>
+
+  <!-- arrows between the layers, drawn last -->
+  <path class="ln" d="M 480 318 L 480 396" marker-end="url(#a)"/>
+  <text class="sm" x="492" y="340">every kind of source</text>
+  <path class="ln" d="M 1100 318 L 1100 396" marker-end="url(#a)"/>
+  <text class="sm" x="1088" y="340" text-anchor="end">registered sources only, at their last sync</text>
+  <path class="ln" d="M 420 590 C 420 640 700 620 712 674" marker-end="url(#a)"/>
+  <path class="ln" d="M 860 590 C 860 640 790 630 780 674" marker-end="url(#a)"/>
+  <text class="sm" x="606" y="622">resources + metadata</text>
+  <path class="ln" d="M 1026 788 L 1026 870" marker-end="url(#a)"/>
+</svg>

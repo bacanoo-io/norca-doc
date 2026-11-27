@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 920" width="1200" height="920" role="img" aria-labelledby="t2 d2">
+  <title id="t2">How a stack wires its modules</title>
+  <desc id="d2">The stack platform of the examples: the values of the stack go to the modules nats, postgres and shop-api; the outputs of nats and postgres become values of shop-api; outputs of postgres and shop-api become values of shop-worker. The references set the order of an apply: nats, postgres, shop-api, shop-worker. Secrets and generated values come first; the lock file pins the versions of the registry modules.</desc>
+  <defs>
+    <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2f78d4"/>
+    </marker>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8a887f"/>
+    </marker>
+    <style>
+      text { font-family: Inter, "Segoe UI", Helvetica, Arial, sans-serif; fill: #1b1b1b; font-size: 17px; }
+      .h { font-size: 24px; font-weight: 600; }
+      .b { font-size: 18px; font-weight: 600; }
+      .s { fill: #4f4e48; }
+      .m { font-family: "JetBrains Mono", Consolas, Menlo, monospace; font-size: 15px; fill: #2d2c28; }
+      .mb { font-family: "JetBrains Mono", Consolas, Menlo, monospace; font-size: 16px; font-weight: 700; fill: #1b1b1b; }
+      .sm { font-size: 14px; fill: #5c5b55; }
+      .lbl { font-family: "JetBrains Mono", Consolas, Menlo, monospace; font-size: 13px; fill: #1f5fae; }
+      .cap { font-size: 13px; fill: #6b6a63; letter-spacing: 0.5px; }
+      .panel { fill: #f4f3ef; stroke: #d6d4cc; stroke-width: 2; }
+      .box { fill: #ffffff; stroke: #c9c7bd; stroke-width: 2; }
+      .reg { fill: #fdf3e6; stroke: #c98a3e; stroke-width: 2; }
+      .own { fill: #e6f2e7; stroke: #4a9157; stroke-width: 2; }
+      .inp { fill: #e3ecf7; stroke: #2f78d4; stroke-width: 2; }
+      .sec { fill: #fbeaea; stroke: #b9534f; stroke-width: 2; }
+      .w { stroke: #2f78d4; stroke-width: 2.5; fill: none; }
+      .ln { stroke: #8a887f; stroke-width: 2; fill: none; }
+      .div { stroke: #dedcd4; stroke-width: 1.5; }
+      .bg { fill: #ffffff; }
+    </style>
+  </defs>
+  <rect width="1200" height="920" rx="16" fill="#ffffff"/>
+  <text class="h" x="40" y="48">A stack wires modules: outputs become values, references set the order</text>
+
+  <rect class="sec" x="20" y="70" width="1160" height="58" rx="12"/>
+  <text class="s" x="40" y="96">First, before any release: the secrets of <tspan class="m">secrets.hcl</tspan> and the values written</text>
+  <text class="s" x="40" y="118"><tspan class="m">"!generate:&lt;name&gt;"</tspan>, created once in the secret store of the cluster and kept on the next apply.</text>
+
+  <!-- column captions -->
+  <text class="cap" x="30" y="160">STACK VALUES</text>
+  <text class="cap" x="330" y="160">FROM THE REGISTRY (LOCKED)</text>
+  <text class="cap" x="680" y="160">THE STACK'S OWN MODULES</text>
+
+  <!-- stack inputs -->
+  <rect class="inp" x="30" y="172" width="222" height="350" rx="12"/>
+  <text class="b" x="46" y="202">variables.hcl</text>
+  <text class="m" x="46" y="252">node</text>
+  <text class="m" x="46" y="278">bus_servers</text>
+  <text class="m" x="46" y="304">api_count</text>
+  <line class="div" x1="46" y1="328" x2="236" y2="328"/>
+  <text class="sm" x="46" y="352">values, later wins:</text>
+  <text class="m" x="46" y="378">default</text>
+  <text class="m" x="46" y="402">-f values/prod.vars.hcl</text>
+  <text class="m" x="46" y="426">RIGGER_VAR_&lt;name&gt;</text>
+  <text class="m" x="46" y="450">--var name=value</text>
+  <text class="sm" x="46" y="484">read as <tspan class="m">var.&lt;name&gt;</tspan></text>
+
+  <!-- nats -->
+  <rect class="reg" x="330" y="172" width="262" height="160" rx="12"/>
+  <text class="mb" x="346" y="200">module "nats"</text>
+  <text class="m" x="346" y="226">example/nats  ~&gt; 1.0</text>
+  <text class="sm" x="346" y="250">locked: 1.0.0, signed</text>
+  <line class="div" x1="346" y1="266" x2="576" y2="266"/>
+  <text class="sm" x="346" y="290">outputs</text>
+  <text class="m" x="346" y="314">service, client_port</text>
+
+  <!-- postgres -->
+  <rect class="reg" x="330" y="384" width="262" height="186" rx="12"/>
+  <text class="mb" x="346" y="412">module "postgres"</text>
+  <text class="m" x="346" y="438">example/postgres  ~&gt; 0.3</text>
+  <text class="sm" x="346" y="462">locked: 0.3.0, atomic, 10m</text>
+  <line class="div" x1="346" y1="478" x2="576" y2="478"/>
+  <text class="sm" x="346" y="502">outputs</text>
+  <text class="m" x="346" y="526">databases["shop"]</text>
+  <text class="m" x="346" y="550">databases["reports"]</text>
+
+  <!-- shop-api -->
+  <rect class="own" x="680" y="236" width="260" height="226" rx="12"/>
+  <text class="mb" x="696" y="264">module "shop-api"</text>
+  <text class="m" x="696" y="290">./modules/shop-api</text>
+  <line class="div" x1="696" y1="306" x2="924" y2="306"/>
+  <text class="sm" x="696" y="330">values</text>
+  <text class="m" x="696" y="354">count, database, bus</text>
+  <line class="div" x1="696" y1="370" x2="924" y2="370"/>
+  <text class="sm" x="696" y="394">outputs</text>
+  <text class="m" x="696" y="418">service, bus,</text>
+  <text class="m" x="696" y="442">order_subjects</text>
+
+  <!-- outputs of the stack -->
+  <rect class="box" x="986" y="172" width="194" height="112" rx="12"/>
+  <text class="b" x="1002" y="200">outputs.hcl</text>
+  <text class="m" x="1002" y="226">api_service =</text>
+  <text class="m" x="1002" y="250">module.shop-api</text>
+  <text class="m" x="1002" y="272">  .service</text>
+
+  <!-- shop-worker -->
+  <rect class="own" x="986" y="400" width="194" height="200" rx="12"/>
+  <text class="mb" x="1000" y="428">module</text>
+  <text class="mb" x="1000" y="452">"shop-worker"</text>
+  <text class="m" x="1000" y="478">./modules/</text>
+  <text class="m" x="1000" y="498">shop-worker</text>
+  <line class="div" x1="1000" y1="514" x2="1166" y2="514"/>
+  <text class="sm" x="1000" y="538">values</text>
+  <text class="m" x="1000" y="562">database, bus,</text>
+  <text class="m" x="1000" y="584">subjects</text>
+
+  <!-- wires -->
+  <path class="w" d="M 252 278 C 292 278 296 240 328 240" marker-end="url(#b)"/>
+  <text class="lbl" x="256" y="210">norca_bus</text>
+  <path class="w" d="M 252 252 C 300 252 296 450 328 450" marker-end="url(#b)"/>
+  <text class="lbl" x="262" y="372">node</text>
+  <path class="w" d="M 252 304 C 300 304 290 356 330 356 L 640 356 C 660 356 662 346 678 346" marker-end="url(#b)"/>
+  <text class="lbl" x="600" y="374">count</text>
+
+  <path class="w" d="M 592 312 C 636 312 640 290 678 290" marker-end="url(#b)"/>
+  <text class="lbl" x="606" y="284">bus</text>
+  <path class="w" d="M 592 522 C 640 522 646 430 678 430" marker-end="url(#b)"/>
+  <text class="lbl" x="604" y="470">database</text>
+  <path class="w" d="M 592 546 L 940 546 C 962 546 964 556 984 556" marker-end="url(#b)"/>
+  <text class="lbl" x="700" y="538">database</text>
+  <path class="w" d="M 940 430 C 962 430 960 470 984 470" marker-end="url(#b)"/>
+  <text class="lbl" x="866" y="494">bus, subjects</text>
+  <path class="w" d="M 940 262 C 962 262 960 236 984 236" marker-end="url(#b)"/>
+
+  <!-- order -->
+  <rect class="panel" x="20" y="624" width="1160" height="176" rx="14"/>
+  <text class="b" x="40" y="654">The order of <tspan class="m">rigger stack apply</tspan></text>
+  <rect class="reg" x="40" y="672" width="200" height="52" rx="10"/>
+  <text class="b" x="56" y="705">1  nats</text>
+  <path class="ln" d="M 242 698 L 270 698" marker-end="url(#g)"/>
+  <rect class="reg" x="272" y="672" width="200" height="52" rx="10"/>
+  <text class="b" x="288" y="705">2  postgres</text>
+  <path class="ln" d="M 474 698 L 502 698" marker-end="url(#g)"/>
+  <rect class="own" x="504" y="672" width="200" height="52" rx="10"/>
+  <text class="b" x="520" y="705">3  shop-api</text>
+  <path class="ln" d="M 706 698 L 734 698" marker-end="url(#g)"/>
+  <rect class="own" x="736" y="672" width="200" height="52" rx="10"/>
+  <text class="b" x="752" y="705">4  shop-worker</text>
+  <text class="sm" x="958" y="694">each waits until</text>
+  <text class="sm" x="958" y="714">the one before is ready</text>
+  <text class="s" x="40" y="754">A release is installed after every release it reads (<tspan class="m">module.&lt;name&gt;.&lt;output&gt;</tspan>) or names in <tspan class="m">depends_on</tspan>;</text>
+  <text class="s" x="40" y="780">releases that read nothing of each other go by name. <tspan class="m">stack destroy</tspan> removes them in the reverse order.</text>
+
+  <!-- lock -->
+  <rect class="box" x="20" y="820" width="1160" height="80" rx="12"/>
+  <text class="s" x="40" y="852"><tspan class="m">rigger.lock.hcl</tspan> (written by <tspan class="m">rigger stack sync</tspan>): example/nats 1.0.0 and example/postgres 0.3.0, each with its</text>
+  <text class="s" x="40" y="878">repository, tag, commit, tree digest and signers. The modules of <tspan class="m">./modules</tspan> are part of the stack and have no entry.</text>
+</svg>
