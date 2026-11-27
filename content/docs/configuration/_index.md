@@ -338,7 +338,9 @@ consul {
 - `log_include_location` `(bool: false)` - Include file and line information in
   each log line.
 
-- `log_json` `(bool: false)` - Output logs in a JSON format.
+- `log_json` `(bool: false)` - Output logs in a JSON format. The layout of
+  the log lines and their keys are described in
+  [Logging](/docs/operations/logging).
 
 - `log_file` `(string: "")` - Specifies the path for logging. If the path
   does not include a filename, the filename defaults to `nomad.log`. This

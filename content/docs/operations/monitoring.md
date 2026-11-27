@@ -85,6 +85,20 @@ and the others of the [Metrics reference](/docs/operations/metrics-reference#met
 OTLP keeps the dots; Prometheus uses underscores:
 `norca.server.backup.size_bytes` is `norca_server_backup_size_bytes`.
 
+### Traces and logs
+
+- **Traces:** the same `otlp` block exports the agent's traces: the HTTP API
+  requests, the RPCs and Raft writes of the servers, the scheduling of the
+  evaluations and the phases of the allocations on the clients. The
+  collector of the node forwards them with the metrics. See
+  [Tracing](/docs/operations/tracing).
+- **Logs:** the agent's logs are structured, with one key convention across
+  the agent, and carry the `trace_id` of a traced request. See
+  [Logging](/docs/operations/logging).
+- **Audit:** every server logs an audit record of each operator write call
+  it handles: who called, what, and the result. See
+  [Audit records](/docs/operations/audit-log).
+
 ## Norca metrics
 
 Besides the metrics of Nomad v1.6.5, the servers report metrics of the Norca
@@ -324,6 +338,8 @@ of Norca.
 ## See also
 
 - [`telemetry` block](/docs/configuration/telemetry)
+- [Tracing](/docs/operations/tracing), [Logging](/docs/operations/logging) and
+  [Audit records](/docs/operations/audit-log)
 - [Monitoring Norca agents](/docs/operations/monitoring-nomad) and the
   [Metrics reference](/docs/operations/metrics-reference)
 - [Metrics HTTP API](/docs/api/metrics)

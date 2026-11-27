@@ -255,17 +255,25 @@ describes how they map to OTLP.
 
 #### `traces`
 
-- `enabled` `(bool: true)` - Turns the trace signal on.
+What the agent traces, the sampling and the propagation of the trace context
+are described in [Tracing](/docs/operations/tracing).
+
+- `enabled` `(bool: true)` - Turns the trace signal on. With `false` no span
+  is exported, but the requests still get trace IDs, for the log lines and
+  the `Norca-Trace-Id` response header.
 
 - `sample_ratio` `(float: 0.1)` - The ratio of new root traces that are
-  sampled, from `0` to `1`.
+  sampled, from `0` to `1`. The
+  [important operations](/docs/operations/tracing#sampling) are always
+  sampled.
 
 - `trust_http_parent` `(bool: false)` - Takes the trace context of HTTP API
   requests (`traceparent`) as the parent of the agent's spans instead of a
   link.
 
 - `exclude_rpc` `(list: [])` - RPC methods (`Service.Method`, for example
-  `Node.UpdateStatus`) without spans, on top of the built-in list.
+  `Job.List`) without spans, on top of the
+  [built-in list](/docs/operations/tracing#what-is-not-traced).
 
 - `max_queue_size` `(int: 2048)` - The spans queued for export; more are
   dropped.

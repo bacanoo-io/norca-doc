@@ -96,7 +96,7 @@ the agent that emits it:
 | `norca.scheduler.*` | the schedulers | `norca.scheduler.allocs.reschedule.*` |
 | `norca.autoscaler.*` | the built-in autoscaler on the leader | see [Autoscaler telemetry](/docs/features/autoscaler/reference/telemetry) |
 | `norca.badger.<db>.*` | the Badger databases of the Raft log and of the client state | `norca.badger.raft.lsm_bytes` |
-| `norca.agent.*` | every agent | `norca.agent.http.exceeded`, `norca.agent.otlp.export_errors` |
+| `norca.agent.*` | every agent | `norca.agent.http.exceeded`, `norca.agent.otlp.export_errors`, `norca.agent.otlp.dropped` |
 | `norca.http.*` | the rate limit of the HTTP API of every agent | `norca.http.rate_limited` |
 | `norca.runtime.*` | the Go runtime of every agent | `norca.runtime.num_goroutines` |
 | `norca.memberlist.*`, `norca.serf.*` | the gossip of the servers | `norca.memberlist.gossip`, `norca.serf.member.join` |
@@ -579,6 +579,7 @@ Agent metrics are emitted by all Norca agents running in either client or server
 | ----------------------------------------- | ----------------------------------------------------- | ----------- | ------- |
 | `norca.agent.http.exceeded`               | Count of HTTP connections exceeding concurrency limit | Integer     | Counter |
 | `norca.agent.otlp.export_errors`          | Count of failed OTLP exports; label `signal`: `metrics` or `traces` | Integer | Counter |
+| `norca.agent.otlp.dropped`                | Count of spans dropped before or during the export; labels `signal`: `traces`, `reason`: `queue_full` or `export_failed` (see [Tracing](/docs/operations/tracing#export)) | Integer | Counter |
 | `norca.http.rate_limited`                 | Count of HTTP API requests refused by the rate limit; label `kind`: `read` or `write` | Integer | Counter |
 
 [tagged-metrics]: /docs/operations/metrics-reference#tagged-metrics
