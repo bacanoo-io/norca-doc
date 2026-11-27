@@ -142,7 +142,7 @@ return webhook.ListenAndServeTLS(ctx, ":8443", "cert.pem", "key.pem", mux)
   With `ignore`, such failures become warnings and the write goes ahead.
 - Each call has a `timeout` (default `5s`, at most `30s`). A kind has at most 8
   webhooks.
-- Failed calls are counted in the `nomad.custom_object.webhook.failures`
+- Failed calls are counted in the `norca.server.custom_object.webhook.failures`
   metric.
 
 ### Approval
@@ -201,7 +201,7 @@ migration {
   migration fails gets a `MigrationFailed` warning event (its error is cut at
   512 bytes, at a character boundary, and then ends with ` ... (truncated)`)
   and is retried only
-  when it or the kind changes. The `nomad.custom_object.migrated` metric counts
+  when it or the kind changes. The `norca.server.custom_object.migrated` metric counts
   migrated objects.
 
 Each object records the schema version it was last written or migrated at
@@ -236,7 +236,7 @@ status, finalizers, events, scale and deletion. The identity bucket is checked
 first, so a controller stuck in a loop is throttled before it uses up the budget
 of the users. Over a limit, a request fails with `429 Too Many Requests`; the SDK
 reports it as `ErrThrottled` (`IsThrottled`) and retries with backoff. The
-`nomad.custom_object.throttled` metric counts rejected requests. Without a
+`norca.server.custom_object.throttled` metric counts rejected requests. Without a
 `limits` block, there are no limits.
 
 ## Checking kinds offline

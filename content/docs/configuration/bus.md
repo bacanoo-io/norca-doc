@@ -260,7 +260,7 @@ one way ([change data capture](/docs/features/change-data-capture#through-a-leaf
   acknowledgement: a node publishes and does not wait. A report must come on
   the subject of its node, and of its task groups only those are kept that the node has an
   allocation of; the rest is dropped and counted
-  (`nomad.bus.telemetry.foreign_groups`). The stream keeps at most 1024
+  (`norca.server.bus.telemetry.foreign_groups`). The stream keeps at most 1024
   reports of a node, so a node that publishes too fast replaces its own
   reports only.
 

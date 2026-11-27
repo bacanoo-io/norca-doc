@@ -56,8 +56,8 @@ the changed ones in a single upsert; once a minute it re-sends the current state
 servers lost is corrected. On the leader, a health change of an instance that changed less than five
 seconds ago is held back, and only the last held-back change is written when the five seconds have
 passed (flapping protection). The leader counts the written changes in the metric
-`nomad.service_registration.health_updates` and the held-back ones in
-`nomad.service_registration.health_updates_deferred`, both labelled with the region.
+`norca.server.service_registration.health_updates` and the held-back ones in
+`norca.server.service_registration.health_updates_deferred`, both labelled with the region.
 
 **Who filters.** Health filtering is opt-in where the Nomad API 1.6.5 behaviour must stay compatible,
 and always on where Norca adds the interface:

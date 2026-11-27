@@ -349,7 +349,7 @@ The `backup` block of the server configuration can make two-person approval mand
 ## Events, metrics, alerting
 
 - **New event topic: `Backup`.** Events: backup completed, backup failed, backup deleted, restore requested, approved, started, finished. These also go into the history and audit service (multi-cloud chapter, NATS bridge).
-- **Metrics** in the existing telemetry: `nomad.backup.last_success_age_seconds`, `nomad.backup.duration_seconds`, `nomad.backup.size_bytes`, `nomad.backup.failures_total`, labeled per destination.
+- **Metrics** in the existing telemetry: `norca.server.backup.last_success_age_seconds`, `norca.server.backup.duration_seconds`, `norca.server.backup.size_bytes`, `norca.server.backup.failures_total`, labeled per destination.
 - **Suggested alert:** when `last_success_age_seconds` exceeds twice the interval, or three consecutive uploads to a destination fail.
 
 ## Implementation and schedule

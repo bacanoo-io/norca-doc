@@ -16,46 +16,46 @@ the agent receives `USR1` (on Windows `BREAK`) like every other agent metric.
 configuration.**
 
 The metrics are emitted by the leader, which runs the autoscaler. With the
-default telemetry settings their names start with `nomad.nomad.autoscaler.`.
+default telemetry settings their names start with `norca.autoscaler.`.
 
 ## Policy metrics
 
 | Metric | Description | Unit | Type |
 | --- | --- | --- | --- |
-| `nomad.nomad.autoscaler.policies` | The number of `builtin` policies being evaluated | Number of policies | Gauge |
-| `nomad.nomad.autoscaler.policy.invalid` | Policies that could not be loaded for evaluation | Number of policies | Counter |
-| `nomad.nomad.autoscaler.queue` | Policies waiting for a free evaluation worker | Number of policies | Gauge |
-| `nomad.nomad.autoscaler.evaluate` | Time taken to evaluate one policy | Milliseconds | Timer |
-| `nomad.nomad.autoscaler.evaluate.skipped` | Evaluations skipped because of a cooldown or a suspension | Number of evaluations | Counter |
-| `nomad.nomad.autoscaler.evaluate.deployment` | Evaluations skipped because of an active deployment | Number of evaluations | Counter |
+| `norca.autoscaler.policies` | The number of `builtin` policies being evaluated | Number of policies | Gauge |
+| `norca.autoscaler.policy.invalid` | Policies that could not be loaded for evaluation | Number of policies | Counter |
+| `norca.autoscaler.queue` | Policies waiting for a free evaluation worker | Number of policies | Gauge |
+| `norca.autoscaler.evaluate` | Time taken to evaluate one policy | Milliseconds | Timer |
+| `norca.autoscaler.evaluate.skipped` | Evaluations skipped because of a cooldown or a suspension | Number of evaluations | Counter |
+| `norca.autoscaler.evaluate.deployment` | Evaluations skipped because of an active deployment | Number of evaluations | Counter |
 
 ## Plugin metrics
 
 | Metric | Description | Unit | Type | Labels |
 | --- | --- | --- | --- | --- |
-| `nomad.nomad.autoscaler.apm.query` | Time taken by an APM query | Milliseconds | Timer | `plugin_name` (the check source) |
-| `nomad.nomad.autoscaler.strategy.run` | Time taken by a strategy | Milliseconds | Timer | `plugin_name` (the strategy) |
-| `nomad.nomad.autoscaler.plugin.exited` | External plugin processes that exited unexpectedly | Number of exits | Counter | `plugin_name` |
-| `nomad.nomad.autoscaler.plugin.hung` | External plugin processes stopped after three calls in a row ran out of the call timeout | Number of stops | Counter | `plugin_name` |
+| `norca.autoscaler.apm.query` | Time taken by an APM query | Milliseconds | Timer | `plugin_name` (the check source) |
+| `norca.autoscaler.strategy.run` | Time taken by a strategy | Milliseconds | Timer | `plugin_name` (the strategy) |
+| `norca.autoscaler.plugin.exited` | External plugin processes that exited unexpectedly | Number of exits | Counter | `plugin_name` |
+| `norca.autoscaler.plugin.hung` | External plugin processes stopped after three calls in a row ran out of the call timeout | Number of stops | Counter | `plugin_name` |
 
 ## Scaling action metrics
 
 | Metric | Description | Unit | Type |
 | --- | --- | --- | --- |
-| `nomad.nomad.autoscaler.scale.invoke` | Time taken by a scaling action | Milliseconds | Timer |
-| `nomad.nomad.autoscaler.scale.success` | Successful scaling actions | Number of actions | Counter |
-| `nomad.nomad.autoscaler.scale.error` | Failed scaling actions | Number of actions | Counter |
-| `nomad.nomad.autoscaler.scale.noop` | Actions skipped because the job had an active deployment | Number of actions | Counter |
-| `nomad.nomad.autoscaler.scale.rate_limited` | Actions dropped by the cluster-wide rate limit | Number of actions | Counter |
-| `nomad.nomad.autoscaler.scale.quota_capped` | Scale ups capped by the namespace quota | Number of actions | Counter |
-| `nomad.nomad.autoscaler.oscillation.suspended` | Task groups suspended by the oscillation protection | Number of suspensions | Counter |
+| `norca.autoscaler.scale.invoke` | Time taken by a scaling action | Milliseconds | Timer |
+| `norca.autoscaler.scale.success` | Successful scaling actions | Number of actions | Counter |
+| `norca.autoscaler.scale.error` | Failed scaling actions | Number of actions | Counter |
+| `norca.autoscaler.scale.noop` | Actions skipped because the job had an active deployment | Number of actions | Counter |
+| `norca.autoscaler.scale.rate_limited` | Actions dropped by the cluster-wide rate limit | Number of actions | Counter |
+| `norca.autoscaler.scale.quota_capped` | Scale ups capped by the namespace quota | Number of actions | Counter |
+| `norca.autoscaler.oscillation.suspended` | Task groups suspended by the oscillation protection | Number of suspensions | Counter |
 
 ## Usage collector metrics
 
 | Metric | Description | Unit | Type |
 | --- | --- | --- | --- |
-| `nomad.nomad.autoscaler.usage.groups` | Task groups with usage data on the leader | Number of task groups | Gauge |
-| `nomad.nomad.autoscaler.usage.dropped` | Usage reports dropped because the collector holds its maximum of 100,000 task groups | Number of reports | Counter |
+| `norca.autoscaler.usage.groups` | Task groups with usage data on the leader | Number of task groups | Gauge |
+| `norca.autoscaler.usage.dropped` | Usage reports dropped because the collector holds its maximum of 100,000 task groups | Number of reports | Counter |
 
 ## Admission control metrics
 
@@ -64,7 +64,7 @@ leader and emits:
 
 | Metric | Description | Unit | Type | Labels |
 | --- | --- | --- | --- | --- |
-| `nomad.nomad.admission.denied` | Jobs and Variables writes rejected | Number of rejections | Counter | `controller` (`policy` or `webhook`), `name` |
-| `nomad.nomad.admission.webhook.calls` | Calls of an admission webhook | Number of calls | Counter | `webhook` |
-| `nomad.nomad.admission.webhook.errors` | Failed calls of an admission webhook | Number of calls | Counter | `webhook` |
-| `nomad.nomad.admission.webhook.latency` | Time taken by an admission webhook call | Milliseconds | Timer | `webhook` |
+| `norca.server.admission.denied` | Jobs and Variables writes rejected | Number of rejections | Counter | `controller` (`policy` or `webhook`), `name` |
+| `norca.server.admission.webhook.calls` | Calls of an admission webhook | Number of calls | Counter | `webhook` |
+| `norca.server.admission.webhook.errors` | Failed calls of an admission webhook | Number of calls | Counter | `webhook` |
+| `norca.server.admission.webhook.latency` | Time taken by an admission webhook call | Milliseconds | Timer | `webhook` |

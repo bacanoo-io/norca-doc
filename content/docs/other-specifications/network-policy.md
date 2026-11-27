@@ -118,7 +118,7 @@ egress {
 
 - `name` `(string: "")` - An optional name, `[a-zA-Z0-9-_]{1,128}`, unique per
   direction in the policy. It appears as the `rule` label of the drop counter
-  metric `nomad.client.allocs.network_policy.dropped` and in
+  metric `norca.client.allocs.network_policy.dropped` and in
   `norca network-policy status`.
 
 - `action` `(string)` - Admin policies only, required there: `"allow"` accepts

@@ -102,7 +102,7 @@ State changes mean Raft writes, therefore:
 
 - the client collects changes for a short time (default 1 s) and sends them in a single `ServiceRegistration.Upsert` call;
 - the state of an instance can change on the server at most every 5 seconds (flapping protection), and intermediate states are merged;
-- new metric: `nomad.service_registration.health_updates` per region, measured in the load test.
+- new metric: `norca.server.service_registration.health_updates` per region, measured in the load test.
 
 ### API and template
 

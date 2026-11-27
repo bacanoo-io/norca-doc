@@ -295,7 +295,7 @@ server {
     - `value_log_gc_interval` `(string: "10m")` - How often the value log garbage
       collection runs, in the background.
 
-  The metrics `nomad.badger.raft.*` report the size of the LSM tree and the
+  The metrics `norca.badger.raft.*` report the size of the LSM tree and the
   value log, the tables per level and the time of log writes, deletions and
   value log garbage collections.
 
@@ -374,8 +374,8 @@ server {
   unreliable networks to wait longer before electing a new leader. The trade-off
   when raising this value is that during network partitions or other events
   (server crash) where a leader is lost, Norca will not elect a new leader for
-  a longer period of time than the default. The [`nomad.nomad.leader.barrier` and
-  `nomad.raft.leader.lastContact` metrics](/docs/operations/metrics-reference/) are a good
+  a longer period of time than the default. The [`norca.server.leader.barrier` and
+  `norca.raft.leader.lastContact` metrics](/docs/operations/metrics-reference/) are a good
   indicator of how often leader elections occur and Raft latency.
 
 - `raft_snapshot_threshold` `(int: "8192")` - Specifies the minimum number of

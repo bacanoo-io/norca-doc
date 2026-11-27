@@ -427,7 +427,7 @@ fails to start only fails the checks that use it;** it is started again on its
 next use, with an exponential backoff between attempts (1 second up to 2
 minutes). A process that does not answer three calls in a row, each within the
 call timeout of one minute, counts as hung: it is stopped and started again
-like one that exited (metric `nomad.nomad.autoscaler.plugin.hung`).
+like one that exited (metric `norca.autoscaler.plugin.hung`).
 
 ### Migrating from an external autoscaler
 

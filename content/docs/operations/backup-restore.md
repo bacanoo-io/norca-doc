@@ -287,8 +287,8 @@ management tokens.
 
 Alert on the metrics of the leader (see [Monitoring](/docs/operations/monitoring#backups)):
 
-- `nomad.backup.last_success_age_seconds` above twice the interval;
-- an increase of `nomad.backup.failures_total` for a destination, or three
+- `norca.server.backup.last_success_age_seconds` above twice the interval;
+- an increase of `norca.server.backup.failures_total` for a destination, or three
   failed backups in a row (the leader also logs an error then);
 - backups in the `partial` status in `norca operator backup list`.
 

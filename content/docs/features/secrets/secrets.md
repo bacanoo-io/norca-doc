@@ -54,9 +54,9 @@ version is neither deleted nor destroyed) on the `Secret` event topic, with meta
   idempotent per secret and version.
 - **Timing.** The leader evaluates on every change of a secret and at the next known due time, at least
   once a minute.
-- **Metrics.** The leader sets the gauges `nomad.secrets.expiring`, `nomad.secrets.expired` and
-  `nomad.secrets.rotation_due` (numbers of live secrets in each condition; 0 on the other servers) and
-  counts rotation dispatches in `nomad.secrets.rotation.dispatched` and `nomad.secrets.rotation.failed`.
+- **Metrics.** The leader sets the gauges `norca.server.secrets.expiring`, `norca.server.secrets.expired` and
+  `norca.server.secrets.rotation_due` (numbers of live secrets in each condition; 0 on the other servers) and
+  counts rotation dispatches in `norca.server.secrets.rotation.dispatched` and `norca.server.secrets.rotation.failed`.
 
 **A static secret is never changed by the store itself.** To rotate it automatically, name a **rotation
 job**: a [parameterized](/docs/job-specification/parameterized) batch job in the secret's namespace
@@ -164,7 +164,7 @@ authoritative region "eu" and is read-only in region "us"; change it in region "
   the secret carries `Replica` (`Region`, `SourceCreateIndex`, `SourceModifyIndex`).
   [`secret info`](/docs/commands/secret/info) shows `Replicated From`.
 - **Conflicts.** A replica never replaces a secret the region created itself at the same path: the leader
-  logs a warning and counts `nomad.secrets.replication.conflict`; destroy the local secret to receive the
+  logs a warning and counts `norca.server.secrets.replication.conflict`; destroy the local secret to receive the
   replica. An older state never replaces a newer one: if the authoritative region is restored to a backup
   with a lower version of a secret, the replicas keep their newer version until the secret is written
   again there.
@@ -180,7 +180,7 @@ authoritative region "eu" and is read-only in region "us"; change it in region "
   and each removal a `destroy` record, both with `PeerRegion` set to the authoritative region. Every
   change of a replica is a `SecretUpserted` or `SecretDeleted` event of the `Secret` topic in its region,
   whose payload carries `Replica`. Values never appear in either.
-- **Metrics.** `nomad.secrets.replication.written`, `.removed`, `.failed` and `.conflict` on the leader of
+- **Metrics.** `norca.server.secrets.replication.written`, `.removed`, `.failed` and `.conflict` on the leader of
   each non-authoritative region.
 - **Backup and restore.** Replicas are part of the region's Raft snapshot like any secret. A replica
   restored in a non-authoritative region (a full or snapshot restore) is overwritten by the replication

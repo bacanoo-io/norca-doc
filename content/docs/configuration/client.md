@@ -68,7 +68,7 @@ client {
   for 2–4 GB, `default` for 8–16 GB, `large` for 32 GB or more; see
   [which profile for which system](/docs/configuration/server/#badger-profiles).
 
-  The metrics `nomad.badger.client.*` report the size of the LSM tree and the
+  The metrics `norca.badger.client.*` report the size of the LSM tree and the
   value log and the tables per level.
 
 - `meta` `(map[string]string: nil)` - Specifies a key-value map that annotates

@@ -220,7 +220,7 @@ ACL:
   policy).
 - Admin policies: `operator` read (list, status) or write (apply, delete).
 
-Observability: the counter metric `nomad.client.allocs.network_policy.dropped`
+Observability: the counter metric `norca.client.allocs.network_policy.dropped`
 counts the packets dropped by admin `deny` rules and by default deny, with the
 labels `alloc_id`, `namespace`, `job`, `task_group`, `direction`, `kind`
 (`admin` or `default-deny`), `policy` and `rule` (needs

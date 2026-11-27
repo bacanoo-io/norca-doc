@@ -243,7 +243,7 @@ Further measures:
   threshold), so compaction works on a bounded amount of data.
 - **Monitoring**: the number of level 0 tables, pending compactions, write stalls, LSM and value log
   size and the GC runs are exported to the Norca metrics store and the Prometheus endpoint
-  (`nomad.badger.*`, following the existing metric names). A warning alert fires when level 0 gets close to `NumLevelZeroTablesStall`.
+  (`norca.badger.*`, following the existing metric names). A warning alert fires when level 0 gets close to `NumLevelZeroTablesStall`.
 - **Disk space**: an LSM store temporarily needs more space during compaction. Phase 2 adds a free
   space metric and warning for the data directory of servers; clients already garbage collect
   allocations by disk usage (`gc_disk_usage_threshold`).
@@ -267,8 +267,8 @@ server {
 ```
 
 and a `badger` block with the same keys in `client`. Unset keys take the values of the table above.
-Both blocks share one implementation (`helper/badgerdb`); the metrics are `nomad.badger.raft.*` and
-`nomad.badger.client.*`.
+Both blocks share one implementation (`helper/badgerdb`); the metrics are `norca.badger.raft.*` and
+`norca.badger.client.*`.
 
 ### Moving existing data
 

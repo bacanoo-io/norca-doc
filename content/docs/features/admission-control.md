@@ -290,7 +290,7 @@ operator-level rule, not scoped to a namespace. **Webhooks cannot be managed
 through the API**, so that a token cannot register a webhook that would see every
 job.
 
-Telemetry: `nomad.nomad.admission.denied`, `nomad.nomad.admission.webhook.calls`,
+Telemetry: `norca.server.admission.denied`, `norca.server.admission.webhook.calls`,
 `.errors` and `.latency` (see [telemetry](/docs/features/autoscaler/reference/telemetry#admission-control-metrics)).
 
 ## Limits and status

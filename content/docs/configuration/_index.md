@@ -299,7 +299,7 @@ consul {
     tokens do not get a limit each and one client can't use up the requests
     of the others. A request over the limit
     gets `429 Too Many Requests` with a `Retry-After` header in seconds, and
-    the counter `nomad.http.rate_limited` (label `kind`: `read` or `write`)
+    the counter `norca.http.rate_limited` (label `kind`: `read` or `write`)
     grows. `0` disables the limit. Client agents are not limited. The limits
     apply from the start of the agent.
 

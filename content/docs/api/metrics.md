@@ -47,7 +47,7 @@ $ curl https://localhost:4646/v1/metrics?format=prometheus
       "Max": 1.0,
       "Mean": 1.0,
       "Min": 1.0,
-      "Name": "nomad.nomad.rpc.query",
+      "Name": "norca.server.rpc.query",
       "Stddev": 0.0,
       "Sum": 11.0
     }
@@ -58,7 +58,7 @@ $ curl https://localhost:4646/v1/metrics?format=prometheus
         "node_id": "cd7c3e0c-0174-29dd-17ba-ea4609e0fd1f",
         "datacenter": "dc1"
       },
-      "Name": "nomad.client.allocations.blocked",
+      "Name": "norca.client.allocations.blocked",
       "Value": 0.0
     },
     {
@@ -66,7 +66,7 @@ $ curl https://localhost:4646/v1/metrics?format=prometheus
         "datacenter": "dc1",
         "node_id": "cd7c3e0c-0174-29dd-17ba-ea4609e0fd1f"
       },
-      "Name": "nomad.client.allocations.migrating",
+      "Name": "norca.client.allocations.migrating",
       "Value": 0.0
     }
   ],
@@ -77,7 +77,7 @@ $ curl https://localhost:4646/v1/metrics?format=prometheus
       "Max": 0.03544100001454353,
       "Mean": 0.023678050097078084,
       "Min": 0.00956599973142147,
-      "Name": "nomad.memberlist.gossip",
+      "Name": "norca.memberlist.gossip",
       "Stddev": 0.005445327799243976,
       "Sum": 0.4735610019415617
     },
@@ -87,7 +87,7 @@ $ curl https://localhost:4646/v1/metrics?format=prometheus
       "Max": 0.0964059978723526,
       "Mean": 0.0964059978723526,
       "Min": 0.0964059978723526,
-      "Name": "nomad.nomad.client.update_status",
+      "Name": "norca.server.client.update_status",
       "Stddev": 0.0,
       "Sum": 0.0964059978723526
     }

@@ -396,13 +396,13 @@ replication, its RPC requests and its own
 
 The two Raft times come from the agent's own
 [telemetry](/docs/configuration/telemetry), the same values the
-[metrics API](/docs/api/metrics) shows as `nomad.raft.commitTime` and
-`nomad.raft.replication.appendEntries.rpc` (in milliseconds there): **a
+[metrics API](/docs/api/metrics) shows as `norca.raft.commitTime` and
+`norca.raft.replication.appendEntries.rpc` (in milliseconds there): **a
 [`prefix_filter`](/docs/configuration/telemetry) that blocks them leaves these
 series without points.** The telemetry keeps the last minute, so with a
 `sample_interval` above 50 seconds the mean covers the last 50 seconds of the
 interval. The RPC counts are kept by the server itself, whatever the
-telemetry; unlike `nomad.rpc.request`, which counts the requests over the RPC
+telemetry; unlike `norca.server.rpc.request`, which counts the requests over the RPC
 port only, they include the requests in process, and they count a request
 answered with an error as an error.
 

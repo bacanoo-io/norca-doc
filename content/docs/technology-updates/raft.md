@@ -87,7 +87,7 @@ cut off from its quorum may answer with stale values until it steps down. Norca 
   after the leader applied it, so the answer includes **every write acknowledged before the request**;
 - **a leader that lost its quorum answers with an error instead of stale values;**
 - the cost is one round trip from the leader to the other servers per read
-  (metric `nomad.rpc.consistent_read`).
+  (metric `norca.server.rpc.consistent_read`).
 
 > [!NOTE]
 > `?stale` and `?consistent` contradict each other: a request with both is answered with

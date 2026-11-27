@@ -62,7 +62,7 @@ The following options are available on all telemetry configurations.
     times.
 
 ```python
-['-nomad.raft', '+nomad.raft.apply', '-nomad.memberlist']
+['-norca.raft', '+norca.raft.apply', '-norca.memberlist']
 ```
 
 - `disable_dispatched_job_summary_metrics` `(bool: false)` - Specifies if Norca

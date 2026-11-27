@@ -393,7 +393,7 @@ This endpoint counts evaluations.
 > makes calculating this count unexpectedly expensive (similar in cost to the List
 > API), and this API was designed for use during recovery operations with the
 > `norca eval delete` command. **It is not recommended to use this API for
-> monitoring.** The `nomad.nomad.broker.*` metrics are better for that use
+> monitoring.** The `norca.server.broker.*` metrics are better for that use
 > case. See the [metrics reference][] for details.
 
 | Method | Path                    | Produces           |

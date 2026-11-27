@@ -88,14 +88,14 @@ insufficient disk IOPS. Users in cloud environments often bump their
 servers up to the next instance class with improved networking and CPU
 to stabilize leader elections, or switch to higher-performance disks.
 
-The `nomad.raft.leader.lastContact` metric is a general indicator of
+The `norca.raft.leader.lastContact` metric is a general indicator of
 Raft latency which can be used to observe how Raft timing is
 performing and guide infrastructure provisioning. If this number
 trends upwards, look at CPU, disk IOPs, and network
-latency. **`nomad.raft.leader.lastContact` should not get too close to
+latency. **`norca.raft.leader.lastContact` should not get too close to
 the leader lease timeout of 500ms.**
 
-The `nomad.raft.replication.appendEntries` metric is an indicator of
+The `norca.raft.replication.appendEntries` metric is an indicator of
 the time it takes for a Raft transaction to be replicated to a quorum
 of followers. If this number trends upwards, check the disk I/O on the
 followers and network latency between the leader and the followers.
@@ -113,9 +113,9 @@ consider.
 - **Network** - `sar -n`, `netstat -s`, cloud provider metrics for
   interface "allowance"
 
-The `nomad.raft.fsm.apply` metric is an indicator of the time it takes
+The `norca.raft.fsm.apply` metric is an indicator of the time it takes
 for a server to apply Raft entries to the internal state machine. If
-this number trends upwards, look at the `nomad.nomad.fsm.*` metrics to
+this number trends upwards, look at the `norca.server.fsm.*` metrics to
 see if a specific Raft entry is increasing in latency. You can compare
 this to warn-level logs on the Norca servers for `attempting to apply
 large raft entry`. If a specific type of message appears here, there
@@ -182,12 +182,12 @@ adjusting the [`plan_rejection_tracker`] configuration of servers.
 The following metrics allow observing changes in throughput at the various
 points in the scheduling process.
 
-- **nomad.worker.invoke_scheduler.<type\>** - The time to run the
+- **norca.server.worker.invoke_scheduler.<type\>** - The time to run the
   scheduler of the given type. Each scheduler worker handles one
   evaluation at a time, entirely in-memory. If this metric increases,
   examine the CPU and memory resources of the scheduler.
 
-- **nomad.blocked_evals.total_blocked** - The number of blocked
+- **norca.server.blocked_evals.total_blocked** - The number of blocked
   evaluations. Blocked evaluations are created when the scheduler
   cannot place all allocations as part of a plan. Blocked evaluations
   will be re-evaluated so that changes in cluster resources can be
@@ -196,7 +196,7 @@ points in the scheduling process.
   resources or that jobs have been submitted that can never have all
   their allocations placed.
 
-- **nomad.broker.total_unacked** - The number of unacknowledged
+- **norca.server.broker.total_unacked** - The number of unacknowledged
   evaluations. When an evaluation has been processed, the worker sends
   an acknowledgment RPC to the leader to signal to the eval broker
   that processing is complete. The unacked evals are those that are
@@ -205,37 +205,37 @@ points in the scheduling process.
   have a large queue of evaluations to process. See the
   `invoke_scheduler` metric (above) and examine the CPU and memory
   resources of the scheduler. Norca also emits a similar metric for
-  each individual scheduler. For example `nomad.broker.batch_unacked`
+  each individual scheduler. For example `norca.server.broker.batch_unacked`
   shows the number of unacknowledged evaluations for the batch
   scheduler.
 
-- **nomad.broker.total_pending** - The number of pending evaluations in the eval
+- **norca.server.broker.total_pending** - The number of pending evaluations in the eval
   broker. Norca processes only one evaluation for a given job concurrently. When
   an unacked evaluation is acknowledged, Norca will discard all but the latest
   evaluation for a job. An increase in this metric may mean that the cluster
   state is changing more rapidly than the schedulers can keep up.
 
-- **nomad.plan.evaluate** - The time to evaluate a scheduler plan
+- **norca.server.plan.evaluate** - The time to evaluate a scheduler plan
   submitted by a worker. This operation happens on the leader to
   serialize the plans of all the scheduler workers. This happens
   entirely in memory on the leader. If this metric increases, examine
   the CPU and memory resources of the leader.
 
-- **nomad.plan.wait_for_index** - The time required for the planner to wait for
+- **norca.server.plan.wait_for_index** - The time required for the planner to wait for
   the Raft index of the plan to be processed. If this metric increases, refer
   to the [Consensus Protocol (Raft)] section above. **If this metric approaches 5
   seconds, scheduling operations may fail and be retried.** If possible reduce
   scheduling load until metrics improve.
 
-- **nomad.plan.submit** - The time to submit a scheduler plan from the
+- **norca.server.plan.submit** - The time to submit a scheduler plan from the
   worker to the leader. This operation requires writing to Raft and
-  includes the time from `nomad.plan.evaluate` and
-  `nomad.plan.wait_for_index` (above). If this metric increases, refer
+  includes the time from `norca.server.plan.evaluate` and
+  `norca.server.plan.wait_for_index` (above). If this metric increases, refer
   to the [Consensus Protocol (Raft)] section above.
 
-- **nomad.plan.queue_depth** - The number of scheduler plans waiting
+- **norca.server.plan.queue_depth** - The number of scheduler plans waiting
   to be evaluated after being submitted. If this metric increases,
-  examine the `nomad.plan.evaluate` and `nomad.plan.submit` metrics to
+  examine the `norca.server.plan.evaluate` and `norca.server.plan.submit` metrics to
   determine if the problem is in general leader resources or Raft
   performance.
 
@@ -252,14 +252,14 @@ services with an uptime requirement may want to maintain headroom at 20% or
 more. The following metrics can be used to assess capacity across the cluster on
 a per client basis.
 
-- **nomad.client.allocated.cpu**
-- **nomad.client.unallocated.cpu**
-- **nomad.client.allocated.disk**
-- **nomad.client.unallocated.disk**
-- **nomad.client.allocated.iops**
-- **nomad.client.unallocated.iops**
-- **nomad.client.allocated.memory**
-- **nomad.client.unallocated.memory**
+- **norca.client.allocated.cpu**
+- **norca.client.unallocated.cpu**
+- **norca.client.allocated.disk**
+- **norca.client.unallocated.disk**
+- **norca.client.allocated.iops**
+- **norca.client.unallocated.iops**
+- **norca.client.allocated.memory**
+- **norca.client.unallocated.memory**
 
 ## Task Resource Consumption
 
@@ -277,9 +277,9 @@ running on Norca.
 Runtime metrics apply to all clients and servers. The following metrics are
 general indicators of load and memory pressure.
 
-- **nomad.runtime.num_goroutines**
-- **nomad.runtime.heap_objects**
-- **nomad.runtime.alloc_bytes**
+- **norca.runtime.num_goroutines**
+- **norca.runtime.heap_objects**
+- **norca.runtime.alloc_bytes**
 
 It is recommended to alert on upticks in any of the above, server memory usage
 in particular.

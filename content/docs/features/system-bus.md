@@ -68,7 +68,7 @@ on the bus only: without it the clients are not asked for usage.**
 | Stream | `NORCA_TELEMETRY_<region>` (file storage, S2 compression, created by the leader) |
 | Subjects | `norca.telemetry.<region>.<node_id>` |
 | Limits | 1 hour, a sixteenth of `max_storage`, 64KiB per message, 1024 reports per node; the oldest reports are dropped first, of a node that publishes too fast its own |
-| Checks | The node ID of a report is the node of its subject; of its task groups only those the node has an allocation of are kept (the others are counted in `nomad.bus.telemetry.foreign_groups`) |
+| Checks | The node ID of a report is the node of its subject; of its task groups only those the node has an allocation of are kept (the others are counted in `norca.server.bus.telemetry.foreign_groups`) |
 | Consumers | `norca-usage-<server_id>`: every server reads every report into its [metrics store](/docs/configuration/metrics_store); the leader also keeps them for the autoscaler |
 
 ## The event stream

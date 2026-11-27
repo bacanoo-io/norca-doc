@@ -55,7 +55,7 @@ server {
   Vault. `false` keeps the Nomad behaviour of rejecting such jobs.
 
 - `expiry_warning` `(string: "168h")` - How long before a secret's `ExpiresAt` the leader announces
-  `SecretExpiring` on the event stream and counts the secret in the `nomad.secrets.expiring` gauge. A
+  `SecretExpiring` on the event stream and counts the secret in the `norca.server.secrets.expiring` gauge. A
   positive duration. See [expiry and rotation](/docs/features/secrets/secrets#expiry-and-rotation).
 
 - `operator_max_concurrent` `(int: 10)` - The calls in flight to the operator of a

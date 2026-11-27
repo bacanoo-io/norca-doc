@@ -72,7 +72,7 @@ sequenceDiagram
   reached `max_ttl`. The operator gets the whole list of revoked credentials that have not expired, in one
   call, whenever the list changes and every 5 minutes, so an operator that was down catches up. Failed calls
   are retried with a backoff from 5 seconds up to 5 minutes and counted in
-  `nomad.secrets.engine.sync_failed`. The leases are in Raft, so a new leader's watcher continues after a
+  `norca.server.secrets.engine.sync_failed`. The leases are in Raft, so a new leader's watcher continues after a
   leader change. Revoked leases are removed once their credential has expired.
 - **Audit and events.** Every creation, renewal and revocation is an audit record on the `SecretAccess`
   topic and in the audit file (operations `lease-create`, `lease-renew`, `lease-revoke`), with the
@@ -121,7 +121,7 @@ secret "db" {
   (10s by default), and applies `change_mode` when a credential is delivered.
 - The fallback stays valid all the time, and all the tasks share it, so **give it fewer rights than the
   dynamic credentials.** A task on a fallback has a `secret db: provider fallback` task event, an audited read
-  of the static secret, and counts in the metric `nomad.client.secrets.fallback`.
+  of the static secret, and counts in the metric `norca.client.secrets.fallback`.
 
 The task needs a `secret_access` grant for the fallback path as well.
 
@@ -403,9 +403,9 @@ for a turn. A task waits for that long at most for one attempt when it starts.
 - **Events** (`Secret` topic): `SecretEngineUpserted`, `SecretEngineDeleted` (key: the engine),
   `SecretLeaseCreated`, `SecretLeaseRenewed`, `SecretLeaseRevoked`, `SecretLeaseDeleted` (key: the lease
   ID, filter key: the engine).
-- **Metrics:** `nomad.secrets.leases.created`, `.renewed`, `.revoked` (labels `engine`, `reason`),
-  the gauge `nomad.secrets.leases.active` (on the leader), `nomad.secrets.engine.synced`,
-  `nomad.secrets.engine.sync_failed`, and `nomad.client.secrets.fallback` (label `engine`) on the clients.
+- **Metrics:** `norca.server.secrets.leases.created`, `.renewed`, `.revoked` (labels `engine`, `reason`),
+  the gauge `norca.server.secrets.leases.active` (on the leader), `norca.server.secrets.engine.synced`,
+  `norca.server.secrets.engine.sync_failed`, and `norca.client.secrets.fallback` (label `engine`) on the clients.
 - **Task events:** `secret db: delivered (lease <id>, until <max_ttl end> at most)`, `new credential
   delivered`, `renewed credential delivered`, `lease <id> ended (...); requesting a new credential`, `provider
   fallback`, `credential delivered, leaving the fallback`.

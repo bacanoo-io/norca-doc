@@ -36,7 +36,7 @@ curl --cacert norca-agent-ca.pem "https://127.0.0.1:4646/v1/metrics?format=prome
 ```
 
 **Metric names keep the Nomad prefix**, as part of the compatibility surface:
-`nomad.backup.size_bytes` is `nomad_backup_size_bytes` in Prometheus.
+`norca.server.backup.size_bytes` is `norca_server_backup_size_bytes` in Prometheus.
 Dashboards and alerts written for Nomad v1.6.5 keep working.
 
 Other sinks of the `telemetry` block (statsd, statsite, Datadog, Circonus) work
@@ -49,18 +49,18 @@ features under the same prefix. The most useful for alerting:
 
 | Feature | Metrics | Watch for |
 | --- | --- | --- |
-| Backups | `nomad.backup.last_success_age_seconds`, `nomad.backup.size_bytes`, `nomad.backup.duration_seconds`, `nomad.backup.failures_total` (label `destination`) | see [Backups](#backups) |
-| Built-in autoscaler | `nomad.autoscaler.*` (evaluations, scaling actions, errors, rate limiting, oscillation suspensions) | see [Autoscaler telemetry](/docs/features/autoscaler/reference/telemetry) |
-| Admission control | `nomad.admission.denied`, `nomad.admission.webhook.calls`, `.errors`, `.latency` | failing or slow webhooks |
-| Native mTLS | `nomad.mtls.certificates_issued`, `nomad.mtls.sign_certificate`, `nomad.mtls.rotate_ca` | certificate issuing errors |
-| Service catalog | `nomad.service_registration.health_updates`, `.health_updates_deferred`, external service metrics | deferred health updates |
-| Disruption budget | `nomad.alloc.evict`, `nomad.job.disruption` | refused evictions during drains |
-| Seal and secrets | `nomad.seal.unseal`, `nomad.seal.recover`, `nomad.keyring.rewrap`, `nomad.secret.*`, the leader's gauges `nomad.secrets.expiring`, `nomad.secrets.expired`, `nomad.secrets.rotation_due` and the counters `nomad.secrets.rotation.dispatched`, `nomad.secrets.rotation.failed` | expired secrets, rotations that stay due, failed rotation dispatches |
-| Network rules | `nomad.client.allocs.network_policy.dropped` (clients) | dropped connections |
+| Backups | `norca.server.backup.last_success_age_seconds`, `norca.server.backup.size_bytes`, `norca.server.backup.duration_seconds`, `norca.server.backup.failures_total` (label `destination`) | see [Backups](#backups) |
+| Built-in autoscaler | `norca.autoscaler.*` (evaluations, scaling actions, errors, rate limiting, oscillation suspensions) | see [Autoscaler telemetry](/docs/features/autoscaler/reference/telemetry) |
+| Admission control | `norca.server.admission.denied`, `norca.server.admission.webhook.calls`, `.errors`, `.latency` | failing or slow webhooks |
+| Native mTLS | `norca.server.mtls.certificates_issued`, `norca.server.mtls.sign_certificate`, `norca.server.mtls.rotate_ca` | certificate issuing errors |
+| Service catalog | `norca.server.service_registration.health_updates`, `.health_updates_deferred`, external service metrics | deferred health updates |
+| Disruption budget | `norca.server.alloc.evict`, `norca.server.job.disruption` | refused evictions during drains |
+| Seal and secrets | `norca.server.seal.unseal`, `norca.server.seal.recover`, `norca.server.keyring.rewrap`, `norca.server.secret.*`, the leader's gauges `norca.server.secrets.expiring`, `norca.server.secrets.expired`, `norca.server.secrets.rotation_due` and the counters `norca.server.secrets.rotation.dispatched`, `norca.server.secrets.rotation.failed` | expired secrets, rotations that stay due, failed rotation dispatches |
+| Network rules | `norca.client.allocs.network_policy.dropped` (clients) | dropped connections |
 
 The RPC endpoints of the Norca features (quotas, releases, custom objects,
 network policies, intentions, backups) also report timing metrics such as
-`nomad.quota.upsert_quota_specs` or `nomad.backup.restore`, like the RPC
+`norca.server.quota.upsert_quota_specs` or `norca.server.backup.restore`, like the RPC
 metrics of Nomad.
 
 ### Backups
@@ -69,16 +69,16 @@ The leader of each region reports the state of its backups:
 
 | Metric | Type | Description |
 | --- | --- | --- |
-| `nomad.backup.last_success_age_seconds` | gauge | Age of the last successful backup |
-| `nomad.backup.size_bytes` | gauge, per `destination` | Size of the state object of the last backup |
-| `nomad.backup.duration_seconds` | gauge, per `destination` | Duration of the last upload |
-| `nomad.backup.failures_total` | counter, per `destination` (`all` when the backup failed before the upload) | Failed backups |
+| `norca.server.backup.last_success_age_seconds` | gauge | Age of the last successful backup |
+| `norca.server.backup.size_bytes` | gauge, per `destination` | Size of the state object of the last backup |
+| `norca.server.backup.duration_seconds` | gauge, per `destination` | Duration of the last upload |
+| `norca.server.backup.failures_total` | counter, per `destination` (`all` when the backup failed before the upload) | Failed backups |
 
 Suggested alerts:
 
 - the last successful backup is older than twice the interval
-  (`nomad_backup_last_success_age_seconds > 7200` for an hourly schedule);
-- `nomad_backup_failures_total` increases for a destination; after three
+  (`norca_server_backup_last_success_age_seconds > 7200` for an hourly schedule);
+- `norca_server_backup_failures_total` increases for a destination; after three
   failures in a row the leader also logs an error.
 
 `norca operator backup list` shows the same as a warning when the last

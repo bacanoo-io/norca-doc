@@ -430,8 +430,8 @@ The event stream has a `Backup` topic (events `BackupCompleted`,
 `BackupRestoreApproved`, `BackupRestoreRejected`, `BackupRestoreStarted`,
 `BackupRestoreFinished`), readable with the `backup` read permission; see
 [Event stream](/docs/features/event-stream). The leader reports the metrics
-`nomad.backup.last_success_age_seconds`, `nomad.backup.size_bytes`,
-`nomad.backup.duration_seconds` and `nomad.backup.failures_total` (labeled by
+`norca.server.backup.last_success_age_seconds`, `norca.server.backup.size_bytes`,
+`norca.server.backup.duration_seconds` and `norca.server.backup.failures_total` (labeled by
 destination); see [Monitoring](/docs/operations/monitoring#backups).
 
 ## Limits and status
