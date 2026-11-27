@@ -3,7 +3,7 @@ title: "Operations"
 description: "Learn about operating Norca."
 upstream:
   path: "website/content/docs/operations/index.mdx"
-weight: 9
+weight: 10
 ---
 
 This section includes references on how to operate Norca in production. To
