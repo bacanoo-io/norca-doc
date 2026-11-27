@@ -211,7 +211,7 @@ template {
 }
 ```
 
-The [Traefik module](/docs/features/packages/registry#traefik) takes the path
+The [Traefik module](/docs/rigger/norca-registry#traefik) takes the path
 in `tls_certificates`.
 
 ### When a certificate is issued again

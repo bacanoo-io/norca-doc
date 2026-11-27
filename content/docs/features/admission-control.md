@@ -112,7 +112,7 @@ flowchart TB
 - **Releases.** Policies that select the `release` resource run when a
   release is installed, upgraded or rolled back, with the variable `release`;
   their `trusted_keys` require a signed module (see
-  [signatures in protected namespaces](/docs/features/packages/releases#signatures-in-protected-namespaces)).
+  [signatures in protected namespaces](/docs/rigger/releases#signatures-in-protected-namespaces)).
   **A signature covers what is applied only when the servers evaluated the
   module themselves**, from a registry they synced (an
   [install](/docs/api/rigger-install) or a [stack](/docs/api/rigger-stacks)

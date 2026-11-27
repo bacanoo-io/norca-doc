@@ -32,7 +32,7 @@ The reference operator module is `loadbalancer-operator` in the
 The operator modules of the registry run their jobs in the namespace of
 their release, `norca-system`, which they expect and don't create, and keep
 off nodes with the `raw_exec` driver (see
-[operator modules](/docs/features/packages/registry#operator-modules)). From a
+[operator modules](/docs/rigger/norca-registry#operator-modules)). From a
 checkout of the registry:
 
 ```shell

@@ -359,5 +359,5 @@ server {
 
 The configuration of the [single node example](/docs/getting-started/examples/02-single-node)
 backs up to a RustFS store deployed with the `rustfs` module of the
-[Norca registry](/docs/features/packages/registry); see the
+[Norca registry](/docs/rigger/norca-registry); see the
 [runbook](/docs/operations/backup-restore#set-up-the-store) for the steps.

@@ -11,7 +11,7 @@ Norca's native discovery, DNS, Consul-compatible API and [native mTLS](/docs/fea
 replace Consul for most installations. A few things still need a real Consul: Consul Connect with L7
 traffic management, sessions and locks, the full Consul KV, prepared queries and config entries.
 
-For those, the `consul` module of the [Norca registry](/docs/features/packages/registry)
+For those, the `consul` module of the [Norca registry](/docs/rigger/norca-registry)
 installs and runs the **official, current Consul release** as Norca jobs: the servers as a service job,
 a client agent on every other node as a system job, and optionally a periodic snapshot job. It
 bootstraps the gossip key, TLS and ACLs without manual steps and applies a security baseline to every

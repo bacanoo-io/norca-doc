@@ -393,7 +393,7 @@ take over what a tenant created: the servers refuse the install, also with
 resources the tenant wants before it looks at who owns them, and holds the
 claims until its status is written; a release operation claims the
 resources of its module the same way (see
-[releases](/docs/features/packages/releases#install-upgrade-rollback-uninstall)).
+[releases](/docs/rigger/releases#install-upgrade-rollback-uninstall)).
 A resource that a release operation is writing while the pass runs is a
 `Conflict` for that pass (`... is being written by release "apps/web"`): the
 tenant does not take it, keeps it if it lists it already, and a later pass

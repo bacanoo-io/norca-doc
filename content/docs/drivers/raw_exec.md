@@ -187,7 +187,7 @@ constraint {
 }
 ```
 
-The operator modules of the [Norca registry](/docs/features/packages/registry#operator-modules)
+The operator modules of the [Norca registry](/docs/rigger/norca-registry#operator-modules)
 carry this constraint by default.
 
 > [!WARNING]

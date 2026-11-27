@@ -56,7 +56,7 @@ rule {
   up to 32. A release is admitted only if its module has a valid signature of its
   digest by one of the keys; the servers verify the signatures themselves.
   Requires the `release` resource. See
-  [signatures in protected namespaces](/docs/features/packages/releases#signatures-in-protected-namespaces).
+  [signatures in protected namespaces](/docs/rigger/releases#signatures-in-protected-namespaces).
 
 ### `match` Parameters
 

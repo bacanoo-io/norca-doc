@@ -304,7 +304,7 @@ heartbeat, registers a class again if its object disappears, removes the
 registrations on exit, and works on the task API socket as well as over the
 network. `GET /healthz`, `GET /v1/types`, `GET /v1/providers` and
 `GET /v1/classes` describe the process; tokens are never listed. The
-`norca-provider` module of the [Norca registry](/docs/features/packages/registry)
+`norca-provider` module of the [Norca registry](/docs/rigger/norca-registry)
 runs it as a job with its configuration, token Variable and ACL policy. A
 `Dockerfile` builds a static image on `FROM scratch`.
 
@@ -376,7 +376,7 @@ pass.
   in the namespace `"*"` of its ACL policy (the kind is cluster-scoped), and
   `read` on the token Variables (`-class-token-namespace`, default
   `norca-system`, the operations namespace of the operators). The ACL policy
-  the [loadbalancer-operator module](/docs/features/packages/registry#loadbalancer-operator)
+  the [loadbalancer-operator module](/docs/rigger/norca-registry#loadbalancer-operator)
   binds to its job has the rules (`providers/*` in the namespace of the job),
   as does `loadbalancer-policy.hcl` of the operator for a job run by hand.
 - A **provider** needs `read`, `write` and `write-status` on

@@ -59,7 +59,7 @@ content, the object API and the object events carry no content, and the stored
 object keeps it.
 
 **Commit.** `72f634912`. See also the [permissions of
-releases](/docs/features/packages/releases#permissions).
+releases](/docs/rigger/releases#permissions).
 
 ## SEC-02 Backup read lists every ACL policy and role
 

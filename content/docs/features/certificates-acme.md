@@ -30,8 +30,8 @@ authority.
 
 ## Install
 
-Three modules of the [Norca registry](/docs/features/packages/registry). norca-acme and
-norca-provider are [operator modules](/docs/features/packages/registry#operator-modules): their jobs
+Three modules of the [Norca registry](/docs/rigger/norca-registry). norca-acme and
+norca-provider are [operator modules](/docs/rigger/norca-registry#operator-modules): their jobs
 run in the namespace of their release, `norca-system` here, which must exist, and keep off nodes with
 the `raw_exec` driver.
 
@@ -474,5 +474,5 @@ The operator job and its secrets are in the namespace of the release, which must
 
 - [Certificates](/docs/features/certificates): the objects, the secret, the
   allowed names, the contract of an external issuer
-- [Norca registry](/docs/features/packages/registry): the modules `norca-acme`,
+- [Norca registry](/docs/rigger/norca-registry): the modules `norca-acme`,
   `norca-provider` and `traefik`

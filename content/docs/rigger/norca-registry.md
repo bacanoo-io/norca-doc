@@ -1,12 +1,14 @@
 ---
+aliases:
+  - /docs/features/packages/registry
 title: "The Norca registry"
 linkTitle: "Norca registry"
-weight: 7
+weight: 12
 description: "The public module registry of Norca (bacanoo-io/norca-registry): the operations modules of a Norca cluster, how Rigger installs them, and what each module deploys."
 ---
 
 The [Norca registry](https://github.com/bacanoo-io/norca-registry) is the public registry of the
-**modules** of [Rigger](/docs/features/packages), the package manager of Norca: the operations modules
+**modules** of [Rigger](/docs/rigger), the package manager of Norca: the operations modules
 that install the infrastructure around a Norca cluster (NATS, the cross-region mTLS gateway, the backup
 store, the git server and image registry, PostgreSQL, observability with OpenObserve and the
 OpenTelemetry Collector, the edge router, optional Consul) and the operator modules. The
@@ -14,7 +16,8 @@ OpenTelemetry Collector, the edge router, optional Consul) and the operator modu
 as `norca/<module>`. A module holds object kinds, ACL and admission policies next to its jobs, and
 `validation` blocks and rules for its variables, which also build its install form in the
 [catalog of the web UI](/docs/features/packages/rigger-catalog). See
-[modules and stacks](/docs/features/packages/modules) for the files and the language of a module.
+[writing a module](/docs/rigger/writing-a-module) and the [module language](/docs/rigger/module-language)
+for the files and the language of a module.
 
 The modules and the documentation of the registry are licensed under the Mozilla Public License 2.0.
 The software the modules install keeps its own license. The modules **reference** that software
@@ -24,7 +27,7 @@ OpenObserve AGPL-3.0.
 
 ## Installing a module
 
-Rigger installs a module as a [release](/docs/features/packages/releases). **The servers install a
+Rigger installs a module as a [release](/docs/rigger/lifecycle). **The servers install a
 module of the global registry by its name**, from the registry as they last synced it. Nothing syncs
 on its own: sync the global registry once in every region, then send the install to the servers:
 
@@ -37,7 +40,8 @@ EOF
 norca rigger release status rustfs
 ```
 
-- `Version` is a version constraint: `~> 0.2` takes the newest 0.2.x of the last sync.
+- `Version` is a [version constraint](/docs/rigger/versions#constraints): `~> 0.2` takes the newest
+  version of the last sync from 0.2.0 up to, not including, 1.0.0; `~> 0.2.0` stays on 0.2.x.
 - `ValuesJSON` holds the values of the module's variables. **A value has the JSON type of its
   variable**: a number as a number, a list as a list, a bool as a bool.
 - The release is in the namespace and the region of the request: `-namespace <ns>` and
@@ -156,7 +160,7 @@ The *Version* column shows the newest version of each module (`module { version 
 `lib/placement` (1.1.0) is a library the other modules call for the placement of a job and the
 reference of an image; it can't be installed on its own. A module states the Norca version and the
 server features it needs in the `requires` block of its `metadata.hcl`
-([requirements](/docs/features/packages/releases#requirements)).
+([requirements](/docs/rigger/releases#requirements)).
 
 Each module's README in the registry (`modules/<module>/README.md`) describes it completely: what it
 deploys, prerequisites, secrets, all variables, health checks, metrics and limitations. The sections
@@ -655,13 +659,16 @@ norca rigger install ./norca-registry/modules/traefik -name traefik \
 - An install names a version constraint (`"Version": "~> 0.2"`, `version = "~> 0.2"` in a stack). A
   stack keeps the versions it resolved in its lock file, `rigger.lock.hcl`. Pinned images change
   only with a module version.
+- **`~> 0.2` reaches up to 1.0.0**, across the `0.x` minor versions that may break an installation;
+  write three parts (`~> 0.2.1`) to stay on one minor version (see
+  [`~>` exactly](/docs/rigger/versions#tilde-arrow-exactly)).
 - A release records the module and its version; `norca rigger release history` shows which version
   each revision used.
 
 Without access to GitHub from the servers, install from a checkout of the registry by path, point
 the registry `global` at a mirror, or carry the modules of a stack in a bundle
-(`norca rigger bundle create`); see [supply chain](/docs/features/packages/supply-chain) for the
-lock file, the signatures and the bundles.
+(`norca rigger bundle create`); see [versions and lock files](/docs/rigger/versions),
+[publishing and signing](/docs/rigger/publishing) and [bundles](/docs/rigger/registries#bundles).
 
 ## Layout of the registry
 
@@ -690,7 +697,7 @@ Every commit needs a DCO sign-off (`git commit -s`).
 
 <!-- REUSE-IgnoreStart -->
 
-- Write modules as described in [modules and stacks](/docs/features/packages/modules): `validation`
+- Write modules as described in [writing a module](/docs/rigger/writing-a-module): `validation`
   blocks in the variables and `rule` blocks in `variables.hcl` for anything the variable types can't
   express.
 - New files carry the SPDX header `SPDX-FileCopyrightText: 2026 Norca contributors` /

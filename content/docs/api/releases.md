@@ -36,7 +36,7 @@ resources** (for example `submit-job` for a job, or a management token for an AC
 release adopts without writing them (all of them, with `RecordOnly`) need the same
 permissions, and `TakeOwnership` needs
 object `write` on `rigger.norca.io/Release` in the namespace of every release resources are taken
-from; see [permissions](/docs/features/packages/releases#permissions).
+from; see [permissions](/docs/rigger/releases#permissions).
 
 > [!NOTE]
 > The field names on this page are those of the Go structures (`Spec`, `Status`, `Pack`, ...).
@@ -136,7 +136,7 @@ another release without `TakeOwnership`, and a resource another release operatio
 is writing at that moment** (`being written by another operation`; the other operation is named only
 to a caller who may write the resource). The operation claims its resources before it
 writes anything, so nothing is written then; see
-[install, upgrade, rollback, uninstall](/docs/features/packages/releases#install-upgrade-rollback-uninstall).
+[install, upgrade, rollback, uninstall](/docs/rigger/releases#install-upgrade-rollback-uninstall).
 
 **A leader change answers `503 Service Unavailable`** in two ways, here and for the rollback, test
 and uninstall endpoints:
@@ -148,7 +148,7 @@ and uninstall endpoints:
   The operation stopped at its next write when its server lost the leadership (or the new leader had
   already marked the release `failed`). What it wrote so far stays: no atomic rollback, hook jobs
   are not purged. The new leader marks the release `failed`; upgrade or roll back again. See
-  [install, upgrade, rollback, uninstall](/docs/features/packages/releases#install-upgrade-rollback-uninstall).
+  [install, upgrade, rollback, uninstall](/docs/rigger/releases#install-upgrade-rollback-uninstall).
 
 | Method         | Path                | Produces           |
 | -------------- | ------------------- | ------------------ |
@@ -211,7 +211,7 @@ and uninstall endpoints:
   operation left it: a resource somebody else changed after the operation's write, or created again
   after the operation deleted it, is left as it is, with a warning naming it in
   `Status.LastOperation.Warnings` of the release (see
-  [atomic mode](/docs/features/packages/releases#atomic-mode-and-production-namespaces)).
+  [atomic mode](/docs/rigger/releases#atomic-mode-and-production-namespaces)).
 
 - `Wait` `(bool: false)` - Wait for the deployments of the jobs.
 
@@ -245,7 +245,7 @@ and uninstall endpoints:
 - `Changes` - Per resource: `Type`, `Namespace`, `Name`, `Action` (`create`, `update`, `delete`,
   `unchanged`, `hook`, `adopt`), `Hook`, `Owner`, `JobDiff` (plans), `Error` (the change failed). A resource the upgrade dropped and did not delete because
   it is no longer the release's is a `delete` with `Error` `not deleted: <why>`
-  ([install, upgrade, rollback, uninstall](/docs/features/packages/releases#install-upgrade-rollback-uninstall)).
+  ([install, upgrade, rollback, uninstall](/docs/rigger/releases#install-upgrade-rollback-uninstall)).
 - `Warnings` - Warnings, for example of admission policies with `action = "warn"`.
 
 ### One manager per release

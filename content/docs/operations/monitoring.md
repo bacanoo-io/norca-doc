@@ -11,7 +11,7 @@ This page shows how to send them over OTLP or expose them to Prometheus,
 which Norca metrics to watch, and how to run a complete metrics, traces and
 logs pipeline with the
 `otel-collector` and `openobserve` modules of the
-[Norca registry](/docs/features/packages/registry). The metrics
+[Norca registry](/docs/rigger/norca-registry). The metrics
 themselves are described in [Monitoring Norca agents](/docs/operations/monitoring-nomad)
 and the [Metrics reference](/docs/operations/metrics-reference).
 

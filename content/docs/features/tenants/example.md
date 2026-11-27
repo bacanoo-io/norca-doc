@@ -53,7 +53,7 @@ only the lines this example depends on.
 
 ### The module registry
 
-The modules below come from the [Norca registry](/docs/features/packages/registry).
+The modules below come from the [Norca registry](/docs/rigger/norca-registry).
 The global registry of Rigger lists them as `norca/<name>`, and the servers
 install them from it. Nothing syncs on its own, so sync it first:
 
@@ -72,7 +72,7 @@ The three operators of this example (the LoadBalancer operator,
 norca-provider and norca-dns) are operator modules: their jobs run with ACL
 policies bound to them, in the namespace `norca-system`, where their token
 Variables and secrets are too. The modules expect the namespace and don't
-create it (see [operator modules](/docs/features/packages/registry#operator-modules));
+create it (see [operator modules](/docs/rigger/norca-registry#operator-modules));
 create it once:
 
 ```shell-session
@@ -95,7 +95,7 @@ docker CLI of its host, does, with `driver = "raw_exec"` and
 ### The LoadBalancer operator, for the namespace of the team
 
 The LoadBalancer operator (`norca-loadbalancer`) comes from the
-[loadbalancer-operator module](/docs/features/packages/registry#loadbalancer-operator).
+[loadbalancer-operator module](/docs/rigger/norca-registry#loadbalancer-operator).
 Its controller job runs in `norca-system`, and it keeps the `LoadBalancer`
 objects of the namespace its variable `watch_namespace` names (`default` by
 default). Here it has to keep the ones of `team-a`, from a job that is
@@ -140,7 +140,7 @@ flags described in
 serves both things the example needs from outside the cluster: the load
 balancer class `edge`, and the DNS zone `example.com`. These are the
 `providers` of its configuration (the variable `providers` of the
-[norca-provider module](/docs/features/packages/registry#norca-provider)):
+[norca-provider module](/docs/rigger/norca-registry#norca-provider)):
 
 ```json
 [
@@ -220,7 +220,7 @@ $ norca rigger install <checkout>/modules/norca-provider -name norca-provider \
 ### norca-dns
 
 The operator of the `DNSRecord` objects, from the
-[norca-dns module](/docs/features/packages/registry#norca-dns). It keeps the
+[norca-dns module](/docs/rigger/norca-registry#norca-dns). It keeps the
 records of every namespace, from its job in `norca-system`, and reads the
 token of the zone from `providers/dns-eu` there:
 
@@ -753,4 +753,4 @@ What happens when the order is another one:
   [native catalog](/docs/features/service-discovery/catalog)
 - [Network rules](/docs/features/network-rules)
 - [Quotas](/docs/features/quotas)
-- [The Norca registry](/docs/features/packages/registry)
+- [The Norca registry](/docs/rigger/norca-registry)

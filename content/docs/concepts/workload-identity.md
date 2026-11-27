@@ -159,7 +159,7 @@ every way a job is registered:
   change: tasks, meta, datacenters, node pool, constraints, or `Stop`;
 - [`norca job revert`](/docs/commands/job/revert);
 - a release install, upgrade or rollback
-  ([release permissions](/docs/features/packages/releases#permissions));
+  ([release permissions](/docs/rigger/releases#permissions));
 - a selective [backup restore](/docs/commands/operator/backup/restore) of
   the job, which registers it with the caller's token.
 

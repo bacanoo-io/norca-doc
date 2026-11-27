@@ -304,7 +304,7 @@ framework, run as a job (the `nodescaler-operator` module), and it follows the
   the same time. One group is never reconciled by two workers at once, so raise it when there are
   many groups. The module does not set it: add the flag to the arguments of the job to change it.
 - **Its own namespace, no `raw_exec` nodes.** Like the other
-  [operator modules](/docs/features/packages/registry#operator-modules), the job runs in the
+  [operator modules](/docs/rigger/norca-registry#operator-modules), the job runs in the
   namespace of its release (`norca-system`, which must exist) and keeps off nodes with the `raw_exec`
   driver. It reads the Variables under `nodescaler/` (the bootstrap with the key of the node CA,
   the network ranges, the provider tokens) in the namespace of its job unless `variables_namespace`

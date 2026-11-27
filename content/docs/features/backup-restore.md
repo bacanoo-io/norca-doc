@@ -18,7 +18,7 @@ server, outside Raft.
 Norca backs up every region on a schedule, from its leader, into one or more
 destinations: S3-compatible stores (AWS S3, or a store with the S3 API such as
 RustFS, the `rustfs` module of the
-[Norca registry](/docs/features/packages/registry)), and directories of
+[Norca registry](/docs/rigger/norca-registry)), and directories of
 the servers' filesystem, such as a file server mounted on every server. A
 backup holds the Raft snapshot, the keyring and the key of the built-in secret
 store. **Every object is encrypted with

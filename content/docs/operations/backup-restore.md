@@ -36,7 +36,7 @@ reference, and every command under
 ## Set up the store
 
 Any S3-compatible store works. The `rustfs` module of the
-[Norca registry](/docs/features/packages/registry) runs
+[Norca registry](/docs/rigger/norca-registry) runs
 [RustFS](https://rustfs.com) (Apache-2.0) as a Norca job, with its root
 credentials in the built-in secret store and its data on a host volume.
 

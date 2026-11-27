@@ -25,7 +25,7 @@ address, a new spec) the operator writes the zone again.
 - **Set back.** A record set changed in the zone by hand is written again.
 
 The kind `norca.io/DNSRecord` is namespaced; the
-[norca-dns module](/docs/features/packages/registry#norca-dns) registers it with the
+[norca-dns module](/docs/rigger/norca-registry#norca-dns) registers it with the
 operator. It is a [custom object](/docs/features/operator-framework): written
 with [`norca object apply`](/docs/commands/object/apply), read with
 `norca object get`, listed in the web UI.
@@ -53,7 +53,7 @@ with [`norca object apply`](/docs/commands/object/apply), read with
    anything else the zone serves.
 
 2. **The operator.** Install the norca-dns module. Like the other
-   [operator modules](/docs/features/packages/registry#operator-modules), its
+   [operator modules](/docs/rigger/norca-registry#operator-modules), its
    job runs in the namespace of its release, `norca-system` here, which must
    exist, reads the token Variables of the zones there, and keeps off nodes
    with the `raw_exec` driver. The servers install it from the global
