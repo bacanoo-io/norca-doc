@@ -54,7 +54,8 @@ flowchart TB
   CA and a server certificate (`norca tls ca create`, `norca tls cert create`) and the ACL tokens once,
   stores them with check-and-set in a Variable, and derives the Variables of the server, client and
   snapshot jobs from it. The servers bootstrap ACLs with `acl.tokens.initial_management`; a poststart
-  task creates the agent policy and token. With Norca ACLs enabled, one ACL policy for the bootstrap
+  task creates the agent policy and token and the `norca-dns` policy and DNS token, which every agent
+  uses as `acl.tokens.dns`, so Consul DNS answers with no manual token. With Norca ACLs enabled, one ACL policy for the bootstrap
   task is the only manual step; the output `notes` of the module holds it.
 - **Security baseline on every install:** Consul ACLs on with `default_policy = "deny"` and no
   anonymous access, gossip encryption, TLS with verified server names and `auto_encrypt` for the
@@ -151,7 +152,9 @@ and API.
 - No automatic certificate renewal or gossip key rotation.
 - One Consul datacenter per install; WAN federation between Norca regions is not configured.
 - The bootstrap task needs the `exec` or `raw_exec` driver and the `norca` binary on the server nodes.
-- Consul DNS on the agents has no token; Norca's [built-in DNS](/docs/features/service-discovery/dns) is
+- Consul DNS answers with the DNS token of the module (the `norca-dns` policy reads nodes, services
+  and prepared queries; `acl.tokens.dns` needs Consul 1.17 or newer), so whoever reaches the DNS port
+  can read the catalog through it; Norca's [built-in DNS](/docs/features/service-discovery/dns) is
   the recommended resolver.
 
 ## Design
