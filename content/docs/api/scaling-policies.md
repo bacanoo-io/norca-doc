@@ -249,7 +249,7 @@ returned by the read endpoint:
       {
         "cpu": [
           {
-            "metric": "nomad.cpu",
+            "metric": "norca.cpu",
             "strategy": "target-value",
             "target": 70
           }
@@ -266,7 +266,7 @@ returned by the read endpoint:
     {
       "Name": "cpu",
       "Source": "",
-      "Metric": "nomad.cpu",
+      "Metric": "norca.cpu",
       "Query": "",
       "QueryWindow": 0,
       "QueryWindowOffset": 0,

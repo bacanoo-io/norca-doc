@@ -39,7 +39,7 @@ job "example" {
         cooldown            = "2m"
 
         check "cpu" {
-          metric   = "nomad.cpu"
+          metric   = "norca.cpu"
           strategy = "target-value"
           target   = 70
         }
@@ -149,7 +149,7 @@ A `check` block is written in one of two forms:
 # Typed form: the strategy is an attribute, its parameters are the
 # other attributes of the check.
 check "cpu" {
-  metric   = "nomad.cpu"
+  metric   = "norca.cpu"
   strategy = "target-value"
   target   = 70
 }
@@ -166,8 +166,8 @@ check "latency" {
 }
 ```
 
-- `metric` `(string: "")` - A built-in metric: `nomad.cpu`, `nomad.memory`
-  (percent of the reservation), `nomad.cpu_mhz` or `nomad.memory_mb`. Cannot be
+- `metric` `(string: "")` - A built-in metric: `norca.cpu`, `norca.memory`
+  (percent of the reservation), `norca.cpu_mhz` or `norca.memory_mb`. Cannot be
   combined with `query`.
 
 - `source` `(string: "nomad-apm")` - The APM that runs `query`: `nomad-apm` or

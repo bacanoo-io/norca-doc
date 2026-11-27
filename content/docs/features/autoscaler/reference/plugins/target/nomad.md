@@ -25,7 +25,7 @@ scaling {
     }
 
     check "cpu" {
-      metric   = "nomad.cpu"
+      metric   = "norca.cpu"
       strategy = "target-value"
       target   = 70
     }
@@ -63,7 +63,7 @@ group "postgres" {
       }
 
       check "cpu" {
-        metric   = "nomad.cpu"
+        metric   = "norca.cpu"
         strategy = "target-value"
         target   = 70
       }

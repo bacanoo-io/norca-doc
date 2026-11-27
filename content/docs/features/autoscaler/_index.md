@@ -52,7 +52,7 @@ flowchart LR
   PR["Prometheus or<br/>external APM plugin"]
   CU -- "system bus" --> UC
   PM --> EV
-  UC -- "nomad.cpu, nomad.memory" --> EV
+  UC -- "norca.cpu, norca.memory" --> EV
   PR -- "query" --> EV
   EV -- "desired count" --> EX
   EX -- "Job.Scale" --> JC["Group count<br/>(Raft)"]
@@ -70,8 +70,8 @@ flowchart LR
    [system bus](/docs/features/system-bus#task-group-usage); the servers switch
    this on through the heartbeat response when they run the bus, so no client
    setting is needed. The leader keeps the data only in memory, in a fixed ring of time
-   buckets per task group. The built-in metrics `nomad.cpu`, `nomad.memory`,
-   `nomad.cpu_mhz` and `nomad.memory_mb` are served from it without any RPC to
+   buckets per task group. The built-in metrics `norca.cpu`, `norca.memory`,
+   `norca.cpu_mhz` and `norca.memory_mb` are served from it without any RPC to
    the clients. Application metrics come from a Prometheus APM or an external
    APM plugin configured in the server's `autoscaler` block.
 3. **Evaluation.** Every policy is evaluated at its `evaluation_interval` by a
@@ -110,7 +110,7 @@ that was asked for:
   measured on the instances that ran, is restated as what the asked-for count
   would show for the same load (value x measured / asked for), and the
   strategy runs with the asked-for count. For the usage the clients report
-  (`nomad.cpu` and the others), "measured" is the average number of running
+  (`norca.cpu` and the others), "measured" is the average number of running
   allocations over the query window, so a drain inside the window does not
   bend the result; for other sources it is what runs now. Totals (a `sum`
   query, the usage of another group, a `pass-through` value) are used as they
@@ -278,7 +278,7 @@ group "web" {
       scale_during_deployment = "up_only"
 
       check "cpu" {
-        metric   = "nomad.cpu"
+        metric   = "norca.cpu"
         strategy = "target-value"
         target   = 70
       }

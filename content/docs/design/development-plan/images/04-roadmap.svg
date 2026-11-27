@@ -39,7 +39,7 @@
   <rect class="box" x="42" y="544" width="1260" height="126" rx="14"/>
   <text class="b" x="71" y="585">Phase 3 · Native metrics</text>
   <text class="s" x="71" y="615">client-side push in the Node.UpdateAlloc message, leader-side collector</text>
-  <text class="s" x="71" y="643">nomad.cpu and nomad.memory sources, replacing the nomad APM plugin</text>
+  <text class="s" x="71" y="643">norca.cpu and norca.memory sources, replacing the nomad APM plugin</text>
 
   <rect class="gate" x="81" y="703" width="36" height="36" transform="rotate(45 99 721)"/>
   <text class="g" x="156" y="715">Gate: no per-allocation Stats RPC; the metric drift against the client's own measurement is small</text>

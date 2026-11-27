@@ -107,7 +107,7 @@ group "api" {
       on_check_error      = "ignore"
 
       check "cpu" {
-        metric   = "nomad.cpu"
+        metric   = "norca.cpu"
         strategy = "target-value"
         target   = 70
       }
@@ -146,7 +146,7 @@ The source of the built-in CPU and memory metrics will be aggregated usage data 
 | Source                                          | Operation                                                                                       | Cost                             | Phase                |
 |-------------------------------------------------|-------------------------------------------------------------------------------------------------|----------------------------------|----------------------|
 | `nomad` APM (current)                           | `ClientAllocations.Stats` RPC per allocation at evaluation time                                 | RPC proportional to allocation count | Phase 1 (temporary) |
-| Client-side push (`nomad.cpu`, `nomad.memory`)  | The client aggregates per task group and sends it attached to the existing `Node.UpdateAlloc` messages | No extra RPC, no Raft write | Phase 3              |
+| Client-side push (`norca.cpu`, `norca.memory`)  | The client aggregates per task group and sends it attached to the existing `Node.UpdateAlloc` messages | No extra RPC, no Raft write | Phase 3              |
 | Prometheus                                      | Built-in APM plugin (Datadog, InfluxDB and Instana are not ported, by decision; they can only be loaded as external plugins) | Load on the external system      | From phase 1         |
 
 **Details of the client-side push:**
@@ -157,7 +157,7 @@ The source of the built-in CPU and memory metrics will be aggregated usage data 
 - After a leader change the collector starts empty. At least one full window of data must arrive before the first evaluation; until then the check returns an "insufficient data" state and does not scale.
 - Follower servers forward the received data to the leader over RPC, like their other write requests.
 
-**Metric names:** `nomad.cpu` (percentage of allocated CPU), `nomad.memory` (percentage of allocated memory), `nomad.cpu_mhz`, `nomad.memory_mb` (absolute values). These can be used in the `check` block by name, without a query.
+**Metric names:** `norca.cpu` (percentage of allocated CPU), `norca.memory` (percentage of allocated memory), `norca.cpu_mhz`, `norca.memory_mb` (absolute values). These can be used in the `check` block by name, without a query.
 
 **Collector memory (measured):** the leader keeps each task group's window as a fixed ring of 30 time buckets (10 s each with the default 5-minute window), each holding a weighted sum and a maximum per metric, so the memory used does not depend on the number of nodes or allocations reporting. `BenchmarkUsageCollector_Memory` (`norca/autoscaler/metrics_test.go`) fills a full window for 1,000 task groups, with reports from 10 nodes every 10 s. It measured about 2.8 MB of heap per 1,000 task groups (about 2.8 KB per group). The collector keeps at most 100,000 groups and drops groups that sent no report within the window.
 
@@ -368,7 +368,7 @@ The work proceeds in four phases that build on each other, and every phase can b
 
 - **Unit tests:** parser and validator (valid and faulty jobspecs), strategies with deterministic input, cooldown and oscillation logic with a fake clock.
 - **Integration tests:** a three-server test cluster (with `norca/testing.go` helpers), scaling over the real `Job.Scale` path, forced leader change, prohibition during a deployment.
-- **E2E tests:** in the `e2e/` framework, scale-up and scale-down of a loaded sample job based on `nomad.cpu`, and a Prometheus-based check.
+- **E2E tests:** in the `e2e/` framework, scale-up and scale-down of a loaded sample job based on `norca.cpu`, and a Prometheus-based check.
 - **Load test:** 1,000 scaled task groups with a 30-second interval; the extra leader CPU and the number of Raft writes are measured, the acceptance thresholds are in the Roadmap chapter.
 
 ## License and legal aspects

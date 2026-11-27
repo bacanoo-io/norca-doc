@@ -80,8 +80,8 @@ form of the external autoscaler, where a labeled `strategy` block holds the
 parameters. **Both forms can be mixed in one policy, but not in one check.**
 
 - `metric` - (Norca) A built-in metric computed by the leader from the usage the
-  clients report: `nomad.cpu`, `nomad.memory`, `nomad.cpu_mhz` or
-  `nomad.memory_mb`. It needs no query and cannot be combined with `query`.
+  clients report: `norca.cpu`, `norca.memory`, `norca.cpu_mhz` or
+  `norca.memory_mb`. It needs no query and cannot be combined with `query`.
   See the [`nomad-apm`][nomad_apm] page.
 
 - `source` - The APM that should handle the metric query: `nomad-apm` (the
@@ -154,7 +154,7 @@ job "example" {
 
         # Typed form with a built-in metric.
         check "cpu" {
-          metric   = "nomad.cpu"
+          metric   = "norca.cpu"
           strategy = "target-value"
           target   = 70
         }

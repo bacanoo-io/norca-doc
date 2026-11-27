@@ -73,10 +73,10 @@ The new parts reuse the path. Task metrics ride in the same report, and reported
 
 | Check metric | Store series | Value |
 | --- | --- | --- |
-| `nomad.cpu` | `norca.group.cpu` | CPU used, % of the allocated CPU |
-| `nomad.memory` | `norca.group.memory` | Memory used, % of the allocated memory |
-| `nomad.cpu_mhz` | `norca.group.cpu_mhz` | CPU used, MHz |
-| `nomad.memory_mb` | `norca.group.memory_mb` | Memory used, MiB |
+| `norca.cpu` | `norca.group.cpu` | CPU used, % of the allocated CPU |
+| `norca.memory` | `norca.group.memory` | Memory used, % of the allocated memory |
+| `norca.cpu_mhz` | `norca.group.cpu_mhz` | CPU used, MHz |
+| `norca.memory_mb` | `norca.group.memory_mb` | Memory used, MiB |
 
 A query can name another group with the suffix `/<group>/<job>@<namespace>`. All of these stay as they are.
 

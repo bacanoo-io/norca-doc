@@ -41,7 +41,7 @@ The typed form of a check names the metric with `metric`, without a query:
 
 ```hcl
 check "cpu" {
-  metric   = "nomad.cpu"
+  metric   = "norca.cpu"
   strategy = "target-value"
   target   = 70
 }
@@ -49,10 +49,10 @@ check "cpu" {
 
 | Metric | Value |
 | --- | --- |
-| `nomad.cpu` | CPU usage as a percentage of the CPU reserved by the allocations |
-| `nomad.memory` | Memory usage as a percentage of the memory reserved by the allocations |
-| `nomad.cpu_mhz` | CPU usage in MHz |
-| `nomad.memory_mb` | Memory usage in MiB |
+| `norca.cpu` | CPU usage as a percentage of the CPU reserved by the allocations |
+| `norca.memory` | Memory usage as a percentage of the memory reserved by the allocations |
+| `norca.cpu_mhz` | CPU usage in MHz |
+| `norca.memory_mb` | Memory usage in MiB |
 
 Each value is the average over the allocations of the task group and over the
 [`query_window`](/docs/features/autoscaler/reference/policy#check-options) of the
