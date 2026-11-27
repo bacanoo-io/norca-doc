@@ -264,13 +264,22 @@ they place start in always-sampled `alloc.start` traces with that ID.
   restarts by the restart policy (only restarts within `alloc.restart` are);
   the allocation update hooks; and the runners restored after an agent
   restart, whose first start is not an `alloc.start`.
-- **The start of an agent:** the agent starts its server, client and HTTP API
-  first and the OTLP export after them, once it has the IDs of its resource.
-  In between it traces nothing: no spans, no trace IDs in the log lines and no
-  `Norca-Trace-Id` header. The window is short, but a restarted server that
-  wins the election again processes its first evaluations in it, untraced.
 
 ## Export
+
+The agent traces from the start of its server and client, so the first
+evaluations of a restarted server that wins the election again are traced
+too. What the agent traces, measures or logs before it has its node and
+server IDs is held, and exported with the complete
+[resource](/docs/configuration/telemetry#resource-attributes) once it has
+them:
+
+- **spans**, within `max_queue_size`;
+- **a metric export**, which waits up to the `otlp` block's `timeout`;
+- **log lines**, up to 1024 ([Logging](/docs/operations/logging#export-over-otlp)).
+
+An agent that fails to start exports what it held with the resource it had
+then: its region, datacenter and host, without the node and server IDs.
 
 The spans are exported in batches of at most `max_export_batch` spans (512),
 or after five seconds when fewer are waiting. The agent keeps at most
@@ -285,7 +294,10 @@ dropped and counted:
 
 A rising `queue_full` count means the receiver is slower than the agent, or
 the ratio is too high for the queue; see the
-[Metrics reference](/docs/operations/metrics-reference#agent-metrics).
+[Metrics reference](/docs/operations/metrics-reference#agent-metrics). The
+same metric counts the dropped log records, with `signal` = `logs` and the
+reasons `queue_full`, `export_failed` and `setup_queue_full`
+([Logging](/docs/operations/logging#export-over-otlp)).
 
 ## See also
 

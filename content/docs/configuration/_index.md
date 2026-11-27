@@ -168,7 +168,7 @@ consul {
 
 - `enable_syslog` `(bool: false)` - Specifies if the agent should log to syslog.
   **This option only works on Unix based systems.** The log level inherits from
-  the Norca agent log set in `log_level`
+  the Norca agent log set in `log_level`; the entries are tagged `norca`.
 
 - `http_api_response_headers` `(map<string|string>: nil)` - Specifies
   user-defined headers to add to the HTTP API responses.
@@ -343,7 +343,7 @@ consul {
   [Logging](/docs/operations/logging).
 
 - `log_file` `(string: "")` - Specifies the path for logging. If the path
-  does not include a filename, the filename defaults to `nomad.log`. This
+  does not include a filename, the filename defaults to `norca.log`. This
   setting can be combined with `log_rotate_bytes` and `log_rotate_duration` for
   a fine-grained log rotation control.
 

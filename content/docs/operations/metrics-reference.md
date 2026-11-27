@@ -91,7 +91,7 @@ the agent that emits it:
 | --- | --- | --- |
 | `norca.server.*` | the servers | `norca.server.rpc.request`, `norca.server.fsm.*`, `norca.server.backup.*` |
 | `norca.client.*` | the client agents | `norca.client.allocs.*`, `norca.client.host.*` |
-| `norca.raft.*` | Raft and its log store on the servers | `norca.raft.apply`, `norca.raft.boltdb.*` |
+| `norca.raft.*` | Raft on the servers | `norca.raft.apply`, `norca.raft.commitTime` |
 | `norca.state.*` | the state store of the servers | `norca.state.snapshotIndex` |
 | `norca.scheduler.*` | the schedulers | `norca.scheduler.allocs.reschedule.*` |
 | `norca.autoscaler.*` | the built-in autoscaler on the leader | see [Autoscaler telemetry](/docs/features/autoscaler/reference/telemetry) |
@@ -124,13 +124,11 @@ the agent pushes the metrics of this page over OTLP/gRPC, every
   and 10000, or exponential histograms with `histograms = "exponential"`. The
   backend computes the quantiles.
 - The samples of the libraries that are not times keep their own unit:
-  `norca.runtime.gc_pause_ns` in nanoseconds; `norca.raft.boltdb.logSize`,
-  `norca.raft.boltdb.logBatchSize`, `norca.memberlist.size.remote`,
+  `norca.runtime.gc_pause_ns` in nanoseconds; `norca.memberlist.size.remote`,
   `norca.serf.msgs.received` and `norca.serf.msgs.sent` in bytes;
-  `norca.raft.fsm.applyBatchNum`, `norca.raft.boltdb.logsPerBatch`,
-  `norca.memberlist.queue.broadcasts` and `norca.serf.queue.*` as counts;
-  `norca.raft.thread.main.saturation` and `norca.raft.thread.fsm.saturation`
-  as ratios from 0 to 1; `norca.raft.boltdb.writeCapacity` per second.
+  `norca.raft.fsm.applyBatchNum`, `norca.memberlist.queue.broadcasts` and
+  `norca.serf.queue.*` as counts; `norca.raft.thread.main.saturation` and
+  `norca.raft.thread.fsm.saturation` as ratios from 0 to 1.
 - **Labels are attributes**, except the `host` label: the host is the
   `host.name` [resource attribute](/docs/configuration/telemetry#resource-attributes),
   next to the agent's region, datacenter, node and server IDs.
@@ -545,31 +543,8 @@ log of a server as `norca.badger.raft.*`, the client state as
 | `norca.badger.raft.store_logs`          | Time to store a batch of raft log entries (one sync)               | Milliseconds | Summary |
 | `norca.badger.raft.delete_range`        | Time to delete a range of raft log entries after a snapshot        | Milliseconds | Summary |
 
-## Raft BoltDB Metrics
-
-Servers with `raft_store = "boltdb"` emit the metrics of the `raft-boltdb` library for their raft
-log.
-
-| Metric                                    | Description                               | Unit        | Type    |
-| ----------------------------------------- | ----------------------------------------- | ----------- | ------- |
-| `norca.raft.boltdb.numFreePages`          | Number of free pages                      | Integer     | Gauge   |
-| `norca.raft.boltdb.numPendingPages`       | Number of pending pages                   | Integer     | Gauge   |
-| `norca.raft.boltdb.freePageBytes`         | Number of free page bytes                 | Integer     | Gauge   |
-| `norca.raft.boltdb.freelistBytes`         | Number of freelist bytes                  | Integer     | Gauge   |
-| `norca.raft.boltdb.totalReadTxn`          | Count of total read transactions          | Integer     | Counter |
-| `norca.raft.boltdb.openReadTxn`           | Number of current open read transactions  | Integer     | Gauge   |
-| `norca.raft.boltdb.txstats.pageCount`     | Number of pages in use                    | Integer     | Gauge   |
-| `norca.raft.boltdb.txstats.pageAlloc`     | Number of page allocations                | Integer     | Gauge   |
-| `norca.raft.boltdb.txstats.cursorCount`   | Count of total database cursors           | Integer     | Counter |
-| `norca.raft.boltdb.txstats.nodeCount`     | Count of total database nodes             | Integer     | Counter |
-| `norca.raft.boltdb.txstats.nodeDeref`     | Count of total database node dereferences | Integer     | Counter |
-| `norca.raft.boltdb.txstats.rebalance`     | Count of total rebalance operations       | Integer     | Counter |
-| `norca.raft.boltdb.txstats.rebalanceTime` | Sample of rebalance operation times       | Milliseconds | Summary |
-| `norca.raft.boltdb.txstats.split`         | Count of total split operations           | Integer     | Counter |
-| `norca.raft.boltdb.txstats.spill`         | Count of total spill operations           | Integer     | Counter |
-| `norca.raft.boltdb.txstats.spillTime`     | Sample of spill operation times           | Milliseconds | Summary |
-| `norca.raft.boltdb.txstats.write`         | Count of total write operations           | Integer     | Counter |
-| `norca.raft.boltdb.txstats.writeTime`     | Sample of write operation times           | Milliseconds | Summary |
+A server with `raft_store = "boltdb"` and a client with the BoltDB state store
+report no metrics of these databases.
 
 ## Agent Metrics
 
@@ -579,7 +554,7 @@ Agent metrics are emitted by all Norca agents running in either client or server
 | ----------------------------------------- | ----------------------------------------------------- | ----------- | ------- |
 | `norca.agent.http.exceeded`               | Count of HTTP connections exceeding concurrency limit | Integer     | Counter |
 | `norca.agent.otlp.export_errors`          | Count of failed OTLP exports; label `signal`: `metrics`, `traces`, `logs` or `events` ([Logging](/docs/operations/logging#export-failures), [Event export](/docs/operations/event-export#failures)) | Integer | Counter |
-| `norca.agent.otlp.dropped`                | Count of spans dropped before or during the export; labels `signal`: `traces`, `reason`: `queue_full` or `export_failed` (see [Tracing](/docs/operations/tracing#export)) | Integer | Counter |
+| `norca.agent.otlp.dropped`                | Count of spans and log records dropped before or during the export; labels `signal`: `traces` or `logs`, `reason`: `queue_full`, `export_failed` or (logs only) `setup_queue_full` (see [Tracing](/docs/operations/tracing#export), [Logging](/docs/operations/logging#export-over-otlp)) | Integer | Counter |
 | `norca.http.rate_limited`                 | Count of HTTP API requests refused by the rate limit; label `kind`: `read` or `write` | Integer | Counter |
 
 [tagged-metrics]: /docs/operations/metrics-reference#tagged-metrics

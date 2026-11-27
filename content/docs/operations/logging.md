@@ -22,7 +22,7 @@ The agent's logs go to every output that is configured, with the
   time or count (`log_rotate_bytes`, `log_rotate_duration`,
   `log_rotate_max_files`);
 - **syslog** with [`enable_syslog`](/docs/configuration#enable_syslog) (Unix
-  only);
+  only), tagged `norca`;
 - **a live stream** with [`norca monitor`](/docs/commands/monitor) or
   [`/v1/agent/monitor`](/docs/api/agent#stream-logs), at the level the stream
   asks for, whatever `log_level` the agent writes with.
@@ -191,8 +191,11 @@ telemetry {
   written nor exported while `log_level` is higher. To export the debug
   lines, set `log_level` at least as low as `logs.level`.
 - **The lines of the agent's setup are exported too:** the agent keeps up to
-  1024 records from its start until the export starts, then sends them; the
-  lines beyond that are not exported.
+  1024 records until it has its node and server IDs, then sends them with its
+  complete [resource](/docs/configuration/telemetry#resource-attributes). The
+  lines beyond that are not exported; they are counted in
+  `norca.agent.otlp.dropped` with `reason="setup_queue_full"`, and one
+  warning gives their number.
 - **The logs go out last at shutdown:** the agent flushes the traces, then
   the metrics, then the logs, so the lines of the shutdown are exported, all
   within 5 seconds.
@@ -200,8 +203,15 @@ telemetry {
   signals.
 
 The records are sent in batches of at most 512, at least once a second. While
-the receiver is slow or down the agent keeps at most 2048 records waiting;
-beyond that the oldest are dropped.
+the receiver is slow or down the agent keeps at most 2048 records waiting for
+or in an export; beyond that the new records are dropped. Dropped records are
+counted:
+
+| Metric | Labels | Meaning |
+| --- | --- | --- |
+| `norca.agent.otlp.dropped` | `signal` = `logs`, `reason` = `queue_full` | Records dropped because 2048 were waiting |
+| `norca.agent.otlp.dropped` | `signal` = `logs`, `reason` = `export_failed` | Records of a batch whose export failed after its retries |
+| `norca.agent.otlp.dropped` | `signal` = `logs`, `reason` = `setup_queue_full` | Lines of the agent's setup beyond the 1024 kept |
 
 ### The log record
 
@@ -214,7 +224,7 @@ Every line at or above `logs.level` becomes one record:
 | Body | The message, the constant text of the line |
 | `norca.logger` | The name of the logger, as in `@module`: `http`, `worker`, `norca.audit`, ... |
 | Other attributes | The keys of the line, with their types ([below](#values)) |
-| `exception.message`, `exception.type` | The `error` key of the line: its text and its Go type |
+| `exception.message`, `exception.type` | The `error` key of the line: its text and its Go type, also next to a captured stack trace |
 | `exception.stacktrace` | A stack trace the line captured |
 | Trace ID, span ID | The `trace_id` and `span_id` keys of a [traced line](#trace-ids-in-the-log-lines), moved into the trace context of the record |
 | Scope | `github.com/bacanoo-io/norca/norca`, with the agent's version |
@@ -234,9 +244,9 @@ the line (`create_error`, ...) stays an attribute with the error's text.
 - **Times are RFC 3339 strings**, with fractions of seconds.
 - **Lists of strings are arrays** and bytes are bytes; an error or any other
   value is its text.
-- **A string value is cut at 16 KiB**, and a record keeps at most 128
-  attributes, so one large line can't make a batch too large for the
-  receiver.
+- **The message and every string value are cut at 16 KiB**, and a record
+  keeps at most 128 attributes, so one large line can't make a batch too
+  large for the receiver.
 
 ### Export failures
 

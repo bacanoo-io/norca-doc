@@ -103,11 +103,14 @@ events {
 - **A new consumer starts with the new events.** When the export runs for
   the first time, the events already in the stream are not sent; the export
   begins with the next event.
-- **Turning the export off leaves its consumers**, idle. They go after
-  `bus.events.max_age` (72 hours) of idleness, like every consumer of the
-  event streams. If the export is turned on again before that, it continues
-  after the last exported event and sends the events of the pause that the
-  stream still holds.
+- **Turning the export off deletes its consumers:** a leader with the export
+  off deletes both `norca-otlp-export` consumers, so they no longer count
+  toward `max_consumers`. Turned on again, the export starts with the new
+  events; the events of the pause are not sent.
+- **Changing `topics` starts over too:** a leader that exports other topics
+  than a consumer was made for deletes and recreates it. The new consumer
+  starts with the new events, so events not yet exported when the topics
+  changed are skipped.
 
 ### Backpressure
 
@@ -122,7 +125,7 @@ agent's memory: the events wait in the stream**, which keeps them for
 
 ### Consumers
 
-The two consumers count toward
+While the export is on, its two consumers count toward
 [`server.bus.events.max_consumers`](/docs/configuration/bus) (64 by default),
 one on each stream. When a stream has no room for another consumer, the
 leader cannot create the export's consumer: it logs the warning
