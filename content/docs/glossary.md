@@ -101,6 +101,13 @@ single region. Servers federate across regions to make Norca globally aware.
 In federated clusters one of the regions must be defined as the [authoritative
 region](#authoritative-and-non-authoritative-regions).
 
+## Rigger
+
+Rigger is the package manager of Norca (`norca rigger`, and the standalone `rigger` program). It
+installs modules, packages of jobs and the resources that belong to them, and stacks of modules as
+releases. Its own terms (module, stack, release, registry, lock file, bundle, ...) are in the
+[Rigger glossary](/docs/rigger/glossary).
+
 ## Server
 
 Norca servers are the brains of the cluster. There is a cluster of servers per

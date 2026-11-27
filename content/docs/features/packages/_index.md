@@ -39,6 +39,13 @@ has the same commands. It installs:
   OpenObserve, the OpenTelemetry Collector, Traefik, an optional Consul and the operator modules. The
   global registry lists them as `norca/<name>`.
 
+> [!NOTE]
+> This page is an overview. **The full documentation of Rigger is its own section,
+> [Rigger](/docs/rigger)**: how the parts fit together, writing a module and a stack, the language,
+> versions and lock files, the lifecycle of releases, registries, publishing and signing,
+> configuration, permissions and troubleshooting. The command reference is
+> [`norca rigger`](/docs/commands/rigger).
+
 ## How it works
 
 Somebody evaluates the module: **the `rigger` program on the machine it runs on, or the servers.**
@@ -125,11 +132,12 @@ against a real cluster.
 ## Pages in this section
 
 {{< cards >}}
+  {{< card link="/docs/rigger" title="Rigger" subtitle="The full documentation: concepts, writing modules and stacks, the language, versions, lifecycle, registries, troubleshooting." >}}
   {{< card link="/docs/features/packages/modules" title="Modules and stacks" subtitle="The files of a module, variables, values, tests, the stack file." >}}
   {{< card link="/docs/features/packages/supply-chain" title="Supply chain" subtitle="Versions, the lock file, the global registry, signatures, trust, bundles." >}}
   {{< card link="/docs/features/packages/releases" title="Releases" subtitle="Server-side apply, revisions, hooks, drift, permissions." >}}
   {{< card link="/docs/features/packages/rigger-catalog" title="Catalog and install form" subtitle="The registries of the cluster, the catalog in the web UI, stacks and their operations." >}}
-  {{< card link="/docs/features/packages/registry" title="Norca registry" subtitle="The operations modules of a Norca cluster." >}}
+  {{< card link="/docs/rigger/norca-registry" title="Norca registry" subtitle="The operations modules of a Norca cluster." >}}
 {{< /cards >}}
 
 ## CLI and API
@@ -151,16 +159,13 @@ The complete command list is in the [`norca rigger` reference](/docs/commands/ri
 
 - **A registry is synced only when someone asks for it** (`norca rigger registry sync`, **Sync** in
   the web UI). A newer version is not offered until the next sync.
-- **`norca rigger install` takes a directory.** A module of a registry is installed by the servers
-  (the install API, the catalog of the web UI) or as a module of a stack.
+- **`norca rigger install` takes a directory or a source.** With `--server` the servers install a
+  module of a registry of the cluster they synced, or a built-in module.
 - **A release is installed in one region.** For several regions, sync the registry and install in
   each.
 - The servers fetch only from registered sources and bundles, and read no `oci://` and no directory
   source; the `rigger` program does, on the machine it runs on.
 - Signatures are key-based; keyless signing is not supported.
-- A release that the pack manager made before it was removed is still shown, rolled back and
-  uninstalled. Nothing upgrades it; an install under the same name with `-adopt` (**Take over the
-  release** in the web UI) takes it over.
 - The [web UI](/docs/features/web-ui) shows Rigger under **Packages**: the releases (module,
   revision, phase, drift, signature) with their resources, revisions, values and events, where a
   release is rolled back, tested, checked for drift and uninstalled, and the **Stacks**, **Catalog**

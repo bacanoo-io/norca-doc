@@ -17,6 +17,11 @@ The **Packages** page of the web UI shows **Rigger**, the package manager, on th
 A registry may list very many modules and stacks, so the catalog is **searched on the servers** a page at a time.
 It is never loaded whole into the browser.
 
+What the catalog shows comes from [registries of the cluster](/docs/rigger/registries#registries-of-the-cluster),
+and an install from the catalog is an install by the servers
+([the program or the servers](/docs/rigger/lifecycle#the-program-or-the-servers)); the rest of Rigger
+is described in the [Rigger](/docs/rigger) section.
+
 ## The catalog
 
 | Control | What it does |
