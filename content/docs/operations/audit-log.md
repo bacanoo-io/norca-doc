@@ -17,7 +17,8 @@ An audit record is an [agent log line](/docs/operations/logging) at the `info`
 level, under the logger `norca.audit` of the server, and goes wherever the
 server's logs go: standard error, [`log_file`](/docs/configuration#log_file),
 syslog, and [`norca monitor`](/docs/commands/monitor). Nothing has to be turned
-on.
+on, and the agent configuration has no `audit` block: one is refused at
+startup as an unknown key.
 
 ## What is recorded
 
