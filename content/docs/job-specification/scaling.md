@@ -15,8 +15,8 @@ The `scaling` block configures the scaling options of a `group` or a `task`:
 the bounds that Norca honors for `norca job scale` and job updates, and the
 autoscaling policy. The policy of a group is evaluated either by the
 [built-in autoscaler](/docs/features/autoscaler) of the servers (engine
-`builtin`) or by an external autoscaler (engine `external`). **This block is not
-supported within jobs of type `system`.**
+`builtin`, the default) or by an external autoscaler (engine `external`).
+**This block is not supported within jobs of type `system`.**
 
 When placed at the `group` level, the scaling policy is of type horizontal
 application scaling and controls the value of [`count`][] for the group.
@@ -90,10 +90,11 @@ task "redis" {
   the policy: `builtin` (the built-in autoscaler of the servers) or `external`
   (an external autoscaler agent). When empty, the
   [`default_engine`](/docs/configuration/autoscaler#autoscaler-parameters) of the servers
-  applies, which is **`external` unless configured otherwise.** A policy of the
-  `builtin` engine is validated when the job is planned or submitted, and an
-  enabled one is rejected while the built-in autoscaler is not enabled on the
-  servers.
+  applies, which is **`builtin` unless configured otherwise.** A policy of the
+  `builtin` engine is validated when the job is planned or submitted: it needs
+  at least one check, and an enabled one is rejected while the built-in
+  autoscaler is not enabled on the servers. **A `scaling` block for an external
+  autoscaler, or one without a check, sets `engine = "external"`.**
 
 - `policy` - <code>(block: nil)</code> - The autoscaling policy. For the
   `builtin` engine it is a typed policy, described below and in

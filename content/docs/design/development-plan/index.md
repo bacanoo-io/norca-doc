@@ -188,7 +188,7 @@ The built-in and the external autoscaler can run side by side throughout the tra
 server {
   autoscaler {
     enabled              = true
-    default_engine       = "external"   # after the switch: "builtin"
+    default_engine       = "external"   # removed after the switch: the default is "builtin"
     min_eval_interval    = "10s"
     plugin_dir           = "/opt/nomad/autoscaler-plugins"
   }
@@ -197,7 +197,7 @@ server {
 
 **Distribution of policies:**
 
-- A policy without `engine` gets the value of `default_engine`. Initially this is `external`, so the behavior of existing jobs does not change.
+- A policy without `engine` gets the value of `default_engine`. Its default is `builtin`; a cluster that keeps an external autoscaler sets `external` until the switch.
 - The `Scaling.ListPolicies` RPC gets a new `Engine` filter. The external autoscaler requests only its own policies with the `?engine=external` parameter (this needs a small change in the autoscaler's `policy/nomad/source.go`). Old autoscaler versions see everything without a filter, so coexistence with them is safe only as long as no job is `builtin`.
 - The built-in scaler evaluates only `builtin` policies.
 
@@ -206,7 +206,7 @@ server {
 1.  Upgrade the servers to the new version, `enabled = true`, `default_engine = "external"`.
 2.  Upgrade the external autoscaler to the engine-filtering version.
 3.  Set `engine = "builtin"` job by job and run `norca job plan`; the validator reports faulty or unsupported policies.
-4.  After all jobs are switched, set `default_engine = "builtin"`, then stop the external autoscaler.
+4.  After all jobs are switched, remove `default_engine` (the default is `builtin`), then stop the external autoscaler.
 
 **Rollback:** setting the `engine` field of a job back to `external` immediately returns that job to the external autoscaler, without a server restart.
 

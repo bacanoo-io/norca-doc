@@ -33,8 +33,9 @@ publishes every decision on the `Scaling` topic of the event stream.
 
 The built-in autoscaler is **off by default**. Policies are assigned to an
 *engine*: `builtin` policies are evaluated by the servers, `external` policies
-are left to an external autoscaler agent, so both can run side by side during a
-migration.
+are left to an external autoscaler agent, so both can run side by side. **A
+policy that does not set `engine` is a `builtin` one** unless the servers set
+another [`default_engine`](/docs/configuration/autoscaler#autoscaler-parameters).
 
 ## How it works
 
@@ -245,15 +246,15 @@ change its bounds to keep a count.
 
 ## Example
 
-Enable the built-in autoscaler on the servers and make it the default engine:
+Enable the built-in autoscaler on the servers. It is the default engine: a
+scaling policy that does not set `engine` is evaluated by it.
 
 ```hcl {filename="norca.hcl"}
 server {
   enabled = true
 
   autoscaler {
-    enabled        = true
-    default_engine = "builtin"
+    enabled = true
   }
 }
 ```
@@ -313,7 +314,7 @@ Server configuration, `server { autoscaler { ... } }` (full reference:
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
 | `enabled` | bool | `false` | Runs the built-in autoscaler on the leader. |
-| `default_engine` | string | `"external"` | Engine of policies that do not set `engine`: `builtin` or `external`. |
+| `default_engine` | string | `"builtin"` | Engine of policies that do not set `engine`: `builtin` or `external`. |
 | `min_eval_interval` | duration | `"10s"` | Lower bound of a policy's `evaluation_interval`. |
 | `min_cooldown` | duration | `"10s"` | Lower bound of `cooldown` and `cooldown_on_scale_up`. |
 | `default_evaluation_interval` | duration | `"10s"` | Interval of policies that do not set one. |

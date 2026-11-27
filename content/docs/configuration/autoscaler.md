@@ -17,7 +17,6 @@ server {
 
   autoscaler {
     enabled                     = true
-    default_engine              = "builtin"
     min_eval_interval           = "10s"
     default_evaluation_interval = "30s"
     default_cooldown            = "2m"
@@ -44,10 +43,13 @@ server {
   it is disabled, a job whose enabled scaling policy uses the `builtin` engine is
   rejected at submission.**
 
-- `default_engine` `(string: "external")` - The engine of scaling policies that
+- `default_engine` `(string: "builtin")` - The engine of scaling policies that
   do not set [`engine`](/docs/job-specification/scaling#scaling-parameters): `builtin` (the
-  built-in autoscaler) or `external` (an external autoscaler agent). The default
-  keeps the behavior of existing jobs unchanged.
+  built-in autoscaler) or `external` (an external autoscaler agent). **A policy
+  goes to an external autoscaler only when it, or this setting, says
+  `external`.** Policies of the `builtin` engine are validated at submission: an
+  enabled one needs `enabled = true` here, and every one needs at least one
+  check.
 
 - `min_eval_interval` `(string: "10s")` - The lower bound of a policy's
   `evaluation_interval`. A policy with a shorter interval is rejected at
@@ -429,18 +431,19 @@ minutes). A process that does not answer three calls in a row, each within the
 call timeout of one minute, counts as hung: it is stopped and started again
 like one that exited (metric `norca.autoscaler.plugin.hung`).
 
-### Migrating from an external autoscaler
+### Built-in and external autoscaler side by side
 
 The engine of a policy decides which autoscaler evaluates it, so the built-in
 and an external autoscaler can run side by side:
 
-1. Upgrade the servers and set `enabled = true` with `default_engine = "external"`.
+1. Set `enabled = true` and `default_engine = "external"` on the servers, so the
+   policies that set no `engine` stay with the external autoscaler.
 2. Configure the external autoscaler to list only its own policies with the
    `engine=external` filter of [`GET /v1/scaling/policies`](/docs/api/scaling-policies#list-scaling-policies).
 3. Set `engine = "builtin"` job by job and run `norca job plan`: the servers
    validate the policy and report unsupported settings.
-4. When every job is migrated, set `default_engine = "builtin"` and stop the
-   external autoscaler.
+4. When no job is left to the external autoscaler, remove `default_engine`
+   (the default is `builtin`) and stop the external autoscaler.
 
 Setting `engine = "external"` on a job hands it back to the external autoscaler
 **without a server restart.**
