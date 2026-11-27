@@ -31,7 +31,7 @@ plan` already reports an unknown strategy, a missing `target` or a too short
 quotas, protects the cluster with a rate limit and an oscillation guard, and
 publishes every decision on the `Scaling` topic of the event stream.
 
-The built-in autoscaler is **off by default**. Policies are assigned to an
+The built-in autoscaler is **on by default**. Policies are assigned to an
 *engine*: `builtin` policies are evaluated by the servers, `external` policies
 are left to an external autoscaler agent, so both can run side by side. **A
 policy that does not set `engine` is a `builtin` one** unless the servers set
@@ -248,15 +248,16 @@ change its bounds to keep a count.
 
 ## Example
 
-Enable the built-in autoscaler on the servers. It is the default engine: a
-scaling policy that does not set `engine` is evaluated by it.
+The built-in autoscaler runs on the leader without any configuration, and it
+is the default engine: a scaling policy with a check that does not set `engine`
+is evaluated by it. To turn it off on the servers:
 
 ```hcl {filename="norca.hcl"}
 server {
   enabled = true
 
   autoscaler {
-    enabled = true
+    enabled = false
   }
 }
 ```
@@ -315,7 +316,7 @@ Server configuration, `server { autoscaler { ... } }` (full reference:
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
-| `enabled` | bool | `false` | Runs the built-in autoscaler on the leader. |
+| `enabled` | bool | `true` | Runs the built-in autoscaler on the leader. |
 | `default_engine` | string | `"builtin"` | Engine of policies that do not set `engine`: `builtin` or `external`. |
 | `min_eval_interval` | duration | `"10s"` | Lower bound of a policy's `evaluation_interval`. |
 | `min_cooldown` | duration | `"10s"` | Lower bound of `cooldown` and `cooldown_on_scale_up`. |

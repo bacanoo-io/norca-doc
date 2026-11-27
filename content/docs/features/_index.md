@@ -15,7 +15,7 @@ supports them ([version gate](/docs/introduction/compatibility#version-gate-of-t
 | --- | --- | --- |
 | Nomad v1.6.5 core features | Available | [Concepts](/docs/concepts) |
 | Dependency updates (Go 1.27, gRPC 1.84, security fixes) | Available | [Development plan](/docs/design/development-plan) |
-| Built-in autoscaler: leader subsystem, built-in strategies, `nomad` metrics pushed by clients and Prometheus, external APM and strategy plugins, typed and validated `scaling` policies, quota and deployment aware, `Scaling` events, off by default | Available | [Autoscaler](/docs/features/autoscaler) |
+| Built-in autoscaler: leader subsystem, built-in strategies, `nomad` metrics pushed by clients and Prometheus, external APM and strategy plugins, typed and validated `scaling` policies, quota and deployment aware, `Scaling` events, on by default | Available | [Autoscaler](/docs/features/autoscaler) |
 | Node scaling: `NodeGroup` and `NodeProvider` objects, the decision of the scale (blocked work, headroom, expanders, checks, dry run), the operator `norca-nodescaler` (scale down, rolling replacement, deletion of a group), node identity with `norca-join`, and the provider application `norca-provider` with the mock and a docker provider; no cloud provider yet | In progress | [Node scaling](/docs/features/node-scaling) |
 | Built-in autoscaler: node pool scaling with cloud providers (Hetzner Cloud, Scaleway, AWS, GCP) | Postponed | [Development plan](/docs/design/development-plan) |
 | Built-in autoscaler: scaling on application metrics (task metrics read by the client, metrics reported by an operator, the `backlog` strategy) | Planned | [Application autoscaling plan](/docs/design/application-autoscaling-plan) |

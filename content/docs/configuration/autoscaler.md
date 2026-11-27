@@ -39,9 +39,11 @@ server {
 
 ## `autoscaler` Parameters
 
-- `enabled` `(bool: false)` - Runs the built-in autoscaler on the leader. **While
+- `enabled` `(bool: true)` - Runs the built-in autoscaler on the leader. **While
   it is disabled, a job whose enabled scaling policy uses the `builtin` engine is
-  rejected at submission.**
+  rejected at submission.** Without scaling policies of the `builtin` engine and
+  without node groups the autoscaler evaluates nothing and does not read the
+  blocked evaluations.
 
 - `default_engine` `(string: "builtin")` - The engine of scaling policies that
   do not set [`engine`](/docs/job-specification/scaling#scaling-parameters): `builtin` (the
@@ -436,8 +438,8 @@ like one that exited (metric `norca.autoscaler.plugin.hung`).
 The engine of a policy decides which autoscaler evaluates it, so the built-in
 and an external autoscaler can run side by side:
 
-1. Set `enabled = true` and `default_engine = "external"` on the servers, so the
-   policies that set no `engine` stay with the external autoscaler.
+1. Set `default_engine = "external"` on the servers, so the policies that set
+   no `engine` stay with the external autoscaler.
 2. Configure the external autoscaler to list only its own policies with the
    `engine=external` filter of [`GET /v1/scaling/policies`](/docs/api/scaling-policies#list-scaling-policies).
 3. Set `engine = "builtin"` job by job and run `norca job plan`: the servers
