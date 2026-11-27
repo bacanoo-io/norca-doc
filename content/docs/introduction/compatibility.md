@@ -88,7 +88,10 @@ Names that are part of the compatibility surface are unchanged:
 
 - the `X-Nomad-Token` HTTP header,
 - the service provider `provider = "nomad"`,
-- the agent's configuration keys, metric names (`nomad.*`) and Raft/Serf names.
+- the agent's configuration keys and Raft/Serf names.
+
+The agent's metric names start with `norca.` (see the
+[Metrics reference](/docs/operations/metrics-reference#metric-names)).
 
 ## Workloads and drivers
 

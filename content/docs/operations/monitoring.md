@@ -7,8 +7,9 @@ weight: 3
 
 Norca agents report the runtime metrics of Nomad v1.6.5 and the metrics of
 the Norca features through the agent's [`telemetry` block](/docs/configuration/telemetry).
-This page shows how to expose them to Prometheus, which Norca metrics to
-watch, and how to run a complete metrics, traces and logs pipeline with the
+This page shows how to send them over OTLP or expose them to Prometheus,
+which Norca metrics to watch, and how to run a complete metrics, traces and
+logs pipeline with the
 `otel-collector` and `openobserve` modules of the
 [Norca registry](/docs/features/packages/registry). The metrics
 themselves are described in [Monitoring Norca agents](/docs/operations/monitoring-nomad)
@@ -16,31 +17,73 @@ and the [Metrics reference](/docs/operations/metrics-reference).
 
 ## Agent telemetry
 
-Turn on the Prometheus format on every agent, servers and clients:
+Every agent keeps the metrics of the last minute in memory and serves them as
+JSON at [`/v1/metrics`](/docs/api/metrics), whatever else is configured.
+**Norca needs no external metrics system:** the
+[metrics store](/docs/configuration/metrics_store), the charts of the web UI
+and the built-in autoscaler use their own sources. Two outputs send the
+metrics to a monitoring system; they can run side by side.
+
+### OTLP to the collector of the node (recommended)
+
+The agent pushes its metrics over OTLP/gRPC to the OpenTelemetry Collector of
+its own node, which forwards them to the backend: the `otel-collector` module
+in its OTLP mode ([below](#a-metrics-traces-and-logs-stack-from-the-registry))
+or any collector listening on `127.0.0.1:4317`. Every agent, servers and
+clients:
 
 ```hcl {filename="norca.hcl"}
 telemetry {
-  prometheus_metrics         = true
   publish_allocation_metrics = true
   publish_node_metrics       = true
+
+  otlp {}   # 127.0.0.1:4317, plain text on the loopback interface
+}
+```
+
+- **Nothing leaves the node in plain text:** the agent sends without TLS only
+  to a loopback address; any other endpoint uses TLS.
+- **A node without a collector**, such as a server that runs no client, sends
+  to a central receiver instead: `endpoint` with a `tls` block and the
+  credentials in a `headers_file` or a client certificate (see the
+  [examples](/docs/configuration/telemetry#otlp-examples)).
+- **Failed exports** are logged at most once a minute and counted in
+  `norca.agent.otlp.export_errors`.
+- Other backends are reached through the collector and its exporters.
+
+### Prometheus
+
+The agent serves the Prometheus format for a Prometheus server that scrapes
+it:
+
+```hcl {filename="norca.hcl"}
+telemetry {
+  publish_allocation_metrics = true
+  publish_node_metrics       = true
+
+  prometheus {
+    enabled = true
+  }
 }
 ```
 
 Every agent then serves its metrics at `/v1/metrics?format=prometheus`; without
-`prometheus_metrics` the endpoint answers the Prometheus format with an error,
-and `/v1/metrics` returns JSON. **The endpoint has no ACL check.** With TLS on the
-HTTP API, scrape it over HTTPS with the CA of the agent certificates.
+the `prometheus` block the endpoint answers the Prometheus format with an
+error, and `/v1/metrics` returns JSON. **The endpoint has no ACL check.** With
+TLS on the HTTP API, scrape it over HTTPS with the CA of the agent
+certificates.
 
 ```shell
 curl --cacert norca-agent-ca.pem "https://127.0.0.1:4646/v1/metrics?format=prometheus"
 ```
 
-**Metric names keep the Nomad prefix**, as part of the compatibility surface:
-`norca.server.backup.size_bytes` is `norca_server_backup_size_bytes` in Prometheus.
-Dashboards and alerts written for Nomad v1.6.5 keep working.
+### Metric names
 
-Other sinks of the `telemetry` block (statsd, statsite, Datadog, Circonus) work
-as in Nomad v1.6.5.
+Every metric name starts with `norca.` and its family: `norca.server.*` (the
+servers), `norca.client.*` (the clients), `norca.raft.*`, `norca.runtime.*`
+and the others of the [Metrics reference](/docs/operations/metrics-reference#metric-names).
+OTLP keeps the dots; Prometheus uses underscores:
+`norca.server.backup.size_bytes` is `norca_server_backup_size_bytes`.
 
 ## Norca metrics
 
@@ -83,7 +126,7 @@ Suggested alerts:
 
 `norca operator backup list` shows the same as a warning when the last
 successful backup is older than two intervals. **The metrics come from the
-current leader only, so scrape all servers.** See
+current leader only, so collect them from all servers.** See
 [Backup and restore operations](/docs/operations/backup-restore).
 
 ### System bus
@@ -102,10 +145,12 @@ of the servers overflowed.
 The Norca registry has two modules for a self-hosted observability stack:
 
 - **otel-collector**: the OpenTelemetry Collector (Apache-2.0) as a system
-  job, one collector per node. It scrapes the host, the local Norca agent and
-  the instances of other registry modules on the same node (NATS, Forgejo, the
-  mTLS gateway, Consul, PostgreSQL), found through the native service catalog,
-  and receives OTLP traces, metrics and logs from the applications of the node.
+  job, one collector per node. It receives the OTLP of the local Norca agent
+  on `127.0.0.1:4317` (its OTLP mode, `nomad_otlp_enabled`; otherwise it
+  scrapes the agent's Prometheus output), scrapes the host and the instances
+  of other registry modules on the same node (NATS, Forgejo, the mTLS
+  gateway, Consul, PostgreSQL), found through the native service catalog, and
+  receives OTLP traces, metrics and logs from the applications of the node.
 - **openobserve**: [OpenObserve](https://openobserve.ai) as the backend for
   logs, metrics and traces, in single mode (one instance, SQLite, a host
   volume) or cluster mode (PostgreSQL, NATS and an S3 store). OpenObserve is
@@ -115,14 +160,14 @@ The Norca registry has two modules for a self-hosted observability stack:
 ```mermaid
 flowchart LR
   subgraph node["Every client node"]
-    AG["norca agent<br/>/v1/metrics?format=prometheus"]
+    AG["norca agent<br/>telemetry { otlp {} }"]
     HOST["host<br/>(hostfs volume)"]
     APP["applications<br/>OTLP"]
     NX["NATS exporter,<br/>mTLS gateway, ..."]
     RFS["RustFS<br/>OTLP push"]
     COL["otel-collector<br/>(system job)"]
   end
-  AG -- "scrape" --> COL
+  AG -- "OTLP/gRPC<br/>127.0.0.1:4317" --> COL
   HOST -- "host_metrics" --> COL
   NX -- "scrape, found in<br/>the native catalog" --> COL
   APP -- "OTLP 4317/4318" --> COL
@@ -144,6 +189,18 @@ The steps of the [single node example](/docs/getting-started/examples/02-single-
 {{% steps %}}
 
 ### Prepare the nodes
+
+Every agent pushes its telemetry to the collector of its node (servers
+without a client: see [Agent telemetry](#otlp-to-the-collector-of-the-node-recommended)):
+
+```hcl
+telemetry {
+  publish_allocation_metrics = true
+  publish_node_metrics       = true
+
+  otlp {}
+}
+```
 
 On the OpenObserve node a host volume for its data, and on every client the
 host's root directory, read-only, for the host metrics:
@@ -190,14 +247,18 @@ certificates:
 ```shell
 norca secret put -namespace observability norca/agent-ca ca=@/etc/norca.d/tls/norca-agent-ca.pem
 norca operator api -namespace observability -X PUT /v1/rigger/install <<'EOF'
-{"Release": "otel-collector", "Registry": "global", "Module": "norca/otel-collector", "Version": "~> 0.1",
- "ValuesJSON": {"openobserve_tls": "none", "nomad_address": "https://127.0.0.1:4646",
+{"Release": "otel-collector", "Registry": "global", "Module": "norca/otel-collector", "Version": "~> 0.2",
+ "ValuesJSON": {"openobserve_tls": "none", "nomad_otlp_enabled": true, "nomad_address": "https://127.0.0.1:4646",
                 "nomad_ca_secret_path": "norca/agent-ca", "discovery_namespaces": ["default", "apps"]}}
 EOF
 ```
 
-`discovery_namespaces` lists the namespaces whose services the collectors
-look for.
+`nomad_otlp_enabled` adds the agents' receiver on `127.0.0.1:4317` and turns
+the scrape of the agents off; `nomad_address` is still used to find the
+services of `discovery_namespaces`, the namespaces whose services the
+collectors look for. Without `nomad_otlp_enabled` the collectors scrape the
+agents' Prometheus output instead, which needs the `prometheus` block on every
+agent.
 
 ### Turn on the metrics of other modules
 
@@ -253,7 +314,9 @@ collectors of a region export to the OpenObserve of that region; see the
 ## Prometheus without the modules
 
 An existing Prometheus can scrape the agents directly at
-`/v1/metrics?format=prometheus`, and find the services of the cluster with its
+`/v1/metrics?format=prometheus` (`telemetry { prometheus { enabled = true } }`
+on every agent, see [Prometheus](#prometheus)), and find the services of the
+cluster with its
 `nomad_sd_configs` against any agent, or with `consul_sd_configs` against the
 [Consul-compatible API](/docs/features/service-discovery/consul-compatible-api)
 of Norca.

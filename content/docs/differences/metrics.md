@@ -7,7 +7,8 @@ weight: 1
 
 Nomad v1.6.5 shows only current values: the agent telemetry keeps one minute in memory, the
 allocation and node statistics are read live from the client, and any history needs an external
-system such as Prometheus. Norca keeps that telemetry unchanged. On top of it, every server stores
+system such as Prometheus. Norca keeps that telemetry, under `norca.*` names, with an optional
+Prometheus output and an optional OTLP export. On top of it, every server stores
 a history in an embedded time-series store, the [metrics store](/docs/configuration/metrics_store):
 - the usage of the task groups and the nodes, reported by the clients on the
   [system bus](/docs/features/system-bus#task-group-usage);
@@ -21,8 +22,8 @@ system is needed for it.**
 
 | Area | Nomad v1.6.5 | Norca | Change |
 | --- | --- | --- | --- |
-| Agent telemetry | go-metrics: one minute in memory, [`/v1/metrics`](/docs/api/metrics), statsd, Prometheus and other sinks | The same, under the same `nomad.*` names | Unchanged |
-| `publish_allocation_metrics`, `publish_node_metrics` | Allocation and node values sent to the telemetry sinks | The same; the metrics store does not depend on them | Unchanged |
+| Agent telemetry | go-metrics: one minute in memory, [`/v1/metrics`](/docs/api/metrics), statsd, Prometheus and other sinks | One minute in memory and `/v1/metrics` as before; an optional Prometheus output (the [`prometheus` block](/docs/configuration/telemetry#prometheus)) and an optional OTLP/gRPC export to an OpenTelemetry Collector or any OTLP receiver (the [`otlp` block](/docs/configuration/telemetry#otlp)); no statsd, statsite, DogStatsD or Circonus output, those backends are reached through a collector; the names start with `norca.` ([metric names](/docs/operations/metrics-reference#metric-names)) | Changed |
+| `publish_allocation_metrics`, `publish_node_metrics` | Allocation and node values sent to the telemetry sinks | The same, to the outputs of the agent (in memory, Prometheus, OTLP); the metrics store does not depend on them | Unchanged |
 | History in the cluster | None; it needs an external time-series database | An embedded store on every server, in its data directory | New |
 | Usage of the task groups | Read live from the client (`/v1/client/allocation/:id/stats`) | The clients also publish it on the system bus, and every server stores it; `usage` in the [client block](/docs/configuration/client) | New |
 | Statistics of the host | Read live from the client (`/v1/client/stats`) | Also reported with the usage and stored as `norca.node.*` | New |
@@ -53,5 +54,5 @@ system is needed for it.**
 | A `server` label | None; each server stores only its own server metrics | Read another server with `server_id` |
 | Raft and backups | The history is not written to Raft and is not backed up | It is local data of each server; after a restart the bus refills up to an hour, and another server can be read with `server_id` |
 | The telemetry's one-minute memory | Not used as a source, except for the two Raft times | The store samples the state itself |
-| An external time-series database (Prometheus, VictoriaMetrics) | Not built in and not required | The telemetry sinks still feed one if it is wanted |
+| An external time-series database (Prometheus, VictoriaMetrics) | Not built in and not required | The Prometheus output or the OTLP export (through a collector) still feeds one if it is wanted |
 | The external Nomad Autoscaler | Not needed | The built-in autoscaler replaces it; `engine = "external"` still works |

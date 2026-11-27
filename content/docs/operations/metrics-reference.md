@@ -20,8 +20,9 @@ it will dump the current telemetry information to the agent's `stderr`.
 This telemetry information can be used for debugging or otherwise
 getting a better view of what Norca is doing.
 
-Telemetry information can be streamed to both [statsite](https://github.com/armon/statsite)
-as well as statsd based on providing the appropriate configuration options.
+The same metrics can be served in the Prometheus format and pushed over
+OTLP/gRPC to an OpenTelemetry Collector or any OTLP receiver; see
+[Metrics over OTLP](#metrics-over-otlp).
 
 To configure the telemetry output please see the [agent
 configuration](/docs/configuration/telemetry/).
@@ -81,15 +82,72 @@ tag, meaning that it is possible to do a match over metrics for datapoints
 such as a particular datacenter, and return all metrics with this tag. Norca
 supports labels for namespaces as well.
 
+### Metric Names
+
+Every metric name starts with `norca.`, followed by the family of the part of
+the agent that emits it:
+
+| Family | Emitted by | Examples |
+| --- | --- | --- |
+| `norca.server.*` | the servers | `norca.server.rpc.request`, `norca.server.fsm.*`, `norca.server.backup.*` |
+| `norca.client.*` | the client agents | `norca.client.allocs.*`, `norca.client.host.*` |
+| `norca.raft.*` | Raft and its log store on the servers | `norca.raft.apply`, `norca.raft.boltdb.*` |
+| `norca.state.*` | the state store of the servers | `norca.state.snapshotIndex` |
+| `norca.scheduler.*` | the schedulers | `norca.scheduler.allocs.reschedule.*` |
+| `norca.autoscaler.*` | the built-in autoscaler on the leader | see [Autoscaler telemetry](/docs/features/autoscaler/reference/telemetry) |
+| `norca.badger.<db>.*` | the Badger databases of the Raft log and of the client state | `norca.badger.raft.lsm_bytes` |
+| `norca.agent.*` | every agent | `norca.agent.http.exceeded`, `norca.agent.otlp.export_errors` |
+| `norca.http.*` | the rate limit of the HTTP API of every agent | `norca.http.rate_limited` |
+| `norca.runtime.*` | the Go runtime of every agent | `norca.runtime.num_goroutines` |
+| `norca.memberlist.*`, `norca.serf.*` | the gossip of the servers | `norca.memberlist.gossip`, `norca.serf.member.join` |
+
+The names are the same in `/v1/metrics`, in a `SIGUSR1` dump and in the OTLP
+export. The Prometheus output replaces the dots by underscores:
+`norca.server.rpc.request` is `norca_server_rpc_request`. The prefixes of
+[`prefix_filter`](/docs/configuration/telemetry#prefix_filter) start with
+`norca.` too.
+
+### Metrics over OTLP
+
+With the [`otlp` block](/docs/configuration/telemetry#otlp) of `telemetry`
+the agent pushes the metrics of this page over OTLP/gRPC, every
+`otlp.metrics.interval` (30 seconds):
+
+- **Names** are those of this page, with the dots.
+- **Gauges** are OTLP gauges with the last value of each series.
+- **Counters** are monotonic OTLP sums, cumulative from the start of the agent
+  (or delta with `temporality = "delta"`).
+- **A gauge or counter series that was not updated for 60 seconds is no
+  longer reported**, so the series of stopped allocations disappear.
+- **Timers are histograms in milliseconds** (unit `ms`), with the explicit
+  buckets 0, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500
+  and 10000, or exponential histograms with `histograms = "exponential"`. The
+  backend computes the quantiles.
+- The samples of the libraries that are not times keep their own unit:
+  `norca.runtime.gc_pause_ns` in nanoseconds; `norca.raft.boltdb.logSize`,
+  `norca.raft.boltdb.logBatchSize`, `norca.memberlist.size.remote`,
+  `norca.serf.msgs.received` and `norca.serf.msgs.sent` in bytes;
+  `norca.raft.fsm.applyBatchNum`, `norca.raft.boltdb.logsPerBatch`,
+  `norca.memberlist.queue.broadcasts` and `norca.serf.queue.*` as counts;
+  `norca.raft.thread.main.saturation` and `norca.raft.thread.fsm.saturation`
+  as ratios from 0 to 1; `norca.raft.boltdb.writeCapacity` per second.
+- **Labels are attributes**, except the `host` label: the host is the
+  `host.name` [resource attribute](/docs/configuration/telemetry#resource-attributes),
+  next to the agent's region, datacenter, node and server IDs.
+- A metric keeps at most 2,000 series; more are aggregated into one series
+  with the attribute `otel.metric.overflow`.
+
+Export errors are counted in `norca.agent.otlp.export_errors` (see
+[Agent Metrics](#agent-metrics)), which `/v1/metrics` shows even while the
+receiver is down.
+
 ## Key Metrics
 
 The metrics in the table below are the most important metrics for monitoring
 the overall health of a Norca cluster.
 
-When telemetry is being streamed to statsite or statsd, `interval` in the
-table below is defined to be their flush interval. Otherwise, the interval can
-be assumed to be 10 seconds when retrieving metrics using the above described
-signals.
+The interval in the table below is 10 seconds, the aggregation interval of
+the in-memory metrics behind `/v1/metrics` and the `SIGUSR1` dump.
 
 | Metrics                                      | Description                                                                                                                                                                                                       | Unit                           | Type    |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| ------------------------------ | ------- |
@@ -520,6 +578,8 @@ Agent metrics are emitted by all Norca agents running in either client or server
 | Metric                                    | Description                                           | Unit        | Type    |
 | ----------------------------------------- | ----------------------------------------------------- | ----------- | ------- |
 | `norca.agent.http.exceeded`               | Count of HTTP connections exceeding concurrency limit | Integer     | Counter |
+| `norca.agent.otlp.export_errors`          | Count of failed OTLP exports; label `signal`: `metrics` or `traces` | Integer | Counter |
+| `norca.http.rate_limited`                 | Count of HTTP API requests refused by the rate limit; label `kind`: `read` or `write` | Integer | Counter |
 
 [tagged-metrics]: /docs/operations/metrics-reference#tagged-metrics
 [sticky]: /docs/job-specification/ephemeral_disk#sticky

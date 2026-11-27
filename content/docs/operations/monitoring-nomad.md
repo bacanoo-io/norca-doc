@@ -33,14 +33,14 @@ There are three ways to obtain metrics from Norca:
 
 - Query the [/v1/metrics API endpoint][metrics-api-endpoint] to return metrics
   for the current Norca process. This endpoint supports Prometheus formatted
-  metrics.
+  metrics when the [Prometheus output][prometheus-telem] is on.
 
 - Send the `USR1` signal to the Norca process. This will dump the current
   telemetry information to `STDERR` (on Linux).
 
-- Configure Norca to automatically forward metrics to a third-party provider
-  such as [DataDog][datadog-telem], [Prometheus][prometheus-telem],
-  [statsd][statsd-telem], and [Circonus][circonus-telem].
+- Configure Norca to push its metrics over [OTLP][otlp-telem] to an
+  OpenTelemetry Collector, which forwards them to the monitoring system, or
+  let [Prometheus][prometheus-telem] scrape the agents.
 
 ## Alerting
 
@@ -50,11 +50,10 @@ users to configure the necessary alerts using their existing monitoring systems
 as a scaffold, rather than to natively support alerting. Here are a few common
 patterns.
 
-- Export metrics from Norca to Prometheus using the [StatsD
-  exporter][statsd-exporter], define [alerting rules][alerting-rules] in
+- Scrape the Norca agents with Prometheus (or send their OTLP to a
+  collector that exports to Prometheus), define [alerting rules][alerting-rules] in
   Prometheus, and use [Alertmanager][alertmanager] for summarization and
-  routing/notifications (to PagerDuty, Slack, etc.). A similar workflow is
-  supported for [Datadog][datadog-alerting].
+  routing/notifications (to PagerDuty, Slack, etc.).
 
 - Periodically submit test jobs into Norca to determine if your application
   deployment pipeline is working end-to-end. This pattern is well-suited to
@@ -297,18 +296,13 @@ latency and packet loss for the [Serf] address.
 [alerting-rules]: https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/
 [alertmanager]: https://prometheus.io/docs/alerting/alertmanager/
 [allocation-metrics]: /docs/operations/metrics-reference#allocation-metrics
-[circonus-telem]: /docs/configuration/telemetry#circonus
 [collection-interval]: /docs/configuration/telemetry#collection_interval
-[datadog-alerting]: https://www.datadoghq.com/blog/monitoring-101-alerting/
-[datadog-telem]: /docs/configuration/telemetry#datadog
 [metric-types]: /docs/operations/metrics-reference#metric-types
 [metrics-api-endpoint]: /docs/api/metrics/
+[otlp-telem]: /docs/configuration/telemetry#otlp
 [prometheus-telem]: /docs/configuration/telemetry#prometheus
 [`plan_rejection_tracker`]: /docs/configuration/server#plan_rejection_tracker
 [serf]: /docs/configuration#advertise
-[statsd-exporter]: https://github.com/prometheus/statsd_exporter
-[statsd-telem]: /docs/configuration/telemetry#statsd
-[statsite-telem]: /docs/configuration/telemetry#statsite
 [tagged-metrics]: /docs/operations/metrics-reference#tagged-metrics
 [telemetry-block]: /docs/configuration/telemetry/
 [Consensus Protocol (Raft)]: /docs/operations/monitoring-nomad#consensus-protocol-raft

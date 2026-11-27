@@ -142,7 +142,7 @@ the [deployment examples](/docs/getting-started/examples) use the modules of thi
 | [norca-dns](#norca-dns) | 0.3.1 | The DNS records operator (`norca-dns` of norca-platform) as a job: the `norca.io/DNSRecord` object kind and the controller that keeps their record sets (A, AAAA, CNAME, TXT; values given or from a LoadBalancer object) in the zones of norca-provider that allow records, under the allow list of each namespace; ACL policy bound to the job (Norca 0.3.0) |
 | [norca-provider](#norca-provider) | 0.5.1 | `norca-provider` of norca-platform as a job: the node providers, load balancer classes and DNS zones of its configuration, registered as NodeProvider, LoadBalancerClass and DNSZone objects, with its ACL policy and a `/healthz` check; the DNSZone object kind (Norca 0.3.0) |
 | [openobserve](#openobserve) | 0.2.2 | OpenObserve (AGPL-3.0, referenced, never shipped) as the observability backend (logs, metrics, traces): single node on a host volume or a cluster of node roles on PostgreSQL, NATS and RustFS, TLS with Norca's workload certificates, root user and the ingest credentials of the collectors in the built-in secret store |
-| [otel-collector](#otel-collector) | 0.1.3 | The OpenTelemetry Collector (contrib, Apache-2.0) on every node: host and Norca agent metrics, the NATS, Forgejo, mTLS gateway, Consul and PostgreSQL metrics found through the native catalog, an OTLP receiver for the applications, export to OpenObserve trusting Norca's CA |
+| [otel-collector](#otel-collector) | 0.2.0 | The OpenTelemetry Collector (contrib, Apache-2.0) on every node: host and Norca agent metrics (scraped, or pushed over OTLP to `127.0.0.1`), the NATS, Forgejo, mTLS gateway, Consul and PostgreSQL metrics found through the native catalog, an OTLP receiver for the applications, export to OpenObserve trusting Norca's CA |
 | [postgres](#postgres) | 0.4.1 | A single PostgreSQL server (PostgreSQL License, referenced, never shipped): data on a host volume, superuser, application databases and a `pg_monitor` role from the built-in secret store, optional TLS with Norca's workload certificates, optional periodic dumps to S3 |
 | [postgres-demo](https://github.com/bacanoo-io/norca-registry/blob/main/modules/postgres-demo/README.md) | 0.3.1 | A demonstration of the language of the modules: a single PostgreSQL server, application databases created by a hook job, credentials from the secret store, optional periodic dumps to an S3 store |
 | [redis](https://github.com/bacanoo-io/norca-registry/blob/main/modules/redis/README.md) | 0.4.2 | One Redis server (the official image, referenced, not shipped): a service in the catalog, a password from a Norca Variable that the server requires, optional persistence on a host volume; no replication and no failover |
@@ -497,8 +497,9 @@ a CA rotation all instances restart within seconds.
 The [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) (contrib distribution,
 Apache-2.0) on every node as a system job, shipping to [OpenObserve](#openobserve): metrics of the
 host, the Norca agent and the NATS, Forgejo, mTLS gateway, Consul and PostgreSQL instances of the
-node, found through the native catalog; an OTLP receiver on every node (gRPC 4317, HTTP 4318) for the
-applications; export over OTLP/HTTP with the ingest credentials of the secret store, over TLS that
+node, found through the native catalog; in the OTLP mode a receiver on `127.0.0.1:4317` that the
+agent of the node pushes to, instead of the scrape of the agent; an OTLP receiver on every node
+(gRPC 4317, HTTP 4318) for the applications; export over OTLP/HTTP with the ingest credentials of the secret store, over TLS that
 trusts Norca's CA.
 
 | Variable | Default | |
@@ -509,6 +510,7 @@ trusts Norca's CA.
 | `ingest_secret_path` | `openobserve/ingest` | written by the openobserve module |
 | `hostmetrics_enabled`, `host_root_volume` | `true`, `hostfs` | host metrics |
 | `nomad_metrics_enabled`, `nomad_address` | `true`, `http://127.0.0.1:4646` | the local agent |
+| `nomad_otlp_enabled`, `nomad_otlp_port` | `false`, `4317` | OTLP mode: the agent pushes to `127.0.0.1:<nomad_otlp_port>`, no scrape of the agent |
 | `discovery_namespaces` | `["default"]` | the namespaces the collector looks for metrics services in |
 | `*_metrics_enabled` | `true` | NATS, Forgejo, mTLS gateway, Consul, PostgreSQL |
 
@@ -519,8 +521,12 @@ norca operator api -namespace observability -X PUT /v1/rigger/install <<'EOF'
 EOF
 ```
 
-It needs the openobserve module in the same namespace, `telemetry { prometheus_metrics = true }` on
-the agents and, for host metrics, a read-only host volume `hostfs` of `/`. The collector reads the
+It needs the openobserve module in the same namespace, the agents' telemetry and, for host
+metrics, a read-only host volume `hostfs` of `/`. The agents' telemetry is
+`telemetry { prometheus { enabled = true } }` for the scrape, or, with `nomad_otlp_enabled = true`,
+`telemetry { otlp {} }`, which sends to the collector of the node on `127.0.0.1:4317`; a server
+without a client has no collector of the module and sends to a central receiver over TLS instead
+(see [Monitoring](/docs/operations/monitoring#agent-telemetry)). The collector reads the
 trust bundle only when it loads its configuration; its mtls block sets
 `change_mode = "signal"`, `change_signal = "SIGHUP"`, `change_on = "bundle"`, so the client reloads
 it when a new CA joins the bundle.

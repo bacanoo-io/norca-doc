@@ -55,8 +55,8 @@ the notice at the bottom of the page. See [NOTICE](NOTICE).
 
 Only the MPL 2.0 licensed Nomad v1.6.5 text may be used. Never copy anything from Nomad v1.6.6 or later,
 Consul v1.16.5 or later (BSL 1.1), or from the current HashiCorp websites, and do not use HashiCorp logos,
-branding or design. Names of the compatibility surface (Nomad API, `X-Nomad-Token`,
-metric names) stay as they are.
+branding or design. Names of the compatibility surface (Nomad API, `X-Nomad-Token`)
+stay as they are.
 
 ## Contributing
 
