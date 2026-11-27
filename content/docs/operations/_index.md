@@ -13,6 +13,7 @@ below:
 - [Backup and restore](/docs/operations/backup-restore)
 - [Upgrades](/docs/operations/upgrades)
 - [Monitoring](/docs/operations/monitoring)
+- [OpenTelemetry](/docs/operations/opentelemetry)
 - [Logging](/docs/operations/logging)
 - [Audit records](/docs/operations/audit-log)
 - [Tracing](/docs/operations/tracing)

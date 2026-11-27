@@ -87,6 +87,9 @@ OTLP keeps the dots; Prometheus uses underscores:
 
 ### Traces and logs
 
+[OpenTelemetry](/docs/operations/opentelemetry) gives an overview of every
+signal the agents export: metrics, traces, logs and the event stream.
+
 - **Traces:** the same `otlp` block exports the agent's traces: the HTTP API
   requests, the RPCs and Raft writes of the servers, the scheduling of the
   evaluations and the phases of the allocations on the clients. The
