@@ -1,7 +1,7 @@
 ---
 title: Metrics
 linkTitle: Metrics
-description: The metrics of Norca compared with Nomad v1.6.5. The agent telemetry is unchanged; every server also keeps a history of the cluster in an embedded store.
+description: The metrics of Norca compared with Nomad v1.6.5. The agent telemetry gains an optional OTLP export and names its metrics norca.*; every server also keeps a history of the cluster in an embedded store.
 weight: 1
 ---
 
