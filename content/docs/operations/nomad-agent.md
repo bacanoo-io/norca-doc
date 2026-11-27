@@ -57,7 +57,7 @@ $ sudo norca agent -dev
 ==> Norca agent started! Log data will stream in below:
 
     [INFO] serf: EventMemberJoin: server-1.node.global 127.0.0.1
-    [INFO] nomad: starting 4 scheduling worker(s) for [service batch _core]
+    [INFO] norca: starting 4 scheduling worker(s) for [service batch _core]
 ...
 ```
 

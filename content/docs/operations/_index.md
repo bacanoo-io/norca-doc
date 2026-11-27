@@ -16,6 +16,7 @@ below:
 - [Logging](/docs/operations/logging)
 - [Audit records](/docs/operations/audit-log)
 - [Tracing](/docs/operations/tracing)
+- [Event export](/docs/operations/event-export)
 - [Operating Norca Agents](/docs/operations/nomad-agent/)
 - [Telemetry Overview](/docs/operations/monitoring-nomad/)
 - [Metrics](/docs/operations/metrics-reference/)

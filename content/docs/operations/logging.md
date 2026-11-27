@@ -61,7 +61,7 @@ With `log_json = true` every line is one JSON object:
 | --- | --- |
 | `@timestamp` | The time of the line, with microseconds and the time zone offset |
 | `@level` | `trace`, `debug`, `info`, `warn` or `error` |
-| `@module` | The logger: `agent`, `http`, `worker`, `client`, `client.alloc_runner`, `nomad.audit`, ... |
+| `@module` | The logger: `agent`, `http`, `worker`, `client`, `client.alloc_runner`, `norca` (the server), `norca.audit`, ... |
 | `@message` | The message, a constant text |
 | `@caller` | The source file and line, with `log_include_location` only |
 | every other field | A key of the call, at the top level |
@@ -164,9 +164,100 @@ response, which carries the same trace ID:
 norca monitor -log-level=debug -json | jq -c 'select(.trace_id == "4bf92f3577b34da6a3ce929d0e0e4736")'
 ```
 
+## Export over OTLP
+
+The agent can send its log lines as OpenTelemetry log records, over the
+same OTLP/gRPC connection as its metrics and traces, with the `logs` block of
+the [`otlp` block](/docs/configuration/telemetry#logs). It is off by default:
+
+```hcl
+telemetry {
+  otlp {
+    logs {
+      enabled = true
+      level   = "info"   # the default
+    }
+  }
+}
+```
+
+- **`level` is independent of `log_level`:** the agent can write `info` to
+  its outputs and export only `warn` and above, or the other way round. A
+  changed `logs.level` takes effect on `SIGHUP`; turning `logs.enabled` on or
+  off needs a restart of the agent.
+- **Lines guarded by a level check follow `log_level`.** Some components
+  build a debug or trace line only when the agent logs at that level (an
+  `IsDebug()` or `IsTrace()` check in the code), so such a line is neither
+  written nor exported while `log_level` is higher. To export the debug
+  lines, set `log_level` at least as low as `logs.level`.
+- **The lines of the agent's setup are exported too:** the agent keeps up to
+  1024 records from its start until the export starts, then sends them; the
+  lines beyond that are not exported.
+- **The logs go out last at shutdown:** the agent flushes the traces, then
+  the metrics, then the logs, so the lines of the shutdown are exported, all
+  within 5 seconds.
+- **The `OTEL_*` environment variables have no effect**, as for the other
+  signals.
+
+The records are sent in batches of at most 512, at least once a second. While
+the receiver is slow or down the agent keeps at most 2048 records waiting;
+beyond that the oldest are dropped.
+
+### The log record
+
+Every line at or above `logs.level` becomes one record:
+
+| Record field | Value |
+| --- | --- |
+| Timestamp | The time of the line |
+| Severity | The number and the text of the level: `TRACE` (1), `DEBUG` (5), `INFO` (9), `WARN` (13), `ERROR` (17) |
+| Body | The message, the constant text of the line |
+| `norca.logger` | The name of the logger, as in `@module`: `http`, `worker`, `norca.audit`, ... |
+| Other attributes | The keys of the line, with their types ([below](#values)) |
+| `exception.message`, `exception.type` | The `error` key of the line: its text and its Go type |
+| `exception.stacktrace` | A stack trace the line captured |
+| Trace ID, span ID | The `trace_id` and `span_id` keys of a [traced line](#trace-ids-in-the-log-lines), moved into the trace context of the record |
+| Scope | `github.com/bacanoo-io/norca/norca`, with the agent's version |
+| Resource | The agent's [resource attributes](/docs/configuration/telemetry#resource-attributes), the same as on its metrics and traces |
+
+A backend that joins logs to traces therefore shows the lines of a traced
+request with its trace; the trace ID is the record's own, not an attribute.
+Only the key named `error` becomes the error of the record; a second error of
+the line (`create_error`, ...) stays an attribute with the error's text.
+
+#### Values
+
+- **Strings, booleans, integers and floats keep their type.** An unsigned
+  integer too large for a signed 64-bit integer is its text.
+- **Durations are floats in milliseconds:** `duration` = 1.445739 for
+  `1.445739ms`. (The JSON log lines have integers in nanoseconds.)
+- **Times are RFC 3339 strings**, with fractions of seconds.
+- **Lists of strings are arrays** and bytes are bytes; an error or any other
+  value is its text.
+- **A string value is cut at 16 KiB**, and a record keeps at most 128
+  attributes, so one large line can't make a batch too large for the
+  receiver.
+
+### Export failures
+
+A failed export of the logs is logged as one warning per minute at most, with
+the number of failures since the last one, and counted in the metric
+`norca.agent.otlp.export_errors` with `signal="logs"`, which `/v1/metrics`
+and the Prometheus output show even while the export is down. **These warning
+lines are marked `otlp_internal=true` and are never exported**, so a failing
+log export does not feed itself; they go to standard error, the log file,
+syslog and `norca monitor` like any other line. The same holds for the
+internal errors of the OpenTelemetry SDK. The failures of the other signals
+are ordinary warnings and are exported.
+
+The leader of a region can also send the [event stream](/docs/operations/event-export)
+through the logs signal, as records of their own.
+
 ## See also
 
 - [Audit records](/docs/operations/audit-log) of operator write calls
 - [Tracing](/docs/operations/tracing)
+- [Event export](/docs/operations/event-export) over OTLP
+- The [`logs` block](/docs/configuration/telemetry#logs) of the OTLP export
 - The [agent configuration](/docs/configuration) (`log_level`, `log_json`,
   `log_file`, `enable_syslog`) and [`norca monitor`](/docs/commands/monitor)

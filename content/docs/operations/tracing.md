@@ -264,6 +264,11 @@ they place start in always-sampled `alloc.start` traces with that ID.
   restarts by the restart policy (only restarts within `alloc.restart` are);
   the allocation update hooks; and the runners restored after an agent
   restart, whose first start is not an `alloc.start`.
+- **The start of an agent:** the agent starts its server, client and HTTP API
+  first and the OTLP export after them, once it has the IDs of its resource.
+  In between it traces nothing: no spans, no trace IDs in the log lines and no
+  `Norca-Trace-Id` header. The window is short, but a restarted server that
+  wins the election again processes its first evaluations in it, untraced.
 
 ## Export
 

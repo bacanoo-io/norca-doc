@@ -283,10 +283,30 @@ are described in [Tracing](/docs/operations/tracing).
 
 #### `logs`
 
+The export of the agent's log lines as OpenTelemetry log records; the record
+format is described in [Logging](/docs/operations/logging#export-over-otlp).
+
 - `enabled` `(bool: false)` - Turns the log signal on.
 
 - `level` `(string: "info")` - The lowest level of the signal: `trace`,
-  `debug`, `info`, `warn` or `error`; independent of `log_level`.
+  `debug`, `info`, `warn` or `error`; independent of `log_level`, and
+  reloaded on `SIGHUP`. Lines that the code builds only when `log_level`
+  allows them (debug and trace details) are exported only when `log_level`
+  is at least as low.
+
+- `events` - The export of the event stream of the region by the leader, as
+  log records over the logs signal; see [Event export](/docs/operations/event-export).
+  Servers only; it needs `enabled = true` here and the
+  [system bus](/docs/configuration/bus) with its `events` publishing every
+  exported topic.
+
+  - `enabled` `(bool: false)` - Turns the event export on.
+
+  - `topics` `(array<string>: ["Job", "Allocation", "Deployment", "Node", "Scaling", "Backup", "Server"])` -
+    The exported topics. A topic is exported only when it is listed: `"*"`
+    is not allowed, and the topics that may carry secrets or identities (the
+    ACL topics, `Variables`, `Secret`, `SecretAccess`) are exported only when
+    listed explicitly.
 
 #### Per-signal targets
 
@@ -294,12 +314,14 @@ The `metrics`, `traces` and `logs` blocks may each set `endpoint`, `insecure`,
 `headers`, `headers_file` and `tls`, to send that signal elsewhere. A key the
 signal block does not set comes from the `otlp` block. `insecure` and `tls`
 count as one setting: a signal block that sets either replaces both, and a
-`headers` map replaces the whole map of the `otlp` block.
+`headers` map replaces the whole map of the `otlp` block. The event export
+sends to the target of the `logs` block.
 
 #### Reload
 
 On `SIGHUP` the agent reads the headers files again (also those of the
-signal blocks) and applies a changed `traces.sample_ratio`. **Any other change
+signal blocks) and applies a changed `traces.sample_ratio` and `logs.level`.
+**Any other change
 of the `otlp` block, adding or removing it included, needs a restart**; the
 agent logs a warning when it sees one. The other keys of `telemetry` are not
 reloaded either.

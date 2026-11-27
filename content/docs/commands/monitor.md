@@ -92,7 +92,7 @@ capability.
 ```shell
 $ norca monitor -log-level=DEBUG -node-id=a57b2adb-1a30-2dda-8df0-25abb0881952
 2019-11-04T12:22:08.528-0500 [DEBUG] http: request complete: method=GET path=/v1/agent/health?type=server duration=1.445739ms
-2019-11-04T12:22:09.892-0500 [DEBUG] nomad: memberlist: Stream connection from=127.0.0.1:53628
+2019-11-04T12:22:09.892-0500 [DEBUG] norca: memberlist: Stream connection from=127.0.0.1:53628
 
 $ norca monitor -log-level=DEBUG -json=true
 {"@level":"debug","@message":"request complete"...}

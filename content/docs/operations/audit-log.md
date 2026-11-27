@@ -14,7 +14,7 @@ give: the events show the change, the audit record shows the call that caused
 it.
 
 An audit record is an [agent log line](/docs/operations/logging) at the `info`
-level, under the logger `nomad.audit` of the server, and goes wherever the
+level, under the logger `norca.audit` of the server, and goes wherever the
 server's logs go: standard error, [`log_file`](/docs/configuration#log_file),
 syslog, and [`norca monitor`](/docs/commands/monitor). Nothing has to be turned
 on.
@@ -44,13 +44,13 @@ on.
 ## Fields of a record
 
 ```json
-{"@level":"info","@message":"operator write call","@module":"nomad.audit","@timestamp":"2026-11-27T10:20:01.204512+01:00","accessor_id":"8a3c9f2e-51d0-4b7e-a6c2-0f9e3d4b1a77","audit":true,"deadline":3600000000000,"drain":true,"identity":"token:8a3c9f2e-51d0-4b7e-a6c2-0f9e3d4b1a77","ignore_system_jobs":false,"mark_eligible":false,"node_id":"f2b8c1d4-7e3a-4c95-b0d6-91a2e5f3c8b7","operation":"Node.UpdateDrain","region":"global","result":"success","server":"server-1","token_name":"ops-alice"}
+{"@level":"info","@message":"operator write call","@module":"norca.audit","@timestamp":"2026-11-27T10:20:01.204512+01:00","accessor_id":"8a3c9f2e-51d0-4b7e-a6c2-0f9e3d4b1a77","audit":true,"deadline":3600000000000,"drain":true,"identity":"token:8a3c9f2e-51d0-4b7e-a6c2-0f9e3d4b1a77","ignore_system_jobs":false,"mark_eligible":false,"node_id":"f2b8c1d4-7e3a-4c95-b0d6-91a2e5f3c8b7","operation":"Node.UpdateDrain","region":"global","result":"success","server":"server-1","token_name":"ops-alice"}
 ```
 
 The same record in the text layout:
 
 ```text
-2026-11-27T10:20:01.204+0100 [INFO]  nomad.audit: operator write call: audit=true operation=Node.UpdateDrain server=server-1 region=global identity=token:8a3c9f2e-51d0-4b7e-a6c2-0f9e3d4b1a77 accessor_id=8a3c9f2e-51d0-4b7e-a6c2-0f9e3d4b1a77 token_name=ops-alice node_id=f2b8c1d4-7e3a-4c95-b0d6-91a2e5f3c8b7 drain=true mark_eligible=false deadline=1h0m0s ignore_system_jobs=false result=success
+2026-11-27T10:20:01.204+0100 [INFO]  norca.audit: operator write call: audit=true operation=Node.UpdateDrain server=server-1 region=global identity=token:8a3c9f2e-51d0-4b7e-a6c2-0f9e3d4b1a77 accessor_id=8a3c9f2e-51d0-4b7e-a6c2-0f9e3d4b1a77 token_name=ops-alice node_id=f2b8c1d4-7e3a-4c95-b0d6-91a2e5f3c8b7 drain=true mark_eligible=false deadline=1h0m0s ignore_system_jobs=false result=success
 ```
 
 | Key | Value |

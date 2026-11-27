@@ -93,8 +93,13 @@ OTLP keeps the dots; Prometheus uses underscores:
   collector of the node forwards them with the metrics. See
   [Tracing](/docs/operations/tracing).
 - **Logs:** the agent's logs are structured, with one key convention across
-  the agent, and carry the `trace_id` of a traced request. See
-  [Logging](/docs/operations/logging).
+  the agent, and carry the `trace_id` of a traced request. With
+  `logs { enabled = true }` the same `otlp` block exports them as log records,
+  joined to their traces. See [Logging](/docs/operations/logging).
+- **Events:** the leader can export the event stream of the region (jobs,
+  allocations, deployments, nodes, ...) as log records too, so the backend
+  keeps the history of the cluster's changes. See
+  [Event export](/docs/operations/event-export).
 - **Audit:** every server logs an audit record of each operator write call
   it handles: who called, what, and the result. See
   [Audit records](/docs/operations/audit-log).

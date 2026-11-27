@@ -578,7 +578,7 @@ Agent metrics are emitted by all Norca agents running in either client or server
 | Metric                                    | Description                                           | Unit        | Type    |
 | ----------------------------------------- | ----------------------------------------------------- | ----------- | ------- |
 | `norca.agent.http.exceeded`               | Count of HTTP connections exceeding concurrency limit | Integer     | Counter |
-| `norca.agent.otlp.export_errors`          | Count of failed OTLP exports; label `signal`: `metrics` or `traces` | Integer | Counter |
+| `norca.agent.otlp.export_errors`          | Count of failed OTLP exports; label `signal`: `metrics`, `traces`, `logs` or `events` ([Logging](/docs/operations/logging#export-failures), [Event export](/docs/operations/event-export#failures)) | Integer | Counter |
 | `norca.agent.otlp.dropped`                | Count of spans dropped before or during the export; labels `signal`: `traces`, `reason`: `queue_full` or `export_failed` (see [Tracing](/docs/operations/tracing#export)) | Integer | Counter |
 | `norca.http.rate_limited`                 | Count of HTTP API requests refused by the rate limit; label `kind`: `read` or `write` | Integer | Counter |
 

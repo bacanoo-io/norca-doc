@@ -165,7 +165,7 @@ Node marked as ineligible for scheduling due to multiple plan rejections (see up
 Along with the log line:
 
 ```
-[WARN]  nomad.state_store: marking node as ineligible due to multiple plan rejections (see upstream Nomad issue #9506): node_id=67af2541-5e96-6f54-9095-11089d627626
+[WARN]  norca.state_store: marking node as ineligible due to multiple plan rejections (see upstream Nomad issue #9506): node_id=67af2541-5e96-6f54-9095-11089d627626
 ```
 
 If a client is marked as ineligible due to repeated plan rejections, try
