@@ -4,7 +4,7 @@ linkTitle: "rigger release"
 description: "The rigger release command lists, shows, rolls back and uninstalls releases, one release at a time, without a stack."
 ---
 
-The `rigger release` command works on one [release](/docs/features/packages/releases), without a
+The `rigger release` command works on one [release](/docs/rigger/releases), without a
 stack, through the [release API](/docs/api/releases).
 
 ## Usage

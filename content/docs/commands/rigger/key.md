@@ -5,7 +5,7 @@ description: "The rigger key command generates a signing key pair, signs a modul
 ---
 
 The `rigger key` command makes the keys that modules and stacks are signed with, signs and verifies.
-See [supply chain](/docs/features/packages/supply-chain) for how a stack trusts keys.
+See [trusting keys](/docs/rigger/publishing#trusting-keys) for how a stack trusts keys.
 
 ## Usage
 

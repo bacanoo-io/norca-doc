@@ -6,9 +6,9 @@ description: "The rigger command runs Rigger, the package manager of Norca: it i
 
 The `rigger` command runs **Rigger**, the package manager of Norca. It installs modules (packages
 written in typed HCL) and stacks (several modules with their values) as
-[releases](/docs/features/packages/releases). The standalone `rigger` program has the same commands, so
+[releases](/docs/rigger/releases). The standalone `rigger` program has the same commands, so
 `norca rigger stack apply` and `rigger stack apply` are one command. See
-[Package management](/docs/features/packages) for the concepts.
+[Rigger](/docs/rigger) for the concepts.
 
 ## Usage
 

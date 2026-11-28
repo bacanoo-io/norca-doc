@@ -6,7 +6,7 @@ description: "The rigger module command validates, tests and renders a module wi
 
 The `rigger module` command works on one **module**: a directory of HCL files with its variables, its
 jobs and other resources, and its tests. `validate`, `test` and `render` need no cluster. See
-[modules and stacks](/docs/features/packages/modules).
+[the module language](/docs/rigger/module-language).
 
 ## Usage
 

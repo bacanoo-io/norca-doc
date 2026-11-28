@@ -4,7 +4,7 @@ linkTitle: "rigger install"
 description: "The rigger install command installs or upgrades one release of a module: of a directory, or by its source."
 ---
 
-The `rigger install` command installs one [release](/docs/features/packages/releases) of a module, or
+The `rigger install` command installs one [release](/docs/rigger/releases) of a module, or
 upgrades it when it exists, and waits until the release is ready.
 
 ## Usage

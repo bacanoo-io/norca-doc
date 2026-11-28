@@ -6,7 +6,7 @@ description: "The rigger stack command syncs, validates, plans, applies, shows, 
 
 The `rigger stack` command works on a **stack**: a directory with a `stack.hcl` that names modules
 with their values. Rigger installs each module as a release, in the region of the stack, and keeps
-their versions in the lock file `rigger.lock.hcl`. See [modules and stacks](/docs/features/packages/modules).
+their versions in the lock file `rigger.lock.hcl`. See [the stack language](/docs/rigger/stack-language).
 
 ## Usage
 
