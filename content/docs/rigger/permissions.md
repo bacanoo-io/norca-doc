@@ -18,7 +18,8 @@ revisions are custom objects of the group `rigger.norca.io`, so their rights are
 | `release list`, `release status`, `release history`, `stack status` | object `read` on `rigger.norca.io/Release` in the namespace |
 | Read the content of a revision (`/revision/:n`) | object `read` on `rigger.norca.io/Release` and `read-job` in the namespace |
 | `install`, upgrade, `release rollback`, `stack apply` (each release) | object `write` on `rigger.norca.io/Release`, **and the right to write every resource of the release**, hook jobs included (below) |
-| A plan (`stack plan`, `?plan=true`) | object `write` on `rigger.norca.io/Release`; a resource the token may not write is shown as `Permission denied` |
+| A plan of a stack or a release (`stack plan`, `stack plan --server`, the plan endpoint of a release) | object `read` on `rigger.norca.io/Release`, and the right to read each resource it compares: `read-job` for a job, `read` on the path of a Variable, `read-secret` for the stack's secrets and generated values (below) |
+| The plan of `install` (`?plan=true`) | object `write` on `rigger.norca.io/Release` |
 | `release uninstall`, `stack destroy` | object `write` on `rigger.norca.io/Release`, and the right to delete every resource |
 | Run the tests of a release | object `write` on `rigger.norca.io/Release` |
 | `--adopt`, taking resources from other releases | object `write` on `rigger.norca.io/Release` in the namespace of every release a resource is taken from |
@@ -26,12 +27,22 @@ revisions are custom objects of the group `rigger.norca.io`, so their rights are
 | `registry sync`, `select`, `unselect`, writing a registry | object `write` on `rigger.norca.io/Registry`, and read on the Variable of its `authSecret` |
 | `install --server` of a registry module | Release `write`, Registry `read`, and read on the Variable of the registry's `authSecret` |
 | `install --server` of `builtin/<name>` or of files | Release `write` only |
-| `stack plan/apply/status/destroy --server` | Release `write`; for a published stack, or one that takes anything from a registry or a bundle, also Registry `read` and read on the `authSecret` Variable of every private registry it uses |
+| `stack plan/status --server` | Release `read`; for a published stack, or one that takes anything from a registry or a bundle, also Registry `read` and read on the `authSecret` Variable of every private registry it uses |
+| `stack apply/destroy --server` | Release `write`; for a published stack, or one that takes anything from a registry or a bundle, also Registry `read` and read on the `authSecret` Variable of every private registry it uses |
 | `operation cancel` | object `write` on `rigger.norca.io/Release` in the namespace of the stack |
 | `operation follow`, the log of an operation | object `read` on `rigger.norca.io/Operation` in the namespace |
 | `bundle import --server`, deleting a bundle | object `write` on `rigger.norca.io/Registry` |
 | Listing bundles | object `read` on `rigger.norca.io/Registry` |
-| A stack's `secrets.hcl` and generated values | `read-secret` and `write-secret` in the namespace of the stack: the secrets of `secrets.hcl` and `rigger/stacks/<stack>/generated` are created in its secret store |
+| A stack's `secrets.hcl` and generated values | `read-secret` and `write-secret` in the namespace of the stack: the secrets of `secrets.hcl` and `rigger/stacks/<stack>/generated` are created in its secret store. A plan only reads them (`read-secret`) |
+
+**A plan needs only the right to read.** It writes nothing, and it compares only the resources the token may
+read: a resource it may not read is shown as `update` with `Permission denied`, and nothing about it is
+answered. A resource it may read but not write is compared, and its change carries `Permission denied`:
+an apply with that token would be refused. A job it may read but not submit is compared by its diff, without
+the placements of the scheduler. An object it may not write is not compared (the dry run of an object
+applies the defaults and webhooks of its kind and needs `write`): it shows as `create` or `update` with
+`not compared`. So a plan in a pull request, or a GitOps binding that only plans, works with a token that
+can't apply.
 
 **Without the right to write every resource, an install, upgrade or rollback is refused with `403`
 before anything is applied**: no release and no revision is created. There is one exception: a

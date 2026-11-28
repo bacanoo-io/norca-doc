@@ -26,7 +26,11 @@ releases are applied through the [release API](/docs/api/releases) with the call
 | `Adopt` | An apply takes over the releases that its plan shows as taken over: those another manager applied or another stack owns. A release that became another's after the plan is refused (409), not taken over. |
 | `Origin` | Where a stack sent as files came from; only with `Files`. See [the origin](#the-origin-of-a-stack-sent-as-files). |
 
-The token needs object `write` on `rigger.norca.io/Release` in the namespace. For a published stack, and
+The token needs object `read` on `rigger.norca.io/Release` in the namespace for `plan` and `status`, and
+object `write` for `apply` and `destroy`. A plan writes nothing and reads with the caller's token what it
+compares (`read-job` for jobs, `read` on the paths of Variables, `read-secret` for the stack's secrets and
+its generated values at `rigger/stacks/<stack>/generated`); see the
+[plan of a release](/docs/api/releases#plan-release). For a published stack, and
 for a stack sent as files that takes anything from a registry or a bundle, it also needs:
 
 - object `read` on `rigger.norca.io/Registry`;

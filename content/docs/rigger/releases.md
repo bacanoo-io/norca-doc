@@ -318,6 +318,11 @@ leader every 5 minutes compare the live resources with these hashes: deleted or 
 set the `Drifted` condition and publish a `ReleaseDrifted` event on the `CustomObject` event topic.
 **Drift is never corrected automatically**; upgrade or roll back to restore the revision.
 
+**The count of a task group that an enabled scaling policy scales is not compared.** It belongs to the
+policy: the autoscaler or a `job scale` sets it, and a new version of the job keeps it (an upgrade does not
+reset it to the count of the module). Everything else of the group is compared, and so is the count of a
+group without an enabled policy.
+
 ## Ownership
 
 A resource belongs to the release whose `status.resources` lists it. Installing a release whose
@@ -405,7 +410,8 @@ or external service that the release **owns already** and that the new revision 
 needs no right. A team can therefore upgrade or roll back a release that an operator installed with
 such resources, as long as it leaves them as they are; when the new revision would change one of
 them, or the live resource is no longer what the release says, the operation needs the right to
-write it. A plan reports the resources the token may not write as `Permission denied`.
+write it. A plan reports the resources the token may not write as `Permission denied`, and needs only
+the right to read: see [what each operation needs](/docs/rigger/permissions#what-each-operation-needs).
 
 **A job with ACL policies bound to it** (the `job_acl` of a policy, or `norca acl policy apply -job`)
 needs more than `submit-job`: when the release would create the job or change it in any way, the

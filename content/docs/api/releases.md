@@ -295,10 +295,17 @@ anything.
 
 | Blocking Queries | ACL Required |
 | ---------------- | ------------ |
-| `NO`             | object `write` on `rigger.norca.io/Release` |
+| `NO`             | object `read` on `rigger.norca.io/Release` |
 
 The body and the response are those of [install or upgrade](#install-or-upgrade-release); the
 `Changes` carry the job diffs.
+
+A plan compares only the resources the token may read: one it may not read is `update` with the `Error`
+`Permission denied`, and nothing about it is answered. One it may read but not write is compared, and its
+`Error` is `Permission denied`: an apply with that token would be refused. A job it may read (`read-job`)
+but not submit is compared by its diff without the scheduler, so its change has a `JobDiff` and no
+placements. An object it may not write is not compared: `create` or `update` with the `Error`
+`not compared: Permission denied`.
 
 ## List revisions
 
@@ -419,7 +426,8 @@ condition.
 }
 ```
 
-`Reason` is `missing` or `modified`.
+`Reason` is `missing` or `modified`. The count of a task group that an enabled scaling policy scales is
+not compared: the autoscaler owns it.
 
 ## Uninstall release
 
