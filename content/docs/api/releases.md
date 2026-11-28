@@ -307,6 +307,11 @@ but not submit is compared by its diff without the scheduler, so its change has 
 placements. An object it may not write is not compared: `create` or `update` with the `Error`
 `not compared: Permission denied`.
 
+A plan of a release whose namespace does not exist yet answers every resource as `create`, unchecked,
+with a warning, instead of refusing it: the namespace may come from an apply that runs before it. The
+apply of such a release is refused (`400`). A new job in a namespace that the same release creates is
+planned as `create` without the job plan.
+
 ## List revisions
 
 This endpoint lists the kept revisions of a release, newest first.

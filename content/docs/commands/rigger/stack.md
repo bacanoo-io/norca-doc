@@ -30,6 +30,15 @@ norca rigger stack publish [dir] [-f values] [--var name=value] [--key name.key]
 | `stack destroy` | Uninstalls the releases of the stack. |
 | `stack publish` | Validates a stack with `metadata.hcl` and its lock file (with the values of `-f` and `--var`, or each file of `values/`), signs it, commits the signature and tags the version in its git repository. The tag is not pushed. A stack with a variable without a default is published with `-f`. |
 
+**What a plan shows.** For each release its action (`install`, `upgrade`, `unchanged`, `remove`), and for
+an install or an upgrade the servers' dry run of it: each resource that would be created, updated or
+deleted. A change the servers would refuse carries a `refused:` line with their reason (a resource the
+token may not write, a job with policies the token does not hold, a resource they reject), so a bad
+resource is found before any release of the stack is applied. A job that changes shows the fields that
+change (`group web: Count: "1" -> "3"`); the values of its `Env` and `Template` are not shown. A new
+release whose namespace does not exist yet (the stack creates it, or a stack applied before it does) is
+shown as created, without checks, with a warning.
+
 Every command but `sync` and `publish` takes, instead of a directory, a **published stack**:
 `<namespace>/<name>` of the global registry or a git address, with `--version`.
 
