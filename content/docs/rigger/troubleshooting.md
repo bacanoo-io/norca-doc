@@ -89,7 +89,7 @@ for a machine. An apply on the servers keeps its full log with its operation:
 : One apply or destroy of a stack at a time. `norca rigger operation follow <name>` or
   `operation cancel <name>`.
 
-**`resources of the pack are being written by other operations: namespace "shared" is being written by release "apps/web"`** (409)
+**`resources of the release are being written by other operations: namespace "shared" is being written by release "apps/web"`** (409)
 : Two releases touch the same resource at the same moment. Run the operation again when the other one
   is over.
 
@@ -104,7 +104,7 @@ for a machine. An apply on the servers keeps its full log with its operation:
 : The token must be allowed to write every resource of the release; nothing was applied. See
   [permissions](/docs/rigger/permissions).
 
-**`the pack requires Norca >= 0.3.0, the servers run 0.2.4`**, **`the pack requires the feature "object-limits", which the servers don't provide`**
+**`the module requires Norca >= 0.3.0, the servers run 0.2.4`**, **`the module requires the feature "object-limits", which the servers don't provide`**
 : The `requires` block of the module. Upgrade the cluster, or install an older version of the module.
 
 **Required module missing: `The module postgres-demo requires the module example/rustfs >= 0.2.0: the stack has none that fits, and none is deployed in the namespace data. Add or install it.`**

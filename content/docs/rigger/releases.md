@@ -203,7 +203,7 @@ included, and holds the claims until it has recorded in the release what it owns
 [tenant operator](/docs/features/tenants) claims the resources of a tenant the same way for each of
 its passes. A resource that another release operation or a tenant pass is writing at that moment
 fails the operation with `409 Conflict`, and nothing is written, for example
-`resources of the pack are being written by other operations: namespace "shared" is being written by release "apps/web"`.
+`resources of the release are being written by other operations: namespace "shared" is being written by release "apps/web"`.
 The other operation is named only to a caller who may write the resource; anybody else reads
 `is being written by another operation`. Run the operation again when the other one is over.
 A plan (a dry run) claims nothing, but the resources other operations are writing are

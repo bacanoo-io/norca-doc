@@ -87,8 +87,10 @@ ui {
 - **`library = true`**: the module computes values for the modules that call it and has no
   resources; a stack can't install it ("Library module").
 - **`requires.norca` and `requires.features`** are checked by the servers for every release and
-  plan: "the pack requires Norca >= 0.3.0, the servers run ..." or "the pack requires the feature
-  ..., which the servers don't provide". The features are `releases`, `release-hooks`,
+  plan: "the module requires Norca >= 0.3.0, the servers run ..." or "the module requires the
+  feature ..., which the servers don't provide". `requires.norca` is a
+  [version constraint](/docs/rigger/versions#constraints), as `required_version` of a stack;
+  `rigger module validate` refuses one that is not ("Invalid Norca requirement"). The features are `releases`, `release-hooks`,
   `custom-objects`, `admission-cel`, `admission-webhooks`, `admission-release-signatures`, `quotas`,
   `multiregion-deployments`, `native-service-catalog`, `backups`, `secret-store`, `mtls`,
   `object-webhooks`, `object-migrations`, `object-limits`.
@@ -188,7 +190,7 @@ The hints of the install form of the web UI. They change nothing of an install.
 | `order` | The order within the group (default: the order of `variables.hcl`). |
 | `label` | The label (default: the name, humanized). |
 | `help`, `placeholder` | Text under the field, and in it. |
-| `widget` | `switch`, `segmented`, `select`, `number`, `slider` (a number with `min` and `max`), `tags`, `key-value`, `code`, `object-list` (a table, for a list of objects), `datacenter-multiselect`, `namespace-select`, `region-select`, `node-pool-select`, `storage-volume-select`, `secret`. Without one, or with another, the field follows the type: a choice of `one_of` is a segmented control (up to 3) or a select, a bool a switch, a list tags, a map key-value. |
+| `widget` | `switch`, `segmented`, `select`, `number`, `slider` (a number with `min` and `max`), `tags`, `key-value`, `code`, `object-list` (a table, for a list of objects), `datacenter-multiselect`, `namespace-select`, `region-select`, `node-pool-select`, `storage-volume-select`, `secret`, `secret-path` (a string that is the path of a secret, never the secret: the form offers the secret paths of the namespace of the release, when the token may list them, and takes any other). Without one the field follows the type; another is a warning of `rigger module validate` ("Unknown widget"), and the field follows the type too: a choice of `one_of` is a segmented control (up to 3) or a select, a bool a switch, a list tags, a map key-value. |
 | `unit` | A unit shown with a number (`"MHz"`). |
 | `presets` | Values offered with one click. |
 | `option_labels` | Labels of the values of `one_of`: `{ bridge = "Bridge (Isolated)" }`. |
